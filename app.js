@@ -163,6 +163,14 @@ class App {
     }
   }
 
+  quickLogin(role) {
+    if (role === 'student') {
+      this.handleMicrosoftLogin('harriet@leicesterhigh.edu', 'password');
+    } else if (role === 'teacher') {
+      this.handleMicrosoftLogin('smith@leicesterhigh.edu', 'password');
+    }
+  }
+
   handleMicrosoftLogin(email, password) {
     const errorMsg = document.getElementById('auth-error-msg');
     errorMsg.textContent = '';
