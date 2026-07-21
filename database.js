@@ -1,5 +1,5 @@
-// Database state layer for GCSE Computer Science Learning Platform (School Bridge)
-const DB_KEY = 'school_bridge_db';
+// Database state layer for GCSE Computer Science Learning Platform (ExamLogic Computing)
+const DB_KEY = 'examlogic_db';
 
 const defaultDatabase = {
   schools: [
@@ -439,11 +439,11 @@ class LocalDB {
   // Auth helper
   setSessionToken(token) {
     this.sessionToken = token;
-    localStorage.setItem('school_bridge_session_token', token);
+    localStorage.setItem('examlogic_session_token', token);
   }
 
   getSessionToken() {
-    return this.sessionToken || localStorage.getItem('school_bridge_session_token');
+    return this.sessionToken || localStorage.getItem('examlogic_session_token');
   }
 
   // Getters & Setters

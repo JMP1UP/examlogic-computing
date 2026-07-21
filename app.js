@@ -1,5 +1,5 @@
 /**
- * School Bridge App Controller
+ * ExamLogic Computing App Controller
  * GCSE Computer Science Learning Platform by 25Thirty
  */
 
@@ -92,7 +92,7 @@ class App {
   }
 
   loadSession() {
-    const saved = localStorage.getItem('school_bridge_session');
+    const saved = localStorage.getItem('examlogic_session');
     if (saved) {
       this.currentUser = JSON.parse(saved);
       this.activeTab = this.currentUser.role === 'student' ? 'stud-dashboard' : 'teach-overview';
@@ -101,12 +101,12 @@ class App {
 
   saveSession(user) {
     this.currentUser = user;
-    localStorage.setItem('school_bridge_session', JSON.stringify(user));
+    localStorage.setItem('examlogic_session', JSON.stringify(user));
   }
 
   clearSession() {
     this.currentUser = null;
-    localStorage.removeItem('school_bridge_session');
+    localStorage.removeItem('examlogic_session');
     this.activeTab = 'stud-dashboard';
   }
 
