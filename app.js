@@ -138,6 +138,16 @@ class App {
     // Theme toggle
     const themeBtn = document.getElementById('theme-toggle-btn');
     if (themeBtn) themeBtn.onclick = () => this.toggleTheme();
+
+    // CSP-compliant dynamic event binding for Demo buttons
+    const demoStudentBtn = document.getElementById('demo-student-btn');
+    const demoTeacherBtn = document.getElementById('demo-teacher-btn');
+    if (demoStudentBtn) {
+      demoStudentBtn.addEventListener('click', () => this.quickLogin('student'));
+    }
+    if (demoTeacherBtn) {
+      demoTeacherBtn.addEventListener('click', () => this.quickLogin('teacher'));
+    }
   }
 
   toggleTheme() {
