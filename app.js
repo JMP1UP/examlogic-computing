@@ -1682,65 +1682,309 @@ class App {
     const flags = window.db.getMessages().filter(m => m.flagged);
     const wrs = window.db.getWrittenSubmissions();
 
+    const writtenCount = wrs.filter(w => w.status === 'Awaiting Teacher Review').length;
+    const programmingCount = 2; // Simulated programming submissions awaiting approval
+    const totalAwaitingReview = writtenCount + programmingCount;
+
     panel.innerHTML = `
-      <div style="margin-bottom: 24px;">
-        <span class="badge badge-primary">Teacher Management Portal</span>
-        <h1 style="margin-top: 8px;">📊 Class Overview: Group A</h1>
-        <p style="font-size:15px; color: var(--text-muted);">Monitor homework completion, identify group misconceptions, and approve code submissions.</p>
-      </div>
-
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;">
-        <div class="card" style="padding: 20px;">
-          <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase;">Active This Week</h4>
-          <strong style="font-size:24px;">3 / 3 Students</strong>
-        </div>
-        <div class="card" style="padding: 20px;">
-          <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase;">Homework Streaks</h4>
-          <strong style="font-size:24px;">83% Consistency</strong>
-        </div>
-        <div class="card" style="padding: 20px;">
-          <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase;">Written Awaiting Review</h4>
-          <strong style="font-size:24px; color: var(--amber);">${wrs.filter(w => w.status === 'Awaiting Teacher Review').length} submissions</strong>
-        </div>
-        <div class="card" style="padding: 20px;">
-          <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase;">Safeguarding Alerts</h4>
-          <strong style="font-size:24px; color: ${flags.length > 0 ? 'var(--red)' : 'var(--green)'};">${flags.length} open</strong>
-        </div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px;">
-        <div>
-          <h2 style="font-size:20px; margin-bottom:16px;">Action Centre</h2>
-          
-          <div class="card" style="margin-bottom: 24px;">
-            <h3>Alert: Safeguarding Keyword Triggers</h3>
-            <p style="font-size:13px; margin-bottom: 16px;">The following student messages triggered the network communications audit filter:</p>
-            ${flags.length > 0 ? flags.map(f => `
-              <div style="padding:12px; background-color:rgba(239,68,68,0.02); border-left:4px solid var(--red); margin-bottom:12px; font-size:13px;">
-                <strong>Sender:</strong> Harriet Potter · <strong>Recipient:</strong> Mrs. Smith<br>
-                <strong>Text:</strong> "${f.text}"<br>
-                <span style="font-size:11px; color: var(--red);">Triggered: ${f.flagReason || 'Sensitive Keyword'}</span>
+      <div class="dashboard-container">
+        <!-- Title & Class Selection Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+          <div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+              <h1 style="margin: 0; font-weight: 700; font-size: 28px;">
+                <span style="display: inline-flex; align-items: center; vertical-align: middle; margin-right: 8px; color: var(--teal); opacity: 0.85;">
+                  ${SVG_ICONS.progress}
+                </span>Group A overview
+              </h1>
+              <!-- Class Selector Dropdown -->
+              <div style="position: relative; display: inline-block;" id="teacher-class-selector-container">
+                <button class="btn btn-secondary" id="teacher-class-trigger" style="display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 8px; font-weight: 600; min-height: 36px; border: 1px solid var(--border-color);">
+                  <span>Group A</span> <span style="font-size: 8px; color: var(--text-muted);">▼</span>
+                </button>
+                <div id="teacher-class-dropdown" class="card" style="display: none; position: absolute; left: 0; top: 40px; width: 180px; z-index: 100; padding: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid var(--border-color); background-color: var(--bg-card); text-align: left;">
+                  <a href="#" class="dropdown-item" style="display: block; padding: 6px 12px; font-size: 14px; color: var(--text-main); text-decoration: none; font-weight: 600; border-radius: 4px; background-color: var(--bg-main);">Group A (Year 10)</a>
+                  <a href="#" class="dropdown-item" style="display: block; padding: 6px 12px; font-size: 14px; color: var(--text-main); text-decoration: none; border-radius: 4px;">Group B (Year 11)</a>
+                  <a href="#" class="dropdown-item" style="display: block; padding: 6px 12px; font-size: 14px; color: var(--text-main); text-decoration: none; border-radius: 4px;">Group C (Year 9)</a>
+                </div>
               </div>
-            `).join('') : '<p style="font-size:13px; color: var(--green);">No flagged messages detected.</p>'}
+            </div>
+            <p style="font-size:15px; color: var(--text-muted); margin: 0;">Monitor engagement, review work and identify areas for support.</p>
+          </div>
+          
+          <!-- Message monitoring / safeguarding status shield -->
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 16px; background-color: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: 8px;">
+            <span style="font-size: 18px; color: #047857;">🛡️</span>
+            <div>
+              <div style="font-size: 12px; font-weight: 700; color: #047857; text-transform: uppercase;">Message monitoring</div>
+              <div style="font-size: 13px; color: var(--text-muted);">No messages require review.</div>
+            </div>
           </div>
         </div>
 
-        <div>
-          <div class="card">
-            <h3>Group Misconception Tracker</h3>
-            <p style="font-size: 13px; margin-bottom: 12px;">Topics causing difficulty based on homework metrics:</p>
-            <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px;">
-              <li style="font-size:13px;">
-                <strong>Hexadecimal storage:</strong> 67% of pupils confuse hexadecimal representations with storage efficiency in memory.
-              </li>
-              <li style="font-size:13px;">
-                <strong>Image File Calculations:</strong> 33% struggle with scaling bits into KiB units.
-              </li>
-            </ul>
+        <!-- Top Metrics Grid -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;">
+          <div class="card" style="padding: 16px 20px;">
+            <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Active This Week</h4>
+            <strong style="font-size:24px; font-weight: 700; color: var(--text-main);">24 of 26</strong>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">2 students currently inactive</div>
+          </div>
+          <div class="card" style="padding: 16px 20px;">
+            <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Weekly Completion</h4>
+            <strong style="font-size:24px; font-weight: 700; color: var(--text-main);">83%</strong>
+            <div style="font-size: 12px; color: #047857; margin-top: 4px; font-weight: 600;">▲ 6% from last week</div>
+          </div>
+          <div class="card card-action" id="metric-awaiting-review" style="padding: 16px 20px; cursor: pointer;">
+            <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Work Awaiting Review</h4>
+            <strong style="font-size:24px; font-weight: 700; color: var(--amber);">${totalAwaitingReview} submissions</strong>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${writtenCount} written, ${programmingCount} programming</div>
+          </div>
+          <div class="card" style="padding: 16px 20px;">
+            <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Unread Messages</h4>
+            <strong style="font-size:24px; font-weight: 700; color: var(--text-main);">2</strong>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Active student queries</div>
+          </div>
+        </div>
+
+        <!-- Main Content split columns -->
+        <div style="display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 32px; align-items: start;">
+          <div>
+            <!-- Action Centre Card -->
+            <div style="margin-bottom: 32px;">
+              <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Action centre</h2>
+              <div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+                  <div>
+                    <h4 style="font-size: 15px; margin: 0 0 2px 0; font-weight: 600; color: var(--text-main);">${writtenCount} written submission awaiting review</h4>
+                    <span style="font-size: 12px; color: var(--text-muted);">Harriet Potter · Ethics paragraph submission</span>
+                  </div>
+                  <button class="btn btn-primary btn-sm" id="action-review-written" style="min-height: 36px;">Review</button>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+                  <div>
+                    <h4 style="font-size: 15px; margin: 0 0 2px 0; font-weight: 600; color: var(--text-main);">${programmingCount} programming submissions awaiting approval</h4>
+                    <span style="font-size: 12px; color: var(--text-muted);">Emily Watson, Jessica Smith · Loops and Selection challenges</span>
+                  </div>
+                  <button class="btn btn-primary btn-sm" id="action-review-prog" style="min-height: 36px;">Open submission</button>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+                  <div>
+                    <h4 style="font-size: 15px; margin: 0 0 2px 0; font-weight: 600; color: var(--text-main);">Aisha's required task is overdue</h4>
+                    <span style="font-size: 12px; color: var(--text-muted);">Systems Architecture Revision Quiz · Overdue by 5 days</span>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" id="action-msg-aisha" style="min-height: 36px;">Message student</button>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+                  <div>
+                    <h4 style="font-size: 15px; margin: 0 0 2px 0; font-weight: 600; color: var(--text-main);">3 students need practice on hexadecimal</h4>
+                    <span style="font-size: 12px; color: var(--text-muted);">Average score below 50% in hexadecimal conversions</span>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" id="action-assign-hex" style="min-height: 36px;">Assign practice</button>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <h4 style="font-size: 15px; margin: 0 0 2px 0; font-weight: 600; color: var(--text-main);">2 unread student messages</h4>
+                    <span style="font-size: 12px; color: var(--text-muted);">Harriet Potter, Emily Watson</span>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" id="action-view-chat" style="min-height: 36px;">View chat</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Assignments Performance -->
+            <div style="margin-bottom: 32px;">
+              <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Recent assignments</h2>
+              <div class="card card-info" style="padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+                <div>
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <div>
+                      <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin: 0 0 4px 0;">Spaced Theory Check – Data Representation</h3>
+                      <div style="font-size: 13px; color: var(--text-muted); font-weight: 500;">
+                        23 of 26 completed &middot; Average 68% &middot; <span style="color: var(--coral); font-weight: 600;">7 students below 50%</span>
+                      </div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-assign')" style="min-height: 36px;">View results</button>
+                  </div>
+                  <!-- Mini Progress Bar -->
+                  <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
+                    <div style="width: 88%; height: 100%; background-color: var(--teal);"></div>
+                  </div>
+                </div>
+                <div style="padding-top: 16px; border-top: 1px solid var(--border-color);">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <div>
+                      <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin: 0 0 4px 0;">Loops and Selection Programming Challenge</h3>
+                      <div style="font-size: 13px; color: var(--text-muted); font-weight: 500;">
+                        18 of 26 completed &middot; Average 74% &middot; <span style="color: var(--amber); font-weight: 600;">3 students stuck on test case 4</span>
+                      </div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-programming')" style="min-height: 36px;">View results</button>
+                  </div>
+                  <!-- Mini Progress Bar -->
+                  <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
+                    <div style="width: 69%; height: 100%; background-color: var(--teal);"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Students Needing Attention List -->
+            <div>
+              <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Students needing attention</h2>
+              <div class="card" style="padding: 0; overflow: hidden;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
+                  <thead>
+                    <tr style="background-color: var(--bg-main); border-bottom: 1px solid var(--border-color);">
+                      <th style="padding: 12px 16px; font-weight: 600; color: var(--text-muted);">Student</th>
+                      <th style="padding: 12px 16px; font-weight: 600; color: var(--text-muted);">Reason</th>
+                      <th style="padding: 12px 16px; font-weight: 600; color: var(--text-muted);">Last activity</th>
+                      <th style="padding: 12px 16px; font-weight: 600; color: var(--text-muted); text-align: right;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                      <td style="padding: 12px 16px; font-weight: 600; color: var(--text-main);">Aisha</td>
+                      <td style="padding: 12px 16px; color: var(--text-muted);">Required task overdue</td>
+                      <td style="padding: 12px 16px; color: var(--text-muted);">5 days ago</td>
+                      <td style="padding: 12px 16px; text-align: right;">
+                        <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-messages')" style="padding: 4px 8px; font-size: 12px; min-height: 28px;">Message</button>
+                      </td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                      <td style="padding: 12px 16px; font-weight: 600; color: var(--text-main);">Harriet Potter</td>
+                      <td style="padding: 12px 16px; color: var(--text-muted);">Low score on file calculations</td>
+                      <td style="padding: 12px 16px; color: var(--text-muted);">Yesterday</td>
+                      <td style="padding: 12px 16px; text-align: right;">
+                        <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-assign')" style="padding: 4px 8px; font-size: 12px; min-height: 28px;">Assign practice</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 12px 16px; font-weight: 600; color: var(--text-main);">Maya</td>
+                      <td style="padding: 12px 16px; color: var(--text-muted);">Programming task awaiting review</td>
+                      <td style="padding: 12px 16px; color: var(--text-muted);">Today</td>
+                      <td style="padding: 12px 16px; text-align: right;">
+                        <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-programming')" style="padding: 4px 8px; font-size: 12px; min-height: 28px;">Review</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <!-- Priority Misconceptions Tracker -->
+            <div class="card card-info" style="margin-bottom: 24px; padding: 24px;">
+              <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Priority misconceptions</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Common conceptual errors detected in recent quizzes:</p>
+              
+              <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div style="padding-bottom: 16px; border-bottom: 1px dashed var(--border-color);">
+                  <div style="font-size: 12px; text-transform: uppercase; color: var(--coral); font-weight: 700; margin-bottom: 2px;">Hexadecimal representation</div>
+                  <h4 style="font-size: 14px; margin: 0 0 6px 0; font-weight: 600; color: var(--text-main);">6 of 9 students answered related questions incorrectly.</h4>
+                  <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 12px 0;">Confusing storage notation with hexadecimal values.</p>
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-written')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">View responses</button>
+                    <button class="btn btn-primary btn-sm" onclick="app.switchTab('teach-assign')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">Assign practice</button>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size: 12px; text-transform: uppercase; color: var(--amber); font-weight: 700; margin-bottom: 2px;">Image File Calculations</div>
+                  <h4 style="font-size: 14px; margin: 0 0 6px 0; font-weight: 600; color: var(--text-main);">3 of 9 students struggled with scaling bits into KiB units.</h4>
+                  <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 12px 0;">Incorrect usage of division base 1000 instead of 1024.</p>
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-written')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">View responses</button>
+                    <button class="btn btn-primary btn-sm" onclick="app.switchTab('teach-assign')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">Assign practice</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Current Class Topic -->
+            <div class="card card-progress" style="margin-bottom: 24px; padding: 24px;">
+              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 12px;">Current class topic</h3>
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 14px; font-weight: 600; color: var(--text-main);">Networks and Protocols</span>
+                  <span class="badge badge-primary" style="font-size: 11px;">Current lesson</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 14px; font-weight: 600; color: var(--text-main);">Data Representation</span>
+                  <span class="badge badge-success" style="font-size: 11px;">Recently taught</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Class Progress Summary -->
+            <div class="card card-info" style="padding: 24px;">
+              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 16px;">Class progress summary</h3>
+              <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+                    <span style="color: var(--text-muted); font-weight: 500;">Systems Architecture</span>
+                    <strong style="color: var(--text-main);">82% secure</strong>
+                  </div>
+                  <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
+                    <div style="width: 82%; height: 100%; background-color: var(--teal);"></div>
+                  </div>
+                </div>
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+                    <span style="color: var(--text-muted); font-weight: 500;">Data Representation</span>
+                    <strong style="color: var(--text-main);">68% secure</strong>
+                  </div>
+                  <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
+                    <div style="width: 68%; height: 100%; background-color: var(--teal);"></div>
+                  </div>
+                </div>
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+                    <span style="color: var(--text-muted); font-weight: 500;">Programming Basics</span>
+                    <strong style="color: var(--text-main);">74% secure</strong>
+                  </div>
+                  <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
+                    <div style="width: 74%; height: 100%; background-color: var(--teal);"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     `;
+
+    // Bind selector dropdown toggle
+    const trigger = document.getElementById('teacher-class-trigger');
+    const dropdown = document.getElementById('teacher-class-dropdown');
+    if (trigger && dropdown) {
+      trigger.onclick = (e) => {
+        e.stopPropagation();
+        const shown = dropdown.style.display === 'block';
+        dropdown.style.display = shown ? 'none' : 'block';
+      };
+      document.addEventListener('click', () => {
+        dropdown.style.display = 'none';
+      });
+    }
+
+    // Bind card trigger
+    const reviewCard = document.getElementById('metric-awaiting-review');
+    if (reviewCard) {
+      reviewCard.onclick = () => this.switchTab('teach-written');
+    }
+
+    // Bind Action center buttons
+    const btnWritten = document.getElementById('action-review-written');
+    const btnProg = document.getElementById('action-review-prog');
+    const btnAisha = document.getElementById('action-msg-aisha');
+    const btnHex = document.getElementById('action-assign-hex');
+    const btnChat = document.getElementById('action-view-chat');
+
+    if (btnWritten) btnWritten.onclick = () => this.switchTab('teach-written');
+    if (btnProg) btnProg.onclick = () => this.switchTab('teach-programming');
+    if (btnAisha) btnAisha.onclick = () => this.switchTab('teach-messages');
+    if (btnHex) btnHex.onclick = () => this.switchTab('teach-assign');
+    if (btnChat) btnChat.onclick = () => this.switchTab('teach-messages');
   }
 
   // ==================== TEACHER CLASSES ====================
