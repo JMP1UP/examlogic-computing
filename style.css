@@ -117,8 +117,9 @@ p {
 
 .sidebar .brand-endorsement {
   font-size: 11px;
-  color: var(--teal);
+  color: #94A3B8;
   font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
 .sidebar .nav-links {
@@ -306,6 +307,44 @@ p {
 .card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(7, 17, 31, 0.06);
+}
+
+/* 25Thirty Card Variations */
+.card-action {
+  border: 2px solid var(--teal);
+  box-shadow: 0 6px 20px rgba(45, 156, 145, 0.08);
+}
+.card-info {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+.card-progress {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+/* Consistency indicators */
+.consistency-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+.consistency-dots {
+  display: flex;
+  gap: 8px;
+}
+.consistency-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--border-color);
+  transition: var(--transition);
+}
+.consistency-dot.completed {
+  background-color: var(--teal);
+  box-shadow: 0 0 4px rgba(45, 156, 145, 0.4);
 }
 
 .card-title {

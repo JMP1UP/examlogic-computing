@@ -3,6 +3,22 @@
  * GCSE Computer Science Learning Platform by 25Thirty
  */
 
+const SVG_ICONS = {
+  home: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; vertical-align: middle;"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+  learn: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; vertical-align: middle;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+  practise: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; vertical-align: middle;"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>`,
+  programme: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; vertical-align: middle;"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>`,
+  written: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; vertical-align: middle;"><path d="M15.707 21.293a1 1 0 0 1-1.414 0l-5.657-5.657a1 1 0 0 1 0-1.414l5.657-5.657a1 1 0 0 1 1.414 0l5.657 5.657a1 1 0 0 1 0 1.414z"/><path d="m12 12-4-4"/><path d="M8 8 2 2"/></svg>`,
+  revise: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; vertical-align: middle;"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>`,
+  progress: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; vertical-align: middle;"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
+  messages: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; vertical-align: middle;"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`,
+  overview: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; vertical-align: middle;"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>`,
+  classes: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; vertical-align: middle;"><path d="M14 19a6 6 0 0 0-12 0"/><circle cx="8" cy="9" r="4"/><path d="M22 19a6 6 0 0 0-6-6 4 4 0 1 0 0-8"/></svg>`,
+  assign: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; vertical-align: middle;"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>`,
+  topics: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; vertical-align: middle;"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="6" y1="12" y2="12"/><line x1="2" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="6" x2="6" y1="10" y2="14"/><line x1="12" x2="12" y1="18" y2="22"/></svg>`,
+  settings: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; vertical-align: middle;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>`
+};
+
 class App {
   constructor() {
     this.currentUser = null;
@@ -37,6 +53,17 @@ class App {
     this.newAssignmentDueDate = '';
 
     this.theme = 'light';
+  }
+
+  getTimeBasedGreeting() {
+    const hour = new Date().getHours();
+    if (hour < 12) {
+      return "Good morning";
+    } else if (hour < 17) {
+      return "Good afternoon";
+    } else {
+      return "Good evening";
+    }
   }
 
   escapeHTML(str) {
@@ -278,19 +305,19 @@ class App {
     navList.innerHTML = '';
     if (this.currentUser.role === 'student') {
       const links = [
-        { id: 'stud-dashboard', label: 'Home', icon: '🏠' },
-        { id: 'stud-learn', label: 'Learn', icon: '📚' },
-        { id: 'stud-practise', label: 'Practise', icon: '🔢' },
-        { id: 'stud-recall', label: 'Recall', icon: '🧠' },
-        { id: 'stud-programme', label: 'Programme', icon: '💻' },
-        { id: 'stud-written', label: 'Written Answers', icon: '✍️' },
-        { id: 'stud-messages', label: 'Messages', icon: '💬' },
-        { id: 'stud-progress', label: 'Progress', icon: '📈' }
+        { id: 'stud-dashboard', label: 'Home', icon: SVG_ICONS.home },
+        { id: 'stud-learn', label: 'Learn', icon: SVG_ICONS.learn },
+        { id: 'stud-practise', label: 'Practise', icon: SVG_ICONS.practise },
+        { id: 'stud-programme', label: 'Programme', icon: SVG_ICONS.programme },
+        { id: 'stud-written', label: 'Written Answers', icon: SVG_ICONS.written },
+        { id: 'stud-recall', label: 'Revise', icon: SVG_ICONS.revise },
+        { id: 'stud-progress', label: 'Progress', icon: SVG_ICONS.progress },
+        { id: 'stud-messages', label: 'Messages', icon: SVG_ICONS.messages }
       ];
       links.forEach(link => {
         const li = document.createElement('li');
         li.innerHTML = `<a class="nav-link ${this.activeTab === link.id ? 'active' : ''}" href="#" data-tab="${link.id}">
-          <span style="font-size:18px; margin-right:8px;">${link.icon}</span> ${link.label}
+          <span style="display: inline-flex; align-items: center; margin-right: 12px; opacity: 0.85;">${link.icon}</span> ${link.label}
         </a>`;
         li.querySelector('a').onclick = (e) => { e.preventDefault(); this.switchTab(link.id); };
         navList.appendChild(li);
@@ -298,19 +325,19 @@ class App {
     } else {
       // Teacher links
       const links = [
-        { id: 'teach-overview', label: 'Overview', icon: '📊' },
-        { id: 'teach-classes', label: 'Classes', icon: '🏫' },
-        { id: 'teach-assign', label: 'Assign', icon: '📅' },
-        { id: 'teach-topics', label: 'Topics', icon: '🎛️' },
-        { id: 'teach-programming', label: 'Programming', icon: '💻' },
-        { id: 'teach-written', label: 'Written Answers', icon: '✍️' },
-        { id: 'teach-messages', label: 'Messages', icon: '💬' },
-        { id: 'teach-settings', label: 'Settings', icon: '⚙️' }
+        { id: 'teach-overview', label: 'Overview', icon: SVG_ICONS.overview },
+        { id: 'teach-classes', label: 'Classes', icon: SVG_ICONS.classes },
+        { id: 'teach-assign', label: 'Assign', icon: SVG_ICONS.assign },
+        { id: 'teach-topics', label: 'Topics', icon: SVG_ICONS.topics },
+        { id: 'teach-programming', label: 'Programming', icon: SVG_ICONS.programme },
+        { id: 'teach-written', label: 'Written Answers', icon: SVG_ICONS.written },
+        { id: 'teach-messages', label: 'Messages', icon: SVG_ICONS.messages },
+        { id: 'teach-settings', label: 'Settings', icon: SVG_ICONS.settings }
       ];
       links.forEach(link => {
         const li = document.createElement('li');
         li.innerHTML = `<a class="nav-link ${this.activeTab === link.id ? 'active' : ''}" href="#" data-tab="${link.id}">
-          <span style="font-size:18px; margin-right:8px;">${link.icon}</span> ${link.label}
+          <span style="display: inline-flex; align-items: center; margin-right: 12px; opacity: 0.85;">${link.icon}</span> ${link.label}
         </a>`;
         li.querySelector('a').onclick = (e) => { e.preventDefault(); this.switchTab(link.id); };
         navList.appendChild(li);
@@ -394,90 +421,161 @@ class App {
       }
     });
 
+    const activeAssignments = assignments.filter(a => a.status !== 'Completed');
+    const requiredCount = activeAssignments.length;
+    const greetingText = `You have ${requiredCount === 1 ? 'one required task' : requiredCount + ' required tasks'} and one recommended practice activity.`;
+
+    const greeting = this.getTimeBasedGreeting();
+
     panel.innerHTML = `
-      <div style="margin-bottom: 24px;">
-        <h1 style="margin-bottom: 4px;">Welcome back, ${student.name}</h1>
-        <p style="font-size:15px; color: var(--text-muted);">Let's keep up the habit with a short activity today.</p>
+      <div style="margin-bottom: 32px;">
+        <h1 style="margin-bottom: 6px; font-weight: 700;">${greeting}, ${student.name}</h1>
+        <p style="font-size:16px; color: var(--text-muted); margin: 0;">${greetingText}</p>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px; align-items: start;">
+      <div style="display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 32px; align-items: start;">
         <div>
           <!-- Today's recommendation -->
-          <h2 style="font-size:20px; margin-bottom:16px;">Today's recommendation</h2>
-          <div class="card" style="border-left: 5px solid var(--teal); padding: 24px; margin-bottom: 32px; background-color: var(--bg-card);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <div style="margin-bottom: 32px;">
+            <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Recommended next</h2>
+            <div class="card card-action" style="padding: 24px; background-color: var(--bg-card); display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden;">
+              <!-- Subtle decorative background code snippet for programming vs theory -->
+              <div style="position: absolute; right: -10px; bottom: -20px; opacity: 0.05; font-family: monospace; font-size: 40px; pointer-events: none; user-select: none; line-height: 1; transform: rotate(-10deg);">
+                101010<br>shift &lt;&lt; 1<br>010100
+              </div>
               <div>
-                <span class="badge badge-primary" style="margin-bottom: 8px;">Spaced theory recall</span>
-                <h3 style="font-size: 20px; margin-bottom: 4px;">⚡ Binary shifts & conversions</h3>
-                <p style="font-size: 14px; margin: 0;">You last completed conversions 3 weeks ago. Let's strengthen it.</p>
-              </div>
-              <span style="font-size: 24px;">🔢</span>
-            </div>
-            <div style="display: flex; gap: 12px; align-items: center; margin-top: 16px;">
-              <button class="btn btn-primary" id="today-rec-btn">Start activity (5 mins)</button>
-              <span style="font-size: 13px; color: var(--text-muted);">Recommended target: 3 of 4 activities done this week</span>
-            </div>
-          </div>
-
-          <!-- Current class learning -->
-          <h2 style="font-size:20px; margin-bottom:16px;">Currently learning in class</h2>
-          <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;">
-            ${activeTopics.length > 0 ? activeTopics.map(topic => `
-              <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                  <h3 style="margin-bottom: 4px;">${topic.name}</h3>
-                  <span class="badge ${topic.status === 'teaching' ? 'badge-warning' : 'badge-primary'}">${topic.status === 'teaching' ? 'In lesson now' : 'Recently taught'}</span>
+                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
+                  <span class="badge badge-primary">Spaced theory recall</span>
+                  <span style="font-size: 13px; color: var(--text-muted);">Recommended target</span>
                 </div>
-                <button class="btn btn-secondary btn-sm" onclick="app.activeTopicId='${topic.id}'; app.switchTab('stud-learn')">View topic</button>
+                <h3 style="font-size: 22px; margin-bottom: 8px; font-weight: 700; color: var(--text-main);">🔢 Binary shifts & conversions</h3>
+                <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 24px; max-width: 90%;">You last completed conversions 3 weeks ago. Let's strengthen it today.</p>
               </div>
-            `).join('') : '<p>No active topics set by teacher.</p>'}
+              <div style="display: flex; gap: 16px; align-items: center; margin-top: auto;">
+                <button class="btn btn-primary btn-lg" id="today-rec-btn" style="min-width: 180px;">Start activity (5 mins)</button>
+                <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;">Recommended target: 3 of 4 activities done this week</span>
+              </div>
+            </div>
           </div>
 
           <!-- Pending Assignments -->
-          <h2 style="font-size:20px; margin-bottom:16px;">Active assignments</h2>
-          <div style="display: flex; flex-direction: column; gap: 16px;">
-            ${assignments.map(a => `
-              <div class="card" style="display: flex; justify-content: space-between; align-items: center; border-color: rgba(244,63,94,0.15);">
-                <div>
-                  <h3 style="margin-bottom: 4px;">${a.title}</h3>
-                  <div style="font-size: 12px; color: var(--text-muted);">Due by: ${a.dueDate} · <span style="color: var(--coral); font-weight:600;">${a.status}</span></div>
-                </div>
-                <button class="btn btn-primary btn-sm" onclick="app.activeTopicId='${a.topicId}'; app.switchTab('stud-recall')">Do quiz</button>
+          <div style="margin-bottom: 32px;">
+            <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Assignments</h2>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              ${assignments.map(a => {
+                const isOverdue = a.status === 'Overdue';
+                const isCompleted = a.status === 'Completed';
+                
+                let badgeClass = 'badge-primary';
+                let badgeText = `Required · Due ${a.dueDate}`;
+                let borderStyle = 'border: 1px solid var(--border-color);';
+                
+                if (isOverdue) {
+                  badgeClass = 'badge-warning';
+                  badgeText = `Overdue · Due ${a.dueDate}`;
+                  borderStyle = 'border: 1.5px solid var(--coral);';
+                } else if (isCompleted) {
+                  badgeClass = 'badge-success';
+                  badgeText = 'Completed';
+                }
+                
+                return `
+                  <div class="card card-info" style="display: flex; justify-content: space-between; align-items: center; ${borderStyle} padding: 20px 24px;">
+                    <div>
+                      <h3 style="margin-bottom: 6px; font-weight: 600; font-size: 16px; color: var(--text-main);">${a.title}</h3>
+                      <span class="badge ${badgeClass}" style="font-size: 12px; padding: 4px 8px; font-weight: 500;">${badgeText}</span>
+                    </div>
+                    ${isCompleted ? `
+                      <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.6; min-height: 40px; padding: 0 16px;">Done</button>
+                    ` : `
+                      <button class="btn btn-primary btn-sm" onclick="app.activeTopicId='${a.topicId}'; app.switchTab('stud-recall')" style="min-height: 40px; padding: 0 16px;">Do quiz</button>
+                    `}
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- Condensed Currently Learning -->
+          <div>
+            <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Learning now</h2>
+            <div class="card card-info" style="padding: 24px;">
+              <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">Active topics currently or recently covered in class lessons:</p>
+              <div style="display: flex; flex-direction: column; gap: 16px;">
+                ${activeTopics.length > 0 ? activeTopics.map((topic, idx) => `
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: ${idx < activeTopics.length - 1 ? '16px' : '0'}; ${idx < activeTopics.length - 1 ? 'border-bottom: 1px solid var(--border-color);' : ''}">
+                    <div>
+                      <div style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 2px;">
+                        ${topic.status === 'teaching' ? 'Current lesson' : 'Recently taught'}
+                      </div>
+                      <h4 style="font-size: 15px; margin: 0; font-weight: 600; color: var(--text-main);">${topic.name}</h4>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="app.activeTopicId='${topic.id}'; app.switchTab('stud-learn')" style="min-height: 36px; font-weight: 500;">View topic</button>
+                  </div>
+                `).join('') : '<p style="font-size: 14px; margin: 0; color: var(--text-muted);">No active topics set by teacher.</p>'}
               </div>
-            `).join('')}
+            </div>
           </div>
         </div>
 
         <div>
-          <!-- Progress & streak card -->
-          <div class="card" style="margin-bottom: 24px; text-align: center; padding: 32px;">
-            <div style="font-size: 40px; margin-bottom: 12px;">🔥</div>
-            <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 4px;">${student.streak} Week Streak</h2>
-            <p style="font-size:14px; margin-bottom: 24px;">Return weekly to maintain consistency and build habit!</p>
+          <!-- Shrunken streak / Consistency card -->
+          <div class="card card-progress" style="margin-bottom: 24px; padding: 24px;">
+            <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">This week</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">3 of 4 activities completed</p>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: left;">
-              <div class="card" style="padding:16px; background-color: var(--bg-main);">
-                <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Habits Done</div>
-                <strong style="font-size: 20px;">3 / 4</strong>
+            <!-- Consistency ring/badge and connected markers -->
+            <div class="consistency-container">
+              <div class="consistency-dots">
+                <span class="consistency-dot completed" title="Week 1 Done"></span>
+                <span class="consistency-dot completed" title="Week 2 Done"></span>
+                <span class="consistency-dot completed" title="Week 3 Done"></span>
+                <span class="consistency-dot" title="Week 4 In Progress"></span>
               </div>
-              <div class="card" style="padding:16px; background-color: var(--bg-main);">
-                <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Active Time</div>
-                <strong style="font-size: 20px;">18 mins</strong>
-              </div>
+              <span style="font-size: 13px; font-weight: 600; color: var(--text-main);">${student.streak} week streak</span>
             </div>
           </div>
 
-          <!-- Topics to revisit -->
-          <div class="card">
-            <h3 style="margin-bottom: 12px;">Priority revisit areas</h3>
-            <p style="font-size: 13px; margin-bottom: 16px;">Based on your incorrect answers in previous practice sets:</p>
-            <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px;">
-              ${student.personalRevisionPriorities.map(p => `
-                <li style="font-size: 14px; display: flex; align-items: center; gap: 8px;">
-                  <span style="color: var(--coral);">⚠️</span> ${p}
-                </li>
-              `).join('')}
-            </ul>
+          <!-- Actionable Needs Attention -->
+          <div class="card card-info" style="margin-bottom: 24px; padding: 24px;">
+            <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Needs attention</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Based on your incorrect answers in previous practice sets:</p>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              ${student.personalRevisionPriorities.map(p => {
+                // Determine topicId to make it fully actionable
+                let targetTab = 'stud-practise';
+                let topicId = 'topic_1_3';
+                let btnLabel = 'Practise';
+                
+                if (p.toLowerCase().includes('registers') || p.toLowerCase().includes('architecture')) {
+                  targetTab = 'stud-recall';
+                  topicId = 'topic_1_1';
+                  btnLabel = 'Review';
+                }
+                
+                return `
+                  <div style="display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; border-bottom: 1px dashed var(--border-color);">
+                    <div style="font-size: 14px; font-weight: 500; color: var(--text-main);">
+                      ⚠️ ${p}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <span style="font-size: 12px; color: var(--text-muted);">Last score: 40%</span>
+                      <button class="btn btn-secondary btn-sm" onclick="app.activeTopicId='${topicId}'; app.switchTab('${targetTab}')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">
+                        ${btnLabel}
+                      </button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- Recent Progress -->
+          <div class="card card-progress" style="padding: 24px;">
+            <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">Recent progress</h3>
+            <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0;">
+              🎉 Harriet, you improved your score on CPU Registers by 15% yesterday! Spaced theory retention is at 88%.
+            </p>
           </div>
         </div>
       </div>
