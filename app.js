@@ -164,10 +164,14 @@ class App {
   }
 
   quickLogin(role) {
-    if (role === 'student') {
-      this.handleMicrosoftLogin('harriet@leicesterhigh.edu', 'password');
-    } else if (role === 'teacher') {
-      this.handleMicrosoftLogin('smith@leicesterhigh.edu', 'password');
+    try {
+      if (role === 'student') {
+        this.handleMicrosoftLogin('harriet@leicesterhigh.edu', 'password');
+      } else if (role === 'teacher') {
+        this.handleMicrosoftLogin('smith@leicesterhigh.edu', 'password');
+      }
+    } catch (err) {
+      alert("Quick Login Error: " + err.message + "\nStack: " + err.stack);
     }
   }
 
