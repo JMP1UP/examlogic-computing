@@ -604,22 +604,22 @@ tr:hover td {
 
 .badge-success {
   background-color: rgba(16, 185, 129, 0.1);
-  color: var(--green);
+  color: #047857; /* Darker green for WCAG AA compliance */
 }
 
 .badge-warning {
   background-color: rgba(217, 119, 6, 0.1);
-  color: var(--amber);
+  color: #B45309; /* Darker amber/orange for WCAG AA compliance */
 }
 
 .badge-danger {
   background-color: rgba(239, 68, 68, 0.1);
-  color: var(--red);
+  color: #DC2626; /* Darker red for WCAG AA compliance */
 }
 
 .badge-primary {
   background-color: rgba(45, 156, 145, 0.1);
-  color: var(--teal);
+  color: #1B6E66; /* Darker teal for WCAG AA compliance */
 }
 
 /* Programming Sandbox styling */
@@ -784,7 +784,7 @@ tr:hover td {
 
 /* Centered container with max-width limit for standard dashboards */
 .dashboard-container {
-  max-width: 1040px;
+  max-width: 980px;
   margin: 0 auto;
   width: 100%;
 }

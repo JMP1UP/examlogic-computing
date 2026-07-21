@@ -338,7 +338,7 @@ class App {
         { id: 'stud-dashboard', label: 'Home', icon: SVG_ICONS.home },
         { id: 'stud-learn', label: 'Learn', icon: SVG_ICONS.learn },
         { id: 'stud-practise', label: 'Practise', icon: SVG_ICONS.practise },
-        { id: 'stud-programme', label: 'Programme', icon: SVG_ICONS.programme },
+        { id: 'stud-programme', label: 'Programming', icon: SVG_ICONS.programme },
         { id: 'stud-written', label: 'Written Answers', icon: SVG_ICONS.written },
         { id: 'stud-recall', label: 'Revise', icon: SVG_ICONS.revise },
         { id: 'stud-progress', label: 'Progress', icon: SVG_ICONS.progress },
@@ -459,9 +459,31 @@ class App {
 
     panel.innerHTML = `
       <div class="dashboard-container">
-        <div style="margin-bottom: 32px;">
-          <h1 style="margin-bottom: 6px; font-weight: 700;">${greeting}, ${student.name}</h1>
-          <p style="font-size:16px; color: var(--text-muted); margin: 0;">${greetingText}</p>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px;">
+          <div>
+            <h1 style="margin-bottom: 6px; font-weight: 700;">${greeting}, ${student.name}</h1>
+            <p style="font-size:16px; color: var(--text-muted); margin: 0;">${greetingText}</p>
+          </div>
+          <!-- Profile Control -->
+          <div style="position: relative;" id="student-profile-dropdown-container">
+            <button class="btn btn-secondary" id="student-profile-trigger" style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 20px; font-weight: 600; min-height: 40px; border: 1px solid var(--border-color);">
+              <div style="width: 24px; height: 24px; border-radius: 50%; background-color: var(--teal); color: var(--white); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700;">
+                HP
+              </div>
+              <span style="font-size: 14px; font-weight: 600;">Harriet</span>
+              <span style="font-size: 9px; color: var(--text-muted);">▼</span>
+            </button>
+            <div id="student-profile-dropdown" class="card" style="display: none; position: absolute; right: 0; top: 48px; width: 220px; z-index: 100; padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid var(--border-color); background-color: var(--bg-card); text-align: left;">
+              <div style="padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted);">
+                <strong>Harriet Potter</strong><br>
+                harriet@leicesterhigh.edu
+              </div>
+              <a href="#" class="dropdown-item" style="display: block; padding: 6px 0; font-size: 14px; color: var(--text-main); text-decoration: none;">👤 Profile</a>
+              <a href="#" class="dropdown-item" style="display: block; padding: 6px 0; font-size: 14px; color: var(--text-main); text-decoration: none;">⚙️ Settings</a>
+              <a href="#" class="dropdown-item" style="display: block; padding: 6px 0; font-size: 14px; color: var(--text-main); text-decoration: none;">♿ Accessibility</a>
+              <a href="#" id="dropdown-signout" class="dropdown-item" style="display: block; padding: 6px 0; font-size: 14px; color: var(--coral); text-decoration: none; font-weight: 600; border-top: 1px solid var(--border-color); margin-top: 8px; padding-top: 8px;">🚪 Sign out</a>
+            </div>
+          </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 32px; align-items: start;">
@@ -469,11 +491,7 @@ class App {
             <!-- Today's recommendation -->
             <div style="margin-bottom: 32px;">
               <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Recommended next</h2>
-              <div class="card card-action" style="padding: 24px; background-color: var(--bg-card); display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden;">
-                <!-- Subtle decorative background code snippet for programming vs theory -->
-                <div style="position: absolute; right: -10px; bottom: -20px; opacity: 0.05; font-family: monospace; font-size: 40px; pointer-events: none; user-select: none; line-height: 1; transform: rotate(-10deg);">
-                  101010<br>shift &lt;&lt; 1<br>010100
-                </div>
+              <div class="card card-action" style="padding: 24px; background-color: var(--bg-card); display: flex; flex-direction: column; justify-content: space-between; position: relative;">
                 <div>
                   <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
                     <span class="badge badge-primary">Spaced recall · 5 mins</span>
@@ -490,10 +508,10 @@ class App {
             <!-- Condensed Currently Learning directly below recommendation -->
             <div style="margin-bottom: 32px;">
               <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Learning now</h2>
-              <div class="card card-info" style="padding: 20px 24px;">
-                <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div class="card card-info" style="padding: 16px 20px;">
+                <div style="display: flex; flex-direction: column; gap: 12px;">
                   ${activeTopics.length > 0 ? activeTopics.map((topic, idx) => `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: ${idx < activeTopics.length - 1 ? '16px' : '0'}; ${idx < activeTopics.length - 1 ? 'border-bottom: 1px solid var(--border-color);' : ''}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: ${idx < activeTopics.length - 1 ? '12px' : '0'}; ${idx < activeTopics.length - 1 ? 'border-bottom: 1px solid var(--border-color);' : ''}">
                       <div>
                         <div style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 2px;">
                           ${topic.status === 'teaching' ? 'Current lesson' : 'Recently taught'}
@@ -510,7 +528,7 @@ class App {
             <!-- Assignments Section -->
             <div style="margin-bottom: 32px;">
               <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Assignments</h2>
-              <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div style="display: flex; flex-direction: column; gap: 12px;">
                 ${assignments.map(a => {
                   const isOverdue = a.status === 'Overdue';
                   const isCompleted = a.status === 'Completed';
@@ -524,7 +542,7 @@ class App {
                   let btnText = isProgramming ? 'Start programming' : 'Start check';
                   
                   if (isProgramming && !isCompleted) {
-                    progressStateText = 'In progress';
+                    progressStateText = 'In progress · 3 of 5 test cases passed';
                     btnText = 'Continue task';
                   }
                   
@@ -541,9 +559,9 @@ class App {
                   }
                   
                   return `
-                    <div class="card card-info" style="display: flex; justify-content: space-between; align-items: center; ${borderStyle} padding: 20px 24px;">
+                    <div class="card card-info" style="display: flex; justify-content: space-between; align-items: center; ${borderStyle} padding: 14px 20px;">
                       <div>
-                        <h3 style="margin-bottom: 6px; font-weight: 600; font-size: 16px; color: var(--text-main);">${a.title}</h3>
+                        <h3 style="margin-bottom: 4px; font-weight: 600; font-size: 16px; color: var(--text-main);">${a.title}</h3>
                         <span class="badge ${badgeClass}" style="font-size: 12px; padding: 4px 8px; font-weight: 500;">${badgeText}</span>
                       </div>
                       ${isCompleted ? `
@@ -564,11 +582,16 @@ class App {
               <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">This week</h3>
               <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">3 of 4 activities completed</p>
               
-              <!-- Segmented dots: ● ● ● ○ -->
-              <div style="font-size: 18px; letter-spacing: 4px; color: var(--teal); margin-bottom: 12px;">● ● ● <span style="color: var(--border-color);">○</span></div>
+              <!-- Clean segmented progress bar -->
+              <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 16px;">
+                <div style="height: 8px; flex: 1; background-color: var(--teal); border-radius: 4px;" title="Completed"></div>
+                <div style="height: 8px; flex: 1; background-color: var(--teal); border-radius: 4px;" title="Completed"></div>
+                <div style="height: 8px; flex: 1; background-color: var(--teal); border-radius: 4px;" title="Completed"></div>
+                <div style="height: 8px; flex: 1; background-color: var(--border-color); border-radius: 4px;" title="Remaining"></div>
+              </div>
               
               <div style="border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 13px; font-weight: 600; color: var(--text-main);">
-                ${student.streak} week consistency streak
+                ${student.streak}-week consistency streak
               </div>
             </div>
 
@@ -619,6 +642,29 @@ class App {
         </div>
       </div>
     `;
+
+    // Dropdown toggle binding
+    const trigger = document.getElementById('student-profile-trigger');
+    const dropdown = document.getElementById('student-profile-dropdown');
+    if (trigger && dropdown) {
+      trigger.onclick = (e) => {
+        e.stopPropagation();
+        const shown = dropdown.style.display === 'block';
+        dropdown.style.display = shown ? 'none' : 'block';
+      };
+      
+      document.addEventListener('click', () => {
+        dropdown.style.display = 'none';
+      });
+    }
+
+    const dropSignout = document.getElementById('dropdown-signout');
+    if (dropSignout) {
+      dropSignout.onclick = (e) => {
+        e.preventDefault();
+        this.handleLogout();
+      };
+    }
 
     document.getElementById('today-rec-btn').onclick = () => {
       this.switchTab('stud-practise');
