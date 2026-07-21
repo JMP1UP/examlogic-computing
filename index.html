@@ -6,6 +6,12 @@
   <title>ExamLogic Computing | GCSE Computer Science by 25Thirty</title>
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <script>
+    window.onerror = function(message, source, lineno, colno, error) {
+      alert("Global Error: " + message + "\nSource: " + source + "\nLine: " + lineno + "\nCol: " + colno + (error ? "\nStack: " + error.stack : ""));
+      return false;
+    };
+  </script>
   <!-- Stylesheet -->
   <!-- style.css?v=1.5.5 for test compliance -->
   <link rel="stylesheet" href="style.css?v=1.5.6">
