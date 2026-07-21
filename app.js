@@ -436,7 +436,7 @@ class App {
     }
   }
 
-  // ==================== STUDENT DASHBOARD ====================
+  // ==================== STUDENT DASHBOARD ====================  // ==================== STUDENT DASHBOARD ====================
   renderStudentDashboard(panel) {
     const student = window.db.getStudents().find(s => s.id === this.currentUser.id) || this.currentUser;
     const assignments = window.db.getAssignments();
@@ -453,16 +453,23 @@ class App {
 
     const activeAssignments = assignments.filter(a => a.status !== 'Completed');
     const requiredCount = activeAssignments.length;
-    const greetingText = `You have ${requiredCount === 1 ? 'one required task' : requiredCount + ' required tasks'} and one recommended practice activity.`;
+    
+    const numberWords = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+    const requiredCountWord = numberWords[requiredCount] || requiredCount;
+    const greetingText = `You have ${requiredCountWord} required ${requiredCount === 1 ? 'task' : 'tasks'} and one recommended activity.`;
 
     const greeting = this.getTimeBasedGreeting();
+    const shortName = student.name.split(' ')[0];
 
     panel.innerHTML = `
       <div class="dashboard-container">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
           <div>
-            <h1 style="margin-bottom: 6px; font-weight: 700;">${greeting}, ${student.name}</h1>
+            <h1 style="margin-bottom: 6px; font-weight: 700;">${greeting}, ${shortName}</h1>
             <p style="font-size:16px; color: var(--text-muted); margin: 0;">${greetingText}</p>
+            <div style="margin-top: 8px; font-size: 14px; color: var(--text-muted); font-weight: 500;">
+              Course status: Paper 1: <strong style="color: #1B6E66;">62% secure</strong> &middot; Paper 2: <strong style="color: #1B6E66;">48% secure</strong>
+            </div>
           </div>
           <!-- Profile Control -->
           <div style="position: relative;" id="student-profile-dropdown-container">
@@ -497,7 +504,7 @@ class App {
                     <span class="badge badge-primary">Spaced recall · 5 mins</span>
                   </div>
                   <h3 style="font-size: 22px; margin-bottom: 8px; font-weight: 700; color: var(--text-main);">🔢 Binary shifts & conversions</h3>
-                  <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 24px; max-width: 90%;">You last completed conversions 3 weeks ago. Let's strengthen it today.</p>
+                  <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 24px; max-width: 90%;">You last practised conversions three weeks ago. Let's strengthen it today.</p>
                 </div>
                 <div style="display: flex; gap: 16px; align-items: center; margin-top: auto;">
                   <button class="btn btn-primary btn-lg" id="today-rec-btn" style="min-width: 180px;">Start activity (5 mins)</button>
@@ -542,11 +549,11 @@ class App {
                   let btnText = isProgramming ? 'Start programming' : 'Start check';
                   
                   if (isProgramming && !isCompleted) {
-                    progressStateText = 'In progress · 3 of 5 test cases passed';
+                    progressStateText = 'In progress — 3 of 5 test cases passed';
                     btnText = 'Continue task';
                   }
                   
-                  let badgeText = `Required · ${naturalDate} · ${progressStateText}`;
+                  let badgeText = `Required · ${naturalDate}`;
                   
                   if (isOverdue) {
                     badgeClass = 'badge-warning';
@@ -556,13 +563,17 @@ class App {
                   } else if (isCompleted) {
                     badgeClass = 'badge-success';
                     badgeText = 'Completed';
+                    progressStateText = 'Completed';
                   }
                   
                   return `
                     <div class="card card-info" style="display: flex; justify-content: space-between; align-items: center; ${borderStyle} padding: 14px 20px;">
                       <div>
-                        <h3 style="margin-bottom: 4px; font-weight: 600; font-size: 16px; color: var(--text-main);">${a.title}</h3>
-                        <span class="badge ${badgeClass}" style="font-size: 12px; padding: 4px 8px; font-weight: 500;">${badgeText}</span>
+                        <h3 style="margin-bottom: 6px; font-weight: 600; font-size: 16px; color: var(--text-main);">${a.title}</h3>
+                        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+                          <span class="badge ${badgeClass}" style="font-size: 12px; padding: 4px 8px; font-weight: 500;">${badgeText}</span>
+                          ${!isCompleted ? `<span style="font-size: 13px; color: var(--text-muted); font-weight: 500;">${progressStateText}</span>` : ''}
+                        </div>
                       </div>
                       ${isCompleted ? `
                         <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.6; min-height: 40px; padding: 0 16px;">Done</button>
@@ -613,8 +624,8 @@ class App {
                   
                   return `
                     <div style="display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; border-bottom: 1px dashed var(--border-color);">
-                      <div style="font-size: 14px; font-weight: 500; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
-                        <span style="color: var(--text-muted); font-size: 12px;">🔄</span> ${p}
+                      <div style="font-size: 14px; font-weight: 500; color: var(--text-main);">
+                        ${p}
                       </div>
                       <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 12px; color: var(--text-muted);">Last score: 40%</span>
@@ -635,7 +646,7 @@ class App {
                 Good progress: your CPU Registers score rose from 60% to 75% yesterday.
               </p>
               <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 8px 0 0 0; padding-top: 8px; border-top: 1px dashed var(--border-color);">
-                You are retaining 88% of recently reviewed theory.
+                Recent theory recall: 88%.
               </p>
             </div>
           </div>
