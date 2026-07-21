@@ -480,7 +480,7 @@ class App {
               <span style="font-size: 14px; font-weight: 600;">Harriet</span>
               <span style="font-size: 9px; color: var(--text-muted);">▼</span>
             </button>
-            <div id="student-profile-dropdown" class="card" style="display: none; position: absolute; right: 0; top: 48px; width: 220px; z-index: 100; padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid var(--border-color); background-color: var(--bg-card); text-align: left;">
+            <div id="student-profile-dropdown" class="card" style="position: absolute; right: 0; top: 48px; width: 220px; z-index: 100; padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid var(--border-color); background-color: var(--bg-card); text-align: left;">
               <div style="padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted);">
                 <strong>Harriet Potter</strong><br>
                 harriet@leicesterhigh.edu
@@ -660,12 +660,11 @@ class App {
     if (trigger && dropdown) {
       trigger.onclick = (e) => {
         e.stopPropagation();
-        const shown = dropdown.style.display === 'block';
-        dropdown.style.display = shown ? 'none' : 'block';
+        dropdown.classList.toggle('show-dropdown');
       };
       
       document.addEventListener('click', () => {
-        dropdown.style.display = 'none';
+        dropdown.classList.remove('show-dropdown');
       });
     }
 
@@ -1702,7 +1701,7 @@ class App {
                 <button class="btn btn-secondary" id="teacher-class-trigger" style="display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 8px; font-weight: 600; min-height: 36px; border: 1px solid var(--border-color);">
                   <span>Group A</span> <span style="font-size: 8px; color: var(--text-muted);">▼</span>
                 </button>
-                <div id="teacher-class-dropdown" class="card" style="display: none; position: absolute; left: 0; top: 40px; width: 180px; z-index: 100; padding: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid var(--border-color); background-color: var(--bg-card); text-align: left;">
+                <div id="teacher-class-dropdown" class="card" style="position: absolute; left: 0; top: 40px; width: 180px; z-index: 100; padding: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid var(--border-color); background-color: var(--bg-card); text-align: left;">
                   <a href="#" class="dropdown-item" style="display: block; padding: 6px 12px; font-size: 14px; color: var(--text-main); text-decoration: none; font-weight: 600; border-radius: 4px; background-color: var(--bg-main);">Group A (Year 10)</a>
                   <a href="#" class="dropdown-item" style="display: block; padding: 6px 12px; font-size: 14px; color: var(--text-main); text-decoration: none; border-radius: 4px;">Group B (Year 11)</a>
                   <a href="#" class="dropdown-item" style="display: block; padding: 6px 12px; font-size: 14px; color: var(--text-main); text-decoration: none; border-radius: 4px;">Group C (Year 9)</a>
@@ -1961,11 +1960,10 @@ class App {
     if (trigger && dropdown) {
       trigger.onclick = (e) => {
         e.stopPropagation();
-        const shown = dropdown.style.display === 'block';
-        dropdown.style.display = shown ? 'none' : 'block';
+        dropdown.classList.toggle('show-dropdown');
       };
       document.addEventListener('click', () => {
-        dropdown.style.display = 'none';
+        dropdown.classList.remove('show-dropdown');
       });
     }
 
@@ -2211,59 +2209,109 @@ class App {
     const students = window.db.getStudents();
     const questions = window.db.getWrittenQuestions();
 
+    const pending = subs.filter(s => s.status === 'Awaiting Teacher Review');
+    const reviewed = subs.filter(s => s.status === 'Teacher Reviewed');
+
+    let pendingHtml = '';
+    if (pending.length === 0) {
+      pendingHtml = `
+        <div class="empty-state-card" style="margin-bottom: 24px;">
+          <span class="icon">✨</span>
+          <h3>All caught up</h3>
+          <p>No written submissions currently awaiting review.</p>
+        </div>
+      `;
+    } else {
+      pendingHtml = pending.map(s => {
+        const studName = (students.find(st => st.id === s.studentId) || { name: 'Unknown' }).name;
+        const q = (questions.find(qu => qu.id === s.questionId) || { question: 'Unknown question' });
+        return `
+          <div class="card" style="margin-bottom: 16px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+              <div>
+                <strong>Student: ${studName}</strong> · Submitted paragraph for review
+                <div style="font-size:12px; color: var(--text-muted); margin-top:4px;">Date: ${new Date(s.date).toLocaleDateString()}</div>
+              </div>
+              <span class="badge badge-warning">${s.status}</span>
+            </div>
+            
+            <div style="background-color: var(--bg-main); padding: 12px; border-radius: 8px; font-size:13px; margin-bottom:16px;">
+              <strong>Question Prompt:</strong> "${q.question}"
+            </div>
+
+            <div style="font-style: italic; font-size:14px; color: var(--text-main); margin-bottom:16px; line-height: 1.5; border-left: 3px solid var(--border-color); padding-left:12px;">
+              "${s.response}"
+            </div>
+
+            <!-- AI Evaluation Summary -->
+            <div class="card" style="background-color: rgba(45,156,145,0.02); margin-bottom: 16px; font-size: 13px;">
+              <h4 style="color: var(--teal); font-size:14px; margin-bottom:6px;">🤖 Automated AI Formative Marking</h4>
+              <div>Estimated Mark: <strong>${s.estimatedMark}</strong></div>
+              <div>Strengths: ${s.strengths}</div>
+              <div>Improvements: ${s.improvements}</div>
+            </div>
+
+            <!-- Teacher grading controls -->
+            <form onsubmit="event.preventDefault(); app.submitTeacherWrittenOverride('${s.id}', this)">
+              <div style="display:flex; gap:12px; align-items:flex-end;">
+                <div class="form-group" style="margin:0;">
+                  <label>Manual Override Mark (0-6)</label>
+                  <input type="number" name="teacherMark" class="form-control" style="width:100px;" value="${s.teacherMark || s.estimatedMark}" min="0" max="6" required>
+                </div>
+                <div class="form-group" style="margin:0; flex:1;">
+                  <label>Teacher Formative Comment — optional</label>
+                  <input type="text" name="teacherFeedback" class="form-control" placeholder="Write feedback comment (optional)..." value="${s.teacherFeedback || ''}">
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm" style="height:40px;">Approve mark</button>
+              </div>
+            </form>
+          </div>
+        `;
+      }).join('');
+    }
+
+    let reviewedHtml = '';
+    if (reviewed.length > 0) {
+      reviewedHtml = `
+        <div style="margin-top: 32px;">
+          <h2 style="font-size: 18px; margin-bottom: 16px; font-weight: 600;">Recently reviewed</h2>
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            ${reviewed.map(s => {
+              const studName = (students.find(st => st.id === s.studentId) || { name: 'Unknown' }).name;
+              const q = (questions.find(qu => qu.id === s.questionId) || { question: 'Unknown question' });
+              return `
+                <div class="card" style="opacity: 0.85;">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                    <div>
+                      <strong>Student: ${studName}</strong> · Reviewed
+                      <div style="font-size:12px; color: var(--text-muted); margin-top:4px;">Date: ${new Date(s.date).toLocaleDateString()}</div>
+                    </div>
+                    <span class="badge badge-success">${s.status}</span>
+                  </div>
+                  <div style="font-size:14px; margin-bottom:12px;">
+                    <strong>Approved Mark:</strong> ${s.teacherMark} / 6
+                  </div>
+                  <div style="font-size:13px; color: var(--text-muted); font-style: italic;">
+                    Comment: "${s.teacherFeedback || 'No feedback comment provided.'}"
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
     panel.innerHTML = `
       <div style="margin-bottom: 24px;">
         <h1>✍️ Written Answers assessment dashboard</h1>
         <p>Review student paragraphs, AI estimated mark-bands, and provide teacher manual overrides.</p>
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:20px;">
-        ${subs.map(s => {
-          const studName = (students.find(st => st.id === s.studentId) || { name: 'Unknown' }).name;
-          const q = (questions.find(qu => qu.id === s.questionId) || { question: 'Unknown question' });
-          return `
-            <div class="card">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                <div>
-                  <strong>Student: ${studName}</strong> · Submitted paragraph for review
-                  <div style="font-size:12px; color: var(--text-muted); margin-top:4px;">Date: ${new Date(s.date).toLocaleDateString()}</div>
-                </div>
-                <span class="badge ${s.status === 'Teacher Reviewed' ? 'badge-success' : 'badge-warning'}">${s.status}</span>
-              </div>
-              
-              <div style="background-color: var(--bg-main); padding: 12px; border-radius: 8px; font-size:13px; margin-bottom:16px;">
-                <strong>Question Prompt:</strong> "${q.question}"
-              </div>
-
-              <div style="font-style: italic; font-size:14px; color: var(--text-main); margin-bottom:16px; line-height: 1.5; border-left: 3px solid var(--border-color); padding-left:12px;">
-                "${s.response}"
-              </div>
-
-              <!-- AI Evaluation Summary -->
-              <div class="card" style="background-color: rgba(45,156,145,0.02); margin-bottom: 16px; font-size: 13px;">
-                <h4 style="color: var(--teal); font-size:14px; margin-bottom:6px;">🤖 Automated AI Formative Marking</h4>
-                <div>Estimated Mark: <strong>${s.estimatedMark}</strong></div>
-                <div>Strengths: ${s.strengths}</div>
-                <div>Improvements: ${s.improvements}</div>
-              </div>
-
-              <!-- Teacher grading controls -->
-              <form onsubmit="event.preventDefault(); app.submitTeacherWrittenOverride('${s.id}', this)">
-                <div style="display:flex; gap:12px; align-items:flex-end;">
-                  <div class="form-group" style="margin:0;">
-                    <label>Manual Override Mark (0-6)</label>
-                    <input type="number" name="teacherMark" class="form-control" style="width:100px;" value="${s.teacherMark || s.estimatedMark}" min="0" max="6" required>
-                  </div>
-                  <div class="form-group" style="margin:0; flex:1;">
-                    <label>Teacher Formative Comment — optional</label>
-                    <input type="text" name="teacherFeedback" class="form-control" placeholder="Write feedback comment (optional)..." value="${s.teacherFeedback || ''}">
-                  </div>
-                  <button type="submit" class="btn btn-primary btn-sm" style="height:40px;">Approve mark</button>
-                </div>
-              </form>
-            </div>
-          `;
-        }).join('')}
+      <div style="display:flex; flex-direction:column;">
+        <h2 style="font-size: 18px; margin-bottom: 16px; font-weight: 600;">Awaiting review</h2>
+        ${pendingHtml}
+        ${reviewedHtml}
       </div>
     `;
   }
