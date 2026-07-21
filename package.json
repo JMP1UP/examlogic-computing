@@ -1,0 +1,13 @@
+{
+  "name": "penpal-cultural-exchange",
+  "version": "1.0.0",
+  "description": "Secure Bridge Classroom Exchange Web App",
+  "main": "app.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "node -c app.js api/*.js"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
