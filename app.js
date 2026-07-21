@@ -2255,8 +2255,8 @@ class App {
                     <input type="number" name="teacherMark" class="form-control" style="width:100px;" value="${s.teacherMark || s.estimatedMark}" min="0" max="6" required>
                   </div>
                   <div class="form-group" style="margin:0; flex:1;">
-                    <label>Teacher Formative Comment</label>
-                    <input type="text" name="teacherFeedback" class="form-control" placeholder="Write feedback comment..." value="${s.teacherFeedback || ''}" required>
+                    <label>Teacher Formative Comment — optional</label>
+                    <input type="text" name="teacherFeedback" class="form-control" placeholder="Write feedback comment (optional)..." value="${s.teacherFeedback || ''}">
                   </div>
                   <button type="submit" class="btn btn-primary btn-sm" style="height:40px;">Approve mark</button>
                 </div>
