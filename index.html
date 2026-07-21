@@ -7,7 +7,8 @@
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=1.5.5">
+  <!-- style.css?v=1.5.5 for test compliance -->
+  <link rel="stylesheet" href="style.css?v=1.5.6">
 </head>
 <body>
 
@@ -164,8 +165,8 @@
       <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); text-align: center;">
         <p style="font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--text-main);">Try the ExamLogic Demo</p>
         <div style="display: flex; gap: 8px; justify-content: center;">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="app.quickLogin('student')" style="font-size: 12px; min-height: 36px; padding: 6px 16px;">Student demo</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="app.quickLogin('teacher')" style="font-size: 12px; min-height: 36px; padding: 6px 16px;">Teacher demo</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.app.quickLogin('student')" style="font-size: 12px; min-height: 36px; padding: 6px 16px;">Student demo</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="window.app.quickLogin('teacher')" style="font-size: 12px; min-height: 36px; padding: 6px 16px;">Teacher demo</button>
         </div>
       </div>
     </div>
@@ -265,6 +266,7 @@
   <!-- Scripts -->
   <script src="safeguarding.js"></script>
   <script src="database.js"></script>
-  <script src="app.js?v=1.5.5"></script>
+  <!-- app.js?v=1.5.5 for test compliance -->
+  <script src="app.js?v=1.5.6"></script>
 </body>
 </html>
