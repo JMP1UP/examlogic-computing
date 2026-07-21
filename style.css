@@ -8,7 +8,7 @@
   --teal-hover: #237E75;
   --warm-white: #FAF8F2;
   --white: #FFFFFF;
-  --slate: #64748B;
+  --slate: #475569;
   --soft-border: #E3E8EE;
   
   /* Accents */
@@ -116,7 +116,7 @@ p {
 }
 
 .sidebar .brand-endorsement {
-  font-size: 11px;
+  font-size: 12px;
   color: #94A3B8;
   font-weight: 500;
   letter-spacing: 0.5px;
@@ -781,3 +781,10 @@ tr:hover td {
   }
 }
 .sidebar:not(.mobile-nav-open) .nav-links.active-role-nav {}
+
+/* Centered container with max-width limit for standard dashboards */
+.dashboard-container {
+  max-width: 1040px;
+  margin: 0 auto;
+  width: 100%;
+}

@@ -66,6 +66,36 @@ class App {
     }
   }
 
+  formatDueDate(dateStr) {
+    if (!dateStr) return '';
+    
+    // Parse date parts manually to avoid timezone shifting
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    
+    const now = new Date();
+    // Reset times
+    now.setHours(0, 0, 0, 0);
+    d.setHours(0, 0, 0, 0);
+    
+    const diffTime = d.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Due today';
+    if (diffDays === 1) return 'Due tomorrow';
+    if (diffDays === -1) return 'Overdue yesterday';
+    if (diffDays < 0) return 'Overdue';
+    
+    if (diffDays < 7) {
+      const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      return `Due ${weekdays[d.getDay()]}`;
+    }
+    
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    return `Due ${d.getDate()} ${months[d.getMonth()]}`;
+  }
+
   escapeHTML(str) {
     if (!str) return '';
     return String(str)
@@ -428,154 +458,163 @@ class App {
     const greeting = this.getTimeBasedGreeting();
 
     panel.innerHTML = `
-      <div style="margin-bottom: 32px;">
-        <h1 style="margin-bottom: 6px; font-weight: 700;">${greeting}, ${student.name}</h1>
-        <p style="font-size:16px; color: var(--text-muted); margin: 0;">${greetingText}</p>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 32px; align-items: start;">
-        <div>
-          <!-- Today's recommendation -->
-          <div style="margin-bottom: 32px;">
-            <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Recommended next</h2>
-            <div class="card card-action" style="padding: 24px; background-color: var(--bg-card); display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden;">
-              <!-- Subtle decorative background code snippet for programming vs theory -->
-              <div style="position: absolute; right: -10px; bottom: -20px; opacity: 0.05; font-family: monospace; font-size: 40px; pointer-events: none; user-select: none; line-height: 1; transform: rotate(-10deg);">
-                101010<br>shift &lt;&lt; 1<br>010100
-              </div>
-              <div>
-                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
-                  <span class="badge badge-primary">Spaced theory recall</span>
-                  <span style="font-size: 13px; color: var(--text-muted);">Recommended target</span>
-                </div>
-                <h3 style="font-size: 22px; margin-bottom: 8px; font-weight: 700; color: var(--text-main);">🔢 Binary shifts & conversions</h3>
-                <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 24px; max-width: 90%;">You last completed conversions 3 weeks ago. Let's strengthen it today.</p>
-              </div>
-              <div style="display: flex; gap: 16px; align-items: center; margin-top: auto;">
-                <button class="btn btn-primary btn-lg" id="today-rec-btn" style="min-width: 180px;">Start activity (5 mins)</button>
-                <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;">Recommended target: 3 of 4 activities done this week</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pending Assignments -->
-          <div style="margin-bottom: 32px;">
-            <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Assignments</h2>
-            <div style="display: flex; flex-direction: column; gap: 16px;">
-              ${assignments.map(a => {
-                const isOverdue = a.status === 'Overdue';
-                const isCompleted = a.status === 'Completed';
-                
-                let badgeClass = 'badge-primary';
-                let badgeText = `Required · Due ${a.dueDate}`;
-                let borderStyle = 'border: 1px solid var(--border-color);';
-                
-                if (isOverdue) {
-                  badgeClass = 'badge-warning';
-                  badgeText = `Overdue · Due ${a.dueDate}`;
-                  borderStyle = 'border: 1.5px solid var(--coral);';
-                } else if (isCompleted) {
-                  badgeClass = 'badge-success';
-                  badgeText = 'Completed';
-                }
-                
-                return `
-                  <div class="card card-info" style="display: flex; justify-content: space-between; align-items: center; ${borderStyle} padding: 20px 24px;">
-                    <div>
-                      <h3 style="margin-bottom: 6px; font-weight: 600; font-size: 16px; color: var(--text-main);">${a.title}</h3>
-                      <span class="badge ${badgeClass}" style="font-size: 12px; padding: 4px 8px; font-weight: 500;">${badgeText}</span>
-                    </div>
-                    ${isCompleted ? `
-                      <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.6; min-height: 40px; padding: 0 16px;">Done</button>
-                    ` : `
-                      <button class="btn btn-primary btn-sm" onclick="app.activeTopicId='${a.topicId}'; app.switchTab('stud-recall')" style="min-height: 40px; padding: 0 16px;">Do quiz</button>
-                    `}
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-
-          <!-- Condensed Currently Learning -->
-          <div>
-            <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Learning now</h2>
-            <div class="card card-info" style="padding: 24px;">
-              <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">Active topics currently or recently covered in class lessons:</p>
-              <div style="display: flex; flex-direction: column; gap: 16px;">
-                ${activeTopics.length > 0 ? activeTopics.map((topic, idx) => `
-                  <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: ${idx < activeTopics.length - 1 ? '16px' : '0'}; ${idx < activeTopics.length - 1 ? 'border-bottom: 1px solid var(--border-color);' : ''}">
-                    <div>
-                      <div style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 2px;">
-                        ${topic.status === 'teaching' ? 'Current lesson' : 'Recently taught'}
-                      </div>
-                      <h4 style="font-size: 15px; margin: 0; font-weight: 600; color: var(--text-main);">${topic.name}</h4>
-                    </div>
-                    <button class="btn btn-secondary btn-sm" onclick="app.activeTopicId='${topic.id}'; app.switchTab('stud-learn')" style="min-height: 36px; font-weight: 500;">View topic</button>
-                  </div>
-                `).join('') : '<p style="font-size: 14px; margin: 0; color: var(--text-muted);">No active topics set by teacher.</p>'}
-              </div>
-            </div>
-          </div>
+      <div class="dashboard-container">
+        <div style="margin-bottom: 32px;">
+          <h1 style="margin-bottom: 6px; font-weight: 700;">${greeting}, ${student.name}</h1>
+          <p style="font-size:16px; color: var(--text-muted); margin: 0;">${greetingText}</p>
         </div>
 
-        <div>
-          <!-- Shrunken streak / Consistency card -->
-          <div class="card card-progress" style="margin-bottom: 24px; padding: 24px;">
-            <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">This week</h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">3 of 4 activities completed</p>
-            
-            <!-- Consistency ring/badge and connected markers -->
-            <div class="consistency-container">
-              <div class="consistency-dots">
-                <span class="consistency-dot completed" title="Week 1 Done"></span>
-                <span class="consistency-dot completed" title="Week 2 Done"></span>
-                <span class="consistency-dot completed" title="Week 3 Done"></span>
-                <span class="consistency-dot" title="Week 4 In Progress"></span>
-              </div>
-              <span style="font-size: 13px; font-weight: 600; color: var(--text-main);">${student.streak} week streak</span>
-            </div>
-          </div>
-
-          <!-- Actionable Needs Attention -->
-          <div class="card card-info" style="margin-bottom: 24px; padding: 24px;">
-            <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Needs attention</h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Based on your incorrect answers in previous practice sets:</p>
-            <div style="display: flex; flex-direction: column; gap: 16px;">
-              ${student.personalRevisionPriorities.map(p => {
-                // Determine topicId to make it fully actionable
-                let targetTab = 'stud-practise';
-                let topicId = 'topic_1_3';
-                let btnLabel = 'Practise';
-                
-                if (p.toLowerCase().includes('registers') || p.toLowerCase().includes('architecture')) {
-                  targetTab = 'stud-recall';
-                  topicId = 'topic_1_1';
-                  btnLabel = 'Review';
-                }
-                
-                return `
-                  <div style="display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; border-bottom: 1px dashed var(--border-color);">
-                    <div style="font-size: 14px; font-weight: 500; color: var(--text-main);">
-                      ⚠️ ${p}
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                      <span style="font-size: 12px; color: var(--text-muted);">Last score: 40%</span>
-                      <button class="btn btn-secondary btn-sm" onclick="app.activeTopicId='${topicId}'; app.switchTab('${targetTab}')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">
-                        ${btnLabel}
-                      </button>
-                    </div>
+        <div style="display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 32px; align-items: start;">
+          <div>
+            <!-- Today's recommendation -->
+            <div style="margin-bottom: 32px;">
+              <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Recommended next</h2>
+              <div class="card card-action" style="padding: 24px; background-color: var(--bg-card); display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden;">
+                <!-- Subtle decorative background code snippet for programming vs theory -->
+                <div style="position: absolute; right: -10px; bottom: -20px; opacity: 0.05; font-family: monospace; font-size: 40px; pointer-events: none; user-select: none; line-height: 1; transform: rotate(-10deg);">
+                  101010<br>shift &lt;&lt; 1<br>010100
+                </div>
+                <div>
+                  <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
+                    <span class="badge badge-primary">Spaced recall · 5 mins</span>
                   </div>
-                `;
-              }).join('')}
+                  <h3 style="font-size: 22px; margin-bottom: 8px; font-weight: 700; color: var(--text-main);">🔢 Binary shifts & conversions</h3>
+                  <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 24px; max-width: 90%;">You last completed conversions 3 weeks ago. Let's strengthen it today.</p>
+                </div>
+                <div style="display: flex; gap: 16px; align-items: center; margin-top: auto;">
+                  <button class="btn btn-primary btn-lg" id="today-rec-btn" style="min-width: 180px;">Start activity (5 mins)</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Condensed Currently Learning directly below recommendation -->
+            <div style="margin-bottom: 32px;">
+              <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Learning now</h2>
+              <div class="card card-info" style="padding: 20px 24px;">
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                  ${activeTopics.length > 0 ? activeTopics.map((topic, idx) => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: ${idx < activeTopics.length - 1 ? '16px' : '0'}; ${idx < activeTopics.length - 1 ? 'border-bottom: 1px solid var(--border-color);' : ''}">
+                      <div>
+                        <div style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 2px;">
+                          ${topic.status === 'teaching' ? 'Current lesson' : 'Recently taught'}
+                        </div>
+                        <h4 style="font-size: 15px; margin: 0; font-weight: 600; color: var(--text-main);">${topic.name}</h4>
+                      </div>
+                      <button class="btn btn-secondary btn-sm" onclick="app.activeTopicId='${topic.id}'; app.switchTab('stud-learn')" style="min-height: 36px; font-weight: 500;">View topic</button>
+                    </div>
+                  `).join('') : '<p style="font-size: 14px; margin: 0; color: var(--text-muted);">No active topics set by teacher.</p>'}
+                </div>
+              </div>
+            </div>
+
+            <!-- Assignments Section -->
+            <div style="margin-bottom: 32px;">
+              <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Assignments</h2>
+              <div style="display: flex; flex-direction: column; gap: 16px;">
+                ${assignments.map(a => {
+                  const isOverdue = a.status === 'Overdue';
+                  const isCompleted = a.status === 'Completed';
+                  const isProgramming = a.title.toLowerCase().includes('programming');
+                  
+                  let badgeClass = 'badge-primary';
+                  let naturalDate = this.formatDueDate(a.dueDate);
+                  let borderStyle = 'border: 1px solid var(--border-color);';
+                  
+                  let progressStateText = 'Not started';
+                  let btnText = isProgramming ? 'Start programming' : 'Start check';
+                  
+                  if (isProgramming && !isCompleted) {
+                    progressStateText = 'In progress';
+                    btnText = 'Continue task';
+                  }
+                  
+                  let badgeText = `Required · ${naturalDate} · ${progressStateText}`;
+                  
+                  if (isOverdue) {
+                    badgeClass = 'badge-warning';
+                    badgeText = `Overdue · ${naturalDate}`;
+                    borderStyle = 'border: 1.5px solid var(--coral);';
+                    btnText = isProgramming ? 'Start programming' : 'Start check';
+                  } else if (isCompleted) {
+                    badgeClass = 'badge-success';
+                    badgeText = 'Completed';
+                  }
+                  
+                  return `
+                    <div class="card card-info" style="display: flex; justify-content: space-between; align-items: center; ${borderStyle} padding: 20px 24px;">
+                      <div>
+                        <h3 style="margin-bottom: 6px; font-weight: 600; font-size: 16px; color: var(--text-main);">${a.title}</h3>
+                        <span class="badge ${badgeClass}" style="font-size: 12px; padding: 4px 8px; font-weight: 500;">${badgeText}</span>
+                      </div>
+                      ${isCompleted ? `
+                        <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.6; min-height: 40px; padding: 0 16px;">Done</button>
+                      ` : `
+                        <button class="btn btn-primary btn-sm" onclick="app.activeTopicId='${a.topicId}'; app.switchTab('stud-recall')" style="min-height: 40px; padding: 0 16px;">${btnText}</button>
+                      `}
+                    </div>
+                  `;
+                }).join('')}
+              </div>
             </div>
           </div>
 
-          <!-- Recent Progress -->
-          <div class="card card-progress" style="padding: 24px;">
-            <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">Recent progress</h3>
-            <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0;">
-              🎉 Harriet, you improved your score on CPU Registers by 15% yesterday! Spaced theory retention is at 88%.
-            </p>
+          <div>
+            <!-- Shrunken streak / Consistency card -->
+            <div class="card card-progress" style="margin-bottom: 24px; padding: 24px;">
+              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">This week</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">3 of 4 activities completed</p>
+              
+              <!-- Segmented dots: ● ● ● ○ -->
+              <div style="font-size: 18px; letter-spacing: 4px; color: var(--teal); margin-bottom: 12px;">● ● ● <span style="color: var(--border-color);">○</span></div>
+              
+              <div style="border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 13px; font-weight: 600; color: var(--text-main);">
+                ${student.streak} week consistency streak
+              </div>
+            </div>
+
+            <!-- Actionable Worth Revisiting -->
+            <div class="card card-info" style="margin-bottom: 24px; padding: 24px;">
+              <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Worth revisiting</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Based on your incorrect answers in previous practice sets:</p>
+              <div style="display: flex; flex-direction: column; gap: 16px;">
+                ${student.personalRevisionPriorities.map(p => {
+                  let targetTab = 'stud-practise';
+                  let topicId = 'topic_1_3';
+                  let btnLabel = 'Practise';
+                  
+                  if (p.toLowerCase().includes('registers') || p.toLowerCase().includes('architecture')) {
+                    targetTab = 'stud-recall';
+                    topicId = 'topic_1_1';
+                    btnLabel = 'Review';
+                  }
+                  
+                  return `
+                    <div style="display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; border-bottom: 1px dashed var(--border-color);">
+                      <div style="font-size: 14px; font-weight: 500; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+                        <span style="color: var(--text-muted); font-size: 12px;">🔄</span> ${p}
+                      </div>
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 12px; color: var(--text-muted);">Last score: 40%</span>
+                        <button class="btn btn-secondary btn-sm" onclick="app.activeTopicId='${topicId}'; app.switchTab('${targetTab}')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">
+                          ${btnLabel}
+                        </button>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+
+            <!-- Recent Progress -->
+            <div class="card card-progress" style="padding: 24px;">
+              <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">Recent progress</h3>
+              <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0;">
+                Good progress: your CPU Registers score rose from 60% to 75% yesterday.
+              </p>
+              <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 8px 0 0 0; padding-top: 8px; border-top: 1px dashed var(--border-color);">
+                You are retaining 88% of recently reviewed theory.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -691,9 +730,9 @@ class App {
 
     panel.innerHTML = `
       <div style="margin-bottom: 24px;">
-        <span class="badge badge-primary">Weekly practice set</span>
-        <h1 style="margin-top: 8px;">🔢 Weekly Number Skills practice</h1>
-        <p style="font-size: 15px; color: var(--text-muted);">Complete these calculations to build speed and accuracy. Support scaffolds are available.</p>
+        <span class="badge badge-primary">Ongoing spaced practice</span>
+        <h1 style="margin-top: 8px; font-weight: 700;">🔢 Practise: Number Skills</h1>
+        <p style="font-size: 15px; color: var(--text-muted); margin: 0;">Ongoing spaced practice and calculation skill development.</p>
       </div>
 
       <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px; align-items: start;">
@@ -878,9 +917,9 @@ class App {
 
     panel.innerHTML = `
       <div style="margin-bottom: 24px;">
-        <span class="badge badge-primary">Spaced theory recall</span>
-        <h1 style="margin-top: 8px;">🧠 Spaced Quiz: ${this.activeTopicId}</h1>
-        <p style="font-size:15px; color: var(--text-muted);">Retrieve your knowledge. Do not consult revision guides; this is a delayed retrieval practice check.</p>
+        <span class="badge badge-primary">Revise & Assess</span>
+        <h1 style="margin-top: 8px; font-weight: 700;">🧠 Revise: ${this.activeTopicId}</h1>
+        <p style="font-size: 15px; color: var(--text-muted); margin: 0;">Assessment-focused mixed sets, mock preparation and timed quiz work.</p>
       </div>
 
       <form id="quiz-form">
