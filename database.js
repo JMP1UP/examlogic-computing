@@ -2,7 +2,7 @@
 const DB_KEY = 'examlogic_db';
 
 const defaultDatabase = {
-  schemaVersion: 3,
+  schemaVersion: 4,
   schools: [
     {
       id: 'school_1',
@@ -1343,6 +1343,26 @@ const defaultDatabase = {
       ],
       explainQuestion: 'Explain why hexadecimal is used in Computer Science instead of binary.',
       explainModelAnswer: 'Hexadecimal is used because it is shorter and easier for humans to read, write, and debug compared to long strings of binary digits. It does not consume less storage space in memory.'
+    },
+    {
+      id: 'pc_5',
+      level: 5,
+      concept: 'File Handling & Loops',
+      title: 'Writing Code: File Total',
+      instructions: 'Write a Python program that opens a file named "scores.txt", reads each line (containing an integer score), calculates the sum, and prints the total.',
+      problem: 'Implement the file opening, reading loop, casting to integer, accumulating the sum, and printing it.',
+      code: '# Open scores.txt, read line by line, accumulate sum and print it\ntotal = 0\n# Write your code here',
+      expectedOutput: '150',
+      supportLadder: [
+        'Use `with open("scores.txt", "r") as file:` to open the file safely.',
+        'Iterate over the file using a `for line in file:` loop.',
+        'Convert each line to an integer using `int(line)` and add it to `total` before printing.'
+      ],
+      testCases: [
+        { input: 'file_data: 50\\n60\\n40', expected: '150' }
+      ],
+      explainQuestion: 'Explain why we should close files or use "with open" in Python.',
+      explainModelAnswer: 'Using "with open" automatically closes the file after the block finishes, releasing lock files and saving system memory resources.'
     }
   ],
   attempts: [

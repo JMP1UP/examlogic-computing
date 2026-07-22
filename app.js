@@ -1019,27 +1019,99 @@ class App {
     this.numberSkillsAnswers = {};
     this.numberSkillsSet = [];
 
+    // Helper functions for random numbers
+    const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const toBin8 = (val) => val.toString(2).padStart(8, '0');
+    const pad4 = (binStr) => binStr.slice(0, 4) + ' ' + binStr.slice(4);
+
     if (this.numberSkillsDifficulty === 'Foundation') {
+      // Task 1: Binary to Denary
+      const v1 = randInt(5, 127);
+      const bin1 = toBin8(v1);
+      
+      // Task 2: Denary to Binary
+      const v2 = randInt(5, 127);
+      const bin2 = toBin8(v2);
+
+      // Task 3: Binary left shift (1 or 2 places)
+      const shiftPlaces = randInt(1, 2);
+      const v3 = randInt(2, 31);
+      const bin3 = toBin8(v3);
+      const shifted3 = toBin8((v3 << shiftPlaces) & 255);
+
+      // Task 4: Data units
+      const bytesCount = randInt(2, 10);
+      const bitsCount = bytesCount * 8;
+
       this.numberSkillsSet = [
-        { type: 'Binary to Denary', question: 'Convert the binary byte 0000 1101 to a denary number.', answer: '13', hint: 'Add up the places that contain a 1: 8 + 4 + 1 = 13.', supportGrid: true, inputType: 'standard' },
-        { type: 'Denary to Binary', question: 'Convert the denary value 10 to an 8-bit binary number.', answer: '00001010', hint: 'Find the largest column value that fits: 8 + 2 = 10. Place 1s in columns 8 and 2.', supportGrid: true, inputType: 'binary' },
-        { type: 'Binary left shift', question: 'Perform a left shift of 1 place on the binary byte 0000 0101.', answer: '00001010', hint: 'Shift every digit one place to the left and insert 0 on the right.', supportGrid: false, inputType: 'binary' },
-        { type: 'Data units', question: 'How many bits are in 3 bytes of storage?', answer: '24', hint: 'There are 8 bits in one single byte. Multiply 3 by 8.', supportGrid: false, inputType: 'standard' }
+        { type: 'Binary to Denary', question: `Convert the binary byte ${pad4(bin1)} to a denary number.`, answer: String(v1), hint: 'Add up the column weights (128, 64, 32, 16, 8, 4, 2, 1) where there is a 1.', supportGrid: true, inputType: 'standard' },
+        { type: 'Denary to Binary', question: `Convert the denary value ${v2} to an 8-bit binary number.`, answer: bin2, hint: 'Fill out the 8-bit columns from left to right, subtracting column values that fit.', supportGrid: true, inputType: 'binary' },
+        { type: 'Binary left shift', question: `Perform a left shift of ${shiftPlaces} place(s) on the binary byte ${pad4(bin3)}.`, answer: shifted3, hint: `Shift all bits to the left by ${shiftPlaces} position(s) and pad the right side with 0s.`, supportGrid: false, inputType: 'binary' },
+        { type: 'Data units', question: `How many bits are in ${bytesCount} bytes of storage?`, answer: String(bitsCount), hint: 'There are 8 bits in one single byte. Multiply the number of bytes by 8.', supportGrid: false, inputType: 'standard' }
       ];
     } else if (this.numberSkillsDifficulty === 'Developing') {
+      // Task 1: Binary to Hex
+      const v1 = randInt(16, 255);
+      const bin1 = toBin8(v1);
+      const hex1 = v1.toString(16).toUpperCase();
+
+      // Task 2: Binary addition (no overflow)
+      const v2_a = randInt(1, 100);
+      const v2_b = randInt(1, 100);
+      const bin2_a = toBin8(v2_a);
+      const bin2_b = toBin8(v2_b);
+      const sum2 = toBin8(v2_a + v2_b);
+
+      // Task 3: Image File Size
+      const w3 = randInt(5, 20) * 10;
+      const h3 = randInt(5, 10) * 10;
+      const d3 = [1, 2, 8, 16][randInt(0, 3)];
+      const size3 = w3 * h3 * d3;
+
+      // Task 4: Audio File Size
+      const r4 = [1000, 2000, 8000][randInt(0, 2)];
+      const d4 = [8, 16][randInt(0, 1)];
+      const t4 = randInt(3, 10);
+      const size4 = r4 * d4 * t4;
+
       this.numberSkillsSet = [
-        { type: 'Binary to Hex', question: 'Convert 1010 1111 to hexadecimal.', answer: 'AF', hint: 'Split into two nibbles: 1010 (10 = A) and 1111 (15 = F). Concatenate.', supportGrid: false, inputType: 'hex' },
-        { type: 'Binary addition', question: 'Add the binary numbers 0000 1010 (10) and 0000 0101 (5). Express as binary.', answer: '00001111', hint: 'Add column by column starting from the right.', supportGrid: true, inputType: 'binary' },
-        { type: 'Image File Size', question: 'Calculate the file size in bits of an image that has a width of 100 pixels, a height of 50 pixels, and a colour depth of 8 bits.', answer: '40000', hint: 'Formula: Width * Height * Colour Depth. (100 * 50 * 8)', supportGrid: false, inputType: 'standard' },
-        { type: 'Audio File Size', question: 'Calculate the file size in bits of a sound recording with a sample rate of 1000Hz, a bit depth of 16 bits, and a length of 5 seconds (mono).', answer: '80000', hint: 'Formula: Rate * Depth * Time. (1000 * 16 * 5)', supportGrid: false, inputType: 'standard' }
+        { type: 'Binary to Hex', question: `Convert the binary byte ${pad4(bin1)} to hexadecimal.`, answer: hex1, hint: 'Split the 8-bit binary into two 4-bit nibbles, convert each to denary, then to hex.', supportGrid: false, inputType: 'hex' },
+        { type: 'Binary addition', question: `Add the binary numbers ${pad4(bin2_a)} (${v2_a}) and ${pad4(bin2_b)} (${v2_b}). Express as binary.`, answer: sum2, hint: 'Perform binary column addition from right to left: 0+0=0, 0+1=1, 1+1=0 carry 1, 1+1+1=1 carry 1.', supportGrid: true, inputType: 'binary' },
+        { type: 'Image File Size', question: `Calculate the file size in bits of an image that has a width of ${w3} pixels, a height of ${h3} pixels, and a colour depth of ${d3} bits.`, answer: String(size3), hint: 'Formula: Width * Height * Colour Depth.', supportGrid: false, inputType: 'standard' },
+        { type: 'Audio File Size', question: `Calculate the file size in bits of a sound recording with a sample rate of ${r4}Hz, a bit depth of ${d4} bits, and a length of ${t4} seconds (mono).`, answer: String(size4), hint: 'Formula: Sample Rate * Bit Depth * Duration.', supportGrid: false, inputType: 'standard' }
       ];
     } else {
       // Secure
+      // Task 1: Hex to Denary
+      const v1 = randInt(16, 255);
+      const hex1 = v1.toString(16).toUpperCase();
+
+      // Task 2: Overflow detection
+      const v2_a = randInt(130, 200);
+      const v2_b = randInt(130, 200);
+      const bin2_a = toBin8(v2_a);
+      const bin2_b = toBin8(v2_b);
+      const sum2 = toBin8((v2_a + v2_b) & 255);
+      const ans2 = sum2 + ' - OVERFLOW';
+
+      // Task 3: Image File Size (KiB)
+      const w3 = [256, 512, 1024][randInt(0, 2)];
+      const h3 = [128, 256, 512][randInt(0, 2)];
+      const d3 = 8;
+      const size3_kib = (w3 * h3 * d3) / 8 / 1024;
+
+      // Task 4: Audio File Size (MB)
+      const r4 = 44100;
+      const d4 = 16;
+      const ch4 = 2; // stereo
+      const t4 = randInt(5, 20);
+      const size4_mb = parseFloat(((r4 * d4 * ch4 * t4) / 8 / 1000000).toFixed(1));
+
       this.numberSkillsSet = [
-        { type: 'Combined conversions', question: 'Convert the hexadecimal value 1E into a denary integer.', answer: '30', hint: '1 = 16, E = 14. Total = 1 * 16 + 14 = 30.', supportGrid: false, inputType: 'standard' },
-        { type: 'Overflow detection', question: 'Add binary values 1100 0000 (192) and 0100 0000 (64). State if overflow occurs (write answer as value, then append " - OVERFLOW" if applicable).', answer: '00000000 - OVERFLOW', hint: 'The sum is 256, which exceeds the max 8-bit limit (255). This creates an overflow bit.', supportGrid: false, inputType: 'binary-overflow' },
-        { type: 'Image File size (KB)', question: 'An image is 800 x 600 pixels with a colour depth of 8 bits. Calculate the storage size in Kibibytes (KiB), using 1024 as the divisor. (Round to nearest integer)', answer: '469', hint: 'Total bits = 800 * 600 * 8 = 3840000. Bytes = 480000. KiB = 480000 / 1024 = 468.75.', supportGrid: false, inputType: 'standard' },
-        { type: 'Audio File size (MB)', question: 'An audio file is recorded with a sample rate of 44100Hz, 16 bits resolution, stereo (2 channels), for 10 seconds. Calculate size in Megabytes (MB), using 1,000,000 as the approximate divisor. Round to nearest tenth.', answer: '14.1', hint: 'Size in bits = 44100 * 16 * 2 * 10 = 14112000. Bytes = 1764000. Megabytes = 14.1.', supportGrid: false, inputType: 'standard' }
+        { type: 'Combined conversions', question: `Convert the hexadecimal value ${hex1} into a denary integer.`, answer: String(v1), hint: 'Multiply the left digit by 16 and add the value of the right digit.', supportGrid: false, inputType: 'standard' },
+        { type: 'Overflow detection', question: `Add binary values ${pad4(bin2_a)} (${v2_a}) and ${pad4(bin2_b)} (${v2_b}). State if overflow occurs (write answer as value, then append " - OVERFLOW" if applicable).`, answer: ans2, hint: 'If the total exceeds 255, an 8-bit byte cannot hold the value, creating an overflow.', supportGrid: false, inputType: 'binary-overflow' },
+        { type: 'Image File size (KiB)', question: `An image is ${w3} x ${h3} pixels with a colour depth of ${d3} bits. Calculate the storage size in Kibibytes (KiB), using 1024 as the divisor. (Round to nearest integer)`, answer: String(Math.round(size3_kib)), hint: 'Calculate total bits, divide by 8 to get bytes, then divide by 1024 to get KiB.', supportGrid: false, inputType: 'standard' },
+        { type: 'Audio File size (MB)', question: `An audio file is recorded with a sample rate of ${r4}Hz, ${d4} bits resolution, stereo (2 channels), for ${t4} seconds. Calculate size in Megabytes (MB), using 1,000,000 as the approximate divisor. Round to nearest tenth.`, answer: String(size4_mb), hint: 'Calculate total bits (Rate * Depth * Channels * Duration), divide by 8 for bytes, then divide by 1,000,000 for Megabytes.', supportGrid: false, inputType: 'standard' }
       ];
     }
   }
@@ -1449,6 +1521,8 @@ class App {
         } else if (tc.input === 'F') {
           matches = codeVal.includes('15');
         }
+      } else if (challenge.id === 'pc_5') {
+        matches = codeVal.includes('open') && (codeVal.includes('scores.txt') || codeVal.includes("scores.txt")) && (codeVal.includes('total +=') || codeVal.includes('total = total +')) && codeVal.includes('int') && codeVal.includes('print');
       }
 
       if (matches) {
