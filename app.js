@@ -46,6 +46,8 @@ class App {
 
     // Active Messaging context
     this.messageDraft = '';
+    this.selectedChatStudentId = null;
+    this.teacherMessageDraft = '';
 
     // Teacher assignment creator
     this.newAssignmentTopic = '';
@@ -2571,51 +2573,158 @@ class App {
     const messages = window.db.getMessages();
     const students = window.db.getStudents();
 
+    // Filter active student chats
+    const activeStudents = students.filter(s => messages.some(m => m.senderId === s.id || m.receiverId === s.id));
+    
+    // Default selected student chat if not set
+    if (!this.selectedChatStudentId && activeStudents.length > 0) {
+      this.selectedChatStudentId = activeStudents[0].id;
+    }
+
+    const inactiveStudents = students.filter(s => !activeStudents.some(as => as.id === s.id));
+
+    // Get selected student info
+    const selectedStudent = this.selectedChatStudentId ? students.find(s => s.id === this.selectedChatStudentId) : null;
+    const chatMessages = selectedStudent 
+      ? messages.filter(m => (m.senderId === 'coord_1' && m.receiverId === selectedStudent.id) || (m.senderId === selectedStudent.id && m.receiverId === 'coord_1'))
+      : [];
+
     panel.innerHTML = `
       <div style="margin-bottom: 24px;">
         <h1>💬 Secure messaging console</h1>
         <p>View student questions, reply directly, or broadcast class announcements.</p>
       </div>
 
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:32px;">
-        <div class="card">
-          <h3 style="margin-bottom: 16px;">Classroom broadcasts</h3>
-          <form id="broadcast-form">
-            <div class="form-group">
-              <label for="broadcast-text">Announcement Message</label>
-              <textarea id="broadcast-text" class="form-control" rows="4" placeholder="Write message to send to all student dashboards..." required></textarea>
+      <div style="display:grid; grid-template-columns: 320px 1fr; gap:24px;">
+        <div style="display:flex; flex-direction:column; gap:24px;">
+          <!-- Classroom broadcasts card -->
+          <div class="card">
+            <h3 style="margin-bottom: 12px; font-size:16px;">Classroom broadcasts</h3>
+            <form id="broadcast-form">
+              <div class="form-group">
+                <label for="broadcast-text" style="font-size:12px; margin-bottom:4px; display:block;">Announcement Message</label>
+                <textarea id="broadcast-text" class="form-control" rows="3" placeholder="Write message to send to all student dashboards..." required style="font-size:13px;"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Broadcast to Group</button>
+            </form>
+          </div>
+
+          <!-- Active Chats card -->
+          <div class="card">
+            <h3 style="margin-bottom: 12px; font-size:16px;">Active Chats</h3>
+            
+            <!-- Start Chat Dropdown -->
+            <div style="margin-bottom:12px;">
+              <select id="start-new-chat-select" class="form-control" style="font-size:13px; padding: 6px 12px;">
+                <option value="" disabled selected>+ Start chat with student...</option>
+                ${inactiveStudents.map(s => `<option value="${s.id}">${s.name} (${s.yearGroup})</option>`).join('')}
+              </select>
             </div>
-            <button type="submit" class="btn btn-primary" style="width:100%;">Broadcast to Group</button>
-          </form>
+
+            <div style="display:flex; flex-direction:column; gap:8px;" id="active-chats-list">
+              ${activeStudents.length === 0 ? `
+                <div style="font-size:13px; color:var(--text-muted); text-align:center; padding:16px 0;">No active chats</div>
+              ` : activeStudents.map(s => {
+                const lastMsg = [...messages].reverse().find(m => m.senderId === s.id || m.receiverId === s.id);
+                const isSelected = s.id === this.selectedChatStudentId;
+                return `
+                  <div class="chat-list-item" style="cursor:pointer; padding:12px; border-radius:8px; border: 1px solid ${isSelected ? 'var(--teal)' : 'var(--border-color)'}; background: ${isSelected ? 'rgba(45, 156, 145, 0.08)' : 'var(--bg-card)'}; transition: background 0.2s;" data-student-id="${s.id}">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <strong style="font-size:13px; color: ${isSelected ? 'var(--teal)' : 'var(--text-main)'};">${s.name}</strong>
+                      <span style="font-size:10px; color: var(--text-muted);">${new Date(lastMsg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    </div>
+                    <div style="color: var(--text-muted); font-size:12px; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; margin-top:4px;">
+                      ${lastMsg.text}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
         </div>
 
-        <div class="card">
-          <h3 style="margin-bottom: 16px;">Active Chats</h3>
-          <div style="display:flex; flex-direction:column; gap:12px;">
-            ${students.map(s => {
-              const lastMsg = [...messages].reverse().find(m => m.senderId === s.id || m.receiverId === s.id);
-              return `
-                <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; padding-bottom:8px; border-bottom:1px solid var(--border-color);">
-                  <div>
-                    <strong>${s.name}</strong><br>
-                    <span style="color: var(--text-muted); font-size:12px;">${lastMsg ? lastMsg.text : 'No messages'}</span>
+        <!-- Conversation Pane -->
+        <div class="card" style="display:flex; flex-direction:column; padding:0; overflow:hidden;">
+          ${selectedStudent ? `
+            <div class="chat-header" style="padding:16px 24px; border-bottom:1px solid var(--border-color); background: rgba(7, 17, 31, 0.01); display:flex; align-items:center; justify-content:space-between;">
+              <div>
+                <strong style="font-size:16px;">${selectedStudent.name}</strong>
+                <span style="font-size:12px; color:var(--text-muted); margin-left:8px;">${selectedStudent.yearGroup} · Student</span>
+              </div>
+            </div>
+
+            <div class="chat-messages" id="teacher-chat-scroller" style="flex:1; min-height:300px; max-height:450px; overflow-y:auto; padding:24px;">
+              ${chatMessages.length === 0 ? `
+                <div style="text-align:center; color:var(--text-muted); font-size:13px; padding-top:48px;">No messages yet. Send a message below to start the conversation.</div>
+              ` : chatMessages.map(m => `
+                <div class="chat-bubble ${m.senderId === 'coord_1' ? 'sent' : 'received'}">
+                  <div style="font-size:11px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">
+                    ${m.senderId === 'coord_1' ? 'You' : selectedStudent.name.split(' ')[0]} · ${new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   </div>
-                  <button class="btn btn-secondary btn-sm chat-reply-btn" data-student-id="${s.id}">Reply</button>
+                  <div>${m.text}</div>
+                  ${m.flagged ? `<div style="font-size: 10px; color: #FECACA; font-weight:600; margin-top: 4px;">⚠️ Safety warning: Flagged by school filters</div>` : ''}
                 </div>
-              `;
-            }).join('')}
-          </div>
+              `).join('')}
+            </div>
+
+            <div class="chat-input-area" style="padding:16px 24px; border-top:1px solid var(--border-color); display:flex; gap:12px; background: var(--bg-card);">
+              <input type="text" id="teacher-chat-text-input" class="form-control" style="flex:1;" placeholder="Type your reply to ${selectedStudent.name.split(' ')[0]}..." value="${this.teacherMessageDraft || ''}">
+              <button class="btn btn-primary" id="teacher-chat-send-btn">Send</button>
+            </div>
+          ` : `
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; min-height:400px; padding:32px; text-align:center; color:var(--text-muted);">
+              <div style="font-size:48px; margin-bottom:16px;">💬</div>
+              <h4 style="font-size:16px; margin-bottom:8px; color:var(--text-main);">No conversation selected</h4>
+              <p style="font-size:13px; max-width:320px;">Select a student from the active list or start a new chat using the dropdown on the left.</p>
+            </div>
+          `}
         </div>
       </div>
     `;
 
-    panel.querySelectorAll('.chat-reply-btn').forEach(btn => {
-      btn.onclick = () => {
-        const studentId = btn.getAttribute('data-student-id');
-        this.activeStudentChat(studentId);
+    // Click on active chat list item
+    panel.querySelectorAll('.chat-list-item').forEach(item => {
+      item.onclick = () => {
+        const studentId = item.getAttribute('data-student-id');
+        this.selectedChatStudentId = studentId;
+        this.render();
       };
     });
 
+    // Start new chat dropdown change listener
+    const startSelect = document.getElementById('start-new-chat-select');
+    if (startSelect) {
+      startSelect.onchange = (e) => {
+        const studentId = e.target.value;
+        if (studentId) {
+          this.selectedChatStudentId = studentId;
+          this.teacherMessageDraft = '';
+          this.render();
+        }
+      };
+    }
+
+    // Scroll chat to bottom
+    const scroller = document.getElementById('teacher-chat-scroller');
+    if (scroller) scroller.scrollTop = scroller.scrollHeight;
+
+    // Text tracking for teacher chat input
+    const textIn = document.getElementById('teacher-chat-text-input');
+    if (textIn) {
+      textIn.oninput = (e) => { this.teacherMessageDraft = e.target.value; };
+      textIn.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          if (selectedStudent) this.sendTeacherMessage(selectedStudent.id);
+        }
+      };
+    }
+
+    const sendBtn = document.getElementById('teacher-chat-send-btn');
+    if (sendBtn && selectedStudent) {
+      sendBtn.onclick = () => this.sendTeacherMessage(selectedStudent.id);
+    }
+
+    // Broadcast Form Submission
     const bForm = document.getElementById('broadcast-form');
     if (bForm) {
       bForm.onsubmit = (e) => {
@@ -2638,13 +2747,23 @@ class App {
     }
   }
 
+  sendTeacherMessage(studentId) {
+    const text = this.teacherMessageDraft ? this.teacherMessageDraft.trim() : '';
+    if (!text) return;
+
+    window.db.addMessage({
+      senderId: 'coord_1',
+      receiverId: studentId,
+      text: text
+    });
+
+    this.teacherMessageDraft = '';
+    this.render();
+  }
+
   activeStudentChat(studentId) {
-    const s = window.db.getStudents().find(st => st.id === studentId);
-    if (!s) return;
-    
-    // Redirect to chat screen using student context simulation
-    this.currentUser = { id: s.id, name: s.name, email: s.email, role: 'student', yearGroup: s.yearGroup };
-    this.activeTab = 'stud-messages';
+    this.selectedChatStudentId = studentId;
+    this.activeTab = 'teach-messages';
     this.render();
   }
 
