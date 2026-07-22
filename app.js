@@ -866,9 +866,9 @@ class App {
             <h3>Difficulty state</h3>
             <p>Your current level is automatically adjusted based on accuracy.</p>
             <div style="display:flex; flex-direction:column; gap:8px;">
-              <label><input type="radio" name="diff" value="Foundation" ${this.numberSkillsDifficulty === 'Foundation' ? 'checked' : ''} onchange="app.changeSkillsDiff('Foundation')"> Foundation (Small values & places assistance)</label>
-              <label><input type="radio" name="diff" value="Developing" ${this.numberSkillsDifficulty === 'Developing' ? 'checked' : ''} onchange="app.changeSkillsDiff('Developing')"> Developing (Standard exam phrasing)</label>
-              <label><input type="radio" name="diff" value="Secure" ${this.numberSkillsDifficulty === 'Secure' ? 'checked' : ''} onchange="app.changeSkillsDiff('Secure')"> Secure (Multi-stage exam calculations)</label>
+              <label><input type="radio" name="diff" value="Foundation" ${this.numberSkillsDifficulty === 'Foundation' ? 'checked' : ''}> Foundation (Small values & places assistance)</label>
+              <label><input type="radio" name="diff" value="Developing" ${this.numberSkillsDifficulty === 'Developing' ? 'checked' : ''}> Developing (Standard exam phrasing)</label>
+              <label><input type="radio" name="diff" value="Secure" ${this.numberSkillsDifficulty === 'Secure' ? 'checked' : ''}> Secure (Multi-stage exam calculations)</label>
             </div>
           </div>
         </div>
@@ -940,6 +940,16 @@ class App {
           if (prevInput) {
             prevInput.focus();
           }
+        }
+      };
+    });
+
+    // Programmatic binding for difficulty radio buttons to comply with CSP and fix interaction blocks
+    const diffInputs = panel.querySelectorAll('input[name="diff"]');
+    diffInputs.forEach(input => {
+      input.onchange = (e) => {
+        if (e.target.checked) {
+          this.changeSkillsDiff(e.target.value);
         }
       };
     });
