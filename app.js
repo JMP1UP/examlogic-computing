@@ -1539,6 +1539,8 @@ class App {
           errorDetail = "expected loop output for counting 1 to 5 (loop range(1, 6) not detected)";
         } else if (challenge.id === 'pc_4') {
           errorDetail = `expected hexadecimal '${tc.input}' to convert to integer val ${tc.expected} but function signature check failed`;
+        } else if (challenge.id === 'pc_5') {
+          errorDetail = "expected code to open 'scores.txt', read lines, cast to integers, and print the total sum (150)";
         }
         outcomeText.textContent = `Failed - ${errorDetail}`;
         outcomeText.style.color = 'var(--red)';
@@ -2495,7 +2497,11 @@ class App {
             </tr>
           </thead>
           <tbody>
-            ${subs.map(s => {
+            ${subs.length === 0 ? `
+              <tr>
+                <td colspan="6" style="text-align:center; color:var(--text-muted); padding:24px;">No code submissions have been uploaded by students yet.</td>
+              </tr>
+            ` : subs.map(s => {
               const studName = (students.find(st => st.id === s.studentId) || { name: 'Unknown' }).name;
               const chalName = (challenges.find(ch => ch.id === s.challengeId) || { title: 'Unknown' }).title;
               return `
