@@ -1951,7 +1951,7 @@ class App {
             <strong style="font-size:24px; font-weight: 700; color: var(--amber);">${totalAwaitingReview} submissions</strong>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${writtenCount} written, ${programmingCount} programming</div>
           </div>
-          <div class="card" style="padding: 16px 20px;">
+          <div class="card card-action" id="metric-students-attention" style="padding: 16px 20px; cursor: pointer;">
             <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Students Needing Attention</h4>
             <strong style="font-size:24px; font-weight: 700; color: var(--text-main);">3</strong>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Require immediate follow-up</div>
@@ -2052,7 +2052,7 @@ class App {
             </div>
 
             <!-- Students Needing Attention List -->
-            <div>
+            <div id="students-needing-attention-section">
               <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Students needing attention</h2>
               <div class="card" style="padding: 0; overflow: hidden;">
                 <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
@@ -2205,6 +2205,16 @@ class App {
     const reviewCard = document.getElementById('metric-awaiting-review');
     if (reviewCard) {
       reviewCard.onclick = () => this.switchTab('teach-written');
+    }
+
+    const attentionCard = document.getElementById('metric-students-attention');
+    if (attentionCard) {
+      attentionCard.onclick = () => {
+        const target = document.getElementById('students-needing-attention-section');
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      };
     }
 
     // Bind Action center buttons
