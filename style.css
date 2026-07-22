@@ -89,7 +89,8 @@ p {
 /* Layout Utilities */
 .app-container {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .sidebar {
@@ -103,6 +104,7 @@ p {
   border-right: 1px solid var(--border-color);
   flex-shrink: 0;
   transition: var(--transition);
+  overflow-y: auto;
 }
 
 .sidebar .brand {
@@ -750,12 +752,15 @@ tr:hover td {
 @media (max-width: 768px) {
   .app-container {
     flex-direction: column;
+    height: auto;
+    overflow: visible;
   }
   .sidebar {
     width: 100%;
     border-right: none;
     border-bottom: 1px solid var(--border-color);
     padding: 16px;
+    overflow-y: visible;
   }
   .sidebar-footer {
     display: none;
