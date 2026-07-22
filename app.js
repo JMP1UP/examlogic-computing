@@ -800,25 +800,60 @@ class App {
                 <p style="font-size:15px; color: var(--text-main); font-weight:600; margin-bottom: 12px;">${q.question}</p>
                 
                 ${q.supportGrid ? `
-                  <div style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; margin-bottom: 12px; text-align: center; font-size:12px;">
-                    <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color);">128</div>
-                    <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color);">64</div>
-                    <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color);">32</div>
-                    <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color);">16</div>
-                    <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color);">8</div>
-                    <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color);">4</div>
-                    <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color);">2</div>
-                    <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color);">1</div>
+                  <div style="display: grid; grid-template-columns: repeat(8, 40px); gap: 6px; margin-bottom: 8px; text-align: center; font-size:12px;">
+                    <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">128</div>
+                    <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">64</div>
+                    <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">32</div>
+                    <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">16</div>
+                    <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">8</div>
+                    <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">4</div>
+                    <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">2</div>
+                    <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">1</div>
                   </div>
                 ` : ''}
 
-                <div class="form-group">
-                  <input type="text" class="form-control num-ans-input" data-idx="${idx}" style="max-width: 200px;" placeholder="Your answer" 
-                         value="${this.numberSkillsAnswers[idx] || ''}" required>
+                <div class="form-group" style="margin: 0;">
+                  ${q.inputType === 'binary' ? `
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                      <div style="display: grid; grid-template-columns: repeat(8, 40px); gap: 6px;">
+                        <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="0" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[0] || ''}">
+                        <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="1" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[1] || ''}">
+                        <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="2" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[2] || ''}">
+                        <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="3" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[3] || ''}">
+                        <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="4" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[4] || ''}">
+                        <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="5" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[5] || ''}">
+                        <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="6" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[6] || ''}">
+                        <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="7" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[7] || ''}">
+                      </div>
+                    </div>
+                  ` : q.inputType === 'hex' ? `
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                      <div style="display: grid; grid-template-columns: repeat(2, 40px); gap: 6px;">
+                        <input type="text" class="form-control num-ans-hex-input" data-idx="${idx}" data-char="0" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[0] || ''}">
+                        <input type="text" class="form-control num-ans-hex-input" data-idx="${idx}" data-char="1" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[1] || ''}">
+                      </div>
+                    </div>
+                  ` : q.inputType === 'binary-overflow' ? `
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                      <div style="display: grid; grid-template-columns: repeat(8, 40px); gap: 6px;">
+                        <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="0" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[0] || ''}">
+                        <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="1" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[1] || ''}">
+                        <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="2" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[2] || ''}">
+                        <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="3" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[3] || ''}">
+                        <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="4" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[4] || ''}">
+                        <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="5" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[5] || ''}">
+                        <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="6" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[6] || ''}">
+                        <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="7" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[7] || ''}">
+                      </div>
+                      <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                        <input type="checkbox" id="num-ans-overflow-chk-${idx}" class="num-ans-overflow-chk" data-idx="${idx}" ${(this.numberSkillsAnswers[idx] || '').includes('OVERFLOW') ? 'checked' : ''}>
+                        ⚠️ Overflow occurred
+                      </label>
+                    </div>
+                  ` : `
+                    <input type="text" class="form-control num-ans-standard-input" data-idx="${idx}" style="max-width: 200px; min-height: 40px;" placeholder="Your answer" value="${this.numberSkillsAnswers[idx] || ''}" required>
+                  `}
                 </div>
-                
-                <button type="button" class="btn btn-tertiary btn-sm" onclick="app.showNumberSkillsHint(${idx})">💡 Request hint</button>
-                <div id="num-hint-${idx}" style="margin-top: 8px; font-size: 13px; color: var(--teal); font-weight: 500; display: none;"></div>
               </div>
             `).join('')}
             
@@ -845,14 +880,69 @@ class App {
     if (numForm) {
       numForm.onsubmit = (e) => {
         e.preventDefault();
-        const inputs = document.querySelectorAll('.num-ans-input');
-        inputs.forEach(input => {
-          const idx = input.getAttribute('data-idx');
-          this.numberSkillsAnswers[idx] = input.value.trim().toUpperCase();
+        
+        this.numberSkillsSet.forEach((q, idx) => {
+          if (q.inputType === 'binary') {
+            const inputs = document.querySelectorAll(`.num-ans-binary-input[data-idx="${idx}"]`);
+            let ans = '';
+            inputs.forEach(input => {
+              ans += input.value.trim() || '0';
+            });
+            this.numberSkillsAnswers[idx] = ans;
+          } else if (q.inputType === 'hex') {
+            const inputs = document.querySelectorAll(`.num-ans-hex-input[data-idx="${idx}"]`);
+            let ans = '';
+            inputs.forEach(input => {
+              ans += input.value.trim() || '0';
+            });
+            this.numberSkillsAnswers[idx] = ans.toUpperCase();
+          } else if (q.inputType === 'binary-overflow') {
+            const inputs = document.querySelectorAll(`.num-ans-binoverflow-input[data-idx="${idx}"]`);
+            let ans = '';
+            inputs.forEach(input => {
+              ans += input.value.trim() || '0';
+            });
+            const chk = document.getElementById(`num-ans-overflow-chk-${idx}`);
+            if (chk && chk.checked) {
+              ans += ' - OVERFLOW';
+            }
+            this.numberSkillsAnswers[idx] = ans;
+          } else {
+            const input = document.querySelector(`.num-ans-standard-input[data-idx="${idx}"]`);
+            if (input) {
+              this.numberSkillsAnswers[idx] = input.value.trim().toUpperCase();
+            }
+          }
         });
+
         this.gradeNumberSkillsSet();
       };
     }
+
+    // Auto-advance binary and hex input fields on type
+    const binInputs = document.querySelectorAll('.num-ans-binary-input, .num-ans-hex-input, .num-ans-binoverflow-input');
+    binInputs.forEach(input => {
+      input.oninput = (e) => {
+        if (input.value.length >= 1) {
+          const idx = parseInt(input.getAttribute('data-idx'));
+          const charIdx = parseInt(input.getAttribute('data-char'));
+          const nextInput = document.querySelector(`input[data-idx="${idx}"][data-char="${charIdx + 1}"]`);
+          if (nextInput) {
+            nextInput.focus();
+          }
+        }
+      };
+      input.onkeydown = (e) => {
+        if (e.key === 'Backspace' && input.value.length === 0) {
+          const idx = parseInt(input.getAttribute('data-idx'));
+          const charIdx = parseInt(input.getAttribute('data-char'));
+          const prevInput = document.querySelector(`input[data-idx="${idx}"][data-char="${charIdx - 1}"]`);
+          if (prevInput) {
+            prevInput.focus();
+          }
+        }
+      };
+    });
   }
 
   changeSkillsDiff(diff) {
@@ -867,35 +957,26 @@ class App {
 
     if (this.numberSkillsDifficulty === 'Foundation') {
       this.numberSkillsSet = [
-        { type: 'Binary to Denary', question: 'Convert the binary byte 00001101 to a denary number.', answer: '13', hint: 'Add up the places that contain a 1: 8 + 4 + 1 = 13.', supportGrid: true },
-        { type: 'Denary to Binary', question: 'Convert the denary value 10 to an 8-bit binary number.', answer: '00001010', hint: 'Find the largest column value that fits: 8 + 2 = 10. Place 1s in columns 8 and 2.', supportGrid: true },
-        { type: 'Binary left shift', question: 'Perform a left shift of 1 place on the binary byte 00000101.', answer: '00001010', hint: 'Shift every digit one place to the left and insert 0 on the right.', supportGrid: false },
-        { type: 'Data units', question: 'How many bits are in 3 bytes of storage?', answer: '24', hint: 'There are 8 bits in one single byte. Multiply 3 by 8.', supportGrid: false }
+        { type: 'Binary to Denary', question: 'Convert the binary byte 00001101 to a denary number.', answer: '13', hint: 'Add up the places that contain a 1: 8 + 4 + 1 = 13.', supportGrid: true, inputType: 'standard' },
+        { type: 'Denary to Binary', question: 'Convert the denary value 10 to an 8-bit binary number.', answer: '00001010', hint: 'Find the largest column value that fits: 8 + 2 = 10. Place 1s in columns 8 and 2.', supportGrid: true, inputType: 'binary' },
+        { type: 'Binary left shift', question: 'Perform a left shift of 1 place on the binary byte 00000101.', answer: '00001010', hint: 'Shift every digit one place to the left and insert 0 on the right.', supportGrid: false, inputType: 'binary' },
+        { type: 'Data units', question: 'How many bits are in 3 bytes of storage?', answer: '24', hint: 'There are 8 bits in one single byte. Multiply 3 by 8.', supportGrid: false, inputType: 'standard' }
       ];
     } else if (this.numberSkillsDifficulty === 'Developing') {
       this.numberSkillsSet = [
-        { type: 'Binary to Hex', question: 'Convert 10101111 to hexadecimal.', answer: 'AF', hint: 'Split into two nibbles: 1010 (10 = A) and 1111 (15 = F). Concatenate.', supportGrid: false },
-        { type: 'Binary addition', question: 'Add the binary numbers 00001010 (10) and 00000101 (5). Express as binary.', answer: '00001111', hint: 'Add column by column starting from the right.', supportGrid: true },
-        { type: 'Image File Size', question: 'Calculate the file size in bits of an image that has a width of 100 pixels, a height of 50 pixels, and a colour depth of 8 bits.', answer: '40000', hint: 'Formula: Width * Height * Colour Depth. (100 * 50 * 8)', supportGrid: false },
-        { type: 'Audio File Size', question: 'Calculate the file size in bits of a sound recording with a sample rate of 1000Hz, a bit depth of 16 bits, and a length of 5 seconds (mono).', answer: '80000', hint: 'Formula: Rate * Depth * Time. (1000 * 16 * 5)', supportGrid: false }
+        { type: 'Binary to Hex', question: 'Convert 10101111 to hexadecimal.', answer: 'AF', hint: 'Split into two nibbles: 1010 (10 = A) and 1111 (15 = F). Concatenate.', supportGrid: false, inputType: 'hex' },
+        { type: 'Binary addition', question: 'Add the binary numbers 00001010 (10) and 00000101 (5). Express as binary.', answer: '00001111', hint: 'Add column by column starting from the right.', supportGrid: true, inputType: 'binary' },
+        { type: 'Image File Size', question: 'Calculate the file size in bits of an image that has a width of 100 pixels, a height of 50 pixels, and a colour depth of 8 bits.', answer: '40000', hint: 'Formula: Width * Height * Colour Depth. (100 * 50 * 8)', supportGrid: false, inputType: 'standard' },
+        { type: 'Audio File Size', question: 'Calculate the file size in bits of a sound recording with a sample rate of 1000Hz, a bit depth of 16 bits, and a length of 5 seconds (mono).', answer: '80000', hint: 'Formula: Rate * Depth * Time. (1000 * 16 * 5)', supportGrid: false, inputType: 'standard' }
       ];
     } else {
       // Secure
       this.numberSkillsSet = [
-        { type: 'Combined conversions', question: 'Convert the hexadecimal value 1E into a denary integer.', answer: '30', hint: '1 = 16, E = 14. Total = 1 * 16 + 14 = 30.', supportGrid: false },
-        { type: 'Overflow detection', question: 'Add binary values 11000000 (192) and 01000000 (64). State if overflow occurs (write answer as value, then append " - OVERFLOW" if applicable).', answer: '00000000 - OVERFLOW', hint: 'The sum is 256, which exceeds the max 8-bit limit (255). This creates an overflow bit.', supportGrid: false },
-        { type: 'Image File size (KB)', question: 'An image is 800 x 600 pixels with a colour depth of 8 bits. Calculate the storage size in Kibibytes (KiB). (Round to nearest integer)', answer: '469', hint: 'Total bits = 800 * 600 * 8 = 3840000. Bytes = 480000. KiB = 480000 / 1024 = 468.75.', supportGrid: false },
-        { type: 'Audio File size (MB)', question: 'An audio file is recorded with a sample rate of 44100Hz, 16 bits resolution, stereo (2 channels), for 10 seconds. Calculate size in Megabytes (MB) (approximate divisor 1,000,000). Round to nearest tenth.', answer: '14.1', hint: 'Size in bits = 44100 * 16 * 2 * 10 = 14112000. Bytes = 1764000. Megabytes = 14.1.', supportGrid: false }
+        { type: 'Combined conversions', question: 'Convert the hexadecimal value 1E into a denary integer.', answer: '30', hint: '1 = 16, E = 14. Total = 1 * 16 + 14 = 30.', supportGrid: false, inputType: 'standard' },
+        { type: 'Overflow detection', question: 'Add binary values 11000000 (192) and 01000000 (64). State if overflow occurs (write answer as value, then append " - OVERFLOW" if applicable).', answer: '00000000 - OVERFLOW', hint: 'The sum is 256, which exceeds the max 8-bit limit (255). This creates an overflow bit.', supportGrid: false, inputType: 'binary-overflow' },
+        { type: 'Image File size (KB)', question: 'An image is 800 x 600 pixels with a colour depth of 8 bits. Calculate the storage size in Kibibytes (KiB). (Round to nearest integer)', answer: '469', hint: 'Total bits = 800 * 600 * 8 = 3840000. Bytes = 480000. KiB = 480000 / 1024 = 468.75.', supportGrid: false, inputType: 'standard' },
+        { type: 'Audio File size (MB)', question: 'An audio file is recorded with a sample rate of 44100Hz, 16 bits resolution, stereo (2 channels), for 10 seconds. Calculate size in Megabytes (MB) (approximate divisor 1,000,000). Round to nearest tenth.', answer: '14.1', hint: 'Size in bits = 44100 * 16 * 2 * 10 = 14112000. Bytes = 1764000. Megabytes = 14.1.', supportGrid: false, inputType: 'standard' }
       ];
-    }
-  }
-
-  showNumberSkillsHint(idx) {
-    const hintDiv = document.getElementById(`num-hint-${idx}`);
-    if (hintDiv) {
-      hintDiv.textContent = this.numberSkillsSet[idx].hint;
-      hintDiv.style.display = 'block';
-      this.supportLevelUsed++; // Track hint usage
     }
   }
 
@@ -944,7 +1025,7 @@ class App {
       <div style="margin-bottom: 24px;">
         <h1>Your practice results</h1>
         <p>Mastery score: <strong style="color: var(--teal); font-size:20px;">${masteryScore}</strong></p>
-        <p style="font-size: 14px;">Hints used: ${this.supportLevelUsed}. This has been logged for accurate adaptive scaffolding.</p>
+        <p style="font-size: 14px;">Your results have been logged for adaptive spaced practice scaffolding.</p>
       </div>
       <div>
         ${feedbackHTML}
