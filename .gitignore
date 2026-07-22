@@ -1,9 +1,7 @@
-.env
-node_modules
+resources/*.pdf
+node_modules/
 .DS_Store
-dist
-.env.local
-.env.*.local
-scratch/
-.vercel
-.env*
+dist/
+build/
+.env
+*.log
