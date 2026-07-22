@@ -25,14 +25,27 @@ class App {
     this.activeTab = 'stud-dashboard';
     this.activeTopicId = 'topic_1_3'; // default topic
     this.activeChallengeId = 'pc_1'; // default programming challenge
+    this.activePseudocodeTask = 0;
+    this.activeTestPrepId = null;
+    this.definitionTestTerms = [];
+    this.definitionTestMode = false;
     this.activeWQuestionId = 'wq_1'; // default written question
+    this.activeExamTransferId = 'transfer_1';
+    this.examTransferStage = 'decode';
+    this.examTransferPlan = {};
+    this.examTransferResponse = '';
     this.supportLevelUsed = 0; // support ladder level
+    this.lastProgrammingEvidence = [];
+    this.aiTutorHintLevel = 1;
     this.editorCode = '';
+    this.pythonWorker = null;
+    this.pythonWorkerReadyPromise = null;
+    this.pythonWorkerRequestId = 0;
     
     // Number skills state
     this.numberSkillsSet = [];
     this.numberSkillsAnswers = {};
-    this.numberSkillsDifficulty = 'Foundation'; // Foundation, Developing, Secure
+    this.numberSkillsDifficulty = 'Supported'; // Guided, Supported, Independent, Challenge
     this.numberSkillsCalculations = {};
 
     // Theory Recall Quiz state
@@ -53,6 +66,7 @@ class App {
     this.newAssignmentTopic = '';
     this.newAssignmentTitle = '';
     this.newAssignmentDueDate = '';
+    this.writtenStage = 'plan';
 
     this.theme = 'light';
   }
@@ -96,6 +110,29 @@ class App {
     
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     return `Due ${d.getDate()} ${months[d.getMonth()]}`;
+  }
+
+  isPublishedToStudent(item, student = this.currentUser) {
+    if (!student || student.role !== 'student') return true;
+    if (!item.recipientType || item.recipientType === 'class') return !item.classId || item.classId === student.classId;
+    return item.recipientType === 'students' && (item.recipientIds || []).includes(student.id);
+  }
+
+  getAdaptiveSupportLevel(topic = 'binary conversions') {
+    if (!this.currentUser) return 'Supported';
+    const attempts = window.db.getAttempts()
+      .filter(a => a.studentId === this.currentUser.id && String(a.topic).toLowerCase().includes(topic.toLowerCase()))
+      .slice(-3);
+    if (attempts.length < 2) return 'Supported';
+    const ratios = attempts.map(a => {
+      const parts = String(a.score).split('/').map(Number);
+      return parts.length === 2 && parts[1] ? parts[0] / parts[1] : 0;
+    });
+    const average = ratios.reduce((sum, value) => sum + value, 0) / ratios.length;
+    const usedHelp = attempts.some(a => Number(a.supportStepsUsed || 0) > 1);
+    if (average < 0.5) return 'Guided';
+    if (average >= 0.85 && !usedHelp) return 'Independent';
+    return 'Supported';
   }
 
   escapeHTML(str) {
@@ -340,9 +377,7 @@ class App {
         { id: 'stud-dashboard', label: 'Home', icon: SVG_ICONS.home },
         { id: 'stud-learn', label: 'Learn', icon: SVG_ICONS.learn },
         { id: 'stud-practise', label: 'Practise', icon: SVG_ICONS.practise },
-        { id: 'stud-programme', label: 'Programming', icon: SVG_ICONS.programme },
-        { id: 'stud-written', label: 'Written Answers', icon: SVG_ICONS.written },
-        { id: 'stud-recall', label: 'Revise', icon: SVG_ICONS.revise },
+        { id: 'stud-recall', label: 'Exam preparation', icon: SVG_ICONS.revise },
         { id: 'stud-progress', label: 'Progress', icon: SVG_ICONS.progress },
         { id: 'stud-messages', label: 'Messages', icon: SVG_ICONS.messages }
       ];
@@ -360,6 +395,8 @@ class App {
         { id: 'teach-overview', label: 'Overview', icon: SVG_ICONS.overview },
         { id: 'teach-classes', label: 'Classes', icon: SVG_ICONS.classes },
         { id: 'teach-assign', label: 'Assign', icon: SVG_ICONS.assign },
+        { id: 'teach-test-prep', label: 'Prep for test', icon: SVG_ICONS.revise },
+        { id: 'teach-sessions', label: 'Sessions', icon: SVG_ICONS.assign },
         { id: 'teach-topics', label: 'Topics', icon: SVG_ICONS.topics },
         { id: 'teach-programming', label: 'Programming', icon: SVG_ICONS.programme },
         { id: 'teach-written', label: 'Written Answers', icon: SVG_ICONS.written },
@@ -397,6 +434,12 @@ class App {
       case 'stud-programme':
         this.renderStudentProgramme(mainPanel);
         break;
+      case 'stud-pseudocode':
+        this.renderStudentPseudocode(mainPanel);
+        break;
+      case 'stud-dictionary':
+        this.renderStudentDictionary(mainPanel);
+        break;
       case 'stud-written':
         this.renderStudentWritten(mainPanel);
         break;
@@ -405,6 +448,12 @@ class App {
         break;
       case 'stud-progress':
         this.renderStudentProgress(mainPanel);
+        break;
+      case 'stud-test-prep':
+        this.renderStudentTestPrep(mainPanel);
+        break;
+      case 'stud-exam-transfer':
+        this.renderStudentExamTransfer(mainPanel);
         break;
 
       // Teacher screens
@@ -416,6 +465,12 @@ class App {
         break;
       case 'teach-assign':
         this.renderTeacherAssign(mainPanel);
+        break;
+      case 'teach-test-prep':
+        this.renderTeacherTestPrep(mainPanel);
+        break;
+      case 'teach-sessions':
+        this.renderTeacherSessions(mainPanel);
         break;
       case 'teach-topics':
         this.renderTeacherTopics(mainPanel);
@@ -441,7 +496,9 @@ class App {
   // ==================== STUDENT DASHBOARD ====================  // ==================== STUDENT DASHBOARD ====================
   renderStudentDashboard(panel) {
     const student = window.db.getStudents().find(s => s.id === this.currentUser.id) || this.currentUser;
-    const assignments = window.db.getAssignments();
+    const assignments = window.db.getAssignments().filter(item => this.isPublishedToStudent(item, student));
+    const activeTestPreps = window.db.getTestPreps().filter(p => p.status === 'Active' && this.isPublishedToStudent(p, student));
+    const upcomingSessions = window.db.getSupportSessions().filter(item => item.published && this.isPublishedToStudent(item, student));
     const controls = window.db.getClassroomControls();
 
     // Find currently teaching topics
@@ -454,11 +511,17 @@ class App {
     });
 
     const activeAssignments = assignments.filter(a => a.status !== 'Completed');
-    const requiredCount = activeAssignments.length;
+    const assignmentRequiredCount = activeAssignments.filter(a => a.status === 'Required' || a.status === 'Overdue').length;
+    const assignmentRequiredMinutes = activeAssignments
+      .filter(a => a.status === 'Required' || a.status === 'Overdue')
+      .reduce((total, a) => total + Number(a.estimatedMinutes || 10), 0);
+    const testPrepMinutes = activeTestPreps.reduce((total, p) => total + Number(p.weeklyMinutes || 0), 0);
+    const requiredCount = activeTestPreps.length ? activeTestPreps.length : assignmentRequiredCount;
+    const requiredMinutes = activeTestPreps.length ? testPrepMinutes : assignmentRequiredMinutes;
     
     const numberWords = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
     const requiredCountWord = numberWords[requiredCount] || requiredCount;
-    const greetingText = `You have ${requiredCountWord} required ${requiredCount === 1 ? 'task' : 'tasks'} and one recommended activity.`;
+    const greetingText = `You have ${requiredCountWord} required ${requiredCount === 1 ? 'task' : 'tasks'} (${requiredMinutes} mins) and one optional 5-minute activity.`;
 
     const greeting = this.getTimeBasedGreeting();
     const shortName = student.name.split(' ')[0];
@@ -497,6 +560,20 @@ class App {
 
         <div style="display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 32px; align-items: start;">
           <div>
+            ${activeTestPreps.map(prep => `
+              <div class="card card-action" style="margin-bottom:24px; border-left:5px solid var(--teal);">
+                <span class="badge badge-primary">Prep for test · ${prep.weeklyMinutes} mins this week</span>
+                <h2 style="font-size:20px; margin:12px 0 6px;">${this.escapeHTML(prep.title)}</h2>
+                <p style="font-size:14px; color:var(--text-muted);">${prep.specificationPointIds.length} specification points · ${this.formatDueDate(prep.testDate).replace('Due ', 'Test ')}</p>
+                <p style="font-size:13px;">Your plan adapts each specification point separately. Normal optional recommendations are reduced while this plan is active.</p>
+                <button class="btn btn-primary btn-sm test-prep-start-btn" data-prep-id="${prep.id}">Continue test preparation (${prep.sessionMinutes} mins)</button>
+              </div>
+            `).join('')}
+            <div class="card" style="margin-bottom:24px; padding:14px 18px;">
+              <strong>Weekly Computing workload: ${requiredMinutes} minutes required</strong>
+              <div style="font-size:13px; color:var(--text-muted); margin-top:4px;">Optional retrieval: up to 5 minutes. Test preparation replaces normal revision; it is not added on top.</div>
+            </div>
+            ${upcomingSessions.length ? `<div style="margin-bottom:24px;"><h2 style="font-size:20px; margin-bottom:12px;">Upcoming support</h2>${upcomingSessions.map(session => `<div class="card" style="padding:16px; border-left:4px solid var(--amber);"><strong>${this.escapeHTML(session.title)}</strong><div style="font-size:13px; color:var(--text-muted); margin-top:5px;">${this.escapeHTML(session.type)} · ${this.formatDueDate(session.date).replace('Due ', '')} at ${this.escapeHTML(session.startTime)} · ${session.durationMinutes} mins</div><div style="font-size:13px; margin-top:5px;">${this.escapeHTML(session.location)}</div>${session.notes ? `<p style="font-size:12px; margin:8px 0 0;">${this.escapeHTML(session.notes)}</p>` : ''}</div>`).join('')}</div>` : ''}
             <!-- Today's recommendation -->
             <div style="margin-bottom: 32px;">
               <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Recommended next</h2>
@@ -554,7 +631,7 @@ class App {
                     btnText = 'Continue task';
                   }
                   
-                  let badgeText = `Required · ${naturalDate}`;
+                  let badgeText = `${a.status} · ${naturalDate}`;
                   
                   if (isOverdue) {
                     badgeClass = 'badge-warning';
@@ -663,6 +740,13 @@ class App {
       };
     });
 
+    panel.querySelectorAll('.test-prep-start-btn').forEach(btn => {
+      btn.onclick = () => {
+        this.activeTestPrepId = btn.getAttribute('data-prep-id');
+        this.switchTab('stud-test-prep');
+      };
+    });
+
     panel.querySelectorAll('.start-assignment-btn').forEach(btn => {
       btn.onclick = () => {
         this.activeTopicId = btn.getAttribute('data-topic-id');
@@ -702,6 +786,96 @@ class App {
     document.getElementById('today-rec-btn').onclick = () => {
       this.switchTab('stud-practise');
     };
+  }
+
+  // ==================== STUDENT DICTIONARY ====================
+  renderStudentDictionary(panel) {
+    const terms = window.db.getKeyTerms();
+    const topicNames = Object.fromEntries(window.db.getUnits().flatMap(unit => unit.topics.map(topic => [topic.id, topic.name])));
+    if (this.definitionTestMode && this.definitionTestTerms.length) {
+      panel.innerHTML = `
+        <div style="margin-bottom:24px;"><span class="badge badge-primary">Optional · about 10 minutes</span><h1 style="margin-top:8px;">Definition check</h1><p>Define each term from memory. Clear, accurate meaning matters more than matching the model wording exactly.</p></div>
+        <form id="definition-test-form">
+          ${this.definitionTestTerms.map((item, index) => `<div class="card" style="margin-bottom:14px;"><label for="definition-${index}" style="font-weight:700;">${index + 1}. ${item.term}</label><textarea id="definition-${index}" class="form-control definition-response" data-term-id="${item.id}" rows="3" placeholder="Write a student-friendly but precise definition..." required></textarea></div>`).join('')}
+          <div style="display:flex; gap:10px;"><button class="btn btn-primary" type="submit">Check my definitions</button><button class="btn btn-secondary" type="button" id="leave-definition-test-btn">Back to dictionary</button></div>
+        </form>`;
+      document.getElementById('leave-definition-test-btn').onclick = () => { this.definitionTestMode = false; this.definitionTestTerms = []; this.render(); };
+      document.getElementById('definition-test-form').onsubmit = event => {
+        event.preventDefault();
+        let secure = 0;
+        const results = this.definitionTestTerms.map((item, index) => {
+          const response = document.getElementById(`definition-${index}`).value.trim();
+          const normalise = value => String(value).toLowerCase().replace(/[-–—]/g, ' ').replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+          const normalisedResponse = normalise(response);
+          const matched = item.keywords.filter(keyword => normalisedResponse.includes(normalise(keyword)));
+          const threshold = Math.max(1, Math.ceil(item.keywords.length * 0.6));
+          const isSecure = matched.length >= threshold;
+          if (isSecure) secure++;
+          return { item, response, matched, isSecure };
+        });
+        window.db.addAttempt({ studentId: this.currentUser.id, type: 'definition_test', topic: 'mixed key terms', score: `${secure}/10` });
+        panel.innerHTML = `<div style="margin-bottom:24px;"><h1>Definition check feedback</h1><p><strong>${secure}/10 definitions included the essential meaning.</strong> Use the feedback to improve precision; this is formative, not a spelling test.</p></div>${results.map((result, index) => `<div class="card" style="margin-bottom:14px; border-left:5px solid ${result.isSecure ? 'var(--green)' : 'var(--amber)'};"><h3>${index + 1}. ${result.item.term}</h3><p style="font-size:13px;"><strong>Your definition:</strong> ${this.escapeHTML(result.response)}</p><p style="font-size:13px;"><strong>Student-friendly model:</strong> ${result.item.definition}</p><p style="font-size:12px; color:var(--text-muted);"><strong>Essential ideas:</strong> ${result.item.keywords.join(', ')}. You included: ${result.matched.join(', ') || 'none yet'}.</p></div>`).join('')}<button class="btn btn-primary" id="another-definition-test-btn">Try another random 10</button><button class="btn btn-secondary" id="dictionary-return-btn" style="margin-left:8px;">Back to dictionary</button>`;
+        document.getElementById('another-definition-test-btn').onclick = () => { this.startDefinitionTest(); };
+        document.getElementById('dictionary-return-btn').onclick = () => { this.definitionTestMode = false; this.definitionTestTerms = []; this.render(); };
+      };
+      return;
+    }
+
+    panel.innerHTML = `
+      <div style="display:flex; justify-content:space-between; gap:20px; align-items:flex-end; margin-bottom:24px;"><div><span class="badge badge-primary">OCR J277 key vocabulary</span><h1 style="margin-top:8px;">Computer Science dictionary</h1><p>Student-friendly definitions that remain precise enough for exam answers.</p></div><button class="btn btn-primary" id="start-definition-test-btn">Test me on 10 random terms</button></div>
+      <div class="card" style="margin-bottom:20px;"><label for="dictionary-search" style="font-weight:700;">Find a term</label><input id="dictionary-search" class="form-control" placeholder="Search by term, definition or topic..."><div id="dictionary-count" style="font-size:12px; color:var(--text-muted); margin-top:7px;">${terms.length} terms</div></div>
+      <div id="dictionary-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px;">${terms.map(item => `<article class="card dictionary-term-card" data-search="${this.escapeHTML(`${item.term} ${item.definition} ${topicNames[item.topicId] || ''}`.toLowerCase())}"><span class="badge badge-primary">${topicNames[item.topicId] || 'General'}</span><h2 style="font-size:18px; margin:9px 0 6px;">${item.term}</h2><p style="font-size:14px; margin:0;">${item.definition}</p></article>`).join('')}</div>`;
+    document.getElementById('start-definition-test-btn').onclick = () => this.startDefinitionTest();
+    document.getElementById('dictionary-search').oninput = event => {
+      const query = event.target.value.trim().toLowerCase();
+      let visible = 0;
+      panel.querySelectorAll('.dictionary-term-card').forEach(card => {
+        const show = !query || card.getAttribute('data-search').includes(query);
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      document.getElementById('dictionary-count').textContent = `${visible} term${visible === 1 ? '' : 's'}`;
+    };
+  }
+
+  startDefinitionTest() {
+    this.definitionTestTerms = [...window.db.getKeyTerms()].sort(() => Math.random() - 0.5).slice(0, 10);
+    this.definitionTestMode = true;
+    this.render();
+  }
+
+  // ==================== STUDENT TEST PREPARATION ====================
+  renderStudentTestPrep(panel) {
+    const prep = window.db.getTestPreps().find(item => item.id === this.activeTestPrepId) || window.db.getTestPreps().find(item => item.status === 'Active');
+    if (!prep) {
+      panel.innerHTML = '<h1>Prep for test</h1><p>There is no active test-preparation plan.</p>';
+      return;
+    }
+    const points = window.db.getUnits().flatMap(unit => unit.topics.flatMap(topic => topic.objectives.map(objective => ({ ...objective, topicId: topic.id, topicName: topic.name, paper: unit.paper }))));
+    const selected = prep.specificationPointIds.map(id => points.find(point => point.id === id)).filter(Boolean);
+    const sessionPoints = selected.slice(0, Math.min(3, selected.length));
+    const minutesEach = Math.max(2, Math.floor(prep.sessionMinutes / Math.max(1, sessionPoints.length)));
+    panel.innerHTML = `
+      <div style="margin-bottom:24px;"><span class="badge badge-primary">${prep.sessionMinutes}-minute session</span><h1 style="margin-top:8px;">${this.escapeHTML(prep.title)}</h1><p>${selected.length} specification points selected · ${this.formatDueDate(prep.testDate).replace('Due ', 'Test ')}</p></div>
+      <div class="card" style="margin-bottom:20px; border-left:5px solid var(--teal);"><strong>Today’s sequence:</strong> quick diagnostic → targeted support → one exam-style transfer. Stop when the ${prep.sessionMinutes}-minute session ends; unfinished work rolls into the next session.</div>
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        ${sessionPoints.map((point, index) => {
+          const isPython = point.id === '2.2.PY';
+          const isPseudocode = point.id === '2.2.ERL';
+          const targetTab = isPython ? 'stud-programme' : isPseudocode ? 'stud-pseudocode' : 'stud-recall';
+          const support = this.getAdaptiveSupportLevel(point.name);
+          return `<div class="card" style="display:flex; justify-content:space-between; gap:20px; align-items:center;">
+            <div><span class="badge badge-primary">${index === 0 ? 'Diagnostic' : index === sessionPoints.length - 1 ? 'Exam bridge' : 'Targeted practice'} · ${minutesEach} mins</span><h3 style="margin:8px 0 5px;">${point.id} ${point.name}</h3><p style="font-size:13px; color:var(--text-muted); margin:0;">${point.paper} · ${point.topicName} · ${support} support</p></div>
+            <button class="btn btn-primary btn-sm prep-point-start-btn" data-target-tab="${targetTab}" data-topic-id="${point.topicId}">Start</button>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="card" style="margin-top:20px; background:var(--bg-main);"><strong>Why these points?</strong><p style="font-size:13px; margin:6px 0 0;">The plan prioritises the teacher’s selected specification coverage, then uses your responses and support use to decide what returns. A target grade is never used to restrict content.</p></div>
+    `;
+    panel.querySelectorAll('.prep-point-start-btn').forEach(button => button.onclick = () => {
+      this.activeTopicId = button.getAttribute('data-topic-id');
+      this.switchTab(button.getAttribute('data-target-tab'));
+    });
   }
 
   // ==================== LEARN ALONG ====================
@@ -812,10 +986,12 @@ class App {
   renderStudentPractise(panel) {
     // Generate questions if not set
     if (this.numberSkillsSet.length === 0) {
+      this.numberSkillsDifficulty = this.getAdaptiveSupportLevel('binary conversions');
       this.generateNumberSkillsSet();
     }
 
     panel.innerHTML = `
+      <div class="card" style="margin-bottom:20px; padding:14px;"><strong>Choose one practice mode</strong><div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;"><button class="btn btn-primary btn-sm practice-mode-btn" data-target="stud-practise">Number skills</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-programme">Python</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-pseudocode">Pseudocode</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-written">Long answers</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-dictionary">Key terms</button></div><div style="font-size:12px; color:var(--text-muted); margin-top:8px;">Complete one short mode, then stop or return home.</div></div>
       <div style="margin-bottom: 24px;">
         <span class="badge badge-primary">Ongoing spaced practice</span>
         <h1 style="margin-top: 8px; font-weight: 700;">🔢 Practise: Number Skills</h1>
@@ -897,12 +1073,12 @@ class App {
 
         <div>
           <div class="card">
-            <h3>Difficulty state</h3>
-            <p>Your current level is automatically adjusted based on accuracy.</p>
+            <h3>Current support</h3>
+            <p><strong>${this.numberSkillsDifficulty}</strong></p>
+            <p style="font-size:13px; color:var(--text-muted);">Chosen from your recent work on this skill, not from a target grade. Support can change from topic to topic.</p>
             <div style="display:flex; flex-direction:column; gap:8px;">
-              <label><input type="radio" name="diff" value="Foundation" ${this.numberSkillsDifficulty === 'Foundation' ? 'checked' : ''}> Foundation (Small values & places assistance)</label>
-              <label><input type="radio" name="diff" value="Developing" ${this.numberSkillsDifficulty === 'Developing' ? 'checked' : ''}> Developing (Standard exam phrasing)</label>
-              <label><input type="radio" name="diff" value="Secure" ${this.numberSkillsDifficulty === 'Secure' ? 'checked' : ''}> Secure (Multi-stage exam calculations)</label>
+              <button type="button" class="btn btn-secondary btn-sm" id="more-support-btn">I would like some help</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="challenge-me-btn">Give me a challenge</button>
             </div>
           </div>
         </div>
@@ -910,6 +1086,7 @@ class App {
     `;
 
     // Bind submit
+    panel.querySelectorAll('.practice-mode-btn').forEach(button => button.onclick = () => this.switchTab(button.getAttribute('data-target')));
     const numForm = document.getElementById('num-skills-form');
     if (numForm) {
       numForm.onsubmit = (e) => {
@@ -998,15 +1175,10 @@ class App {
       };
     });
 
-    // Programmatic binding for difficulty radio buttons to comply with CSP and fix interaction blocks
-    const diffInputs = panel.querySelectorAll('input[name="diff"]');
-    diffInputs.forEach(input => {
-      input.onchange = (e) => {
-        if (e.target.checked) {
-          this.changeSkillsDiff(e.target.value);
-        }
-      };
-    });
+    const moreSupportBtn = document.getElementById('more-support-btn');
+    if (moreSupportBtn) moreSupportBtn.onclick = () => this.changeSkillsDiff('Guided');
+    const challengeBtn = document.getElementById('challenge-me-btn');
+    if (challengeBtn) challengeBtn.onclick = () => this.changeSkillsDiff('Challenge');
   }
 
   changeSkillsDiff(diff) {
@@ -1024,7 +1196,7 @@ class App {
     const toBin8 = (val) => val.toString(2).padStart(8, '0');
     const pad4 = (binStr) => binStr.slice(0, 4) + ' ' + binStr.slice(4);
 
-    if (this.numberSkillsDifficulty === 'Foundation') {
+    if (this.numberSkillsDifficulty === 'Guided') {
       // Task 1: Binary to Denary
       const v1 = randInt(5, 127);
       const bin1 = toBin8(v1);
@@ -1049,7 +1221,7 @@ class App {
         { type: 'Binary left shift', question: `Perform a left shift of ${shiftPlaces} place(s) on the binary byte ${pad4(bin3)}.`, answer: shifted3, hint: `Shift all bits to the left by ${shiftPlaces} position(s) and pad the right side with 0s.`, supportGrid: false, inputType: 'binary' },
         { type: 'Data units', question: `How many bits are in ${bytesCount} bytes of storage?`, answer: String(bitsCount), hint: 'There are 8 bits in one single byte. Multiply the number of bytes by 8.', supportGrid: false, inputType: 'standard' }
       ];
-    } else if (this.numberSkillsDifficulty === 'Developing') {
+    } else if (this.numberSkillsDifficulty === 'Supported') {
       // Task 1: Binary to Hex
       const v1 = randInt(16, 255);
       const bin1 = toBin8(v1);
@@ -1081,7 +1253,7 @@ class App {
         { type: 'Audio File Size', question: `Calculate the file size in bits of a sound recording with a sample rate of ${r4}Hz, a bit depth of ${d4} bits, and a length of ${t4} seconds (mono).`, answer: String(size4), hint: 'Formula: Sample Rate * Bit Depth * Duration.', supportGrid: false, inputType: 'standard' }
       ];
     } else {
-      // Secure
+      // Independent or Challenge: multi-stage application without place-value scaffolds
       // Task 1: Hex to Denary
       const v1 = randInt(16, 255);
       const hex1 = v1.toString(16).toUpperCase();
@@ -1142,8 +1314,10 @@ class App {
     window.db.addAttempt({
       studentId: this.currentUser.id,
       type: 'number_skills',
-      topic: 'Weekly arithmetic',
-      score: masteryScore
+      topic: 'binary conversions',
+      score: masteryScore,
+      supportLevel: this.numberSkillsDifficulty,
+      supportStepsUsed: this.numberSkillsDifficulty === 'Guided' ? 2 : 0
     });
 
     // Award achievement if perfect score
@@ -1177,6 +1351,7 @@ class App {
   // ==================== SPACED RETRIEVAL QUIZ ====================
   renderStudentRecall(panel) {
     this.quizQuestions = window.db.getQuestions().filter(q => q.topicId === this.activeTopicId);
+    const activeTopic = window.db.getUnits().flatMap(unit => unit.topics.map(topic => ({ ...topic, paper: unit.paper }))).find(topic => topic.id === this.activeTopicId);
     this.quizAnswers = {};
     
     if (this.quizQuestions.length === 0) {
@@ -1199,6 +1374,7 @@ class App {
         <p style="font-size: 15px; color: var(--text-muted); margin: 0;">Assessment-focused mixed sets, mock preparation and timed quiz work.</p>
       </div>
 
+      <div class="card" style="margin-bottom:20px; padding:14px;"><strong>${this.escapeHTML(activeTopic?.paper || 'GCSE')} · ${this.escapeHTML(activeTopic?.name || this.activeTopicId)} · ${this.quizQuestions.length} questions · about ${Math.max(5, this.quizQuestions.length * 2)} minutes</strong><div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Complete this focused set, then return home for the next weakest or least-recently practised area.</div><button type="button" class="btn btn-secondary btn-sm" id="exam-transfer-start-btn" style="margin-top:10px;">Practise applying knowledge to an exam question</button></div>
       <form id="quiz-form">
         ${this.quizQuestions.map((q, idx) => {
           let fieldsHTML = '';
@@ -1250,6 +1426,8 @@ class App {
       </form>
     `;
 
+    const transferButton = document.getElementById('exam-transfer-start-btn');
+    if (transferButton) transferButton.onclick = () => this.switchTab('stud-exam-transfer');
     const qForm = document.getElementById('quiz-form');
     if (qForm) {
       qForm.onsubmit = (e) => {
@@ -1338,6 +1516,77 @@ class App {
     });
   }
 
+  // ==================== OCR EXAM REFERENCE LANGUAGE ====================
+  renderStudentExamTransfer(panel) {
+    const tasks = window.db.getExamTransferTasks();
+    const task = tasks.find(item => item.id === this.activeExamTransferId) || tasks[0];
+    const stages = ['decode', 'plan', 'answer', 'check', 'retry'];
+    const stageIndex = stages.indexOf(this.examTransferStage);
+    const progress = ((stageIndex + 1) / stages.length) * 100;
+    const plan = this.examTransferPlan;
+    panel.innerHTML = `
+      <div style="margin-bottom:20px;"><span class="badge badge-primary">Exam question coach · ${task.paper} · ${task.minutes} mins</span><h1 style="margin-top:8px;">Apply knowledge: ${task.specificationPointId}</h1><p>Work through one step at a time. The support fades before the retry.</p></div>
+      <div style="height:7px; background:var(--border-color); border-radius:4px; margin-bottom:20px;"><div style="height:100%; width:${progress}%; background:var(--teal); border-radius:4px;"></div></div>
+      <div class="card" style="margin-bottom:18px;"><label for="exam-transfer-task-select" style="font-weight:700;">Question</label><select id="exam-transfer-task-select" class="form-control" style="margin-top:7px;">${tasks.map(item => `<option value="${item.id}" ${item.id === task.id ? 'selected' : ''}>${item.paper} · ${item.specificationPointId} · ${item.commandWord} (${item.marks})</option>`).join('')}</select><p style="font-size:16px; font-weight:600; margin:14px 0 0; line-height:1.5;">${this.escapeHTML(task.question)}</p></div>
+      ${this.examTransferStage === 'decode' ? `<div class="card"><span class="badge badge-primary">1. Decode</span><h2 style="font-size:18px; margin-top:10px;">What is the question asking you to do?</h2><p><strong>${task.commandWord}</strong>: ${this.escapeHTML(task.decodePrompt)}</p><label for="transfer-decode-response">Write the required outcome in your own words</label><textarea id="transfer-decode-response" class="form-control" rows="3"></textarea><button id="transfer-to-plan" class="btn btn-primary" style="margin-top:12px;">Next: plan</button></div>` : ''}
+      ${this.examTransferStage === 'plan' ? `<div class="card"><span class="badge badge-primary">2. Plan</span><h2 style="font-size:18px; margin-top:10px;">Build the answer structure</h2>${task.planningLabels.map((label, index) => `<div class="form-group"><label for="transfer-plan-${index}">${index + 1}. ${this.escapeHTML(label)}</label><input id="transfer-plan-${index}" class="form-control" value="${this.escapeHTML(plan[index] || '')}"></div>`).join('')}<button id="transfer-back-decode" class="btn btn-secondary">Back</button><button id="transfer-to-answer" class="btn btn-primary" style="margin-left:8px;">Next: answer independently</button></div>` : ''}
+      ${this.examTransferStage === 'answer' ? `<div class="card"><span class="badge badge-primary">3. Answer</span><h2 style="font-size:18px; margin-top:10px;">Now answer without the scaffold</h2><p style="font-size:13px; color:var(--text-muted);">Aim for about ${Math.max(3, Math.round(task.minutes * 0.65))} minutes. Include working where appropriate.</p><textarea id="transfer-answer-response" class="form-control" rows="9">${this.escapeHTML(this.examTransferResponse)}</textarea><button id="transfer-back-plan" class="btn btn-secondary" style="margin-top:12px;">Back to plan</button><button id="transfer-to-check" class="btn btn-primary" style="margin:12px 0 0 8px;">Check against evidence</button></div>` : ''}
+      ${this.examTransferStage === 'check' ? `<div class="card"><span class="badge badge-primary">4. Check</span><h2 style="font-size:18px; margin-top:10px;">Evidence the examiner could credit</h2><p>This is formative evidence, not a final mark. Tick only what your answer actually communicates.</p>${task.requiredElements.map((element, index) => `<label style="display:block; margin:10px 0;"><input type="checkbox" class="transfer-evidence-checkbox" value="${index}"> ${this.escapeHTML(element)}</label>`).join('')}<details style="margin-top:14px;"><summary style="cursor:pointer; font-weight:700;">Compare with a concise plan</summary><ol>${task.modelPlan.map(item => `<li>${this.escapeHTML(item)}</li>`).join('')}</ol></details><button id="transfer-to-retry" class="btn btn-primary" style="margin-top:14px;">Retry a similar question</button></div>` : ''}
+      ${this.examTransferStage === 'retry' ? `<div class="card"><span class="badge badge-primary">5. Retry without support</span><h2 style="font-size:18px; margin-top:10px;">Transfer the method</h2><p style="font-size:16px; font-weight:600;">${this.escapeHTML(task.retryQuestion)}</p><textarea id="transfer-retry-response" class="form-control" rows="8"></textarea><button id="transfer-finish" class="btn btn-primary" style="margin-top:12px;">Finish and record practice</button></div>` : ''}`;
+    const taskSelect = document.getElementById('exam-transfer-task-select');
+    taskSelect.onchange = () => { this.activeExamTransferId = taskSelect.value; this.examTransferStage = 'decode'; this.examTransferPlan = {}; this.examTransferResponse = ''; this.render(); };
+    const bind = (id, action) => { const element = document.getElementById(id); if (element) element.onclick = action; };
+    bind('transfer-to-plan', () => { const response = document.getElementById('transfer-decode-response').value.trim(); if (response.length < 8) return this.alert('Describe what the question requires before moving on.'); this.examTransferStage = 'plan'; this.render(); });
+    bind('transfer-back-decode', () => { this.examTransferStage = 'decode'; this.render(); });
+    bind('transfer-to-answer', () => { task.planningLabels.forEach((label, index) => { this.examTransferPlan[index] = document.getElementById(`transfer-plan-${index}`).value.trim(); }); if (Object.values(this.examTransferPlan).filter(Boolean).length < 2) return this.alert('Add at least two useful planning notes.'); this.examTransferStage = 'answer'; this.render(); });
+    bind('transfer-back-plan', () => { this.examTransferResponse = document.getElementById('transfer-answer-response').value; this.examTransferStage = 'plan'; this.render(); });
+    bind('transfer-to-check', () => { this.examTransferResponse = document.getElementById('transfer-answer-response').value.trim(); if (this.examTransferResponse.length < 30) return this.alert('Develop the answer before checking it.'); this.examTransferStage = 'check'; this.render(); });
+    bind('transfer-to-retry', () => { const evidenceCount = panel.querySelectorAll('.transfer-evidence-checkbox:checked').length; window.db.addAttempt({ studentId: this.currentUser.id, type: 'exam_transfer', topic: task.specificationPointId, score: `${evidenceCount}/${task.requiredElements.length}`, supportStepsUsed: 3, questionId: task.id }); this.examTransferStage = 'retry'; this.render(); });
+    bind('transfer-finish', () => { const retry = document.getElementById('transfer-retry-response').value.trim(); if (retry.length < 30) return this.alert('Attempt the retry before finishing.'); window.db.addAttempt({ studentId: this.currentUser.id, type: 'exam_transfer_retry', topic: task.specificationPointId, score: 'completed', supportStepsUsed: 0, questionId: task.id }); this.examTransferStage = 'decode'; this.examTransferPlan = {}; this.examTransferResponse = ''; this.alert('Exam-transfer practice recorded. The retry will inform future recommendations.'); this.switchTab('stud-dashboard'); });
+  }
+
+  renderStudentPseudocode(panel) {
+    const tasks = [
+      { level: 1, skill: 'Read', title: 'Variables and output', code: 'score = 7\nscore = score + 3\nprint(score)', prompt: 'What value is printed? Explain how the variable changes.', answer: '10 is printed. score starts at 7 and is reassigned to 7 + 3.' },
+      { level: 2, skill: 'Trace', title: 'Selection and iteration', code: 'total = 0\nfor i=1 to 4\n    if i MOD 2 == 0 then\n        total = total + i\n    endif\nnext i\nprint(total)', prompt: 'Trace i and total. What is printed?', answer: '6 is printed. Only the even values 2 and 4 are added.' },
+      { level: 3, skill: 'Complete', title: 'Input validation', code: 'age = input("Age")\nwhile __________\n    age = input("Try again")\nendwhile', prompt: 'Complete the condition so only ages from 11 to 16 inclusive are accepted.', answer: 'age < 11 OR age > 16' },
+      { level: 4, skill: 'Write', title: 'Count-controlled algorithm', code: '// Write OCR Exam Reference Language here', prompt: 'Input five scores, calculate the total and print the mean.', answer: 'total = 0\nfor i=1 to 5\n    score = int(input("Score"))\n    total = total + score\nnext i\nprint(total / 5)' },
+      { level: 5, skill: 'Refine', title: 'Find and correct errors', code: 'for i=0 to names.length\n    if names[i] = target then\n        print("Found")\n    end if\nnext', prompt: 'Refine the algorithm to use valid OCR Exam Reference Language and avoid an array-bound error.', answer: 'for i=0 to names.length - 1\n    if names[i] == target then\n        print("Found")\n    endif\nnext i' }
+    ];
+    const task = tasks[this.activePseudocodeTask] || tasks[0];
+    panel.innerHTML = `
+      <div style="margin-bottom:24px;"><span class="badge badge-warning">Paper 2 · Section B</span><h1 style="margin-top:8px;">OCR Exam Reference Language and pseudocode</h1><p>Learn to read, trace, complete, write and refine algorithms. OCR exam questions use the Exam Reference Language; design answers may also use clear pseudocode.</p></div>
+      <div class="card" style="margin-bottom:20px; background:var(--bg-main);"><strong>Important:</strong> OCR assignment uses <code>=</code>; comparison for equality uses <code>==</code>. It does not use a left arrow.</div>
+      <div class="card" style="margin-bottom:20px; border-left:5px solid var(--amber);"><h3 style="font-size:16px;">Bridge to a past-paper question</h3><ol style="font-size:13px; line-height:1.6; padding-left:20px; margin-bottom:0;"><li>Circle the command: read, trace, complete, write or refine.</li><li>List the given inputs and the required output.</li><li>Mark where sequence, selection and iteration are needed.</li><li>Use the marks as a checklist, then trace one test value through your answer.</li></ol></div>
+      <div style="display:grid; grid-template-columns:240px 1fr; gap:24px; align-items:start;">
+        <div class="card"><h3 style="font-size:15px;">Progression</h3>${tasks.map((item, index) => `<button class="btn ${index === this.activePseudocodeTask ? 'btn-primary' : 'btn-secondary'} btn-sm pseudocode-task-btn" data-task-index="${index}" style="width:100%; margin-top:8px; text-align:left;">${item.level}. ${item.skill}: ${item.title}</button>`).join('')}</div>
+        <div class="card">
+          <span class="badge badge-primary">Level ${task.level}: ${task.skill}</span><h2 style="margin:10px 0;">${task.title}</h2>
+          <pre style="padding:16px; border-radius:8px; background:#07111f; color:#e2e8f0; overflow:auto;"><code>${this.escapeHTML(task.code)}</code></pre>
+          <p style="font-weight:600;">${task.prompt}</p>
+          <div style="padding:10px 12px; background:var(--bg-main); border-radius:8px; font-size:13px; margin-bottom:12px;"><strong>Decode it first:</strong> command = ${task.skill.toLowerCase()} · identify the expected output · choose the control structure · check boundaries and operators.</div>
+          <textarea id="pseudocode-response" class="form-control" rows="7" placeholder="Write your answer here..."></textarea>
+          <div style="display:flex; gap:10px; margin-top:12px;"><button id="pseudocode-check-btn" class="btn btn-primary">Check with model</button><button id="pseudocode-help-btn" class="btn btn-secondary">Show a hint</button></div>
+          <div id="pseudocode-feedback" class="card" style="display:none; margin-top:14px; background:var(--bg-main);"></div>
+        </div>
+      </div>
+    `;
+    panel.querySelectorAll('.pseudocode-task-btn').forEach(button => button.onclick = () => {
+      this.activePseudocodeTask = Number(button.getAttribute('data-task-index'));
+      this.render();
+    });
+    document.getElementById('pseudocode-help-btn').onclick = () => {
+      const feedback = document.getElementById('pseudocode-feedback');
+      feedback.style.display = 'block';
+      feedback.innerHTML = '<strong>Hint:</strong> Focus on the precise operator, boundary or control structure the question is assessing.';
+    };
+    document.getElementById('pseudocode-check-btn').onclick = () => {
+      const feedback = document.getElementById('pseudocode-feedback');
+      feedback.style.display = 'block';
+      feedback.innerHTML = `<strong>Model answer</strong><pre style="white-space:pre-wrap; margin-top:8px;"><code>${this.escapeHTML(task.answer)}</code></pre><p style="font-size:13px; margin:8px 0 0;">Compare the logic and precision, then improve your response. Minor syntax slips matter less than correct programming logic, but natural English is not accepted where the question requires OCR Exam Reference Language or a high-level language.</p>`;
+    };
+  }
+
   // ==================== PROGRAMMING sandbox ====================
   renderStudentProgramme(panel) {
     const challenges = window.db.getProgrammingChallenges();
@@ -1359,13 +1608,29 @@ class App {
         <p style="font-size:15px; color: var(--text-muted);">${challenge.instructions}</p>
       </div>
 
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+        <div class="card" style="border-left:5px solid var(--teal);">
+          <span class="badge badge-primary">Practical strand</span><h3 style="margin:8px 0;">Python</h3>
+          <p style="font-size:13px; margin:0;">Design, write, run, test, debug and refine complete programs. Test cases check behaviour, not just syntax.</p>
+        </div>
+        <div class="card" style="border-left:5px solid var(--amber);">
+          <span class="badge badge-warning">Exam strand</span><h3 style="margin:8px 0;">OCR Exam Reference Language</h3>
+          <p style="font-size:13px; margin:0;">Read and trace the language used in exam questions, then complete, refine and write precise algorithms. This is tracked separately from Python.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:24px; background:var(--bg-main);">
+        <h3 style="font-size:16px;">From lesson knowledge to an exam response</h3>
+        <p style="font-size:13px; margin-bottom:8px;">Before touching the editor: identify the command word, write the inputs-processes-outputs, choose the required constructs, and predict one test case. After running, explain how the evidence shows the solution meets the question.</p>
+        <span class="badge badge-primary">Current step: ${challenge.level <= 1 ? 'read and predict' : challenge.level === 2 ? 'complete a partial solution' : challenge.level === 3 ? 'find and fix a fault' : 'write and justify a solution'}</span>
+      </div>
+
       <div style="display: grid; grid-template-columns: 260px 1.2fr 0.8fr; gap: 24px;">
         <div style="border-right: 1px solid var(--border-color); padding-right: 16px;">
           <h3 style="font-size: 15px; margin-bottom: 12px;">Pathway challenges</h3>
           <ul style="list-style:none; display:flex; flex-direction:column; gap:8px;">
             ${challenges.map(c => `
               <li>
-                <a href="#" class="prog-challenge-link" data-cid="${c.id}" data-ccode="${c.code}" style="font-size:13px; text-decoration:none; color: ${c.id === this.activeChallengeId ? 'var(--teal)' : 'var(--text-main)'}; font-weight:${c.id === this.activeChallengeId ? '600' : '400'};">
+                <a href="#" class="prog-challenge-link" data-cid="${c.id}" style="font-size:13px; text-decoration:none; color: ${c.id === this.activeChallengeId ? 'var(--teal)' : 'var(--text-main)'}; font-weight:${c.id === this.activeChallengeId ? '600' : '400'};">
                   Lvl ${c.level}: ${c.title}
                 </a>
               </li>
@@ -1373,8 +1638,8 @@ class App {
           </ul>
           
           <div style="margin-top: 32px; padding: 12px; background-color: rgba(7, 17, 31, 0.02); border-radius: 8px;">
-            <h4 style="font-size:12px; margin-bottom: 6px;">OCR Reference Guide</h4>
-            <p style="font-size: 11px; margin: 0; line-height: 1.4;">OCR Pseudocode uses left arrows for assignment: <code>x 🡨 10</code>. Selection uses <code>endif</code>. Iteration uses <code>next i</code>.</p>
+            <h4 style="font-size:12px; margin-bottom: 6px;">OCR Exam Reference Language</h4>
+            <p style="font-size: 11px; margin: 0; line-height: 1.5;">Assignment: <code>x = 10</code><br>Equality test: <code>x == 10</code><br>Selection: <code>if ... then ... endif</code><br>Iteration: <code>for i=0 to 9 ... next i</code><br>Output: <code>print(...)</code></p>
           </div>
         </div>
 
@@ -1385,6 +1650,10 @@ class App {
               <button class="btn btn-primary btn-sm" id="run-code-btn" style="background-color: var(--green);">▶ Run code</button>
             </div>
             <textarea id="python-editor" class="code-input" rows="18">${this.editorCode}</textarea>
+            <div style="padding:12px; background:#07111f; color:#dbeafe; font-family:monospace; font-size:12px;">
+              <strong id="python-runtime-status">Python runtime: ready to load</strong>
+              <pre id="python-console-output" style="white-space:pre-wrap; margin:8px 0 0; color:inherit;">Run the code to see its output.</pre>
+            </div>
           </div>
           
           <!-- Code Explanation Form -->
@@ -1404,10 +1673,12 @@ class App {
             <button class="btn btn-secondary btn-sm support-ladder-btn" data-step="1" style="width: 100%; margin-bottom: 8px; justify-content: flex-start;">Step 1: Restate Problem</button>
             <button class="btn btn-secondary btn-sm support-ladder-btn" data-step="2" style="width: 100%; margin-bottom: 8px; justify-content: flex-start;">Step 2: Inputs & Outputs</button>
             <button class="btn btn-secondary btn-sm support-ladder-btn" data-step="3" style="width: 100%; margin-bottom: 8px; justify-content: flex-start;">Step 3: Concept Hint</button>
-            <button class="btn btn-secondary btn-sm support-ladder-btn" data-step="4" style="width: 100%; margin-bottom: 8px; justify-content: flex-start;">Step 4: Pseudocode</button>
-            <button class="btn btn-secondary btn-sm support-ladder-btn" data-step="5" style="width: 100%; margin-bottom: 12px; justify-content: flex-start;">Step 5: Model Solution</button>
+            <button class="btn btn-secondary btn-sm support-ladder-btn" data-step="4" style="width: 100%; margin-bottom: 8px; justify-content: flex-start;">Step 4: OCR language plan</button>
+            <button class="btn btn-secondary btn-sm support-ladder-btn" data-step="5" style="width: 100%; margin-bottom: 12px; justify-content: flex-start;">Step 5: Worked explanation</button>
+            <button class="btn btn-primary btn-sm" id="ai-programming-tutor-btn" style="width:100%; margin-bottom:12px;" ${this.lastProgrammingEvidence.length ? '' : 'disabled'}>Ask tutor about my test result</button>
             
             <div id="support-ladder-feedback" class="card" style="background-color: var(--bg-main); padding: 12px; font-size:13px; line-height: 1.4; display: none;"></div>
+            <div id="ai-programming-feedback" class="card" style="background-color:var(--bg-main); padding:12px; font-size:13px; line-height:1.5; display:none;"></div>
           </div>
 
           <!-- Test Cases outcomes -->
@@ -1442,8 +1713,10 @@ class App {
       link.onclick = (e) => {
         e.preventDefault();
         this.activeChallengeId = link.getAttribute('data-cid');
-        this.editorCode = link.getAttribute('data-ccode');
+        this.editorCode = challenges.find(item => item.id === this.activeChallengeId)?.code || '';
         this.supportLevelUsed = 0;
+        this.lastProgrammingEvidence = [];
+        this.aiTutorHintLevel = 1;
         this.render();
       };
     });
@@ -1462,10 +1735,13 @@ class App {
       runBtn.onclick = () => this.runPythonCodeSandbox(challenge);
     }
 
+    const tutorBtn = document.getElementById('ai-programming-tutor-btn');
+    if (tutorBtn) tutorBtn.onclick = () => this.requestProgrammingTutor(challenge);
+
     // Submit submission
     const submitBtn = document.getElementById('submit-program-btn');
     if (submitBtn) {
-      submitBtn.onclick = () => {
+      submitBtn.onclick = async () => {
         const explText = document.getElementById('coding-explanation-response').value.trim();
         this.submitProgramChallenge(challenge, explText);
       };
@@ -1485,76 +1761,147 @@ class App {
     if (step === 1) text = `<strong>Restated problem:</strong> ${challenge.problem}`;
     else if (step === 2) text = `<strong>Inputs/Outputs:</strong> Expected values: ${challenge.testCases.map(tc => `Input [${tc.input}] -> Output [${tc.expected}]`).join(', ')}`;
     else if (step === 3) text = `<strong>Concept hint:</strong> ${challenge.supportLadder[0] || 'Use operations to construct string structure.'}`;
-    else if (step === 4) text = `<strong>Pseudocode structure:</strong><br><pre>${challenge.supportLadder[1] || 'IF condition THEN print Pass'}</pre>`;
-    else if (step === 5) text = `<strong>Model Solution:</strong><br><pre>${challenge.explainModelAnswer}</pre><br><p style="font-size:11px; color: var(--red);">Requesting the model solution leaves the challenge open for another attempt later.</p>`;
+    else if (step === 4) {
+      const plans = {
+        pc_1: 'username = "Harriet"\nsubject = "Computer Science"\nprint("Welcome " + username + " to " + subject)',
+        pc_2: 'if score >= 50 then\n    print("Pass")\nelse\n    print("Fail")\nendif',
+        pc_3: 'for i=1 to 5\n    print(i)\nnext i',
+        pc_4: 'function hex_char_to_val(char)\n    // deal with digits and A-F separately\n    return value\nendfunction',
+        pc_5: 'total = 0\nmyFile = open("scores.txt")\nwhile NOT myFile.endOfFile()\n    total = total + int(myFile.readLine())\nendwhile\nmyFile.close()\nprint(total)'
+      };
+      text = `<strong>OCR Exam Reference Language plan:</strong><br><pre>${plans[challenge.id] || 'Identify inputs, processes and outputs first.'}</pre>`;
+    }
+    else if (step === 5) text = `<strong>Worked explanation:</strong><p>${challenge.explainModelAnswer}</p><p style="font-size:11px; color:var(--text-muted);">Explain the idea in your own words, then make one change to your program and test again.</p>`;
 
     fback.innerHTML = text;
   }
 
-  runPythonCodeSandbox(challenge) {
-    const codeVal = this.editorCode.trim();
-    let allPassed = true;
-
-    challenge.testCases.forEach((tc, idx) => {
-      const outcomeText = document.getElementById(`tc-outcome-${idx}`);
-      const card = document.getElementById(`tc-card-${idx}`);
-
-      // Python execution simulator check
-      let matches = false;
-      const cleanCode = codeVal.replace(/\s+/g, ' ');
-
-      if (challenge.id === 'pc_1') {
-        matches = codeVal.includes('Welcome Harriet to Computer Science');
-      } else if (challenge.id === 'pc_2') {
-        if (tc.input === '65') {
-          matches = codeVal.includes('score = 65') && codeVal.includes('print("Pass")');
-        } else if (tc.input === '45') {
-          matches = codeVal.includes('print("Fail")');
+  getPythonWorker() {
+    if (this.pythonWorker && this.pythonWorkerReadyPromise) return this.pythonWorkerReadyPromise;
+    this.pythonWorker = new Worker('/python-worker.mjs', { type: 'module' });
+    this.pythonWorkerReadyPromise = new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Python took too long to load. Check the internet connection and try again.')), 30000);
+      const onMessage = event => {
+        if (event.data?.type === 'ready') {
+          clearTimeout(timeout);
+          this.pythonWorker.removeEventListener('message', onMessage);
+          resolve(this.pythonWorker);
+        } else if (event.data?.type === 'initialisation-error') {
+          clearTimeout(timeout);
+          reject(new Error(event.data.error));
         }
-      } else if (challenge.id === 'pc_3') {
-        matches = codeVal.includes('range(1, 6)');
-      } else if (challenge.id === 'pc_4') {
-        if (tc.input === 'A') {
-          matches = codeVal.includes('def hex_char_to_val') && (codeVal.includes('10') || codeVal.includes('dict') || codeVal.includes('letters'));
-        } else if (tc.input === '5') {
-          matches = codeVal.includes('int(char)') || codeVal.includes('isdigit');
-        } else if (tc.input === 'F') {
-          matches = codeVal.includes('15');
-        }
-      } else if (challenge.id === 'pc_5') {
-        matches = codeVal.includes('open') && (codeVal.includes('scores.txt') || codeVal.includes("scores.txt")) && (codeVal.includes('total +=') || codeVal.includes('total = total +')) && codeVal.includes('int') && codeVal.includes('print');
-      }
-
-      if (matches) {
-        outcomeText.textContent = `Passed (returned: ${tc.expected})`;
-        outcomeText.style.color = 'var(--green)';
-        card.style.borderColor = 'var(--green)';
-      } else {
-        let errorDetail = 'returned incorrect output';
-        if (challenge.id === 'pc_1') {
-          errorDetail = "expected string 'Welcome Harriet to Computer Science' not matched in code output";
-        } else if (challenge.id === 'pc_2') {
-          errorDetail = `expected output '${tc.expected}' when input is ${tc.input} but condition block not detected`;
-        } else if (challenge.id === 'pc_3') {
-          errorDetail = "expected loop output for counting 1 to 5 (loop range(1, 6) not detected)";
-        } else if (challenge.id === 'pc_4') {
-          errorDetail = `expected hexadecimal '${tc.input}' to convert to integer val ${tc.expected} but function signature check failed`;
-        } else if (challenge.id === 'pc_5') {
-          errorDetail = "expected code to open 'scores.txt', read lines, cast to integers, and print the total sum (150)";
-        }
-        outcomeText.textContent = `Failed - ${errorDetail}`;
-        outcomeText.style.color = 'var(--red)';
-        card.style.borderColor = 'var(--red)';
-        allPassed = false;
-      }
+      };
+      this.pythonWorker.addEventListener('message', onMessage);
+      this.pythonWorker.addEventListener('error', () => reject(new Error('The protected Python runner could not start.')), { once: true });
     });
+    return this.pythonWorkerReadyPromise;
+  }
 
-    if (allPassed) {
-      document.getElementById('submit-program-btn').disabled = false;
-      this.alert('Success: All test cases passed! You can now submit your solution.');
-    } else {
-      this.alert('Warning: Some test cases failed. Review code or request hints from the ladder.');
+  resetPythonWorker() {
+    if (this.pythonWorker) this.pythonWorker.terminate();
+    this.pythonWorker = null;
+    this.pythonWorkerReadyPromise = null;
+  }
+
+  async executePythonTests(challenge) {
+    const worker = await this.getPythonWorker();
+    const id = ++this.pythonWorkerRequestId;
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        this.resetPythonWorker();
+        reject(new Error('Your program ran for too long. Check for an infinite loop.'));
+      }, 5000);
+      const onMessage = event => {
+        if (event.data?.type !== 'result' || event.data.id !== id) return;
+        clearTimeout(timeout);
+        worker.removeEventListener('message', onMessage);
+        resolve(event.data.results);
+      };
+      worker.addEventListener('message', onMessage);
+      worker.postMessage({ id, code: this.editorCode, challengeId: challenge.id, tests: challenge.testCases });
+    });
+  }
+
+  normaliseProgramOutput(value) {
+    return String(value ?? '').replace(/\r\n/g, '\n').split('\n').map(line => line.trimEnd()).join('\n').trim();
+  }
+
+  async runPythonCodeSandbox(challenge) {
+    const runBtn = document.getElementById('run-code-btn');
+    const status = document.getElementById('python-runtime-status');
+    const consoleOutput = document.getElementById('python-console-output');
+    const submitBtn = document.getElementById('submit-program-btn');
+    if (!this.editorCode.trim()) return this.alert('Write or review the Python code before running it.');
+    if (runBtn) { runBtn.disabled = true; runBtn.textContent = 'Loading Python…'; }
+    if (status) status.textContent = 'Python runtime: loading securely in your browser…';
+    if (submitBtn) submitBtn.disabled = true;
+    this.lastProgrammingEvidence = [];
+    try {
+      const results = await this.executePythonTests(challenge);
+      let allPassed = true;
+      results.forEach((result, idx) => {
+        const tc = challenge.testCases[idx];
+        const actual = this.normaliseProgramOutput(result.output);
+        const expected = this.normaliseProgramOutput(tc.expected);
+        const errorDetail = result.error || (actual === expected ? '' : `Expected “${expected}” but your program printed “${actual || '(nothing)'}”.`);
+        const passed = !errorDetail && actual === expected;
+        const outcomeText = document.getElementById(`tc-outcome-${idx}`);
+        const card = document.getElementById(`tc-card-${idx}`);
+        allPassed = allPassed && passed;
+        if (outcomeText) {
+          outcomeText.textContent = passed ? `Passed (printed: ${actual})` : `Failed — ${errorDetail}${result.line ? ` (line ${result.line})` : ''}`;
+          outcomeText.style.color = passed ? 'var(--green)' : 'var(--red)';
+        }
+        if (card) card.style.borderColor = passed ? 'var(--green)' : 'var(--red)';
+        this.lastProgrammingEvidence.push({ passed, error: errorDetail });
+      });
+      if (status) status.textContent = 'Python runtime: run complete';
+      if (consoleOutput) consoleOutput.textContent = results.map((result, idx) => `Test ${idx + 1}:\n${result.output || result.error || '(no output)'}`).join('\n\n');
+      if (submitBtn) submitBtn.disabled = !allPassed;
+      this.alert(allPassed ? 'Success: All test cases passed! You can now submit your solution.' : 'Some test cases failed. Use the evidence, support ladder, or tutor for your next change.');
+    } catch (error) {
+      if (status) status.textContent = 'Python runtime: could not complete the run';
+      if (consoleOutput) consoleOutput.textContent = error.message;
+      this.lastProgrammingEvidence = [{ passed: false, error: error.message }];
+      this.alert(error.message);
+    } finally {
+      if (runBtn) { runBtn.disabled = false; runBtn.textContent = '▶ Run code'; }
+      const tutorBtn = document.getElementById('ai-programming-tutor-btn');
+      if (tutorBtn) tutorBtn.disabled = false;
     }
+  }
+
+  async requestProgrammingTutor(challenge) {
+    const output = document.getElementById('ai-programming-feedback');
+    const button = document.getElementById('ai-programming-tutor-btn');
+    if (!output || !this.lastProgrammingEvidence.length) return;
+    output.style.display = 'block';
+    output.innerHTML = '<strong>Tutor:</strong> Looking at the first useful piece of evidence...';
+    if (button) button.disabled = true;
+    let feedback = null;
+    try {
+      const token = window.db.getSessionToken();
+      if (!token) throw new Error('Demo session uses local tutor');
+      const response = await fetch('/api/programming-tutor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ challengeId: challenge.id, code: this.editorCode, testEvidence: this.lastProgrammingEvidence, hintLevel: this.aiTutorHintLevel })
+      });
+      if (!response.ok) throw new Error('Tutor service unavailable');
+      const payload = await response.json();
+      feedback = payload.feedback;
+    } catch (error) {
+      const failed = this.lastProgrammingEvidence.find(item => !item.passed);
+      feedback = {
+        diagnosis: failed ? 'One or more test cases do not yet match the required behaviour.' : 'The tests pass; explain why the solution works before submitting.',
+        hint: challenge.id === 'pc_3' ? 'Python stops before the second value supplied to range.' : (challenge.supportLadder[Math.min(this.aiTutorHintLevel - 1, challenge.supportLadder.length - 1)] || 'Trace the first test case line by line.'),
+        checkQuestion: challenge.id === 'pc_3' ? 'What values does your current range produce?' : 'What should happen in the first test case?',
+        source: 'local'
+      };
+    }
+    this.aiTutorHintLevel = Math.min(4, this.aiTutorHintLevel + 1);
+    output.innerHTML = `<strong>What I noticed</strong><p>${this.escapeHTML(feedback.diagnosis)}</p><strong>One hint</strong><p>${this.escapeHTML(feedback.hint)}</p><strong>Check your understanding</strong><p>${this.escapeHTML(feedback.checkQuestion)}</p><p style="font-size:11px; color:var(--text-muted); margin-bottom:0;">The tutor has not rewritten your program. Try one change, then run the tests again.</p>`;
+    if (button) button.disabled = false;
   }
 
   submitProgramChallenge(challenge, explanation) {
@@ -1598,8 +1945,8 @@ class App {
       </div>
 
       <div style="display: grid; grid-template-columns: 280px 1fr; gap: 32px;">
-        <div style="border-right: 1px solid var(--border-color); padding-right: 24px;">
-          <h3 style="font-size: 15px; margin-bottom: 12px;">Syllabus Questions</h3>
+        <details style="border-right: 1px solid var(--border-color); padding-right: 24px;">
+          <summary style="font-size:15px; font-weight:700; cursor:pointer; margin-bottom:12px;">Choose a different question</summary>
           <ul style="list-style:none; display:flex; flex-direction:column; gap:12px;" id="written-questions-list">
             ${questions.map(q => `
               <li>
@@ -1609,7 +1956,7 @@ class App {
               </li>
             `).join('')}
           </ul>
-        </div>
+        </details>
 
         <div>
           <div class="card" style="margin-bottom: 24px;">
@@ -1617,7 +1964,7 @@ class App {
           </div>
 
           <!-- Stage 4 planning Scaffold -->
-          <div class="card" style="margin-bottom: 24px; border-left: 5px solid var(--amber);">
+          <details open class="card" style="margin-bottom: 24px; border-left: 5px solid var(--amber);">
             <h4 style="color: var(--amber); margin-bottom: 8px;">📋 Planning Frame Scaffold</h4>
             <p style="font-size:13px;">Complete these prompts to structure your response correctly, then click "Construct Answer".</p>
             
@@ -1638,25 +1985,25 @@ class App {
               <input type="text" id="scaf-exp2" class="form-control" style="font-size:13px;" placeholder="e.g. heavy metals contaminate ground water" value="${this.scaffoldPoints.exp2}">
             </div>
             <button class="btn btn-secondary btn-sm" id="construct-ans-btn">Construct Answer from Planning Frame</button>
-          </div>
+          </details>
 
           <!-- Sentence Starters Scaffold -->
-          <div style="margin-bottom: 12px;">
+          <details style="margin-bottom: 12px;">
             <span style="font-size: 13px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">💡 Need a starting point? Click to insert a sentence starter:</span>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
               <button type="button" class="btn btn-secondary btn-sm sentence-starter-btn" data-text="One significant ethical issue is " style="font-size: 11px; padding: 4px 8px; min-height: 28px;">"One significant issue is..."</button>
               <button type="button" class="btn btn-secondary btn-sm sentence-starter-btn" data-text="This directly impacts the scenario because " style="font-size: 11px; padding: 4px 8px; min-height: 28px;">"This directly impacts..."</button>
               <button type="button" class="btn btn-secondary btn-sm sentence-starter-btn" data-text="Consequently, this leads to " style="font-size: 11px; padding: 4px 8px; min-height: 28px;">"Consequently, this leads to..."</button>
             </div>
-          </div>
+          </details>
 
           <!-- Main Response Input Area -->
           <div class="form-group">
-            <label style="font-size:14px; font-weight:600;">Your Written Answer:</label>
+            <label style="font-size:14px; font-weight:600;">2. Write your answer</label>
             <textarea id="written-response-box" class="form-control" rows="8" placeholder="Type your full paragraph answer here..." style="font-size: 14px; line-height: 1.6;"></textarea>
           </div>
 
-          <button class="btn btn-primary btn-lg" id="submit-written-btn">Submit and run AI marking</button>
+          <button class="btn btn-primary btn-lg" id="submit-written-btn">3. Check and improve</button>
 
           <!-- AI Formative Feedback display area -->
           <div id="ai-feedback-panel" class="card" style="margin-top: 32px; border-top: 5px solid var(--teal); display: none;">
@@ -1718,13 +2065,13 @@ class App {
     // Submit for grading
     const submitBtn = document.getElementById('submit-written-btn');
     if (submitBtn) {
-      submitBtn.onclick = () => {
+      submitBtn.onclick = async () => {
         const text = document.getElementById('written-response-box').value.trim();
         if (text.length < 20) {
           this.alert('Warning: Your response is too short to receive a mark band assessment.');
           return;
         }
-        this.runAiMarkingSimulation(activeQ, text);
+        await this.requestAiWritingFeedback(activeQ, text, submitBtn);
       };
     }
 
@@ -1734,6 +2081,30 @@ class App {
       closeBtn.onclick = () => {
         this.switchTab('stud-dashboard');
       };
+    }
+  }
+
+  async requestAiWritingFeedback(question, responseText, button) {
+    if (button) { button.disabled = true; button.textContent = 'Checking against the rubric…'; }
+    try {
+      const token = window.db.getSessionToken();
+      if (!token) throw new Error('Local fallback');
+      const response = await fetch('/api/writing-feedback', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ question: question.question, commandWord: question.commandWord, marks: question.marks, rubric: question.rubric, indicativeContent: question.indicativeContent, response: responseText })
+      });
+      if (!response.ok) throw new Error('Feedback service unavailable');
+      const { feedback } = await response.json();
+      document.getElementById('ai-est-mark').textContent = `${feedback.estimatedMark} / ${question.marks} (formative estimate)`;
+      document.getElementById('ai-strengths').textContent = feedback.strength;
+      document.getElementById('ai-improvements').textContent = feedback.improvement;
+      document.getElementById('ai-action').textContent = `${feedback.revisionPrompt} ${feedback.rubricEvidence}`;
+      document.getElementById('ai-feedback-panel').style.display = 'block';
+      window.db.addWrittenSubmission({ studentId: this.currentUser.id, questionId: question.id, response: responseText, estimatedMark: String(feedback.estimatedMark), strengths: feedback.strength, improvements: feedback.improvement, actionItem: feedback.revisionPrompt, feedbackSource: feedback.source });
+    } catch (error) {
+      this.runAiMarkingSimulation(question, responseText);
+    } finally {
+      if (button) { button.disabled = false; button.textContent = '3. Check and improve again'; }
     }
   }
 
@@ -1980,8 +2351,10 @@ class App {
     const wrs = window.db.getWrittenSubmissions();
 
     const writtenCount = wrs.filter(w => w.status === 'Awaiting Teacher Review').length;
-    const programmingCount = 2; // Simulated programming submissions awaiting approval
+    const programmingCount = window.db.getProgrammingSubmissions().filter(item => item.status !== 'Teacher Reviewed').length;
     const totalAwaitingReview = writtenCount + programmingCount;
+    const activeThisWeek = students.filter(student => Date.now() - new Date(student.lastActive).getTime() <= 7 * 24 * 3600 * 1000).length;
+    const weeklyCompletion = students.length ? Math.round((activeThisWeek / students.length) * 100) : 0;
 
     panel.innerHTML = `
       <div class="dashboard-container">
@@ -2019,8 +2392,8 @@ class App {
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px;">
           <div class="card" style="padding: 16px 20px;">
             <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Weekly Completion</h4>
-            <strong style="font-size:24px; font-weight: 700; color: var(--text-main);">83%</strong>
-            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">22 of 26 active this week &middot; <span style="color: #047857; font-weight: 600;">▲ 6%</span></div>
+            <strong style="font-size:24px; font-weight: 700; color: var(--text-main);">${weeklyCompletion}%</strong>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${activeThisWeek} of ${students.length} pupils opened the app in the last 7 days</div>
           </div>
           <div class="card card-action" id="metric-awaiting-review" style="padding: 16px 20px; cursor: pointer;">
             <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Work Awaiting Review</h4>
@@ -2308,6 +2681,7 @@ class App {
   // ==================== TEACHER CLASSES ====================
   renderTeacherClasses(panel) {
     const students = window.db.getStudents();
+    const attempts = window.db.getAttempts();
 
     panel.innerHTML = `
       <div style="margin-bottom: 24px;">
@@ -2324,6 +2698,7 @@ class App {
               <th>Year Group</th>
               <th>Homework Streak</th>
               <th>Revision Priority</th>
+              <th>Exam transfer</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -2335,6 +2710,7 @@ class App {
                 <td>${s.yearGroup}</td>
                 <td>🔥 ${s.streak} weeks</td>
                 <td>${s.personalRevisionPriorities.join(', ') || 'None log'}</td>
+                <td>${attempts.filter(attempt => attempt.studentId === s.id && String(attempt.type).startsWith('exam_transfer')).length} attempts</td>
                 <td><span class="badge ${s.active ? 'badge-success' : 'badge-danger'}">${s.active ? 'Active' : 'Suspended'}</span></td>
               </tr>
             `).join('')}
@@ -2349,6 +2725,10 @@ class App {
     const assignments = window.db.getAssignments();
     const units = window.db.getUnits();
     const topics = units.flatMap(u => u.topics);
+    const students = window.db.getStudents();
+    const currentRequiredMinutes = assignments
+      .filter(a => a.status === 'Required' || a.status === 'Overdue')
+      .reduce((sum, a) => sum + Number(a.estimatedMinutes || 10), 0);
 
     panel.innerHTML = `
       <div style="margin-bottom: 24px;">
@@ -2359,7 +2739,12 @@ class App {
       <div style="display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 32px; align-items: start;">
         <div class="card">
           <h3 style="margin-bottom: 16px;">Create homework task</h3>
+          <div style="padding:12px; margin-bottom:16px; background:var(--bg-main); border-radius:8px;">
+            <strong>Current required workload: ${currentRequiredMinutes} minutes</strong>
+            <div style="font-size:12px; color:var(--text-muted);">A warning appears above 20 minutes per week.</div>
+          </div>
           <form id="create-assign-form">
+            <div class="form-group"><label for="assign-recipient-in">Publish to</label><select id="assign-recipient-in" class="form-control"><option value="class">Whole class</option>${students.map(student => `<option value="${student.id}">${this.escapeHTML(student.name)} only</option>`).join('')}</select><div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Use an individual target for intervention without increasing everyone’s workload.</div></div>
             <div class="form-group">
               <label for="assign-title-in">Task Title</label>
               <input type="text" id="assign-title-in" class="form-control" placeholder="e.g. Weekly Binary Shift Quiz" required>
@@ -2377,6 +2762,20 @@ class App {
               <input type="date" id="assign-date-in" class="form-control" required>
             </div>
 
+            <div class="form-group">
+              <label for="assign-minutes-in">Estimated completion time</label>
+              <select id="assign-minutes-in" class="form-control" required>
+                <option value="5">5 minutes</option><option value="10" selected>10 minutes</option><option value="15">15 minutes</option><option value="20">20 minutes</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="assign-status-in">Expectation</label>
+              <select id="assign-status-in" class="form-control" required>
+                <option value="Required">Required</option><option value="Recommended">Recommended</option><option value="Optional">Optional</option>
+              </select>
+            </div>
+
             <button type="submit" class="btn btn-primary" style="width: 100%;">Publish Assignment</button>
           </form>
         </div>
@@ -2388,7 +2787,7 @@ class App {
               <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                   <h3 style="margin-bottom: 4px;">${a.title}</h3>
-                  <div style="font-size: 12px; color: var(--text-muted);">Due: ${a.dueDate} · ${a.status}</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">Due: ${a.dueDate} · ${a.status} · ${a.estimatedMinutes || 10} mins</div>
                 </div>
                 <span class="badge badge-primary">${a.completedCount} / 3 Completed</span>
               </div>
@@ -2405,19 +2804,184 @@ class App {
         const title = document.getElementById('assign-title-in').value.trim();
         const topicId = document.getElementById('assign-topic-in').value;
         const dueDate = document.getElementById('assign-date-in').value;
+        const estimatedMinutes = Number(document.getElementById('assign-minutes-in').value);
+        const status = document.getElementById('assign-status-in').value;
+        const recipient = document.getElementById('assign-recipient-in').value;
+
+        if (status === 'Required' && currentRequiredMinutes + estimatedMinutes > 20) {
+          const confirmed = window.confirm(`This would create ${currentRequiredMinutes + estimatedMinutes} minutes of required Computing work. Keep the total realistic alongside other GCSEs. Publish anyway?`);
+          if (!confirmed) return;
+        }
 
         window.db.addAssignment({
           title,
           classId: 'class_1',
           topicId,
           dueDate,
-          status: 'Required'
+          status,
+          estimatedMinutes
+          ,recipientType: recipient === 'class' ? 'class' : 'students'
+          ,recipientIds: recipient === 'class' ? [] : [recipient]
         });
 
         this.alert('Success: Assignment published to student portals.');
         this.render();
       };
     }
+  }
+
+  // ==================== TEACHER TEST PREPARATION ====================
+  renderTeacherTestPrep(panel) {
+    const units = window.db.getUnits();
+    const testPreps = window.db.getTestPreps();
+    const students = window.db.getStudents();
+
+    panel.innerHTML = `
+      <div style="margin-bottom:24px;">
+        <span class="badge badge-primary">OCR J277 specification aligned</span>
+        <h1 style="margin-top:8px;">Prep for test</h1>
+        <p>Select the specification points that will be assessed. The app creates a short diagnostic and a time-limited revision plan; it does not reveal or reproduce the test questions.</p>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1.25fr 0.75fr; gap:28px; align-items:start;">
+        <form id="test-prep-form" class="card">
+          <div class="form-group"><label for="prep-recipient-in">Publish to</label><select id="prep-recipient-in" class="form-control"><option value="class">Whole class</option>${students.map(student => `<option value="${student.id}">${this.escapeHTML(student.name)} only</option>`).join('')}</select></div>
+          <div class="form-group">
+            <label for="prep-title-in">Test name</label>
+            <input id="prep-title-in" class="form-control" placeholder="e.g. Paper 2 Algorithms Check" required>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+            <div class="form-group"><label for="prep-date-in">Test date</label><input type="date" id="prep-date-in" class="form-control" required></div>
+            <div class="form-group"><label for="prep-weekly-in">Weekly limit</label><select id="prep-weekly-in" class="form-control"><option value="10">10 mins</option><option value="15">15 mins</option><option value="20" selected>20 mins</option><option value="30">30 mins</option></select></div>
+            <div class="form-group"><label for="prep-session-in">Session length</label><select id="prep-session-in" class="form-control"><option value="5">5 mins</option><option value="10" selected>10 mins</option><option value="15">15 mins</option></select></div>
+          </div>
+
+          <h2 style="font-size:18px; margin:18px 0 8px;">Specification points</h2>
+          <p style="font-size:13px; color:var(--text-muted);">Current OCR J277 v3.1 is authoritative. Select only content pupils have been taught.</p>
+          ${units.map(unit => `
+            <details style="border:1px solid var(--border-color); border-radius:8px; padding:14px; margin-bottom:14px;">
+              <summary style="font-weight:700; cursor:pointer;">${unit.paper}: ${unit.name}</summary>
+              ${unit.topics.map(topic => `
+                <div style="margin:10px 0;">
+                  <strong style="font-size:14px;">${topic.code} ${topic.name}</strong>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:7px;">
+                    ${topic.objectives.map(objective => `
+                      <label style="display:flex; gap:8px; align-items:flex-start; font-size:13px;">
+                        <input type="checkbox" class="prep-point-checkbox" value="${objective.id}">
+                        <span><strong>${objective.id}</strong> ${objective.name}</span>
+                      </label>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </details>
+          `).join('')}
+
+          <div class="card" style="background:var(--bg-main); padding:14px; margin:16px 0;">
+            <h3 style="font-size:15px;">Programming coverage</h3>
+            <label style="display:block; margin:8px 0;"><input type="checkbox" id="prep-python-in"> Include practical Python: design, write, test and refine programs</label>
+            <label style="display:block;"><input type="checkbox" id="prep-pseudocode-in"> Include OCR Exam Reference Language/pseudocode: read, trace, complete and write algorithms</label>
+            <p style="font-size:12px; color:var(--text-muted); margin:8px 0 0;">These are tracked separately. Knowing Python does not automatically demonstrate fluency in exam pseudocode, or vice versa.</p>
+          </div>
+
+          <div id="prep-selection-summary" style="margin:12px 0; font-weight:600;">Select at least one specification point.</div>
+          <button class="btn btn-primary" type="submit">Publish test preparation</button>
+        </form>
+
+        <div>
+          <div class="card" style="margin-bottom:18px;">
+            <h3>Workload rules</h3>
+            <ul style="font-size:14px; line-height:1.6; padding-left:20px;">
+              <li>Begins with a short diagnostic.</li><li>Already-secure points receive one confirmation question.</li><li>Support changes per skill, never by target grade.</li><li>Test prep replaces normal revision recommendations.</li><li>80% test content, 20% long-term retrieval.</li>
+            </ul>
+          </div>
+          <h2 style="font-size:18px;">Active plans</h2>
+          ${testPreps.map(prep => `<div class="card" style="margin-top:12px;"><strong>${this.escapeHTML(prep.title)}</strong><div style="font-size:13px; color:var(--text-muted); margin-top:5px;">${prep.specificationPointIds.length} points · ${prep.weeklyMinutes} mins/week · ${this.formatDueDate(prep.testDate).replace('Due ', 'Test ')}</div></div>`).join('') || '<p>No active plans.</p>'}
+        </div>
+      </div>
+    `;
+
+    const checkboxes = panel.querySelectorAll('.prep-point-checkbox');
+    const summary = document.getElementById('prep-selection-summary');
+    const updateSummary = () => {
+      const count = Array.from(checkboxes).filter(box => box.checked).length;
+      const weekly = Number(document.getElementById('prep-weekly-in').value);
+      summary.textContent = count ? `${count} specification point${count === 1 ? '' : 's'} selected · maximum ${weekly} minutes per week` : 'Select at least one specification point.';
+    };
+    checkboxes.forEach(box => box.onchange = updateSummary);
+    document.getElementById('prep-weekly-in').onchange = updateSummary;
+
+    document.getElementById('test-prep-form').onsubmit = (event) => {
+      event.preventDefault();
+      const specificationPointIds = Array.from(checkboxes).filter(box => box.checked).map(box => box.value);
+      const includePython = document.getElementById('prep-python-in').checked;
+      const includePseudocode = document.getElementById('prep-pseudocode-in').checked;
+      const recipient = document.getElementById('prep-recipient-in').value;
+      if (!specificationPointIds.length && !includePython && !includePseudocode) {
+        this.alert('Select at least one specification point or programming strand.');
+        return;
+      }
+      if (includePython && !specificationPointIds.includes('2.2.PY')) specificationPointIds.push('2.2.PY');
+      if (includePseudocode && !specificationPointIds.includes('2.2.ERL')) specificationPointIds.push('2.2.ERL');
+      window.db.addTestPrep({
+        title: document.getElementById('prep-title-in').value.trim(),
+        classId: 'class_1',
+        testDate: document.getElementById('prep-date-in').value,
+        weeklyMinutes: Number(document.getElementById('prep-weekly-in').value),
+        sessionMinutes: Number(document.getElementById('prep-session-in').value),
+        specificationPointIds,
+        includePython,
+        includePseudocode
+        ,recipientType: recipient === 'class' ? 'class' : 'students'
+        ,recipientIds: recipient === 'class' ? [] : [recipient]
+      });
+      this.alert('Test preparation published. It will replace normal revision recommendations within the selected time budget.');
+      this.render();
+    };
+  }
+
+  // ==================== TEACHER REVISION & INTERVENTION SESSIONS ====================
+  renderTeacherSessions(panel) {
+    const students = window.db.getStudents();
+    const sessions = window.db.getSupportSessions();
+    panel.innerHTML = `
+      <div style="margin-bottom:24px;"><span class="badge badge-primary">Revision and intervention</span><h1 style="margin-top:8px;">Support sessions</h1><p>Schedule one purposeful session and publish it only to the pupils who need it.</p></div>
+      <div style="display:grid; grid-template-columns:0.9fr 1.1fr; gap:28px; align-items:start;">
+        <form id="support-session-form" class="card">
+          <h2 style="font-size:18px;">Create a session</h2>
+          <div class="form-group"><label for="session-title-in">Session title</label><input id="session-title-in" class="form-control" placeholder="e.g. Selection and loops clinic" required></div>
+          <div class="form-group"><label for="session-type-in">Purpose</label><select id="session-type-in" class="form-control"><option>Revision</option><option>Intervention</option><option>Programming clinic</option><option>Exam technique</option></select></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"><div class="form-group"><label for="session-date-in">Date</label><input type="date" id="session-date-in" class="form-control" required></div><div class="form-group"><label for="session-time-in">Start time</label><input type="time" id="session-time-in" class="form-control" required></div></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"><div class="form-group"><label for="session-duration-in">Length</label><select id="session-duration-in" class="form-control"><option value="20">20 minutes</option><option value="30" selected>30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option></select></div><div class="form-group"><label for="session-location-in">Location or link</label><input id="session-location-in" class="form-control" required></div></div>
+          <fieldset style="border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:14px;"><legend style="font-weight:700;">Publish to</legend><label style="display:block; margin-bottom:8px;"><input type="checkbox" id="session-whole-class-in"> Whole class</label>${students.map(student => `<label style="display:block; margin:6px 0;"><input type="checkbox" class="session-student-checkbox" value="${student.id}"> ${this.escapeHTML(student.name)}</label>`).join('')}</fieldset>
+          <div class="form-group"><label for="session-notes-in">What pupils should bring or prepare</label><textarea id="session-notes-in" class="form-control" rows="3" placeholder="One short instruction"></textarea></div>
+          <div id="session-recipient-summary" style="font-size:13px; margin-bottom:12px; color:var(--text-muted);">Select the class or individual pupils.</div>
+          <button class="btn btn-primary" type="submit">Publish session</button>
+        </form>
+        <div><h2 style="font-size:18px;">Published sessions</h2>${sessions.map(session => `<div class="card" style="margin-top:12px;"><span class="badge badge-primary">${this.escapeHTML(session.type)}</span><h3 style="margin:8px 0 4px;">${this.escapeHTML(session.title)}</h3><div style="font-size:13px; color:var(--text-muted);">${session.date} at ${this.escapeHTML(session.startTime)} · ${session.durationMinutes} mins · ${this.escapeHTML(session.location)}</div><div style="font-size:12px; margin-top:8px;">${session.recipientType === 'class' ? 'Whole class' : `${(session.recipientIds || []).length} selected pupil${(session.recipientIds || []).length === 1 ? '' : 's'}`}</div></div>`).join('') || '<p>No sessions published.</p>'}</div>
+      </div>`;
+    const wholeClass = document.getElementById('session-whole-class-in');
+    const pupilBoxes = Array.from(panel.querySelectorAll('.session-student-checkbox'));
+    const summary = document.getElementById('session-recipient-summary');
+    const updateRecipients = () => {
+      pupilBoxes.forEach(box => { box.disabled = wholeClass.checked; });
+      const count = pupilBoxes.filter(box => box.checked).length;
+      summary.textContent = wholeClass.checked ? `Whole class · ${students.length} pupils` : count ? `${count} selected pupil${count === 1 ? '' : 's'}` : 'Select the class or individual pupils.';
+    };
+    wholeClass.onchange = updateRecipients;
+    pupilBoxes.forEach(box => box.onchange = updateRecipients);
+    document.getElementById('support-session-form').onsubmit = event => {
+      event.preventDefault();
+      const recipientIds = pupilBoxes.filter(box => box.checked).map(box => box.value);
+      if (!wholeClass.checked && !recipientIds.length) return this.alert('Choose the whole class or at least one pupil.');
+      window.db.addSupportSession({
+        title: document.getElementById('session-title-in').value.trim(), type: document.getElementById('session-type-in').value,
+        date: document.getElementById('session-date-in').value, startTime: document.getElementById('session-time-in').value,
+        durationMinutes: Number(document.getElementById('session-duration-in').value), location: document.getElementById('session-location-in').value.trim(),
+        notes: document.getElementById('session-notes-in').value.trim(), classId: 'class_1', recipientType: wholeClass.checked ? 'class' : 'students', recipientIds
+      });
+      this.alert('Session published to the selected pupils.'); this.render();
+    };
   }
 
   // ==================== TEACHER TOPICS CONTROLS ====================

@@ -2,7 +2,7 @@
 const DB_KEY = 'examlogic_db';
 
 const defaultDatabase = {
-  schemaVersion: 4,
+  schemaVersion: 10,
   schools: [
     {
       id: 'school_1',
@@ -89,13 +89,29 @@ const defaultDatabase = {
       paper: 'Paper 1',
       name: 'Computer Systems',
       topics: [
-        { id: 'topic_1_1', name: 'Systems Architecture', objectives: ['CPU architecture', 'Von Neumann architecture', 'CPU performance factors'] },
-        { id: 'topic_1_2', name: 'Memory and Storage', objectives: ['RAM and ROM', 'Secondary storage categories', 'Storage capacity and calculations'] },
-        { id: 'topic_1_3', name: 'Data Representation', objectives: ['Binary, denary and hex conversions', 'Binary addition and shifts', 'Character, image and sound storage'] },
-        { id: 'topic_1_4', name: 'Networks and Protocols', objectives: ['Network types (LAN/WAN)', 'Network hardware', 'Client-server and peer-to-peer', 'Protocols and layers'] },
-        { id: 'topic_1_5', name: 'Network Security', objectives: ['Threats to networks', 'Identifying and preventing vulnerabilities'] },
-        { id: 'topic_1_6', name: 'Systems Software', objectives: ['Operating systems functions', 'Utility software'] },
-        { id: 'topic_1_7', name: 'Ethical, Legal and Environmental Impacts', objectives: ['Legislation', 'Ethical and cultural issues', 'Environmental concerns'] }
+        { id: 'topic_1_1', code: '1.1', name: 'Systems Architecture', objectives: [
+          { id: '1.1.1', name: 'Architecture of the CPU' }, { id: '1.1.2', name: 'CPU performance' }, { id: '1.1.3', name: 'Embedded systems' }
+        ] },
+        { id: 'topic_1_2', code: '1.2', name: 'Memory and Storage', objectives: [
+          { id: '1.2.1', name: 'Primary storage (memory)' }, { id: '1.2.2', name: 'Secondary storage' }
+        ] },
+        { id: 'topic_1_3', code: '1.2', name: 'Data Representation', objectives: [
+          { id: '1.2.3', name: 'Units' },
+          { id: '1.2.4a', name: 'Data storage: numbers' }, { id: '1.2.4b', name: 'Data storage: characters' }, { id: '1.2.4c', name: 'Data storage: images' },
+          { id: '1.2.4d', name: 'Data storage: sound' }, { id: '1.2.5', name: 'Compression' }
+        ] },
+        { id: 'topic_1_4', code: '1.3', name: 'Computer Networks, Connections and Protocols', objectives: [
+          { id: '1.3.1', name: 'Networks and topologies' }, { id: '1.3.2', name: 'Wired and wireless networks, protocols and layers' }
+        ] },
+        { id: 'topic_1_5', code: '1.4', name: 'Network Security', objectives: [
+          { id: '1.4.1', name: 'Threats to computer systems and networks' }, { id: '1.4.2', name: 'Identifying and preventing vulnerabilities' }
+        ] },
+        { id: 'topic_1_6', code: '1.5', name: 'Systems Software', objectives: [
+          { id: '1.5.1', name: 'Operating systems' }, { id: '1.5.2', name: 'Utility software' }
+        ] },
+        { id: 'topic_1_7', code: '1.6', name: 'Ethical, Legal, Cultural and Environmental Impacts', objectives: [
+          { id: '1.6.1', name: 'Ethical, legal, cultural and environmental impact' }, { id: '1.6.2', name: 'Legislation and privacy' }
+        ] }
       ]
     },
     {
@@ -103,11 +119,20 @@ const defaultDatabase = {
       paper: 'Paper 2',
       name: 'Computational Thinking, Algorithms and Programming',
       topics: [
-        { id: 'topic_2_1', name: 'Algorithms', objectives: ['Computational thinking', 'Searching algorithms', 'Sorting algorithms', 'Creating and tracing algorithms'] },
-        { id: 'topic_2_2', name: 'Programming Fundamentals', objectives: ['Variables, constants and assignment', 'Sequence, selection and iteration', 'Operators and string handling', 'File handling and records', 'Arrays'] },
-        { id: 'topic_2_3', name: 'Robust Programming', objectives: ['Defensive design', 'Testing and validation'] },
-        { id: 'topic_2_4', name: 'Boolean Logic', objectives: ['Logic gates (AND, OR, NOT)', 'Truth tables', 'Combining logic gates'] },
-        { id: 'topic_2_5', name: 'Translators and IDEs', objectives: ['High-level and low-level languages', 'Compilers, interpreters and assemblers', 'IDE tools and features'] }
+        { id: 'topic_2_1', code: '2.1', name: 'Algorithms', objectives: [
+          { id: '2.1.1', name: 'Computational thinking' }, { id: '2.1.2', name: 'Designing, creating and refining algorithms' }, { id: '2.1.3', name: 'Searching and sorting algorithms' }
+        ] },
+        { id: 'topic_2_2', code: '2.2', name: 'Programming Fundamentals', objectives: [
+          { id: '2.2.1', name: 'Programming fundamentals' }, { id: '2.2.2', name: 'Data types' }, { id: '2.2.3', name: 'Additional programming techniques' },
+          { id: '2.2.PY', name: 'Practical Python: design, write, test and refine' }, { id: '2.2.ERL', name: 'OCR Exam Reference Language: read, trace, complete and write' }
+        ] },
+        { id: 'topic_2_3', code: '2.3', name: 'Producing Robust Programs', objectives: [
+          { id: '2.3.1', name: 'Defensive design' }, { id: '2.3.2', name: 'Testing' }
+        ] },
+        { id: 'topic_2_4', code: '2.4', name: 'Boolean Logic', objectives: [{ id: '2.4.1', name: 'Boolean logic' }] },
+        { id: 'topic_2_5', code: '2.5', name: 'Programming Languages and IDEs', objectives: [
+          { id: '2.5.1', name: 'Languages' }, { id: '2.5.2', name: 'The Integrated Development Environment' }
+        ] }
       ]
     }
   ],
@@ -125,7 +150,8 @@ const defaultDatabase = {
       classId: 'class_1',
       topicId: 'topic_1_3',
       dueDate: new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString().split('T')[0],
-      status: 'Required',
+      status: 'Recommended',
+      estimatedMinutes: 10,
       completedCount: 1
     },
     {
@@ -134,9 +160,109 @@ const defaultDatabase = {
       classId: 'class_1',
       topicId: 'topic_2_2',
       dueDate: new Date(Date.now() + 5 * 24 * 3600 * 1000).toISOString().split('T')[0],
-      status: 'Required',
+      status: 'Recommended',
+      estimatedMinutes: 15,
       completedCount: 0
     }
+  ],
+  testPreps: [
+    {
+      id: 'prep_1',
+      title: 'Data Representation Check',
+      classId: 'class_1',
+      testDate: new Date(Date.now() + 12 * 24 * 3600 * 1000).toISOString().split('T')[0],
+      weeklyMinutes: 20,
+      sessionMinutes: 10,
+      status: 'Active',
+      specificationPointIds: ['1.2.3', '1.2.4a', '1.2.4b', '1.2.4c', '1.2.4d'],
+      includePython: false,
+      includePseudocode: false
+    }
+  ],
+  supportSessions: [
+    {
+      id: 'session_1',
+      title: 'Data representation revision clinic',
+      type: 'Revision',
+      date: new Date(Date.now() + 6 * 24 * 3600 * 1000).toISOString().split('T')[0],
+      startTime: '15:45',
+      durationMinutes: 30,
+      location: 'Computer Room 2',
+      recipientType: 'students',
+      recipientIds: ['stud_1', 'stud_2'],
+      notes: 'Bring your last data representation assessment.',
+      published: true
+    }
+  ],
+  examTransferTasks: [
+    {
+      id: 'transfer_1', specificationPointId: '1.2.4c', topicId: 'topic_1_3', paper: 'Paper 1', commandWord: 'Calculate', marks: 4, minutes: 6,
+      question: 'A bitmap image is 800 pixels wide and 600 pixels high. Its colour depth is 16 bits. Calculate the uncompressed file size in bytes. Show your working.',
+      decodePrompt: 'Identify the three values needed by the image file-size formula and the unit conversion required at the end.',
+      requiredElements: ['800 × 600 × 16', '7,680,000 bits', 'divide by 8', '960,000 bytes'],
+      planningLabels: ['Formula', 'Substitution', 'Unit conversion', 'Answer with unit'],
+      modelPlan: ['width × height × colour depth', '800 × 600 × 16', 'convert bits to bytes by dividing by 8', '960,000 bytes'],
+      retryQuestion: 'A 400 × 300 pixel bitmap uses a colour depth of 24 bits. Calculate its uncompressed size in bytes.'
+    },
+    {
+      id: 'transfer_2', specificationPointId: '1.3.2', topicId: 'topic_1_4', paper: 'Paper 1', commandWord: 'Explain', marks: 4, minutes: 7,
+      question: 'A student enters a web address into a browser. Explain how DNS and an IP address help the browser connect to the correct web server.',
+      decodePrompt: 'The command word requires linked reasons, not a list. Identify what DNS does and what the resulting IP address is used for.',
+      requiredElements: ['DNS translates or looks up the domain name', 'returns the server IP address', 'IP address identifies or locates the server', 'browser uses it to send the request'],
+      planningLabels: ['DNS action', 'DNS result', 'Purpose of IP address', 'Link to browser request'],
+      modelPlan: ['look up the human-readable domain', 'obtain the corresponding IP address', 'IP uniquely identifies the destination server', 'send packets/request to that address'],
+      retryQuestion: 'Explain why both MAC addresses and IP addresses may be used when data travels across a network.'
+    },
+    {
+      id: 'transfer_3', specificationPointId: '2.3.2', topicId: 'topic_2_3', paper: 'Paper 2', commandWord: 'Design', marks: 6, minutes: 9,
+      question: 'A program accepts an exam mark from 0 to 100. Design a test plan containing normal, boundary, invalid and erroneous test data. Give an expected result for each test.',
+      decodePrompt: 'Separate the four requested test-data categories. Every test needs both a value and an expected result.',
+      requiredElements: ['normal value within range', 'boundary value such as 0 or 100', 'invalid value outside range', 'erroneous value of the wrong data type', 'expected result for every test'],
+      planningLabels: ['Normal', 'Boundary', 'Invalid', 'Erroneous', 'Expected results'],
+      modelPlan: ['50 → accepted', '0 and/or 100 → accepted', '101 or -1 → rejected', '"ten" → rejected as wrong type', 'state accepted/rejected for each'],
+      retryQuestion: 'Design test data for an age input that accepts whole numbers from 11 to 18 inclusive.'
+    },
+    {
+      id: 'transfer_4', specificationPointId: '1.6.1', topicId: 'topic_1_7', paper: 'Paper 1', commandWord: 'Discuss', marks: 8, minutes: 12,
+      question: 'A school is considering using facial-recognition cameras to record attendance. Discuss ethical, legal and privacy issues the school should consider.',
+      decodePrompt: 'A discussion needs developed arguments on more than one side, application to the school, and a justified conclusion.',
+      requiredElements: ['privacy or surveillance concern', 'personal/biometric data', 'data protection responsibilities', 'accuracy or bias', 'potential benefit', 'justified conclusion'],
+      planningLabels: ['Potential benefit', 'Privacy risk', 'Legal/data issue', 'Accuracy or bias', 'Conclusion'],
+      modelPlan: ['efficient attendance/safeguarding benefit', 'continuous monitoring may feel intrusive', 'biometric data needs lawful secure handling', 'false matches may affect groups unfairly', 'weigh safeguards against benefit'],
+      retryQuestion: 'Discuss whether a school should use monitoring software on every pupil-owned device connected to its Wi-Fi.'
+    }
+  ],
+  keyTerms: [
+    { id: 'term_cpu', term: 'CPU', topicId: 'topic_1_1', definition: 'The processor that fetches, decodes and executes instructions.', keywords: ['processor', 'instructions'] },
+    { id: 'term_alu', term: 'ALU', topicId: 'topic_1_1', definition: 'The CPU component that carries out arithmetic calculations and logical comparisons.', keywords: ['arithmetic', 'logic'] },
+    { id: 'term_cache', term: 'Cache', topicId: 'topic_1_1', definition: 'Small, fast memory close to the CPU that stores frequently used instructions and data.', keywords: ['fast', 'cpu', 'instructions'] },
+    { id: 'term_ram', term: 'RAM', topicId: 'topic_1_2', definition: 'Volatile primary memory that stores programs and data currently in use.', keywords: ['volatile', 'programs', 'data'] },
+    { id: 'term_rom', term: 'ROM', topicId: 'topic_1_2', definition: 'Non-volatile primary memory that stores instructions which do not normally change.', keywords: ['non-volatile', 'instructions'] },
+    { id: 'term_virtual_memory', term: 'Virtual memory', topicId: 'topic_1_2', definition: 'A section of secondary storage used temporarily when RAM is full.', keywords: ['secondary storage', 'ram', 'full'] },
+    { id: 'term_bit', term: 'Bit', topicId: 'topic_1_3', definition: 'A single binary digit with a value of either 0 or 1.', keywords: ['binary', '0', '1'] },
+    { id: 'term_overflow', term: 'Overflow', topicId: 'topic_1_3', definition: 'An error that occurs when a binary result is too large to fit in the available number of bits.', keywords: ['too large', 'bits'] },
+    { id: 'term_metadata', term: 'Metadata', topicId: 'topic_1_3', definition: 'Data that describes other data, such as an image’s width, height or creation date.', keywords: ['describes', 'data'] },
+    { id: 'term_lossy', term: 'Lossy compression', topicId: 'topic_1_3', definition: 'Compression that permanently removes some data to reduce file size.', keywords: ['removes', 'data', 'file size'] },
+    { id: 'term_lan', term: 'LAN', topicId: 'topic_1_4', definition: 'A network covering a small geographical area, such as one school site.', keywords: ['network', 'small', 'area'] },
+    { id: 'term_protocol', term: 'Protocol', topicId: 'topic_1_4', definition: 'An agreed set of rules for communication between devices.', keywords: ['rules', 'communication'] },
+    { id: 'term_phishing', term: 'Phishing', topicId: 'topic_1_5', definition: 'A social-engineering attack that uses deceptive messages to trick people into revealing information or opening malicious content.', keywords: ['trick', 'message', 'information'] },
+    { id: 'term_encryption', term: 'Encryption', topicId: 'topic_1_5', definition: 'Scrambling data so it can only be read using the correct decryption key.', keywords: ['scrambling', 'data', 'key'] },
+    { id: 'term_os', term: 'Operating system', topicId: 'topic_1_6', definition: 'System software that manages hardware and provides services and an interface for applications and users.', keywords: ['system software', 'hardware', 'interface'] },
+    { id: 'term_open_source', term: 'Open-source software', topicId: 'topic_1_7', definition: 'Software whose source code is available for people to inspect, modify and redistribute under its licence.', keywords: ['source code', 'modify', 'licence'] },
+    { id: 'term_abstraction', term: 'Abstraction', topicId: 'topic_2_1', definition: 'Removing unnecessary detail so attention can be focused on the important parts of a problem.', keywords: ['unnecessary', 'detail', 'important'] },
+    { id: 'term_decomposition', term: 'Decomposition', topicId: 'topic_2_1', definition: 'Breaking a problem into smaller, more manageable parts.', keywords: ['breaking', 'problem', 'smaller'] },
+    { id: 'term_algorithm', term: 'Algorithm', topicId: 'topic_2_1', definition: 'A precise sequence of steps used to solve a problem.', keywords: ['sequence', 'steps', 'solve'] },
+    { id: 'term_variable', term: 'Variable', topicId: 'topic_2_2', definition: 'A named storage location whose value can change while a program runs.', keywords: ['named', 'value', 'change'] },
+    { id: 'term_selection', term: 'Selection', topicId: 'topic_2_2', definition: 'Choosing which instructions to execute based on whether a condition is true or false.', keywords: ['condition', 'true', 'false'] },
+    { id: 'term_iteration', term: 'Iteration', topicId: 'topic_2_2', definition: 'Repeating a set of instructions using a loop.', keywords: ['repeating', 'instructions', 'loop'] },
+    { id: 'term_array', term: 'Array', topicId: 'topic_2_2', definition: 'A data structure that stores multiple values of the same data type under one name, accessed using an index.', keywords: ['multiple', 'same data type', 'index'] },
+    { id: 'term_syntax_error', term: 'Syntax error', topicId: 'topic_2_3', definition: 'An error that breaks the grammatical rules of a programming language and prevents translation or execution.', keywords: ['rules', 'language', 'prevents'] },
+    { id: 'term_logic_error', term: 'Logic error', topicId: 'topic_2_3', definition: 'An error where a program runs but produces an unexpected result.', keywords: ['runs', 'unexpected', 'result'] },
+    { id: 'term_validation', term: 'Validation', topicId: 'topic_2_3', definition: 'Checking that input data meets specified rules before it is processed.', keywords: ['checking', 'input', 'rules'] },
+    { id: 'term_boolean', term: 'Boolean', topicId: 'topic_2_4', definition: 'A data value or expression that can be only true or false.', keywords: ['true', 'false'] },
+    { id: 'term_compiler', term: 'Compiler', topicId: 'topic_2_5', definition: 'A translator that converts an entire high-level program into machine code before it is run.', keywords: ['translator', 'entire', 'machine code'] },
+    { id: 'term_interpreter', term: 'Interpreter', topicId: 'topic_2_5', definition: 'A translator that translates and executes a high-level program one instruction at a time.', keywords: ['translator', 'one', 'instruction'] },
+    { id: 'term_pseudocode', term: 'Pseudocode', topicId: 'topic_2_1', definition: 'A structured, language-independent way to describe the steps of an algorithm.', keywords: ['structured', 'language-independent', 'algorithm'] }
   ],
   questions: [
     {
@@ -1268,7 +1394,7 @@ const defaultDatabase = {
       title: 'Reading Code: String Output',
       instructions: 'Review the Python code below. Identify what the code will output when run.',
       problem: 'Determine the printed output of this program:\n\n```python\nusername = "Harriet"\nsubject = "Computer Science"\nprint("Welcome " + username + " to " + subject)\n```',
-      code: '# Reading exercise: Write what the output will be in the string box below\noutput = ""',
+      code: 'username = "Harriet"\nsubject = "Computer Science"\nprint("Welcome " + username + " to " + subject)',
       expectedOutput: 'Welcome Harriet to Computer Science',
       supportLadder: [
         'The variable "username" stores "Harriet".',
@@ -1276,7 +1402,7 @@ const defaultDatabase = {
         'The program concatenates the strings together with spaces in between.'
       ],
       testCases: [
-        { input: '', expected: 'Welcome Harriet to Computer Science' }
+        { input: '', inputs: [], expected: 'Welcome Harriet to Computer Science' }
       ],
       explainQuestion: 'Explain why strings are concatenated using the + operator in Python.',
       explainModelAnswer: 'The + operator is used to join or concatenate two or more strings together to create a single string.'
@@ -1288,7 +1414,7 @@ const defaultDatabase = {
       title: 'Completing Code: Exam Grade',
       instructions: 'Complete the selection structure to print "Pass" if score is 50 or above, otherwise print "Fail".',
       problem: 'Complete the conditional statements in the editor.',
-      code: 'score = 65\n# Complete the conditional below\nif score >= 50:\n    print("Pass")\nelse:\n    print("Fail")',
+      code: 'score = int(input("Score: "))\n# Complete the selection below\nif score >= 50:\n    pass\nelse:\n    pass',
       expectedOutput: 'Pass',
       supportLadder: [
         'We need to check if the score is greater than or equal to 50.',
@@ -1296,8 +1422,8 @@ const defaultDatabase = {
         'Make sure to indent the print statements.'
       ],
       testCases: [
-        { input: '65', expected: 'Pass' },
-        { input: '45', expected: 'Fail' }
+        { input: '65', inputs: ['65'], expected: 'Pass' },
+        { input: '45', inputs: ['45'], expected: 'Fail' }
       ],
       explainQuestion: 'What is the purpose of the colon (:) at the end of the if statement in Python?',
       explainModelAnswer: 'The colon indicates the start of an indented block of code that should be executed if the condition is true.'
@@ -1317,7 +1443,7 @@ const defaultDatabase = {
         'Change range(1, 5) to range(1, 6).'
       ],
       testCases: [
-        { input: '', expected: '1\n2\n3\n4\n5' }
+        { input: '', inputs: [], expected: '1\n2\n3\n4\n5' }
       ],
       explainQuestion: 'Explain why loops are a crucial programming construct in algorithm design.',
       explainModelAnswer: 'Loops allow a block of instructions to be repeated multiple times without duplicating the code, reducing file sizes and error rates.'
@@ -1329,7 +1455,7 @@ const defaultDatabase = {
       title: 'Writing Code: Hex to Denary conversion',
       instructions: 'Write a Python function called `hex_char_to_val(char)` that takes a single hex character (0-9 or A-F) and returns its integer denary value.',
       problem: 'Create a function that handles A=10, B=11, C=12, D=13, E=14, F=15, and digit strings 0-9.',
-      code: 'def hex_char_to_val(char):\n    # Write your solution here\n    if char.isdigit():\n        return int(char)\n    else:\n        # Convert letter to value\n        letters = {"A":10, "B":11, "C":12, "D":13, "E":14, "F":15}\n        return letters.get(char.upper(), 0)',
+      code: 'def hex_char_to_val(char):\n    # Return 0-9 directly and convert A-F to 10-15\n    return 0',
       expectedOutput: '10', // Test input "A"
       supportLadder: [
         'If the character is between "0" and "9", convert it directly to an integer.',
@@ -1337,9 +1463,9 @@ const defaultDatabase = {
         'Ensure letters are converted to uppercase using `.upper()` before checking.'
       ],
       testCases: [
-        { input: 'A', expected: '10' },
-        { input: '5', expected: '5' },
-        { input: 'F', expected: '15' }
+        { input: 'A', inputs: [], functionArg: 'A', expected: '10' },
+        { input: '5', inputs: [], functionArg: '5', expected: '5' },
+        { input: 'F', inputs: [], functionArg: 'F', expected: '15' }
       ],
       explainQuestion: 'Explain why hexadecimal is used in Computer Science instead of binary.',
       explainModelAnswer: 'Hexadecimal is used because it is shorter and easier for humans to read, write, and debug compared to long strings of binary digits. It does not consume less storage space in memory.'
@@ -1359,10 +1485,36 @@ const defaultDatabase = {
         'Convert each line to an integer using `int(line)` and add it to `total` before printing.'
       ],
       testCases: [
-        { input: 'file_data: 50\\n60\\n40', expected: '150' }
+        { input: 'scores.txt: 50, 60, 40', inputs: [], fileContent: '50\n60\n40\n', expected: '150' }
       ],
       explainQuestion: 'Explain why we should close files or use "with open" in Python.',
       explainModelAnswer: 'Using "with open" automatically closes the file after the block finishes, releasing lock files and saving system memory resources.'
+    },
+    {
+      id: 'pc_6', level: 6, concept: 'Validation & Selection', title: 'Complete Code: Valid Age Range',
+      instructions: 'Complete the program so ages from 11 to 18 inclusive print "Accepted" and all other integers print "Rejected".', problem: 'Use a compound condition so both boundaries are included.',
+      code: 'age = int(input("Age: "))\n# Complete the validation\nif __________:\n    print("Accepted")\nelse:\n    print("Rejected")', expectedOutput: 'Accepted',
+      supportLadder: ['The value must pass a lower-bound and an upper-bound check.', 'Join the two comparisons using `and`.', 'Both 11 and 18 must be accepted.'],
+      testCases: [{ input: '11', inputs: ['11'], expected: 'Accepted' }, { input: '18', inputs: ['18'], expected: 'Accepted' }, { input: '10', inputs: ['10'], expected: 'Rejected' }, { input: '19', inputs: ['19'], expected: 'Rejected' }],
+      explainQuestion: 'Explain why boundary values 11 and 18 must be included in the test data.', explainModelAnswer: 'Boundary tests check the exact limits where program behaviour changes and often reveal comparison errors.'
+    },
+    {
+      id: 'pc_7', level: 7, concept: 'Lists & Iteration', title: 'Debug Code: Count Even Values', instructions: 'The program should count the even values in the list. Find and fix the logic error.', problem: 'Trace the condition and accumulator. The expected count is 3.',
+      code: 'values = [3, 8, 11, 14, 20]\ncount = 0\nfor value in values:\n    if value % 2 == 1:\n        count = count + 1\nprint(count)', expectedOutput: '3',
+      supportLadder: ['The remainder after division by 2 identifies even and odd values.', 'Even numbers have a remainder of 0.', 'Change only the comparison in the if condition.'], testCases: [{ input: 'fixed list', inputs: [], expected: '3' }],
+      explainQuestion: 'Explain the role of the accumulator variable `count`.', explainModelAnswer: 'The accumulator stores a running total and is increased each time a value meets the condition.'
+    },
+    {
+      id: 'pc_8', level: 8, concept: 'Functions & Lists', title: 'Write Code: Calculate an Average', instructions: 'Write `calculate_average(values)` to return the arithmetic mean of a non-empty list of numbers.', problem: 'The function must work for different lists rather than one fixed example.',
+      code: 'def calculate_average(values):\n    # Return the mean of all values\n    pass', expectedOutput: '20.0', supportLadder: ['The mean is the total divided by the number of values.', 'Python provides `sum()` and `len()`.', 'Return the result rather than printing inside the function.'],
+      testCases: [{ input: '[10, 20, 30]', inputs: [], functionName: 'calculate_average', functionArgs: [[10, 20, 30]], expected: '20.0' }, { input: '[2, 4]', inputs: [], functionName: 'calculate_average', functionArgs: [[2, 4]], expected: '3.0' }],
+      explainQuestion: 'Why is a parameter preferable to using a fixed list inside the function?', explainModelAnswer: 'A parameter lets the same function operate on many different lists, improving reuse and testability.'
+    },
+    {
+      id: 'pc_9', level: 9, concept: 'Exam Transfer: Search Function', title: 'Exam Bridge: Linear Search', instructions: 'Write `linear_search(values, target)` to return the index of the first matching value, or -1 if it is absent.', problem: 'Translate the inputs, process and outputs in the exam-style requirement into a tested function.',
+      code: 'def linear_search(values, target):\n    # Examine each index in order\n    pass', expectedOutput: '2', supportLadder: ['The inputs are a list and a target; the output is an index.', 'Use a loop over the valid indexes.', 'Return immediately on a match; return -1 only after the loop.'],
+      testCases: [{ input: '[4, 7, 9, 7], 9', inputs: [], functionName: 'linear_search', functionArgs: [[4, 7, 9, 7], 9], expected: '2' }, { input: '[4, 7, 9], 5', inputs: [], functionName: 'linear_search', functionArgs: [[4, 7, 9], 5], expected: '-1' }, { input: '[7, 7, 9], 7', inputs: [], functionName: 'linear_search', functionArgs: [[7, 7, 9], 7], expected: '0' }],
+      explainQuestion: 'Explain why `return -1` must be placed after the loop.', explainModelAnswer: 'The complete list must be checked before the program can conclude that the target is absent.'
     }
   ],
   attempts: [
@@ -1471,6 +1623,10 @@ class LocalDB {
   getUnits() { return this.cachedData.units; }
   getClassroomControls() { return this.cachedData.classroomControls; }
   getAssignments() { return this.cachedData.assignments; }
+  getTestPreps() { return this.cachedData.testPreps || []; }
+  getSupportSessions() { return this.cachedData.supportSessions || []; }
+  getExamTransferTasks() { return this.cachedData.examTransferTasks || []; }
+  getKeyTerms() { return this.cachedData.keyTerms || []; }
   getQuestions() { return this.cachedData.questions; }
   getWrittenQuestions() { return this.cachedData.writtenQuestions; }
   getProgrammingChallenges() { return this.cachedData.programmingChallenges; }
@@ -1505,6 +1661,26 @@ class LocalDB {
     this.saveData();
     this.addAuditLog('Assignment Created', `Assignment "${newAssign.title}" created.`, 'Teacher');
     return newAssign;
+  }
+
+  addTestPrep(testPrep) {
+    const newPrep = {
+      id: 'prep_' + Date.now(),
+      status: 'Active',
+      ...testPrep
+    };
+    this.cachedData.testPreps.push(newPrep);
+    this.saveData();
+    this.addAuditLog('Test preparation created', `Test preparation "${newPrep.title}" created.`, 'Teacher');
+    return newPrep;
+  }
+
+  addSupportSession(session) {
+    const newSession = { id: 'session_' + Date.now(), published: true, ...session };
+    this.cachedData.supportSessions.push(newSession);
+    this.saveData();
+    this.addAuditLog('Support session published', `Session "${newSession.title}" published.`, 'Teacher');
+    return newSession;
   }
 
   addAttempt(attempt) {

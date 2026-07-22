@@ -32,6 +32,12 @@ describe('Content Security Policy deployment configuration', () => {
   test('retains the required framing and connection allowlists', () => {
     expect(enforcedPolicy.value).toContain("frame-src 'self' https://fairmeeting.net");
     expect(enforcedPolicy.value).toContain('wss://*.pusher.com');
-    expect(enforcedPolicy.value).toContain('connect-src \'self\' wss://*.pusher.com https://*.pusher.com https://fairmeeting.net');
+    expect(enforcedPolicy.value).toContain('wss://*.pusher.com https://*.pusher.com https://fairmeeting.net');
+  });
+
+  test('allows the pinned Python runtime in a same-origin worker', () => {
+    expect(enforcedPolicy.value).toContain("worker-src 'self'");
+    expect(enforcedPolicy.value).toContain("script-src 'self' https://cdn.jsdelivr.net");
+    expect(enforcedPolicy.value).toContain("connect-src 'self' https://cdn.jsdelivr.net");
   });
 });
