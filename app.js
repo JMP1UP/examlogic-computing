@@ -516,8 +516,7 @@ class App {
             <div style="margin-bottom: 32px;">
               <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Learning now</h2>
               <div class="card card-info" style="padding: 16px 20px;">
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                  ${activeTopics.length > 0 ? activeTopics.map((topic, idx) => `
+                <div style="display: flex; flex-direction: co                  ${activeTopics.length > 0 ? activeTopics.map((topic, idx) => `
                     <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: ${idx < activeTopics.length - 1 ? '12px' : '0'}; ${idx < activeTopics.length - 1 ? 'border-bottom: 1px solid var(--border-color);' : ''}">
                       <div>
                         <div style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 2px;">
@@ -525,13 +524,13 @@ class App {
                         </div>
                         <h4 style="font-size: 15px; margin: 0; font-weight: 600; color: var(--text-main);">${topic.name}</h4>
                       </div>
-                      <button class="btn btn-secondary btn-sm" onclick="app.activeTopicId='${topic.id}'; app.switchTab('stud-learn')" style="min-height: 36px; font-weight: 500;">View topic</button>
+                      <button class="btn btn-secondary btn-sm view-topic-btn" data-topic-id="${topic.id}" style="min-height: 36px; font-weight: 500;">View topic</button>
                     </div>
                   `).join('') : '<p style="font-size: 14px; margin: 0; color: var(--text-muted);">No active topics set by teacher.</p>'}
                 </div>
               </div>
             </div>
-
+ 
             <!-- Assignments Section -->
             <div style="margin-bottom: 32px;">
               <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Assignments</h2>
@@ -578,7 +577,7 @@ class App {
                       ${isCompleted ? `
                         <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.6; min-height: 40px; padding: 0 16px;">Done</button>
                       ` : `
-                        <button class="btn btn-primary btn-sm" onclick="app.activeTopicId='${a.topicId}'; app.switchTab('stud-recall')" style="min-height: 40px; padding: 0 16px;">${btnText}</button>
+                        <button class="btn btn-primary btn-sm start-assignment-btn" data-topic-id="${a.topicId}" style="min-height: 40px; padding: 0 16px;">${btnText}</button>
                       `}
                     </div>
                   `;
@@ -586,7 +585,7 @@ class App {
               </div>
             </div>
           </div>
-
+ 
           <div>
             <!-- Shrunken streak / Consistency card -->
             <div class="card card-progress" style="margin-bottom: 24px; padding: 24px;">
@@ -605,7 +604,7 @@ class App {
                 ${student.streak}-week consistency streak
               </div>
             </div>
-
+ 
             <!-- Actionable Worth Revisiting -->
             <div class="card card-info" style="margin-bottom: 24px; padding: 24px;">
               <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Worth revisiting</h3>
@@ -629,7 +628,7 @@ class App {
                       </div>
                       <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 12px; color: var(--text-muted);">Last score: 40%</span>
-                        <button class="btn btn-secondary btn-sm" onclick="app.activeTopicId='${topicId}'; app.switchTab('${targetTab}')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">
+                        <button class="btn btn-secondary btn-sm worth-revisiting-btn" data-topic-id="${topicId}" data-target-tab="${targetTab}" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">
                           ${btnLabel}
                         </button>
                       </div>
@@ -638,7 +637,7 @@ class App {
                 }).join('')}
               </div>
             </div>
-
+ 
             <!-- Recent Progress -->
             <div class="card card-progress" style="padding: 24px;">
               <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">Recent progress</h3>
@@ -653,6 +652,28 @@ class App {
         </div>
       </div>
     `;
+ 
+    // Programmatically bind dynamically rendered buttons to comply with CSP
+    panel.querySelectorAll('.view-topic-btn').forEach(btn => {
+      btn.onclick = () => {
+        this.activeTopicId = btn.getAttribute('data-topic-id');
+        this.switchTab('stud-learn');
+      };
+    });
+
+    panel.querySelectorAll('.start-assignment-btn').forEach(btn => {
+      btn.onclick = () => {
+        this.activeTopicId = btn.getAttribute('data-topic-id');
+        this.switchTab('stud-recall');
+      };
+    });
+
+    panel.querySelectorAll('.worth-revisiting-btn').forEach(btn => {
+      btn.onclick = () => {
+        this.activeTopicId = btn.getAttribute('data-topic-id');
+        this.switchTab(btn.getAttribute('data-target-tab'));
+      };
+    });
 
     // Dropdown toggle binding
     const trigger = document.getElementById('student-profile-trigger');
@@ -667,7 +688,7 @@ class App {
         dropdown.classList.remove('show-dropdown');
       });
     }
-
+ 
     const dropSignout = document.getElementById('dropdown-signout');
     if (dropSignout) {
       dropSignout.onclick = (e) => {
@@ -675,7 +696,7 @@ class App {
         this.handleLogout();
       };
     }
-
+ 
     document.getElementById('today-rec-btn').onclick = () => {
       this.switchTab('stud-practise');
     };
@@ -705,8 +726,7 @@ class App {
               <ul style="list-style:none; display:flex; flex-direction:column; gap:8px; margin-top:8px;">
                 ${u.topics.map(t => `
                   <li>
-                    <a href="#" style="font-size: 14px; text-decoration:none; color: ${t.id === this.activeTopicId ? 'var(--teal)' : 'var(--text-main)'}; font-weight: ${t.id === this.activeTopicId ? '600' : '400'}" 
-                       onclick="event.preventDefault(); app.activeTopicId='${t.id}'; app.render();">
+                    <a href="#" class="learn-topic-link" data-topic-id="${t.id}" style="font-size: 14px; text-decoration:none; color: ${t.id === this.activeTopicId ? 'var(--teal)' : 'var(--text-main)'}; font-weight: ${t.id === this.activeTopicId ? '600' : '400'}">
                       ${t.name}
                     </a>
                   </li>
@@ -775,6 +795,15 @@ class App {
         }
       };
     }
+
+    // Programmatically bind syllabus links to comply with CSP
+    panel.querySelectorAll('.learn-topic-link').forEach(link => {
+      link.onclick = (e) => {
+        e.preventDefault();
+        this.activeTopicId = link.getAttribute('data-topic-id');
+        this.render();
+      };
+    });
   }
 
   // ==================== WEEKLY NUMBER SKILLS ====================
@@ -800,11 +829,12 @@ class App {
                 <p style="font-size:15px; color: var(--text-main); font-weight:600; margin-bottom: 12px;">${q.question}</p>
                 
                 ${q.supportGrid ? `
-                  <div style="display: grid; grid-template-columns: repeat(8, 40px); gap: 6px; margin-bottom: 8px; text-align: center; font-size:12px;">
+                  <div style="display: grid; grid-template-columns: repeat(4, 40px) 12px repeat(4, 40px); gap: 6px; margin-bottom: 8px; text-align: center; font-size:12px; align-items: center;">
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">128</div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">64</div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">32</div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">16</div>
+                    <div></div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">8</div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">4</div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">2</div>
@@ -815,11 +845,12 @@ class App {
                 <div class="form-group" style="margin: 0;">
                   ${q.inputType === 'binary' ? `
                     <div style="display: flex; gap: 8px; align-items: center;">
-                      <div style="display: grid; grid-template-columns: repeat(8, 40px); gap: 6px;">
+                      <div style="display: grid; grid-template-columns: repeat(4, 40px) 12px repeat(4, 40px); gap: 6px; align-items: center;">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="0" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[0] || ''}">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="1" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[1] || ''}">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="2" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[2] || ''}">
-                        <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="3" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[3] || ''}">
+                        <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="3" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px; margin-right: 2px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[3] || ''}">
+                        <div style="text-align: center; color: var(--text-muted); font-weight: 700; font-size: 16px;">&middot;</div>
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="4" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[4] || ''}">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="5" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[5] || ''}">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="6" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '')[6] || ''}">
@@ -835,11 +866,12 @@ class App {
                     </div>
                   ` : q.inputType === 'binary-overflow' ? `
                     <div style="display: flex; flex-direction: column; gap: 12px;">
-                      <div style="display: grid; grid-template-columns: repeat(8, 40px); gap: 6px;">
+                      <div style="display: grid; grid-template-columns: repeat(4, 40px) 12px repeat(4, 40px); gap: 6px; align-items: center;">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="0" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[0] || ''}">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="1" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[1] || ''}">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="2" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[2] || ''}">
-                        <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="3" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[3] || ''}">
+                        <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="3" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px; margin-right: 2px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[3] || ''}">
+                        <div style="text-align: center; color: var(--text-muted); font-weight: 700; font-size: 16px;">&middot;</div>
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="4" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[4] || ''}">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="5" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[5] || ''}">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="6" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[6] || ''}">
@@ -944,6 +976,26 @@ class App {
       };
     });
 
+    // Restrict keystrokes on binary inputs (only allow '0' or '1')
+    const onlyBinInputs = panel.querySelectorAll('.num-ans-binary-input, .num-ans-binoverflow-input');
+    onlyBinInputs.forEach(input => {
+      input.onkeypress = (e) => {
+        if (e.key !== '0' && e.key !== '1') {
+          e.preventDefault();
+        }
+      };
+    });
+
+    // Restrict keystrokes on hex inputs (only allow alphanumeric [0-9A-Fa-f])
+    const onlyHexInputs = panel.querySelectorAll('.num-ans-hex-input');
+    onlyHexInputs.forEach(input => {
+      input.onkeypress = (e) => {
+        if (!/^[0-9A-Fa-f]$/.test(e.key)) {
+          e.preventDefault();
+        }
+      };
+    });
+
     // Programmatic binding for difficulty radio buttons to comply with CSP and fix interaction blocks
     const diffInputs = panel.querySelectorAll('input[name="diff"]');
     diffInputs.forEach(input => {
@@ -967,15 +1019,15 @@ class App {
 
     if (this.numberSkillsDifficulty === 'Foundation') {
       this.numberSkillsSet = [
-        { type: 'Binary to Denary', question: 'Convert the binary byte 00001101 to a denary number.', answer: '13', hint: 'Add up the places that contain a 1: 8 + 4 + 1 = 13.', supportGrid: true, inputType: 'standard' },
+        { type: 'Binary to Denary', question: 'Convert the binary byte 0000 1101 to a denary number.', answer: '13', hint: 'Add up the places that contain a 1: 8 + 4 + 1 = 13.', supportGrid: true, inputType: 'standard' },
         { type: 'Denary to Binary', question: 'Convert the denary value 10 to an 8-bit binary number.', answer: '00001010', hint: 'Find the largest column value that fits: 8 + 2 = 10. Place 1s in columns 8 and 2.', supportGrid: true, inputType: 'binary' },
-        { type: 'Binary left shift', question: 'Perform a left shift of 1 place on the binary byte 00000101.', answer: '00001010', hint: 'Shift every digit one place to the left and insert 0 on the right.', supportGrid: false, inputType: 'binary' },
+        { type: 'Binary left shift', question: 'Perform a left shift of 1 place on the binary byte 0000 0101.', answer: '00001010', hint: 'Shift every digit one place to the left and insert 0 on the right.', supportGrid: false, inputType: 'binary' },
         { type: 'Data units', question: 'How many bits are in 3 bytes of storage?', answer: '24', hint: 'There are 8 bits in one single byte. Multiply 3 by 8.', supportGrid: false, inputType: 'standard' }
       ];
     } else if (this.numberSkillsDifficulty === 'Developing') {
       this.numberSkillsSet = [
-        { type: 'Binary to Hex', question: 'Convert 10101111 to hexadecimal.', answer: 'AF', hint: 'Split into two nibbles: 1010 (10 = A) and 1111 (15 = F). Concatenate.', supportGrid: false, inputType: 'hex' },
-        { type: 'Binary addition', question: 'Add the binary numbers 00001010 (10) and 00000101 (5). Express as binary.', answer: '00001111', hint: 'Add column by column starting from the right.', supportGrid: true, inputType: 'binary' },
+        { type: 'Binary to Hex', question: 'Convert 1010 1111 to hexadecimal.', answer: 'AF', hint: 'Split into two nibbles: 1010 (10 = A) and 1111 (15 = F). Concatenate.', supportGrid: false, inputType: 'hex' },
+        { type: 'Binary addition', question: 'Add the binary numbers 0000 1010 (10) and 0000 0101 (5). Express as binary.', answer: '00001111', hint: 'Add column by column starting from the right.', supportGrid: true, inputType: 'binary' },
         { type: 'Image File Size', question: 'Calculate the file size in bits of an image that has a width of 100 pixels, a height of 50 pixels, and a colour depth of 8 bits.', answer: '40000', hint: 'Formula: Width * Height * Colour Depth. (100 * 50 * 8)', supportGrid: false, inputType: 'standard' },
         { type: 'Audio File Size', question: 'Calculate the file size in bits of a sound recording with a sample rate of 1000Hz, a bit depth of 16 bits, and a length of 5 seconds (mono).', answer: '80000', hint: 'Formula: Rate * Depth * Time. (1000 * 16 * 5)', supportGrid: false, inputType: 'standard' }
       ];
@@ -983,9 +1035,9 @@ class App {
       // Secure
       this.numberSkillsSet = [
         { type: 'Combined conversions', question: 'Convert the hexadecimal value 1E into a denary integer.', answer: '30', hint: '1 = 16, E = 14. Total = 1 * 16 + 14 = 30.', supportGrid: false, inputType: 'standard' },
-        { type: 'Overflow detection', question: 'Add binary values 11000000 (192) and 01000000 (64). State if overflow occurs (write answer as value, then append " - OVERFLOW" if applicable).', answer: '00000000 - OVERFLOW', hint: 'The sum is 256, which exceeds the max 8-bit limit (255). This creates an overflow bit.', supportGrid: false, inputType: 'binary-overflow' },
-        { type: 'Image File size (KB)', question: 'An image is 800 x 600 pixels with a colour depth of 8 bits. Calculate the storage size in Kibibytes (KiB). (Round to nearest integer)', answer: '469', hint: 'Total bits = 800 * 600 * 8 = 3840000. Bytes = 480000. KiB = 480000 / 1024 = 468.75.', supportGrid: false, inputType: 'standard' },
-        { type: 'Audio File size (MB)', question: 'An audio file is recorded with a sample rate of 44100Hz, 16 bits resolution, stereo (2 channels), for 10 seconds. Calculate size in Megabytes (MB) (approximate divisor 1,000,000). Round to nearest tenth.', answer: '14.1', hint: 'Size in bits = 44100 * 16 * 2 * 10 = 14112000. Bytes = 1764000. Megabytes = 14.1.', supportGrid: false, inputType: 'standard' }
+        { type: 'Overflow detection', question: 'Add binary values 1100 0000 (192) and 0100 0000 (64). State if overflow occurs (write answer as value, then append " - OVERFLOW" if applicable).', answer: '00000000 - OVERFLOW', hint: 'The sum is 256, which exceeds the max 8-bit limit (255). This creates an overflow bit.', supportGrid: false, inputType: 'binary-overflow' },
+        { type: 'Image File size (KB)', question: 'An image is 800 x 600 pixels with a colour depth of 8 bits. Calculate the storage size in Kibibytes (KiB), using 1024 as the divisor. (Round to nearest integer)', answer: '469', hint: 'Total bits = 800 * 600 * 8 = 3840000. Bytes = 480000. KiB = 480000 / 1024 = 468.75.', supportGrid: false, inputType: 'standard' },
+        { type: 'Audio File size (MB)', question: 'An audio file is recorded with a sample rate of 44100Hz, 16 bits resolution, stereo (2 channels), for 10 seconds. Calculate size in Megabytes (MB), using 1,000,000 as the approximate divisor. Round to nearest tenth.', answer: '14.1', hint: 'Size in bits = 44100 * 16 * 2 * 10 = 14112000. Bytes = 1764000. Megabytes = 14.1.', supportGrid: false, inputType: 'standard' }
       ];
     }
   }
@@ -1057,8 +1109,12 @@ class App {
       panel.innerHTML = `
         <h2>Quiz Recall</h2>
         <p>No questions found in this topic yet.</p>
-        <button class="btn btn-secondary" onclick="app.switchTab('stud-dashboard')">Back</button>
+        <button class="btn btn-secondary" id="empty-quiz-back-btn">Back</button>
       `;
+      const backBtn = document.getElementById('empty-quiz-back-btn');
+      if (backBtn) {
+        backBtn.onclick = () => this.switchTab('stud-dashboard');
+      }
       return;
     }
 
@@ -1195,13 +1251,17 @@ class App {
           <h3 style="margin-bottom: 8px;">Self-assessment feedback</h3>
           <p style="font-size: 14px; margin-bottom: 16px;">This check will adjust scheduling intervals for future reviews. How did you feel about this test?</p>
           <div style="display: flex; gap: 8px; justify-content: center;">
-            <button class="btn btn-secondary btn-sm" onclick="app.switchTab('stud-dashboard')">I knew this securely</button>
-            <button class="btn btn-secondary btn-sm" onclick="app.switchTab('stud-dashboard')">I partly knew this</button>
-            <button class="btn btn-secondary btn-sm" onclick="app.switchTab('stud-dashboard')">I understood it after seeing answers</button>
+            <button class="btn btn-secondary btn-sm quiz-confidence-btn">I knew this securely</button>
+            <button class="btn btn-secondary btn-sm quiz-confidence-btn">I partly knew this</button>
+            <button class="btn btn-secondary btn-sm quiz-confidence-btn">I understood it after seeing answers</button>
           </div>
         </div>
       </div>
     `);
+
+    document.querySelectorAll('.quiz-confidence-btn').forEach(btn => {
+      btn.onclick = () => this.switchTab('stud-dashboard');
+    });
   }
 
   // ==================== PROGRAMMING sandbox ====================
@@ -1231,8 +1291,7 @@ class App {
           <ul style="list-style:none; display:flex; flex-direction:column; gap:8px;">
             ${challenges.map(c => `
               <li>
-                <a href="#" style="font-size:13px; text-decoration:none; color: ${c.id === this.activeChallengeId ? 'var(--teal)' : 'var(--text-main)'}; font-weight:${c.id === this.activeChallengeId ? '600' : '400'};"
-                   onclick="event.preventDefault(); app.activeChallengeId='${c.id}'; app.editorCode='${c.code}'; app.supportLevelUsed=0; app.render();">
+                <a href="#" class="prog-challenge-link" data-cid="${c.id}" data-ccode="${c.code}" style="font-size:13px; text-decoration:none; color: ${c.id === this.activeChallengeId ? 'var(--teal)' : 'var(--text-main)'}; font-weight:${c.id === this.activeChallengeId ? '600' : '400'};">
                   Lvl ${c.level}: ${c.title}
                 </a>
               </li>
@@ -1268,11 +1327,11 @@ class App {
             <h3 style="font-size:16px; margin-bottom: 8px;">🧗 Support ladder</h3>
             <p style="font-size: 13px; margin-bottom: 12px;">Request support progressively. Supported attempts are recorded to refine future difficulty.</p>
             
-            <button class="btn btn-secondary btn-sm" style="width: 100%; margin-bottom: 8px; justify-content: flex-start;" onclick="app.triggerSupportLadder(1)">Step 1: Restate Problem</button>
-            <button class="btn btn-secondary btn-sm" style="width: 100%; margin-bottom: 8px; justify-content: flex-start;" onclick="app.triggerSupportLadder(2)">Step 2: Inputs & Outputs</button>
-            <button class="btn btn-secondary btn-sm" style="width: 100%; margin-bottom: 8px; justify-content: flex-start;" onclick="app.triggerSupportLadder(3)">Step 3: Concept Hint</button>
-            <button class="btn btn-secondary btn-sm" style="width: 100%; margin-bottom: 8px; justify-content: flex-start;" onclick="app.triggerSupportLadder(4)">Step 4: Pseudocode</button>
-            <button class="btn btn-secondary btn-sm" style="width: 100%; margin-bottom: 12px; justify-content: flex-start;" onclick="app.triggerSupportLadder(5)">Step 5: Model Solution</button>
+            <button class="btn btn-secondary btn-sm support-ladder-btn" data-step="1" style="width: 100%; margin-bottom: 8px; justify-content: flex-start;">Step 1: Restate Problem</button>
+            <button class="btn btn-secondary btn-sm support-ladder-btn" data-step="2" style="width: 100%; margin-bottom: 8px; justify-content: flex-start;">Step 2: Inputs & Outputs</button>
+            <button class="btn btn-secondary btn-sm support-ladder-btn" data-step="3" style="width: 100%; margin-bottom: 8px; justify-content: flex-start;">Step 3: Concept Hint</button>
+            <button class="btn btn-secondary btn-sm support-ladder-btn" data-step="4" style="width: 100%; margin-bottom: 8px; justify-content: flex-start;">Step 4: Pseudocode</button>
+            <button class="btn btn-secondary btn-sm support-ladder-btn" data-step="5" style="width: 100%; margin-bottom: 12px; justify-content: flex-start;">Step 5: Model Solution</button>
             
             <div id="support-ladder-feedback" class="card" style="background-color: var(--bg-main); padding: 12px; font-size:13px; line-height: 1.4; display: none;"></div>
           </div>
@@ -1303,6 +1362,25 @@ class App {
         this.editorCode = e.target.value;
       };
     }
+
+    // Bind challenge links programmatically
+    panel.querySelectorAll('.prog-challenge-link').forEach(link => {
+      link.onclick = (e) => {
+        e.preventDefault();
+        this.activeChallengeId = link.getAttribute('data-cid');
+        this.editorCode = link.getAttribute('data-ccode');
+        this.supportLevelUsed = 0;
+        this.render();
+      };
+    });
+
+    // Bind support ladder step buttons programmatically
+    panel.querySelectorAll('.support-ladder-btn').forEach(btn => {
+      btn.onclick = () => {
+        const step = parseInt(btn.getAttribute('data-step'));
+        this.triggerSupportLadder(step);
+      };
+    });
 
     // Bind execution runner
     const runBtn = document.getElementById('run-code-btn');
@@ -1372,11 +1450,21 @@ class App {
       }
 
       if (matches) {
-        outcomeText.textContent = tc.expected;
+        outcomeText.textContent = `Passed (returned: ${tc.expected})`;
         outcomeText.style.color = 'var(--green)';
         card.style.borderColor = 'var(--green)';
       } else {
-        outcomeText.textContent = 'Failed - returned incorrect output';
+        let errorDetail = 'returned incorrect output';
+        if (challenge.id === 'pc_1') {
+          errorDetail = "expected string 'Welcome Harriet to Computer Science' not matched in code output";
+        } else if (challenge.id === 'pc_2') {
+          errorDetail = `expected output '${tc.expected}' when input is ${tc.input} but condition block not detected`;
+        } else if (challenge.id === 'pc_3') {
+          errorDetail = "expected loop output for counting 1 to 5 (loop range(1, 6) not detected)";
+        } else if (challenge.id === 'pc_4') {
+          errorDetail = `expected hexadecimal '${tc.input}' to convert to integer val ${tc.expected} but function signature check failed`;
+        }
+        outcomeText.textContent = `Failed - ${errorDetail}`;
         outcomeText.style.color = 'var(--red)';
         card.style.borderColor = 'var(--red)';
         allPassed = false;
@@ -1434,11 +1522,10 @@ class App {
       <div style="display: grid; grid-template-columns: 280px 1fr; gap: 32px;">
         <div style="border-right: 1px solid var(--border-color); padding-right: 24px;">
           <h3 style="font-size: 15px; margin-bottom: 12px;">Syllabus Questions</h3>
-          <ul style="list-style:none; display:flex; flex-direction:column; gap:12px;">
+          <ul style="list-style:none; display:flex; flex-direction:column; gap:12px;" id="written-questions-list">
             ${questions.map(q => `
               <li>
-                <a href="#" style="font-size: 13px; text-decoration:none; color: ${q.id === this.activeWQuestionId ? 'var(--teal)' : 'var(--text-main)'}; font-weight: ${q.id === this.activeWQuestionId ? '600' : '400'};"
-                   onclick="event.preventDefault(); app.activeWQuestionId='${q.id}'; app.render();">
+                <a href="#" class="written-q-link" data-qid="${q.id}" style="font-size: 13px; text-decoration:none; color: ${q.id === this.activeWQuestionId ? 'var(--teal)' : 'var(--text-main)'}; font-weight: ${q.id === this.activeWQuestionId ? '600' : '400'};">
                   ${q.commandWord}: ${q.scenario} (${q.marks} marks)
                 </a>
               </li>
@@ -1475,6 +1562,16 @@ class App {
             <button class="btn btn-secondary btn-sm" id="construct-ans-btn">Construct Answer from Planning Frame</button>
           </div>
 
+          <!-- Sentence Starters Scaffold -->
+          <div style="margin-bottom: 12px;">
+            <span style="font-size: 13px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">💡 Need a starting point? Click to insert a sentence starter:</span>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-secondary btn-sm sentence-starter-btn" data-text="One significant ethical issue is " style="font-size: 11px; padding: 4px 8px; min-height: 28px;">"One significant issue is..."</button>
+              <button type="button" class="btn btn-secondary btn-sm sentence-starter-btn" data-text="This directly impacts the scenario because " style="font-size: 11px; padding: 4px 8px; min-height: 28px;">"This directly impacts..."</button>
+              <button type="button" class="btn btn-secondary btn-sm sentence-starter-btn" data-text="Consequently, this leads to " style="font-size: 11px; padding: 4px 8px; min-height: 28px;">"Consequently, this leads to..."</button>
+            </div>
+          </div>
+
           <!-- Main Response Input Area -->
           <div class="form-group">
             <label style="font-size:14px; font-weight:600;">Your Written Answer:</label>
@@ -1492,11 +1589,35 @@ class App {
               <div style="margin-top:8px;"><strong>Areas for improvement:</strong> <span id="ai-improvements"></span></div>
               <div style="margin-top:8px; border-left:3px solid var(--coral); padding-left:12px;"><strong>Clear action item:</strong> <span id="ai-action"></span></div>
             </div>
-            <button class="btn btn-secondary btn-sm" style="margin-top: 20px;" onclick="app.switchTab('stud-dashboard')">Save and exit</button>
+            <button class="btn btn-secondary btn-sm" style="margin-top: 20px;" id="written-feedback-close-btn">Save and exit</button>
           </div>
         </div>
       </div>
     `;
+
+    // Bind question links programmatically
+    const qLinks = panel.querySelectorAll('.written-q-link');
+    qLinks.forEach(link => {
+      link.onclick = (e) => {
+        e.preventDefault();
+        this.activeWQuestionId = link.getAttribute('data-qid');
+        this.render();
+      };
+    });
+
+    // Bind sentence starters
+    const starterBtns = panel.querySelectorAll('.sentence-starter-btn');
+    starterBtns.forEach(btn => {
+      btn.onclick = () => {
+        const text = btn.getAttribute('data-text');
+        const box = document.getElementById('written-response-box');
+        if (box) {
+          box.value = text + box.value.trim();
+          box.focus();
+          this.writtenResponseText = box.value;
+        }
+      };
+    });
 
     // Construct answer from scaffold inputs
     const consBtn = document.getElementById('construct-ans-btn');
@@ -1526,6 +1647,14 @@ class App {
           return;
         }
         this.runAiMarkingSimulation(activeQ, text);
+      };
+    }
+
+    // Bind feedback close button
+    const closeBtn = document.getElementById('written-feedback-close-btn');
+    if (closeBtn) {
+      closeBtn.onclick = () => {
+        this.switchTab('stud-dashboard');
       };
     }
   }
@@ -2226,11 +2355,11 @@ class App {
                   <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px;">
                     <strong>${t.name}</strong>
                     <div style="display:flex; gap:8px;">
-                      <button class="btn ${currentStatus === 'teaching' ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="app.updateClassroomTopic('${t.id}', 'teaching')">Teaching now</button>
-                      <button class="btn ${currentStatus === 'recent' ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="app.updateClassroomTopic('${t.id}', 'recent')">Recent</button>
-                      <button class="btn ${currentStatus === 'practice' ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="app.updateClassroomTopic('${t.id}', 'practice')">Practice</button>
-                      <button class="btn ${currentStatus === 'priority' ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="app.updateClassroomTopic('${t.id}', 'priority')">Priority</button>
-                      <button class="btn ${currentStatus === 'hidden' ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="app.updateClassroomTopic('${t.id}', 'hidden')">Hidden</button>
+                      <button class="btn ${currentStatus === 'teaching' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="teaching">Teaching now</button>
+                      <button class="btn ${currentStatus === 'recent' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="recent">Recent</button>
+                      <button class="btn ${currentStatus === 'practice' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="practice">Practice</button>
+                      <button class="btn ${currentStatus === 'priority' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="priority">Priority</button>
+                      <button class="btn ${currentStatus === 'hidden' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="hidden">Hidden</button>
                     </div>
                   </div>
                 `;
@@ -2240,6 +2369,14 @@ class App {
         `).join('')}
       </div>
     `;
+
+    panel.querySelectorAll('.teacher-topic-btn').forEach(btn => {
+      btn.onclick = () => {
+        const topicId = btn.getAttribute('data-topic-id');
+        const status = btn.getAttribute('data-status');
+        this.updateClassroomTopic(topicId, status);
+      };
+    });
   }
 
   updateClassroomTopic(topicId, status) {
@@ -2343,7 +2480,7 @@ class App {
             </div>
 
             <!-- Teacher grading controls -->
-            <form onsubmit="event.preventDefault(); app.submitTeacherWrittenOverride('${s.id}', this)">
+            <form class="teacher-grade-form" data-sid="${s.id}">
               <div style="display:flex; gap:12px; align-items:flex-end;">
                 <div class="form-group" style="margin:0;">
                   <label>Manual Override Mark (0-6)</label>
@@ -2405,6 +2542,14 @@ class App {
         ${reviewedHtml}
       </div>
     `;
+
+    panel.querySelectorAll('.teacher-grade-form').forEach(form => {
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        const subId = form.getAttribute('data-sid');
+        this.submitTeacherWrittenOverride(subId, form);
+      };
+    });
   }
 
   submitTeacherWrittenOverride(subId, form) {
@@ -2455,7 +2600,7 @@ class App {
                     <strong>${s.name}</strong><br>
                     <span style="color: var(--text-muted); font-size:12px;">${lastMsg ? lastMsg.text : 'No messages'}</span>
                   </div>
-                  <button class="btn btn-secondary btn-sm" onclick="app.activeStudentChat('${s.id}')">Reply</button>
+                  <button class="btn btn-secondary btn-sm chat-reply-btn" data-student-id="${s.id}">Reply</button>
                 </div>
               `;
             }).join('')}
@@ -2463,6 +2608,13 @@ class App {
         </div>
       </div>
     `;
+
+    panel.querySelectorAll('.chat-reply-btn').forEach(btn => {
+      btn.onclick = () => {
+        const studentId = btn.getAttribute('data-student-id');
+        this.activeStudentChat(studentId);
+      };
+    });
 
     const bForm = document.getElementById('broadcast-form');
     if (bForm) {
