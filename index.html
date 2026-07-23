@@ -13,13 +13,14 @@
     };
   </script>
   <!-- Stylesheet -->
-  <!-- style.css?v=1.6.5 for test compliance -->
-  <link rel="stylesheet" href="style.css?v=1.6.5">
+  <!-- style.css?v=1.6.6 for test compliance -->
+  <link rel="stylesheet" href="style.css?v=1.6.6">
 </head>
 <body>
+  <a class="skip-link" id="skip-link" href="#login-screen">Skip to main content</a>
 
   <!-- Landing Screen / Microsoft Login Gateway -->
-  <div id="login-screen" class="login-screen-container">
+  <div id="login-screen" class="login-screen-container" tabindex="-1">
     <header class="landing-header">
       <div class="landing-header-container">
         <div class="landing-brand">
@@ -142,12 +143,12 @@
   </div>
 
   <!-- Microsoft authentication simulation modal -->
-  <div id="microsoft-auth-modal" class="modal-overlay">
+  <div id="microsoft-auth-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="microsoft-auth-title">
     <div class="modal-content" style="max-width: 440px;">
-      <button class="modal-close" id="auth-modal-close">&times;</button>
+      <button class="modal-close" id="auth-modal-close" aria-label="Close sign-in dialog">&times;</button>
       <div style="text-align: center; margin-bottom: 24px;">
         <div style="font-size: 32px; margin-bottom: 8px;">🔑</div>
-        <h3>Sign in with your Microsoft school account</h3>
+        <h3 id="microsoft-auth-title">Sign in with your Microsoft school account</h3>
         <p style="font-size: 13px;">Leicester High School Authentication Portal</p>
       </div>
 
@@ -198,7 +199,9 @@
               <span class="brand-endorsement">by 25Thirty</span>
             </div>
           </div>
-          <button id="mobile-nav-toggle" aria-controls="app-role-navigation" aria-expanded="false" style="display: none;"></button>
+          <button id="mobile-nav-toggle" class="mobile-nav-toggle" aria-controls="app-role-navigation" aria-expanded="false" aria-label="Open navigation menu">
+            <span aria-hidden="true">☰</span>
+          </button>
           <!-- Navigation bar links -->
           <nav id="app-role-navigation">
             <ul class="nav-links" id="nav-links-list">
@@ -220,7 +223,7 @@
         </div>
       </aside>
 
-      <main class="main-content" id="main-panel">
+      <main class="main-content" id="main-panel" tabindex="-1">
         <!-- Screens injected here by app.js -->
       </main>
     </div>
@@ -280,8 +283,8 @@
 
   <!-- Scripts -->
   <script src="safeguarding.js"></script>
-  <script src="database.js?v=1.6.5"></script>
-  <!-- app.js?v=1.6.5 for test compliance -->
-  <script src="app.js?v=1.6.5"></script>
+  <script src="database.js?v=1.6.6"></script>
+  <!-- app.js?v=1.6.6 for test compliance -->
+  <script src="app.js?v=1.6.6"></script>
 </body>
 </html>

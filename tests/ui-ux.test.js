@@ -32,17 +32,55 @@ describe('User experience regression checks', () => {
   });
 
   test('updated interface assets use the current cache-busting release', () => {
-    expect(html).toContain('style.css?v=1.6.5');
-    expect(html).toContain('app.js?v=1.6.5');
+    expect(html).toContain('style.css?v=1.6.6');
+    expect(html).toContain('app.js?v=1.6.6');
   });
 
   test('mobile navigation is collapsible and keyboard dismissible', () => {
     expect(html).toContain('id="mobile-nav-toggle"');
     expect(html).toContain('aria-controls="app-role-navigation"');
     expect(html).toContain('aria-expanded="false"');
+    expect(html).toContain('aria-label="Open navigation menu"');
     expect(app).toContain("event.key === 'Escape'");
+    expect(app).toContain("sidebar?.classList.toggle('mobile-nav-open')");
+    expect(app).toContain('this.closeMobileNav(); this.switchTab(link.id)');
     expect(app).toContain("activeNav.classList.add('active-role-nav')");
+    expect(css).toMatch(/@media \(max-width: 768px\)[\s\S]*?\.mobile-nav-toggle[\s\S]*?display: inline-flex/);
     expect(css).toContain('.sidebar:not(.mobile-nav-open) .nav-links.active-role-nav');
+    expect(css).toContain('.sidebar.mobile-nav-open .nav-links.active-role-nav');
+  });
+
+  test('sign-in dialog has semantics, focus containment and focus restoration', () => {
+    expect(html).toContain('role="dialog"');
+    expect(html).toContain('aria-modal="true"');
+    expect(html).toContain('aria-labelledby="microsoft-auth-title"');
+    expect(html).toContain('aria-label="Close sign-in dialog"');
+    expect(app).toContain("const activeModal = document.querySelector('.modal-overlay.active[role=\"dialog\"]')");
+    expect(app).toContain('this.modalReturnFocus = document.activeElement');
+    expect(app).toContain('this.modalReturnFocus.focus()');
+  });
+
+  test('keyboard users can skip repeated navigation', () => {
+    expect(html).toContain('id="skip-link"');
+    expect(html).toContain('href="#login-screen"');
+    expect(html).toContain('id="main-panel" tabindex="-1"');
+    expect(app).toContain("skipLink.setAttribute('href', '#main-panel')");
+    expect(css).toContain('.skip-link:focus');
+  });
+
+  test('programming controls have persistent accessible names', () => {
+    expect(app).toContain('<label for="predict-input"');
+    expect(app).toContain('<label class="sr-only" for="python-editor">Python code editor</label>');
+    expect(app).toContain('<label for="coding-explanation-response"');
+    expect(app).toContain('aria-label="Start ${index === 0');
+  });
+
+  test('programming support preserves structured evidence and gates reflection on success', () => {
+    expect(app).toContain('this.activeSupportFeedback[step] = text');
+    expect(app).not.toContain('this.activeSupportFeedback = text;');
+    expect(app).toContain('const allProgrammingTestsPassed');
+    expect(app).toContain('${allProgrammingTestsPassed ? `');
+    expect(app).toContain('Python runtime: previous test results preserved');
   });
 
   test('student safeguarding report actions remain touch accessible', () => {

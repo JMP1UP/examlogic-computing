@@ -47,6 +47,35 @@ body.dark-mode {
   --border-color: #2D3748;
 }
 
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 20000;
+  transform: translateY(-160%);
+  padding: 10px 14px;
+  border-radius: var(--radius-button);
+  background: var(--navy);
+  color: var(--white);
+  font-weight: 700;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -766,6 +795,22 @@ tr:hover td {
     padding: 16px;
     overflow-y: visible;
   }
+  .mobile-nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    min-height: 44px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: var(--radius-button);
+  }
+  .sidebar:not(.mobile-nav-open) .nav-links.active-role-nav {
+    display: none;
+  }
+  .sidebar.mobile-nav-open .nav-links.active-role-nav {
+    display: flex;
+  }
   .sidebar-footer {
     display: none;
   }
@@ -789,7 +834,6 @@ tr:hover td {
     min-height: 44px;
   }
 }
-.sidebar:not(.mobile-nav-open) .nav-links.active-role-nav {}
 
 /* Centered container with max-width limit for standard dashboards */
 .dashboard-container {

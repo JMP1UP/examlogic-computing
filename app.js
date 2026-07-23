@@ -74,6 +74,7 @@ class App {
     this.writtenStage = 'plan';
 
     this.theme = 'light';
+    this.modalReturnFocus = null;
   }
 
   getTimeBasedGreeting() {
@@ -271,6 +272,43 @@ class App {
     if (heroLoginTrigger) heroLoginTrigger.onclick = () => this.openModal('microsoft-auth-modal');
     if (authClose) authClose.onclick = () => this.closeModal('microsoft-auth-modal');
 
+    const mobileNavToggle = document.getElementById('mobile-nav-toggle');
+    if (mobileNavToggle) {
+      mobileNavToggle.onclick = () => {
+        const sidebar = mobileNavToggle.closest('.sidebar');
+        const isOpen = sidebar?.classList.toggle('mobile-nav-open') || false;
+        mobileNavToggle.setAttribute('aria-expanded', String(isOpen));
+        mobileNavToggle.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
+      };
+    }
+
+    document.addEventListener('keydown', event => {
+      const activeModal = document.querySelector('.modal-overlay.active[role="dialog"]');
+      if (activeModal) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          this.closeModal(activeModal.id);
+          return;
+        }
+        if (event.key === 'Tab') {
+          const focusable = Array.from(activeModal.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'))
+            .filter(element => element.offsetParent !== null);
+          if (!focusable.length) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+        return;
+      }
+      if (event.key === 'Escape') this.closeMobileNav();
+    });
+
     // Hero demo buttons
     const heroDemoStudentBtn = document.getElementById('hero-demo-student-btn');
     const heroDemoTeacherBtn = document.getElementById('hero-demo-teacher-btn');
@@ -323,7 +361,10 @@ class App {
   openModal(id) {
     const modal = document.getElementById(id);
     if (modal) {
+      this.modalReturnFocus = document.activeElement;
       modal.classList.add('active');
+      const firstFocusable = modal.querySelector('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href]');
+      if (firstFocusable) firstFocusable.focus();
     }
   }
 
@@ -331,6 +372,18 @@ class App {
     const modal = document.getElementById(id);
     if (modal) {
       modal.classList.remove('active');
+      if (this.modalReturnFocus?.focus) this.modalReturnFocus.focus();
+      this.modalReturnFocus = null;
+    }
+  }
+
+  closeMobileNav() {
+    const sidebar = document.querySelector('.sidebar');
+    const mobileNavToggle = document.getElementById('mobile-nav-toggle');
+    if (sidebar) sidebar.classList.remove('mobile-nav-open');
+    if (mobileNavToggle) {
+      mobileNavToggle.setAttribute('aria-expanded', 'false');
+      mobileNavToggle.setAttribute('aria-label', 'Open navigation menu');
     }
   }
 
@@ -503,8 +556,10 @@ class App {
     const appShell = document.getElementById('app-shell');
     const mainPanel = document.getElementById('main-panel');
     const navList = document.getElementById('nav-links-list');
+    const skipLink = document.getElementById('skip-link');
 
     if (!this.currentUser) {
+      if (skipLink) skipLink.setAttribute('href', '#login-screen');
       loginScreen.style.display = 'block';
       appShell.style.display = 'none';
       const demoBanner = document.getElementById('demo-banner');
@@ -514,6 +569,7 @@ class App {
 
     loginScreen.style.display = 'none';
     appShell.style.display = 'flex';
+    if (skipLink) skipLink.setAttribute('href', '#main-panel');
 
     const demoBanner = document.getElementById('demo-banner');
     if (demoBanner) {
@@ -545,7 +601,7 @@ class App {
         li.innerHTML = `<a class="nav-link ${this.activeTab === link.id ? 'active' : ''}" href="#" data-tab="${link.id}">
           <span style="display: inline-flex; align-items: center; margin-right: 12px; opacity: 0.85;">${link.icon}</span> ${link.label}
         </a>`;
-        li.querySelector('a').onclick = (e) => { e.preventDefault(); this.switchTab(link.id); };
+        li.querySelector('a').onclick = (e) => { e.preventDefault(); this.closeMobileNav(); this.switchTab(link.id); };
         navList.appendChild(li);
       });
     } else {
@@ -567,7 +623,7 @@ class App {
         li.innerHTML = `<a class="nav-link ${this.activeTab === link.id ? 'active' : ''}" href="#" data-tab="${link.id}">
           <span style="display: inline-flex; align-items: center; margin-right: 12px; opacity: 0.85;">${link.icon}</span> ${link.label}
         </a>`;
-        li.querySelector('a').onclick = (e) => { e.preventDefault(); this.switchTab(link.id); };
+        li.querySelector('a').onclick = (e) => { e.preventDefault(); this.closeMobileNav(); this.switchTab(link.id); };
         navList.appendChild(li);
       });
     }
@@ -1107,9 +1163,15 @@ class App {
           const isPseudocode = point.id === '2.2.ERL';
           const targetTab = isPython ? 'stud-programme' : isPseudocode ? 'stud-pseudocode' : 'stud-recall';
           const support = this.getAdaptiveSupportLevel(point.name);
+          const supportDescription = {
+            Guided: 'Step-by-step guidance',
+            Supported: 'Hints available',
+            Independent: 'Independent practice',
+            Challenge: 'Challenge practice'
+          }[support] || 'Hints available';
           return `<div class="card" style="display:flex; justify-content:space-between; gap:20px; align-items:center;">
-            <div><span class="badge badge-primary">${index === 0 ? 'Diagnostic' : index === sessionPoints.length - 1 ? 'Exam bridge' : 'Targeted practice'} · ${minutesEach} mins</span><h3 style="margin:8px 0 5px;">${point.id} ${point.name}</h3><p style="font-size:13px; color:var(--text-muted); margin:0;">${point.paper} · ${point.topicName} · ${support} support</p></div>
-            <button class="btn btn-primary btn-sm prep-point-start-btn" data-target-tab="${targetTab}" data-topic-id="${point.topicId}">Start</button>
+            <div><span class="badge badge-primary">${index === 0 ? 'Diagnostic' : index === sessionPoints.length - 1 ? 'Exam bridge' : 'Targeted practice'} · ${minutesEach} mins</span><h3 style="margin:8px 0 5px;">${point.id} ${point.name}</h3><p style="font-size:13px; color:var(--text-muted); margin:0;">${point.paper} · ${point.topicName} · ${supportDescription}</p></div>
+            <button class="btn btn-primary btn-sm prep-point-start-btn" aria-label="Start ${index === 0 ? 'diagnostic' : index === sessionPoints.length - 1 ? 'exam bridge' : 'targeted practice'}: ${point.id} ${point.name}" data-target-tab="${targetTab}" data-topic-id="${point.topicId}">Start</button>
           </div>`;
         }).join('')}
       </div>
@@ -2469,7 +2531,8 @@ class App {
           <div class="card" style="padding: 20px;">
             <h4 style="margin-bottom: 8px;">2. Predict the outcome</h4>
             <p style="font-size: 13px; margin-bottom: 12px; color: var(--text-muted);">What value will be printed when this program runs? Write your prediction below.</p>
-            <textarea id="predict-input" class="form-control" rows="4" placeholder="e.g. Harriet will be welcomed..." style="font-size: 14px;"></textarea>
+            <label for="predict-input" style="font-weight:600;">Your predicted output</label>
+            <textarea id="predict-input" class="form-control" rows="4" placeholder="Write what you think the program will output, and why." style="font-size: 14px;"></textarea>
             <button class="btn btn-primary" id="confirm-predict-btn" style="margin-top: 16px; min-height: 40px; min-width: 200px;">Confirm prediction & proceed to Editor</button>
           </div>
         </div>
@@ -2482,6 +2545,8 @@ class App {
         </div>
       `;
     } else if (this.programmingStage === 'run') {
+      const allProgrammingTestsPassed = this.lastProgrammingEvidence.length === challenge.testCases.length
+        && this.lastProgrammingEvidence.every(result => result.passed);
       // Step-by-step support ladder buttons HTML
       let supportLadderButtonsHtml = '';
       const stepNames = [
@@ -2511,14 +2576,15 @@ class App {
               <span style="font-family:monospace; font-size:12px; color: #94A3B8;">main.py</span>
               <button class="btn btn-primary btn-sm" id="run-code-btn" style="background-color: var(--green); min-height: 36px; padding: 0 16px;">▶ Run code</button>
             </div>
+            <label class="sr-only" for="python-editor">Python code editor</label>
             <textarea id="python-editor" class="code-input" rows="16" style="font-family: monospace; font-size: 14px; padding: 12px; width: 100%; border: 1px solid var(--border-color); border-radius: 0 0 8px 8px; resize: vertical;">${this.editorCode}</textarea>
             <div style="padding:12px; background:#07111f; color:#dbeafe; font-family:monospace; font-size:12px; border-radius: 8px; margin-top: 12px;">
-              <strong id="python-runtime-status">Python runtime: ready to load</strong>
-              <pre id="python-console-output" style="white-space:pre-wrap; margin:8px 0 0; color:inherit;">Run the code to see its output.</pre>
+              <strong id="python-runtime-status">${this.lastProgrammingEvidence.length ? 'Python runtime: previous test results preserved' : 'Python runtime: ready to load'}</strong>
+              <pre id="python-console-output" style="white-space:pre-wrap; margin:8px 0 0; color:inherit;">${this.lastProgrammingEvidence.length ? 'Edit your code, then run the tests again.' : 'Run the code to see its output.'}</pre>
             </div>
           </div>
           
-          ${this.lastProgrammingEvidence.length ? `
+          ${allProgrammingTestsPassed ? `
             <div style="margin-top: 20px;">
               <button class="btn btn-primary btn-lg" id="proceed-to-explain-btn" style="width: 100%; min-height: 44px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
                 Proceed to Reflection Step &rarr;
@@ -2537,7 +2603,7 @@ class App {
             
             <button class="btn btn-primary btn-sm" id="ai-programming-tutor-btn" style="width:100%; margin-top: 8px; margin-bottom:12px; min-height: 36px;" ${this.lastProgrammingEvidence.length ? '' : 'disabled'}>Ask tutor about my test result</button>
             
-            <div id="support-ladder-feedback" class="card" style="background-color: var(--bg-main); padding: 12px; font-size:13px; line-height: 1.4; margin-top: 10px; display: ${Object.keys(this.activeSupportFeedback || {}).length ? 'block' : 'none'};">
+            <div id="support-ladder-feedback" class="card" role="status" aria-live="polite" style="background-color: var(--bg-main); padding: 12px; font-size:13px; line-height: 1.4; margin-top: 10px; display: ${Object.keys(this.activeSupportFeedback || {}).length ? 'block' : 'none'};">
               ${Object.keys(this.activeSupportFeedback || {}).sort((a,b) => a-b).map((s, idx, arr) => `
                 <div style="margin-bottom: ${idx === arr.length - 1 ? '0' : '12px'}; padding-bottom: ${idx === arr.length - 1 ? '0' : '12px'}; border-bottom: ${idx === arr.length - 1 ? 'none' : '1px solid var(--border-color)'};">
                   ${this.activeSupportFeedback[s]}
@@ -2551,13 +2617,17 @@ class App {
           <div class="test-cases-panel" style="padding: 16px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--bg-card);">
             <h3 style="font-size:16px; margin-bottom: 12px;">Test Cases</h3>
             <div style="display:flex; flex-direction:column; gap:10px;">
-              ${challenge.testCases.map((tc, tcIdx) => `
-                <div class="test-case-item" id="tc-card-${tcIdx}" style="padding: 10px; border-radius: 6px; background-color: var(--bg-main); border: 1px solid var(--border-color);">
+              ${challenge.testCases.map((tc, tcIdx) => {
+                const evidence = this.lastProgrammingEvidence[tcIdx];
+                const outcome = !evidence ? 'Not run' : evidence.passed ? 'Passed' : `Failed — ${evidence.error}`;
+                const evidenceColour = !evidence ? 'var(--border-color)' : evidence.passed ? 'var(--green)' : 'var(--red)';
+                return `
+                <div class="test-case-item" id="tc-card-${tcIdx}" style="padding: 10px; border-radius: 6px; background-color: var(--bg-main); border: 1px solid ${evidenceColour};">
                   <strong>Test Case ${tcIdx + 1} ${tc.input ? '(Input: ' + tc.input + ')' : ''}</strong><br>
-                  Expected: <code>${tc.expected}</code><br>
-                  Outcome: <code id="tc-outcome-${tcIdx}">Not run</code>
+                  Expected: <code>${this.escapeHTML(tc.expected)}</code><br>
+                  Outcome: <code id="tc-outcome-${tcIdx}" style="color:${evidenceColour};">${this.escapeHTML(outcome)}</code>
                 </div>
-              `).join('')}
+              `;}).join('')}
             </div>
           </div>
         </div>
@@ -2569,6 +2639,7 @@ class App {
             <span class="badge badge-warning">Stage 3 of 4: Explain solution</span>
             <h2 style="margin-top: 12px; margin-bottom: 8px;">Exam Reflection Question</h2>
             <p style="font-size: 15px; font-weight: 500; color: var(--text-main); margin-bottom: 16px;">${challenge.explainQuestion}</p>
+            <label for="coding-explanation-response" style="font-weight:600;">Explain how your solution works</label>
             <textarea id="coding-explanation-response" class="form-control" placeholder="Write your explanation here..." style="font-size: 14px; height: 120px; line-height: 1.6;"></textarea>
             <button class="btn btn-primary btn-lg" id="confirm-explain-btn" style="margin-top: 16px; min-height: 44px; min-width: 220px;">Submit explanation & check</button>
           </div>
@@ -2748,7 +2819,7 @@ class App {
     }
     else if (step === 5) text = `<strong>Worked explanation:</strong><p>${challenge.explainModelAnswer}</p><p style="font-size:11px; color:var(--text-muted);">Explain the idea in your own words, then make one change to your program and test again.</p>`;
 
-    this.activeSupportFeedback = text;
+    this.activeSupportFeedback[step] = text;
     if (this.revealedSupportStep === step) {
       this.revealedSupportStep = step + 1;
     }
