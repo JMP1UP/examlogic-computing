@@ -39,7 +39,7 @@ describe('GCSE learning design', () => {
     expect(appSource).toContain('getCurriculumCoverage()');
     expect(appSource).toContain('Content-bank readiness');
     expect(appSource).toContain('This is not pupil mastery');
-    expect(appSource).toContain('does not yet mean complete, externally quality-assured specification coverage');
+    expect(appSource).toContain('teacher quality assurance is still required before it can be called complete');
   });
 
   test('uses current OCR assignment and equality operators', () => {

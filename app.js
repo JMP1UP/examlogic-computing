@@ -655,34 +655,76 @@ class App {
     }
   }
 
-  getCurriculumCoverage() {
+  getObjectiveCoverage() {
     const questions = window.db.getQuestions();
     const written = window.db.getWrittenQuestions();
     const transfers = window.db.getExamTransferTasks();
+    const terms = window.db.getKeyTerms();
+    const challenges = window.db.getProgrammingChallenges();
+    return window.db.getUnits().flatMap(unit => unit.topics.flatMap(topic => topic.objectives.map(objective => {
+      const retrievalCount = questions.filter(item => item.specificationPointId === objective.id && item.purpose === 'retrieval').length;
+      const diagnosticCount = questions.filter(item => item.specificationPointId === objective.id && item.purpose === 'diagnostic').length;
+      const applicationCount = written.filter(item => item.specificationPointId === objective.id).length
+        + challenges.filter(item => item.specificationPointId === objective.id && item.purpose === 'application').length;
+      const examTransferCount = transfers.filter(item => item.specificationPointId === objective.id).length
+        + challenges.filter(item => item.specificationPointId === objective.id && item.purpose === 'exam-transfer').length;
+      const keyTermCount = terms.filter(item => item.specificationPointId === objective.id).length;
+      const explanationCount = 0;
+      const alternateCount = retrievalCount + diagnosticCount + applicationCount + examTransferCount;
+      const missing = [];
+      if (!explanationCount) missing.push('objective explanation');
+      if (!keyTermCount) missing.push('key terms');
+      if (!diagnosticCount) missing.push('diagnostic');
+      if (retrievalCount < 3) missing.push('retrieval alternatives');
+      if (applicationCount < 2) missing.push('application');
+      if (!examTransferCount) missing.push('exam transfer');
+      if (alternateCount < 8) missing.push('spaced alternatives');
+      const completeEvidence = missing.length === 0;
+      const evidenceTypes = [keyTermCount > 0, diagnosticCount > 0, retrievalCount > 0, applicationCount > 0, examTransferCount > 0].filter(Boolean).length;
+      const status = completeEvidence ? 'Awaiting QA' : evidenceTypes >= 2 ? 'Developing' : 'Foundation';
+      return {
+        paper: unit.paper,
+        topicId: topic.id,
+        topicName: topic.name,
+        specificationPointId: objective.id,
+        specificationPointName: objective.name,
+        explanationCount,
+        keyTermCount,
+        diagnosticCount,
+        retrievalCount,
+        applicationCount,
+        examTransferCount,
+        alternateCount,
+        missing,
+        status
+      };
+    })));
+  }
+
+  getCurriculumCoverage() {
+    const objectives = this.getObjectiveCoverage();
     return window.db.getUnits().flatMap(unit => unit.topics.map(topic => {
-      const retrievalCount = questions.filter(item => item.topicId === topic.id).length;
-      const applicationCount = written.filter(item => item.topicId === topic.id).length
-        + transfers.filter(item => item.topicId === topic.id).length;
-      const evidenceCount = retrievalCount + applicationCount;
-      const status = evidenceCount >= 10 && applicationCount >= 2
-        ? 'Usable'
-        : evidenceCount >= 5
+      const topicObjectives = objectives.filter(item => item.topicId === topic.id);
+      const status = topicObjectives.every(item => item.status === 'Awaiting QA')
+        ? 'Awaiting QA'
+        : topicObjectives.every(item => item.status !== 'Foundation')
           ? 'Developing'
           : 'Foundation';
       return {
         topicId: topic.id,
         topicName: topic.name,
         paper: unit.paper,
-        objectiveCount: topic.objectives.length,
-        retrievalCount,
-        applicationCount,
+        objectiveCount: topicObjectives.length,
+        retrievalCount: topicObjectives.reduce((total, item) => total + item.retrievalCount, 0),
+        applicationCount: topicObjectives.reduce((total, item) => total + item.applicationCount + item.examTransferCount, 0),
+        gapCount: topicObjectives.reduce((total, item) => total + item.missing.length, 0),
         status
       };
     }));
   }
 
   getCoverageBadge(status) {
-    const badgeClass = status === 'Usable' ? 'badge-success' : status === 'Developing' ? 'badge-warning' : 'badge-primary';
+    const badgeClass = status === 'Awaiting QA' ? 'badge-success' : status === 'Developing' ? 'badge-warning' : 'badge-primary';
     return `<span class="badge ${badgeClass}">${status} content bank</span>`;
   }
 
@@ -1547,7 +1589,7 @@ class App {
           <div style="max-width: 720px;">
             ${(() => {
               const coverage = this.getCurriculumCoverage().find(item => item.topicId === this.activeTopicId);
-              return coverage ? `<div class="card" style="padding:12px 14px; margin-bottom:18px; background:var(--bg-main);">${this.getCoverageBadge(coverage.status)} <span style="font-size:12px; color:var(--text-muted); margin-left:6px;">${coverage.retrievalCount} retrieval checks · ${coverage.applicationCount} application tasks · ${coverage.objectiveCount} specification groups. This label describes the StudySpice content bank, not your ability.</span></div>` : '';
+              return coverage ? `<div class="card" style="padding:12px 14px; margin-bottom:18px; background:var(--bg-main);">${this.getCoverageBadge(coverage.status)} <span style="font-size:12px; color:var(--text-muted); margin-left:6px;">${coverage.gapCount} evidence gaps remain across ${coverage.objectiveCount} specification points. This label describes the StudySpice content bank, not your ability.</span></div>` : '';
             })()}
             <h3 style="margin-bottom: 8px;">1. Overview</h3>
             <p>${activeLesson.overview}</p>
@@ -3965,6 +4007,7 @@ class App {
     const units = window.db.getUnits();
     const controls = window.db.getClassroomControls();
     const coverage = this.getCurriculumCoverage();
+    const objectiveCoverage = this.getObjectiveCoverage();
     const coverageCounts = coverage.reduce((counts, item) => {
       counts[item.status] = (counts[item.status] || 0) + 1;
       return counts;
@@ -3979,11 +4022,11 @@ class App {
       <div class="card" style="margin-bottom:24px; border-left:5px solid var(--amber);">
         <h2 style="font-size:18px; margin-bottom:8px;">Content-bank readiness</h2>
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-          <span class="badge badge-success">${coverageCounts.Usable || 0} usable</span>
+          <span class="badge badge-success">${coverageCounts['Awaiting QA'] || 0} awaiting QA</span>
           <span class="badge badge-warning">${coverageCounts.Developing || 0} developing</span>
           <span class="badge badge-primary">${coverageCounts.Foundation || 0} foundation</span>
         </div>
-        <p style="font-size:13px; margin:0;">This is not pupil mastery. “Usable” means the bank has a broader mixture of retrieval and application tasks; it does not yet mean complete, externally quality-assured specification coverage.</p>
+        <p style="font-size:13px; margin:0;">This is not pupil mastery. A point reaches “Awaiting QA” only after every required evidence type exists; teacher quality assurance is still required before it can be called complete.</p>
       </div>
 
       <div style="display:flex; flex-direction:column; gap:24px;">
@@ -3995,16 +4038,24 @@ class App {
               ${u.topics.map(t => {
                 const currentStatus = controls[t.id] || 'hidden';
                 const topicCoverage = coverage.find(item => item.topicId === t.id);
+                const objectiveRows = objectiveCoverage.filter(item => item.topicId === t.id);
                 return `
-                  <div style="display:flex; justify-content:space-between; align-items:center; gap:18px; font-size:14px;">
-                    <div style="min-width:260px;"><strong>${t.name}</strong><div style="margin-top:5px;">${this.getCoverageBadge(topicCoverage.status)} <span style="font-size:11px; color:var(--text-muted);">${topicCoverage.retrievalCount} retrieval · ${topicCoverage.applicationCount} application · ${topicCoverage.objectiveCount} groups</span></div></div>
-                    <div style="display:flex; gap:8px;">
-                      <button class="btn ${currentStatus === 'teaching' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="teaching">Teaching now</button>
-                      <button class="btn ${currentStatus === 'recent' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="recent">Recent</button>
-                      <button class="btn ${currentStatus === 'practice' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="practice">Practice</button>
-                      <button class="btn ${currentStatus === 'priority' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="priority">Priority</button>
-                      <button class="btn ${currentStatus === 'hidden' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="hidden">Hidden</button>
+                  <div style="border-bottom:1px solid var(--border-color); padding-bottom:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:18px; font-size:14px;">
+                      <div style="min-width:260px;"><strong>${t.name}</strong><div style="margin-top:5px;">${this.getCoverageBadge(topicCoverage.status)} <span style="font-size:11px; color:var(--text-muted);">${topicCoverage.gapCount} evidence gaps across ${topicCoverage.objectiveCount} specification points</span></div></div>
+                      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="btn ${currentStatus === 'teaching' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="teaching">Teaching now</button>
+                        <button class="btn ${currentStatus === 'recent' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="recent">Recent</button>
+                        <button class="btn ${currentStatus === 'practice' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="practice">Practice</button>
+                        <button class="btn ${currentStatus === 'priority' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="priority">Priority</button>
+                        <button class="btn ${currentStatus === 'hidden' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="hidden">Hidden</button>
+                      </div>
                     </div>
+                    <details style="margin-top:10px;"><summary style="cursor:pointer; font-size:12px; font-weight:700;">View specification-point evidence</summary>
+                      <div class="table-container" style="margin-top:10px;"><table><thead><tr><th>Point</th><th>Terms</th><th>Diagnostic</th><th>Retrieval</th><th>Application</th><th>Exam transfer</th><th>Priority gaps</th></tr></thead><tbody>
+                        ${objectiveRows.map(item => `<tr><td><strong>${item.specificationPointId}</strong><div style="font-size:11px;">${this.escapeHTML(item.specificationPointName)}</div></td><td>${item.keyTermCount}</td><td>${item.diagnosticCount}</td><td>${item.retrievalCount}</td><td>${item.applicationCount}</td><td>${item.examTransferCount}</td><td style="font-size:11px;">${item.missing.slice(0, 3).join(', ')}${item.missing.length > 3 ? ` +${item.missing.length - 3}` : ''}</td></tr>`).join('')}
+                      </tbody></table></div>
+                    </details>
                   </div>
                 `;
               }).join('')}

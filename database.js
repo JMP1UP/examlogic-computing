@@ -1568,6 +1568,64 @@ const defaultDatabase = {
   }
 };
 
+const QUESTION_SPECIFICATION_MAP = {
+  q_1_1_a: '1.1.1', q_1_1_b: '1.1.2', q_1_1_c: '1.1.1', q_1_1_d: '1.1.3', q_1_1_e: '1.1.1', q_1: '1.1.1',
+  q_1_2_a: '1.2.1', q_1_2_b: '1.2.1', q_1_2_c: '1.2.2', q_1_2_d: '1.2.3', q_1_2_e: '1.2.2', q_2: '1.2.1', q_3: '1.2.2',
+  q_1_3_a: '1.2.4a', q_1_3_b: '1.2.4b', q_1_3_c: '1.2.4d', q_1_3_d: '1.2.5',
+  q_1_4_a: '1.3.1', q_1_4_b: '1.3.2', q_1_4_c: '1.3.2', q_1_4_d: '1.3.2', q_4: '1.3.2',
+  q_1_5_a: '1.4.1', q_1_5_b: '1.4.1', q_1_5_c: '1.4.2', q_1_5_d: '1.4.2',
+  q_1_6_a: '1.5.1', q_1_6_b: '1.5.1', q_1_6_c: '1.5.2', q_1_6_d: '1.5.1',
+  q_1_7_a: '1.6.2', q_1_7_b: '1.6.2', q_1_7_c: '1.6.1', q_1_7_d: '1.6.2',
+  q_2_1_a: '2.1.1', q_2_1_b: '2.1.3', q_2_1_c: '2.1.3', q_2_1_d: '2.1.3', q_2_1_e: '2.1.2', q_5: '2.1.3',
+  q_2_2_a: '2.2.2', q_2_2_b: '2.2.1', q_2_2_c: '2.2.1', q_2_2_d: '2.2.1',
+  q_2_3_a: '2.3.1', q_2_3_b: '2.3.1', q_2_3_c: '2.3.2', q_2_3_d: '2.3.2',
+  q_2_4_a: '2.4.1', q_2_4_b: '2.4.1', q_2_4_c: '2.4.1', q_2_4_d: '2.4.1',
+  q_6: '1.2.1',
+  q_2_5_a: '2.5.1', q_2_5_b: '2.5.1', q_2_5_c: '2.5.1', q_2_5_d: '2.5.2'
+};
+
+const WRITTEN_SPECIFICATION_MAP = {
+  wq_1: '1.6.1', wq_2: '1.4.2', wq_3: '1.1.2', wq_4: '1.2.1', wq_5: '1.3.1',
+  wq_6: '1.2.4d', wq_7: '2.1.3', wq_8: '2.3.1', wq_9: '2.5.1'
+};
+
+const KEY_TERM_SPECIFICATION_MAP = {
+  term_cpu: '1.1.1', term_alu: '1.1.1', term_cache: '1.1.2', term_ram: '1.2.1', term_rom: '1.2.1',
+  term_virtual_memory: '1.2.1', term_bit: '1.2.3', term_overflow: '1.2.4a', term_metadata: '1.2.4c',
+  term_lossy: '1.2.5', term_lan: '1.3.1', term_protocol: '1.3.2', term_phishing: '1.4.1',
+  term_encryption: '1.4.2', term_os: '1.5.1', term_open_source: '1.6.1', term_abstraction: '2.1.1',
+  term_decomposition: '2.1.1', term_algorithm: '2.1.2', term_variable: '2.2.1', term_selection: '2.2.1',
+  term_iteration: '2.2.1', term_array: '2.2.3', term_syntax_error: '2.3.1', term_logic_error: '2.3.1',
+  term_validation: '2.3.1', term_boolean: '2.4.1', term_compiler: '2.5.1', term_interpreter: '2.5.1',
+  term_pseudocode: '2.2.ERL'
+};
+
+function applyContentMappings(data) {
+  (data.questions || []).forEach(question => {
+    question.specificationPointId = QUESTION_SPECIFICATION_MAP[question.id] || question.specificationPointId || null;
+    question.purpose = question.purpose || 'retrieval';
+    if (question.id === 'q_1_2_d') question.topicId = 'topic_1_3';
+    if (question.id === 'q_6') question.topicId = 'topic_1_2';
+  });
+  (data.writtenQuestions || []).forEach(question => {
+    question.specificationPointId = WRITTEN_SPECIFICATION_MAP[question.id] || question.specificationPointId || null;
+    question.purpose = question.purpose || 'application';
+  });
+  (data.keyTerms || []).forEach(term => {
+    term.specificationPointId = KEY_TERM_SPECIFICATION_MAP[term.id] || term.specificationPointId || null;
+  });
+  (data.examTransferTasks || []).forEach(task => {
+    task.purpose = 'exam-transfer';
+  });
+  (data.programmingChallenges || []).forEach(challenge => {
+    challenge.specificationPointId = '2.2.PY';
+    challenge.purpose = challenge.id === 'pc_9' ? 'exam-transfer' : 'application';
+  });
+  return data;
+}
+
+applyContentMappings(defaultDatabase);
+
 class LocalDB {
   constructor() {
     this.cachedData = null;
@@ -1590,6 +1648,7 @@ class LocalDB {
             this.cachedData[key] = JSON.parse(JSON.stringify(defaultDatabase[key]));
           }
         });
+        applyContentMappings(this.cachedData);
       }
     } catch (e) {
       console.error('Error loading LocalDB, using defaults:', e);
