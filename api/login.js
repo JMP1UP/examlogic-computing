@@ -104,6 +104,7 @@ module.exports = async function handler(req, res) {
       const token = auth.signJwt({
         id: coordinator.id,
         role: coordinator.role.toLowerCase(),
+        schoolId: coordinator.school_id,
         pwh: crypto.createHash('sha256').update(coordinator.password_hash || '').digest('hex')
       });
       return res.status(200).json({
@@ -139,6 +140,7 @@ module.exports = async function handler(req, res) {
       const token = auth.signJwt({
         id: student.id,
         role: 'student',
+        schoolId: student.school_id,
         pwh: crypto.createHash('sha256').update(student.password_hash || '').digest('hex')
       });
       return res.status(200).json({
