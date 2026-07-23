@@ -8,6 +8,7 @@
     "lint": "node -c app.js api/*.js"
   },
   "devDependencies": {
-    "jest": "^29.7.0"
+    "jest": "^29.7.0",
+    "supabase": "^2.109.1"
   }
 }
