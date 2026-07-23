@@ -1,8 +1,8 @@
 // api/reset-password.js
 // Handles server-side validation of invitation/reset tokens and executes password updates securely.
 
-const db = require('./db');
-const auth = require('./auth-helper');
+const db = require('../lib/db');
+const auth = require('../lib/auth-helper');
 
 module.exports = async function handler(req, res) {
   const allowedDomains = process.env.ALLOWED_DOMAINS

@@ -20,7 +20,7 @@ describe('💾 Mock Database Adapter Suite', () => {
       process.env.ENABLE_MOCK_DB = 'false';
 
       expect(() => {
-        require('../api/db');
+        require('../lib/db');
       }).toThrow('Database configuration is missing');
     });
 
@@ -32,7 +32,7 @@ describe('💾 Mock Database Adapter Suite', () => {
 
       let db;
       expect(() => {
-        db = require('../api/db');
+        db = require('../lib/db');
       }).not.toThrow();
       expect(db.isMockMode).toBe(true);
     });
@@ -44,7 +44,7 @@ describe('💾 Mock Database Adapter Suite', () => {
       process.env.VERCEL_ENV = 'production';
 
       expect(() => {
-        require('../api/db');
+        require('../lib/db');
       }).toThrow('Mock database must not run in production');
     });
   });
@@ -57,7 +57,7 @@ describe('💾 Mock Database Adapter Suite', () => {
       delete process.env.SUPABASE_SERVICE_ROLE_KEY;
       process.env.ENABLE_MOCK_DB = 'true';
       process.env.VERCEL_ENV = 'development';
-      db = require('../api/db');
+      db = require('../lib/db');
     });
 
     it('should fetch the seeded administrator account for login', async () => {
@@ -102,7 +102,7 @@ describe('💾 Mock Database Adapter Suite', () => {
       delete process.env.SUPABASE_SERVICE_ROLE_KEY;
       process.env.ENABLE_MOCK_DB = 'true';
       process.env.VERCEL_ENV = 'development';
-      db = require('../api/db');
+      db = require('../lib/db');
     });
 
     it('should support inserting new records', async () => {

@@ -1,10 +1,10 @@
 // tests/security.test.js
 // Automated security integration tests verifying session security, role controls, and RLS.
 
-const auth = require('../api/auth-helper');
+const auth = require('../lib/auth-helper');
 
 // Mock db module
-jest.mock('../api/db', () => {
+jest.mock('../lib/db', () => {
   const mockDb = {
     select: jest.fn(),
     insert: jest.fn(),
@@ -14,7 +14,7 @@ jest.mock('../api/db', () => {
   return mockDb;
 });
 
-const db = require('../api/db');
+const db = require('../lib/db');
 const validateSessionHandler = require('../api/validate-session');
 const resetPasswordHandler = require('../api/reset-password');
 const sendInviteHandler = require('../api/send-invite');

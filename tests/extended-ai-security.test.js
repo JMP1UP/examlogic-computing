@@ -1,13 +1,13 @@
-const auth = require('../api/auth-helper');
+const auth = require('../lib/auth-helper');
 
-jest.mock('../api/db', () => ({
+jest.mock('../lib/db', () => ({
   select: jest.fn(),
   insert: jest.fn(),
   update: jest.fn(),
   delete: jest.fn()
 }));
 
-const db = require('../api/db');
+const db = require('../lib/db');
 const loginHandler = require('../api/login');
 const syncHandler = require('../api/sync');
 

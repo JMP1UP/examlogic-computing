@@ -1,6 +1,6 @@
-const auth = require('../api/auth-helper');
+const auth = require('../lib/auth-helper');
 
-jest.mock('../api/db', () => {
+jest.mock('../lib/db', () => {
   const mockDb = {
     schools: [],
     coordinators: [],
@@ -66,7 +66,7 @@ jest.mock('../api/db', () => {
   };
 });
 
-const db = require('../api/db');
+const db = require('../lib/db');
 const invitationHandler = require('../api/admin/invitations');
 const resetPasswordHandler = require('../api/reset-password');
 

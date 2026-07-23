@@ -1,8 +1,8 @@
 // api/validate-session.js
 // Verifies client-supplied JWT tokens against DB status, preventing role forgery.
 
-const db = require('./db');
-const auth = require('./auth-helper');
+const db = require('../lib/db');
+const auth = require('../lib/auth-helper');
 
 module.exports = async function handler(req, res) {
   const allowedDomains = process.env.ALLOWED_DOMAINS

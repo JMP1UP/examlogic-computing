@@ -1,13 +1,13 @@
 const crypto = require('crypto');
-const auth = require('../api/auth-helper');
+const auth = require('../lib/auth-helper');
 
-jest.mock('../api/db', () => ({
+jest.mock('../lib/db', () => ({
   select: jest.fn(),
   update: jest.fn(),
   insert: jest.fn()
 }));
 
-const db = require('../api/db');
+const db = require('../lib/db');
 const handler = require('../api/change-password');
 
 function responseMock() {

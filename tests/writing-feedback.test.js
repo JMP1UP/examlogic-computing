@@ -1,9 +1,9 @@
-jest.mock('../api/db', () => ({
+jest.mock('../lib/db', () => ({
   select: jest.fn(async (table, query) => table === 'students' ? [{ id: String(query || '').replace('id=eq.', ''), active: true, password_hash: '' }] : [])
 }));
 
 const crypto = require('crypto');
-const auth = require('../api/auth-helper');
+const auth = require('../lib/auth-helper');
 const handler = require('../api/writing-feedback');
 
 function responseMock() { return { setHeader: jest.fn(), status: jest.fn().mockReturnThis(), json: jest.fn(), end: jest.fn() }; }

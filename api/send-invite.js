@@ -1,8 +1,8 @@
 // Vercel Serverless Function: api/send-invite.js
 // Securely handles invitations and password resets, sending emails via Resend.
 
-const db = require('./db');
-const auth = require('./auth-helper');
+const db = require('../lib/db');
+const auth = require('../lib/auth-helper');
 
 function escapeHtml(str) {
   if (!str) return '';

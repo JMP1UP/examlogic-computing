@@ -4,8 +4,8 @@ process.env.JWT_SECRET = 'test-suite-secure-key-string-long';
 process.env.ALLOWED_DOMAINS = 'https://www.school-bridge.org';
 
 const crypto = require('crypto');
-const auth = require('../api/auth-helper');
-const db = require('../api/db');
+const auth = require('../lib/auth-helper');
+const db = require('../lib/db');
 const syncHandler = require('../api/sync');
 
 function responseMock() {

@@ -1,9 +1,9 @@
-const auth = require('../api/auth-helper');
-const db = require('../api/db');
+const auth = require('../lib/auth-helper');
+const db = require('../lib/db');
 const googleAuthHandler = require('../api/auth-google');
 const inviteHandler = require('../api/admin/invitations');
 
-jest.mock('../api/db', () => ({
+jest.mock('../lib/db', () => ({
   select: jest.fn(),
   insert: jest.fn(),
   update: jest.fn(),

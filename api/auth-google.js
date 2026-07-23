@@ -3,8 +3,8 @@
 // and issues signed JWT session tokens for Admins, Coordinators, and Students.
 
 const crypto = require('crypto');
-const db = require('./db');
-const auth = require('./auth-helper');
+const db = require('../lib/db');
+const auth = require('../lib/auth-helper');
 
 // Cache Google public keys to minimize JWKS fetches
 let cachedJwks = null;

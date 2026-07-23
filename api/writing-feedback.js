@@ -1,4 +1,4 @@
-const auth = require('./auth-helper');
+const auth = require('../lib/auth-helper');
 
 const recentRequests = new Map();
 const COMMAND_WORDS = new Set(['Describe', 'Explain', 'Discuss', 'Evaluate', 'Compare']);

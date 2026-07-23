@@ -1,8 +1,8 @@
 // Vercel Serverless Function: api/login.js
 // Handles secure student and teacher login validations, issuing signed JWT tokens.
 
-const db = require('./db');
-const auth = require('./auth-helper');
+const db = require('../lib/db');
+const auth = require('../lib/auth-helper');
 
 module.exports = async function handler(req, res) {
   // CORS configuration

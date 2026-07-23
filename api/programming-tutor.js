@@ -1,4 +1,4 @@
-const auth = require('./auth-helper');
+const auth = require('../lib/auth-helper');
 
 const TASKS = {
   pc_1: { concept: 'variables, strings and output', goal: 'predict and produce Welcome Harriet to Computer Science' },

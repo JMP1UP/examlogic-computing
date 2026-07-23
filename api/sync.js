@@ -1,9 +1,9 @@
 // Vercel Serverless Function: api/sync.js
 // Handles secure, role-filtered database synchronization (GET) and write-through edits (POST).
 
-const db = require('./db');
-const auth = require('./auth-helper');
-const pusher = require('./pusher-helper');
+const db = require('../lib/db');
+const auth = require('../lib/auth-helper');
+const pusher = require('../lib/pusher-helper');
 const { detectSafeguardingFlag } = require('../safeguarding');
 
 module.exports = async function handler(req, res) {

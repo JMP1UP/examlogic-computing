@@ -1,7 +1,7 @@
 // api/config.js
 // Exposes application-level configuration variables (like mock mode state) to the client.
 
-const db = require('./db');
+const db = require('../lib/db');
 
 module.exports = async function handler(req, res) {
   // CORS configuration

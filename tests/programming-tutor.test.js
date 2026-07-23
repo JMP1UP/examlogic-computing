@@ -1,4 +1,4 @@
-jest.mock('../api/db', () => ({
+jest.mock('../lib/db', () => ({
   select: jest.fn(async (table, query) => {
     if (table !== 'students') return [];
     const id = String(query || '').replace('id=eq.', '');
@@ -7,7 +7,7 @@ jest.mock('../api/db', () => ({
 }));
 
 const crypto = require('crypto');
-const auth = require('../api/auth-helper');
+const auth = require('../lib/auth-helper');
 const tutorHandler = require('../api/programming-tutor');
 
 function responseMock() {

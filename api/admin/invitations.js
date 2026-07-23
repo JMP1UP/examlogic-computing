@@ -1,8 +1,8 @@
 // Vercel Serverless Function: api/admin/invitations.js
 // Securely generates school activation/invitation tokens for administrators.
 
-const db = require('../db');
-const auth = require('../auth-helper');
+const db = require('../../lib/db');
+const auth = require('../../lib/auth-helper');
 
 module.exports = async function handler(req, res) {
   const allowedDomains = process.env.ALLOWED_DOMAINS
