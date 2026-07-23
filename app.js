@@ -1059,39 +1059,209 @@ class App {
     });
 
     const TOPIC_LESSONS = {
-      'topic_1_2': {
-        overview: 'Understanding this objective is essential for your exam revision. It relates directly to how binary bits are grouped to build larger data structures.',
+      'topic_1_1': {
+        overview: 'Systems Architecture covers the core components that make up a computer system. You must understand the role of the CPU, CPU architecture, and how instructions are fetched and executed.',
         keyPoints: [
-          'Hexadecimal is base 16. It uses numbers 0-9 and letters A-F to represent values 10-15.',
-          'One hex character represents exactly 4 bits (a nibble).',
-          'Data size formula for audio: Sample Rate (Hz) x Bit Depth x Length (seconds) x Channels.',
-          'Data size formula for images: Width (pixels) x Height (pixels) x Colour Depth (bits).'
+          'The CPU (Central Processing Unit) fetches, decodes, and executes instructions.',
+          'Key registers include: Program Counter (PC), Memory Address Register (MAR), Memory Data Register (MDR), and Accumulator (ACC).',
+          'The Fetch-Decode-Execute cycle coordinates memory fetches and arithmetic execution.',
+          'CPU performance is determined by clock speed (Hz), cache size, and the number of processor cores.'
         ],
-        misconceptionTitle: 'Hex representation vs Storage',
-        misconceptionIncorrect: 'Hexadecimal is used because it saves storage space inside computer memory.',
-        misconceptionCorrect: 'Computers always store data in binary. Hexadecimal is used purely for humans to read and write easily. A hex value takes the exact same storage space as its binary equivalent.',
-        checkpointQuestion: 'Convert 10111100 into Hexadecimal.',
-        checkpointHint: 'Hint: Split the byte into two nibbles: 1011 and 1100.',
+        misconceptionTitle: 'Clock Speed vs Cores',
+        misconceptionIncorrect: 'Doubling the number of processor cores will always double the overall speed of all programs.',
+        misconceptionCorrect: 'Cores only increase performance if the software is written to use parallel processing. Single-threaded legacy applications will not run faster on multiple cores.',
+        checkpointQuestion: 'What CPU register holds the address of the next instruction to be fetched?',
+        checkpointHint: 'Hint: Enter the abbreviation, e.g. PC.',
+        checkpointAnswer: 'PC',
+        checkpointSuccess: '✅ Correct! The Program Counter (PC) stores the address of the next instruction.',
+        checkpointFailure: '❌ Incorrect. Hint: It points to the next instruction in sequence (PC). Try again!'
+      },
+      'topic_1_2': {
+        overview: 'Memory and Storage deals with volatile and non-volatile memory technologies. You must understand the differences between RAM, ROM, Virtual Memory, and various Secondary Storage media.',
+        keyPoints: [
+          'RAM (Random Access Memory) is volatile primary memory used for running programs and data.',
+          'ROM (Read Only Memory) is non-volatile and contains the boot strap instructions (BIOS).',
+          'Virtual memory uses part of the secondary storage (HDD/SSD) as temporary RAM when physical RAM is full.',
+          'Secondary storage is non-volatile storage categorized as Magnetic, Optical, or Solid State.'
+        ],
+        misconceptionTitle: 'RAM vs HDD/SSD Storage',
+        misconceptionIncorrect: 'Adding more RAM increases the maximum file storage capacity of your computer.',
+        misconceptionCorrect: 'RAM is temporary work memory. Files, images, and operating systems are stored in secondary storage (like SSD or HDD), which is non-volatile.',
+        checkpointQuestion: 'Which type of non-volatile secondary storage has no moving parts and uses flash memory?',
+        checkpointHint: 'Hint: Enter SOLID STATE.',
+        checkpointAnswer: 'SOLID STATE',
+        checkpointSuccess: '✅ Correct! Solid State storage has no moving parts, making it fast and durable.',
+        checkpointFailure: '❌ Incorrect. Hint: It uses electronic flash memory (SOLID STATE). Try again!'
+      },
+      'topic_1_3': {
+        overview: 'Data Representation explains how computers store all information as binary. You must master number conversions, sound, images, and characters representation.',
+        keyPoints: [
+          'Computers only understand binary (states 1 and 0).',
+          'Hexadecimal is base 16. It is used as a human-friendly representation of binary values.',
+          'An image is made of pixels. The colour depth determines the number of bits allocated per pixel.',
+          'Sound is sampled. Higher sample rates and bit depths yield higher fidelity but larger file sizes.'
+        ],
+        misconceptionTitle: 'Hex storage capacity',
+        misconceptionIncorrect: 'Computers store data in hexadecimal format to save storage space.',
+        misconceptionCorrect: 'Computers always store data in binary. Hexadecimal is used purely for readability by software developers.',
+        checkpointQuestion: 'Convert binary 10111100 into Hexadecimal.',
+        checkpointHint: 'Hint: Split the byte into two nibbles: 1011 (11) and 1100 (12).',
         checkpointAnswer: 'BC',
-        checkpointSuccess: '✅ Correct! 1011 is 11 (B) and 1100 is 12 (C). Total is BC.',
-        checkpointFailure: '❌ Incorrect. Hint: 1011 = 11 (B) and 1100 = 12 (C). Try again!'
+        checkpointSuccess: '✅ Correct! 1011 is B and 1100 is C. The hex value is BC.',
+        checkpointFailure: '❌ Incorrect. Hint: 1011 = 11 (B), 1100 = 12 (C). Try again!'
+      },
+      'topic_1_4': {
+        overview: 'Computer Networks covers network topologies, protocols, packet switching, IP/MAC addressing, and the conceptual layers of the TCP/IP stack.',
+        keyPoints: [
+          'A LAN covers a single site, while a WAN connects geographically distant LANs.',
+          'IP addresses are routing metrics; MAC addresses are physical hardware identifiers.',
+          'The TCP/IP stack layers include: Application, Transport, Network, and Link.',
+          'Protocols are set rules for formatting data transfer, such as HTTP, HTTPS, FTP, SMTP, and IMAP.'
+        ],
+        misconceptionTitle: 'IP vs MAC addresses',
+        misconceptionIncorrect: 'A computer maintains the same IP address regardless of which network it connects to.',
+        misconceptionCorrect: 'IP addresses are dynamic and assigned by the local network gateway. MAC addresses are burned into the network card at the factory and never change.',
+        checkpointQuestion: 'Which protocol is responsible for securing web transmission via encryption?',
+        checkpointHint: 'Hint: Enter the protocol name, e.g. HTTPS.',
+        checkpointAnswer: 'HTTPS',
+        checkpointSuccess: '✅ Correct! HTTPS encrypts traffic between the browser and the web server.',
+        checkpointFailure: '❌ Incorrect. Hint: It is the secure version of HTTP (HTTPS). Try again!'
+      },
+      'topic_1_5': {
+        overview: 'Network Security explores vulnerabilities, cyber-attacks, and defensive measures used to protect networks and digital assets.',
+        keyPoints: [
+          'Common security threats include Malware, Phishing, Social Engineering, and SQL Injection.',
+          'Brute force attacks attempt every password permutation; DDoS floods servers to disrupt uptime.',
+          'Firewalls monitor and filter incoming/outgoing traffic based on security rules.',
+          'Encryption, access rights, and network policies are critical layers of defense-in-depth.'
+        ],
+        misconceptionTitle: 'Anti-virus protection',
+        misconceptionIncorrect: 'Installing anti-virus software protects a network from all forms of security hacks.',
+        misconceptionCorrect: 'Anti-virus only stops known malware. It cannot block social engineering, SQL injection, or physical security breaches.',
+        checkpointQuestion: 'What type of attack floods a server with traffic to render it unavailable?',
+        checkpointHint: 'Hint: Enter DDoS.',
+        checkpointAnswer: 'DDOS',
+        checkpointSuccess: '✅ Correct! Distributed Denial of Service (DDoS) attempts to crash servers.',
+        checkpointFailure: '❌ Incorrect. Hint: It stands for Distributed Denial of Service (DDOS). Try again!'
+      },
+      'topic_1_6': {
+        overview: 'Systems Software covers the purpose of operating systems (OS) and the utilities that optimize hardware performance.',
+        keyPoints: [
+          'The OS manages memory, processors, peripherals, users, and files.',
+          'Device drivers translate communications between the OS and external hardware.',
+          'Utility software performs maintenance, such as backup, compression, and defragmentation.',
+          'Defragmentation re-organizes fragmented files on HDDs to improve read/write latency.'
+        ],
+        misconceptionTitle: 'Defragmenting SSDs',
+        misconceptionIncorrect: 'Defragmentation should be run regularly on Solid State Drives (SSDs) to speed them up.',
+        misconceptionCorrect: 'SSDs have no moving read/write heads, so fragmenting files does not slow them down. Defragmenting an SSD writes data unnecessarily, shortens its lifespan, and should be avoided.',
+        checkpointQuestion: 'What utility reorganises split file blocks on a hard drive to speed up access?',
+        checkpointHint: 'Hint: Enter DEFRAGMENTATION.',
+        checkpointAnswer: 'DEFRAGMENTATION',
+        checkpointSuccess: '✅ Correct! Defragmentation merges scattered file fragments.',
+        checkpointFailure: '❌ Incorrect. Hint: Enter DEFRAGMENTATION. Try again!'
+      },
+      'topic_1_7': {
+        overview: 'Ethical, Legal, Cultural and Environmental Impacts addresses how computer systems influence society, resources, laws, and individual privacy.',
+        keyPoints: [
+          'Key legislation includes: Data Protection Act, Computer Misuse Act, and Copyright Designs and Patents Act.',
+          'E-waste is a major environmental issue due to toxic chemicals leaking from discarded components.',
+          'Open-source software allows code access and editing; proprietary software protects source code.',
+          'Digital divide, algorithmic bias, and automated decision systems raise ethics concerns.'
+        ],
+        misconceptionTitle: 'Open Source Security',
+        misconceptionIncorrect: 'Open-source software is always less secure because anyone can see the source code.',
+        misconceptionCorrect: 'Exposing code allows global reviews, meaning bugs are often found and patched much faster than in proprietary software.',
+        checkpointQuestion: 'Which UK legislation protects individuals against personal data leakage from organisations?',
+        checkpointHint: 'Hint: Enter DATA PROTECTION ACT.',
+        checkpointAnswer: 'DATA PROTECTION ACT',
+        checkpointSuccess: '✅ Correct! The Data Protection Act regulates user data protection.',
+        checkpointFailure: '❌ Incorrect. Hint: It is the Data Protection Act. Try again!'
+      },
+      'topic_2_1': {
+        overview: 'Algorithms focuses on binary/linear search, bubble/merge sort, flowcharts, pseudocode, and algorithm efficiency.',
+        keyPoints: [
+          'Algorithms are precise step-by-step instructions to solve a problem.',
+          'Binary search divides the dataset, but linear search inspects each index sequentially.',
+          'Bubble sort works by swapping adjacent values; Merge sort uses divide-and-conquer.',
+          'Flowcharts represent logic visually using diamonds (decisions) and rectangles (processes).'
+        ],
+        misconceptionTitle: 'Binary Search sorted constraint',
+        misconceptionIncorrect: 'Binary search can be used to search for any value in any list.',
+        misconceptionCorrect: 'Binary search relies on dividing a sorted array. It cannot run on unsorted lists; a linear search must be used instead.',
+        checkpointQuestion: 'Which search algorithm requires the array to be sorted first?',
+        checkpointHint: 'Hint: Enter BINARY SEARCH.',
+        checkpointAnswer: 'BINARY SEARCH',
+        checkpointSuccess: '✅ Correct! Binary search requires sorted data.',
+        checkpointFailure: '❌ Incorrect. Hint: It divides elements in half (BINARY SEARCH). Try again!'
       },
       'topic_2_2': {
-        overview: 'Programming fundamentals are the building blocks of writing source code. You must understand how values are stored, how decisions are made, and how code repeats.',
+        overview: 'Programming Fundamentals deals with variable scopes, iteration constructs, string operations, and local arrays.',
         keyPoints: [
-          'Variables and constants store data in named memory locations. A variable can change, but a constant remains fixed during execution.',
-          'Three basic programming constructs: Sequence (line by line), Selection (IF-ELSE decisions), and Iteration (FOR/WHILE loops).',
-          'Basic data types: Integer (whole number), Real/Float (decimal), Boolean (True/False), Character (single symbol), and String (text).',
-          'Arrays are data structures that store multiple items of the same data type under a single identifier, accessed via an index.'
+          'Variable values can change; constant values cannot be modified during program execution.',
+          'Basic data types: Integer, Real/Float, Boolean, Character, and String.',
+          'Selection structures (IF-ELSE) branch flow; Iteration structures (loops) repeat actions.',
+          'Arrays store multiple values of a single data type using indexes.'
         ],
-        misconceptionTitle: 'Variables vs Constants & Assignment',
-        misconceptionIncorrect: 'Constants can be modified during program execution, and writing x = 5 is a mathematical equation.',
-        misconceptionCorrect: 'Constants cannot be altered once defined. The assignment operator (=) is not an equation; it assigns the evaluated value on the right-hand side to the variable on the left-hand side.',
-        checkpointQuestion: 'What is the correct construct for a pre-conditioned loop that repeats while a condition is True?',
+        misconceptionTitle: 'Assignment operator',
+        misconceptionIncorrect: 'The assignment symbol (=) in programming acts as a mathematical equality check.',
+        misconceptionCorrect: 'In programming, = represents assignment (storing the value on the right in the variable on the left). Double equal == or comparisons check mathematical equality.',
+        checkpointQuestion: 'What is the construct for a pre-conditioned loop that repeats while a condition is True?',
         checkpointHint: 'Hint: Enter either FOR or WHILE.',
         checkpointAnswer: 'WHILE',
-        checkpointSuccess: '✅ Correct! A WHILE loop is a pre-conditioned iteration construct that repeats while its condition is True.',
-        checkpointFailure: '❌ Incorrect. Hint: It is a loop that repeats while a condition is True, e.g. WHILE. Try again!'
+        checkpointSuccess: '✅ Correct! A WHILE loop runs continuously while a condition remains True.',
+        checkpointFailure: '❌ Incorrect. Hint: Enter WHILE. Try again!'
+      },
+      'topic_2_3': {
+        overview: 'Producing Robust Programs covers defensive design, syntax/logic errors, user input validation, and testing schedules.',
+        keyPoints: [
+          'Defensive design prevents programs from failing under unexpected user inputs.',
+          'Input validation checks data parameters (range, length, type) before processing.',
+          'Syntax errors break code translation rules; logic errors run but produce wrong outcomes.',
+          'Iterative testing occurs during development; final testing checks compiled versions.'
+        ],
+        misconceptionTitle: 'Validation vs Verification',
+        misconceptionIncorrect: 'Input validation checks if the user entered the correct password to login.',
+        misconceptionCorrect: 'Validation checks if the input is sensible (e.g. correct length or format). Verification checks if it is correct (e.g. matches the password database).',
+        checkpointQuestion: 'What error type does not crash the code but produces incorrect program results?',
+        checkpointHint: 'Hint: Enter LOGIC ERROR.',
+        checkpointAnswer: 'LOGIC ERROR',
+        checkpointSuccess: '✅ Correct! Logic errors run but yield incorrect results.',
+        checkpointFailure: '❌ Incorrect. Hint: It is a mistake in algorithm logic (LOGIC ERROR). Try again!'
+      },
+      'topic_2_4': {
+        overview: 'Boolean Logic covers logic gates, logic diagrams, and truth tables to model computer logic circuits.',
+        keyPoints: [
+          'Computers use logic gates to process electrical signals represented as binary.',
+          'NOT gate has one input and outputs the opposite state.',
+          'AND gate outputs True only if both inputs are True.',
+          'OR gate outputs True if at least one input is True.'
+        ],
+        misconceptionTitle: 'OR gate behaviour',
+        misconceptionIncorrect: 'An OR gate outputs True only when one input is True, but not both.',
+        misconceptionCorrect: 'A standard OR gate outputs True if either or both inputs are True. An exclusive OR (XOR) outputs True only if exactly one input is True.',
+        checkpointQuestion: 'Which logic gate outputs True only when both inputs are True?',
+        checkpointHint: 'Hint: Enter AND.',
+        checkpointAnswer: 'AND',
+        checkpointSuccess: '✅ Correct! The AND gate requires all inputs to be True.',
+        checkpointFailure: '❌ Incorrect. Hint: Enter AND. Try again!'
+      },
+      'topic_2_5': {
+        overview: 'Programming Languages and IDEs covers language translation layers and the tools provided by integrated development environments.',
+        keyPoints: [
+          'High-level languages are human-readable; low-level languages (assembly/machine code) are CPU-native.',
+          'Compilers translate source code into machine code at once, generating an executable file.',
+          'Interpreters translate and execute source code line-by-line in real-time.',
+          'IDE tools include source code editors, error debugging consoles, runtime run commands, and auto-completes.'
+        ],
+        misconceptionTitle: 'Compiler vs Interpreter execution speed',
+        misconceptionIncorrect: 'Interpreters execute compiled programs faster than compilers.',
+        misconceptionCorrect: 'Compilers compile the entire code once. The compiled executable file runs much faster than code interpreted line-by-line.',
+        checkpointQuestion: 'Does a compiler or an interpreter translate the entire source code at once before execution?',
+        checkpointHint: 'Hint: Enter COMPILER.',
+        checkpointAnswer: 'COMPILER',
+        checkpointSuccess: '✅ Correct! A compiler translates the entire codebase upfront.',
+        checkpointFailure: '❌ Incorrect. Hint: It compiles the code into a standalone executable (COMPILER). Try again!'
       }
     };
 
