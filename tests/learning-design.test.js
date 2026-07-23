@@ -26,6 +26,22 @@ describe('GCSE learning design', () => {
     expect(appSource).toContain('Knowing Python does not automatically demonstrate fluency');
   });
 
+  test('makes programming a first-class student area with separate progress', () => {
+    expect(appSource).toContain("{ id: 'stud-programming', label: 'Programming'");
+    expect(appSource).toContain('renderStudentProgrammingHub');
+    expect(appSource).toContain('Practical Python');
+    expect(appSource).toContain('OCR Exam Reference Language');
+    expect(appSource).toContain('Programming replaces another revision activity when assigned');
+    expect(appSource).toContain("type: 'pseudocode'");
+  });
+
+  test('reports content-bank readiness separately from pupil mastery', () => {
+    expect(appSource).toContain('getCurriculumCoverage()');
+    expect(appSource).toContain('Content-bank readiness');
+    expect(appSource).toContain('This is not pupil mastery');
+    expect(appSource).toContain('does not yet mean complete, externally quality-assured specification coverage');
+  });
+
   test('uses current OCR assignment and equality operators', () => {
     expect(appSource).toContain('OCR assignment uses <code>=</code>');
     expect(appSource).toContain('comparison for equality uses <code>==</code>');

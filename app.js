@@ -534,6 +534,7 @@ class App {
       const links = [
         { id: 'stud-dashboard', label: 'Home', icon: SVG_ICONS.home },
         { id: 'stud-learn', label: 'Learn', icon: SVG_ICONS.learn },
+        { id: 'stud-programming', label: 'Programming', icon: SVG_ICONS.programme },
         { id: 'stud-practise', label: 'Practise', icon: SVG_ICONS.practise },
         { id: 'stud-recall', label: 'Exam preparation', icon: SVG_ICONS.revise },
         { id: 'stud-progress', label: 'Progress', icon: SVG_ICONS.progress },
@@ -582,6 +583,9 @@ class App {
         break;
       case 'stud-learn':
         this.renderStudentLearn(mainPanel);
+        break;
+      case 'stud-programming':
+        this.renderStudentProgrammingHub(mainPanel);
         break;
       case 'stud-practise':
         this.renderStudentPractise(mainPanel);
@@ -649,6 +653,37 @@ class App {
       default:
         mainPanel.innerHTML = `<h2>Screen not found</h2>`;
     }
+  }
+
+  getCurriculumCoverage() {
+    const questions = window.db.getQuestions();
+    const written = window.db.getWrittenQuestions();
+    const transfers = window.db.getExamTransferTasks();
+    return window.db.getUnits().flatMap(unit => unit.topics.map(topic => {
+      const retrievalCount = questions.filter(item => item.topicId === topic.id).length;
+      const applicationCount = written.filter(item => item.topicId === topic.id).length
+        + transfers.filter(item => item.topicId === topic.id).length;
+      const evidenceCount = retrievalCount + applicationCount;
+      const status = evidenceCount >= 10 && applicationCount >= 2
+        ? 'Usable'
+        : evidenceCount >= 5
+          ? 'Developing'
+          : 'Foundation';
+      return {
+        topicId: topic.id,
+        topicName: topic.name,
+        paper: unit.paper,
+        objectiveCount: topic.objectives.length,
+        retrievalCount,
+        applicationCount,
+        status
+      };
+    }));
+  }
+
+  getCoverageBadge(status) {
+    const badgeClass = status === 'Usable' ? 'badge-success' : status === 'Developing' ? 'badge-warning' : 'badge-primary';
+    return `<span class="badge ${badgeClass}">${status} content bank</span>`;
   }
 
   // ==================== STUDENT DASHBOARD ====================
@@ -1510,6 +1545,10 @@ class App {
           </div>
 
           <div style="max-width: 720px;">
+            ${(() => {
+              const coverage = this.getCurriculumCoverage().find(item => item.topicId === this.activeTopicId);
+              return coverage ? `<div class="card" style="padding:12px 14px; margin-bottom:18px; background:var(--bg-main);">${this.getCoverageBadge(coverage.status)} <span style="font-size:12px; color:var(--text-muted); margin-left:6px;">${coverage.retrievalCount} retrieval checks · ${coverage.applicationCount} application tasks · ${coverage.objectiveCount} specification groups. This label describes the StudySpice content bank, not your ability.</span></div>` : '';
+            })()}
             <h3 style="margin-bottom: 8px;">1. Overview</h3>
             <p>${activeLesson.overview}</p>
 
@@ -1648,7 +1687,7 @@ class App {
     }
 
     panel.innerHTML = `
-      <div class="card" style="margin-bottom:20px; padding:14px;"><strong>Choose one practice mode</strong><div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;"><button class="btn btn-primary btn-sm practice-mode-btn" data-target="stud-practise">Number skills</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-programme">Python</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-pseudocode">Pseudocode</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-written">Long answers</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-dictionary">Key terms</button></div><div style="font-size:12px; color:var(--text-muted); margin-top:8px;">Complete one short mode, then stop or return home.</div></div>
+      <div class="card" style="margin-bottom:20px; padding:14px;"><strong>Choose one practice mode</strong><div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;"><button class="btn btn-primary btn-sm practice-mode-btn" data-target="stud-practise">Number skills</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-written">Long answers</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-dictionary">Key terms</button></div><div style="font-size:12px; color:var(--text-muted); margin-top:8px;">Complete one short mode, then stop or return home. Python and OCR-language learning now have their own Programming area.</div></div>
       <div style="margin-bottom: 24px;">
         <span class="badge badge-primary">Ongoing spaced practice</span>
         <h1 style="margin-top: 8px; font-weight: 700;">🔢 Practise: Number Skills</h1>
@@ -2204,6 +2243,76 @@ class App {
     bind('transfer-finish', () => { const retry = document.getElementById('transfer-retry-response').value.trim(); if (retry.length < 30) return this.alert('Attempt the retry before finishing.'); window.db.addAttempt({ studentId: this.currentUser.id, type: 'exam_transfer_retry', topic: task.specificationPointId, score: 'completed', supportStepsUsed: 0, questionId: task.id }); this.examTransferStage = 'decode'; this.examTransferPlan = {}; this.examTransferResponse = ''; this.alert('Exam-transfer practice recorded. The retry will inform future recommendations.'); this.switchTab('stud-dashboard'); });
   }
 
+  renderStudentProgrammingHub(panel) {
+    const challenges = window.db.getProgrammingChallenges();
+    const submissions = window.db.getProgrammingSubmissions().filter(item => item.studentId === this.currentUser.id);
+    const completedChallengeIds = new Set(submissions.filter(item => item.status === 'Passed' || item.status === 'Teacher Reviewed').map(item => item.challengeId));
+    const pseudocodeAttempts = window.db.getAttempts().filter(item => item.studentId === this.currentUser.id && item.type === 'pseudocode');
+    const completedPseudocodeIds = new Set(pseudocodeAttempts.map(item => item.questionId));
+    const nextChallenge = challenges.find(item => !completedChallengeIds.has(item.id)) || challenges[challenges.length - 1];
+    const pseudocodeSkills = ['Read', 'Trace', 'Complete', 'Write', 'Refine'];
+    const nextPseudocodeIndex = pseudocodeSkills.findIndex((_, index) => !completedPseudocodeIds.has(`pseudocode_${index + 1}`));
+    const recommendedPseudocodeIndex = nextPseudocodeIndex === -1 ? pseudocodeSkills.length - 1 : nextPseudocodeIndex;
+    const pythonPercent = Math.round((completedChallengeIds.size / challenges.length) * 100);
+    const pseudocodePercent = Math.round((completedPseudocodeIds.size / pseudocodeSkills.length) * 100);
+
+    panel.innerHTML = `
+      <div style="margin-bottom:24px;">
+        <span class="badge badge-warning">Paper 2 · practical and exam-language skills</span>
+        <h1 style="margin-top:8px;">Programming</h1>
+        <p style="max-width:760px;">Build programming fluency over time. Python and OCR Exam Reference Language are connected, but progress is tracked separately so a strength in one does not hide a gap in the other.</p>
+      </div>
+
+      <div class="card" style="margin-bottom:24px; border-left:5px solid var(--teal);">
+        <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Recommended next · about 10 minutes</div>
+        <h2 style="margin:7px 0 5px;">Python level ${nextChallenge.level}: ${this.escapeHTML(nextChallenge.title)}</h2>
+        <p style="margin:0 0 14px;">Continue the read → trace → complete → debug → write → test progression. Support is available one step at a time.</p>
+        <button class="btn btn-primary" id="programming-continue-python">Continue Python</button>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; margin-bottom:24px;">
+        <section class="card">
+          <span class="badge badge-primary">Practical Python</span>
+          <h2 style="margin:10px 0 5px;">${completedChallengeIds.size} of ${challenges.length} pathway stages completed</h2>
+          <div style="height:9px; background:var(--bg-main); border-radius:8px; overflow:hidden; margin:12px 0;"><div style="width:${pythonPercent}%; height:100%; background:var(--teal);"></div></div>
+          <p style="font-size:13px; color:var(--text-muted);">Read, trace, complete, debug, construct, test and transfer code into exam problems.</p>
+          <button class="btn btn-secondary programming-open-strand" data-target="stud-programme">Open Python pathway</button>
+        </section>
+        <section class="card">
+          <span class="badge badge-warning">OCR Exam Reference Language</span>
+          <h2 style="margin:10px 0 5px;">${completedPseudocodeIds.size} of ${pseudocodeSkills.length} pathway stages completed</h2>
+          <div style="height:9px; background:var(--bg-main); border-radius:8px; overflow:hidden; margin:12px 0;"><div style="width:${pseudocodePercent}%; height:100%; background:var(--amber);"></div></div>
+          <p style="font-size:13px; color:var(--text-muted);">Read, trace, complete, write and refine the language used in OCR Paper 2 questions.</p>
+          <button class="btn btn-secondary programming-open-strand" data-target="stud-pseudocode">Open OCR-language pathway</button>
+        </section>
+      </div>
+
+      <details class="card" style="margin-bottom:20px;">
+        <summary style="cursor:pointer; font-weight:700;">View the full programming pathway</summary>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:18px; margin-top:16px;">
+          <div><h3 style="font-size:16px;">Python</h3><ol style="padding-left:20px; line-height:1.8;">${challenges.map(item => `<li>${completedChallengeIds.has(item.id) ? '✓ ' : ''}${this.escapeHTML(item.title)}</li>`).join('')}</ol></div>
+          <div><h3 style="font-size:16px;">OCR language</h3><ol style="padding-left:20px; line-height:1.8;">${pseudocodeSkills.map((skill, index) => `<li>${completedPseudocodeIds.has(`pseudocode_${index + 1}`) ? '✓ ' : ''}${skill}</li>`).join('')}</ol></div>
+        </div>
+      </details>
+
+      <div class="card" style="background:var(--bg-main);">
+        <strong>Workload rule</strong>
+        <p style="font-size:13px; margin:6px 0 0;">Complete one recommended 10-minute programming stage, then stop or return home. Programming replaces another revision activity when assigned; it is not extra work on top.</p>
+      </div>
+    `;
+
+    document.getElementById('programming-continue-python').onclick = () => {
+      this.activeChallengeId = nextChallenge.id;
+      this.switchTab('stud-programme');
+    };
+    panel.querySelectorAll('.programming-open-strand').forEach(button => {
+      button.onclick = () => {
+        if (button.getAttribute('data-target') === 'stud-pseudocode') this.activePseudocodeTask = recommendedPseudocodeIndex;
+        this.switchTab(button.getAttribute('data-target'));
+      };
+    });
+  }
+
   renderStudentPseudocode(panel) {
     const tasks = [
       { level: 1, skill: 'Read', title: 'Variables and output', code: 'score = 7\nscore = score + 3\nprint(score)', prompt: 'What value is printed? Explain how the variable changes.', answer: '10 is printed. score starts at 7 and is reassigned to 7 + 3.' },
@@ -2241,8 +2350,18 @@ class App {
     };
     document.getElementById('pseudocode-check-btn').onclick = () => {
       const feedback = document.getElementById('pseudocode-feedback');
+      const response = document.getElementById('pseudocode-response').value.trim();
+      if (!response) return this.alert('Write an answer before checking the model.');
       feedback.style.display = 'block';
       feedback.innerHTML = `<strong>Model answer</strong><pre style="white-space:pre-wrap; margin-top:8px;"><code>${this.escapeHTML(task.answer)}</code></pre><p style="font-size:13px; margin:8px 0 0;">Compare the logic and precision, then improve your response. Minor syntax slips matter less than correct programming logic, but natural English is not accepted where the question requires OCR Exam Reference Language or a high-level language.</p>`;
+      window.db.addAttempt({
+        studentId: this.currentUser.id,
+        type: 'pseudocode',
+        topic: '2.2.ERL',
+        score: 'model checked',
+        questionId: `pseudocode_${this.activePseudocodeTask + 1}`,
+        supportStepsUsed: 0
+      });
     };
   }
 
@@ -3845,11 +3964,26 @@ class App {
   renderTeacherTopics(panel) {
     const units = window.db.getUnits();
     const controls = window.db.getClassroomControls();
+    const coverage = this.getCurriculumCoverage();
+    const coverageCounts = coverage.reduce((counts, item) => {
+      counts[item.status] = (counts[item.status] || 0) + 1;
+      return counts;
+    }, {});
 
     panel.innerHTML = `
       <div style="margin-bottom: 24px;">
         <h1>🎛️ Lesson topic embedding controls</h1>
-        <p>Control which syllabus sections are active, hidden, or set as assessment priority on student home dashboards.</p>
+        <p>See the real depth of the StudySpice content bank, then control which syllabus sections are active, hidden, or set as assessment priority.</p>
+      </div>
+
+      <div class="card" style="margin-bottom:24px; border-left:5px solid var(--amber);">
+        <h2 style="font-size:18px; margin-bottom:8px;">Content-bank readiness</h2>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+          <span class="badge badge-success">${coverageCounts.Usable || 0} usable</span>
+          <span class="badge badge-warning">${coverageCounts.Developing || 0} developing</span>
+          <span class="badge badge-primary">${coverageCounts.Foundation || 0} foundation</span>
+        </div>
+        <p style="font-size:13px; margin:0;">This is not pupil mastery. “Usable” means the bank has a broader mixture of retrieval and application tasks; it does not yet mean complete, externally quality-assured specification coverage.</p>
       </div>
 
       <div style="display:flex; flex-direction:column; gap:24px;">
@@ -3860,9 +3994,10 @@ class App {
             <div style="display:flex; flex-direction:column; gap:16px;">
               ${u.topics.map(t => {
                 const currentStatus = controls[t.id] || 'hidden';
+                const topicCoverage = coverage.find(item => item.topicId === t.id);
                 return `
-                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px;">
-                    <strong>${t.name}</strong>
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:18px; font-size:14px;">
+                    <div style="min-width:260px;"><strong>${t.name}</strong><div style="margin-top:5px;">${this.getCoverageBadge(topicCoverage.status)} <span style="font-size:11px; color:var(--text-muted);">${topicCoverage.retrievalCount} retrieval · ${topicCoverage.applicationCount} application · ${topicCoverage.objectiveCount} groups</span></div></div>
                     <div style="display:flex; gap:8px;">
                       <button class="btn ${currentStatus === 'teaching' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="teaching">Teaching now</button>
                       <button class="btn ${currentStatus === 'recent' ? 'btn-primary' : 'btn-secondary'} btn-sm teacher-topic-btn" data-topic-id="${t.id}" data-status="recent">Recent</button>
