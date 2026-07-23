@@ -1,25 +1,25 @@
 /* 25Thirty Learning Design System Stylesheet */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
 
 :root {
   /* Color System */
-  --navy: #07111F;
-  --teal: #2D9C91;
-  --teal-hover: #237E75;
-  --warm-white: #FAF8F2;
+  --navy: #18233F;
+  --teal: #F26B38;
+  --teal-hover: #D95625;
+  --warm-white: #FFF8F1;
   --white: #FFFFFF;
   --slate: #475569;
-  --soft-border: #E3E8EE;
+  --soft-border: #E2E8F0;
   
   /* Accents */
   --amber: #D97706;
   --amber-alert: #FEF9C3;
   --amber-text: #78350F;
-  --green: #10B981;
-  --coral: #F43F5E;
-  --red: #EF4444;
-  --soft-blue: #E0F2FE;
-  --dark-blue: #0A192F;
+  --green: #2FA66D;
+  --coral: #F58A6A;
+  --red: #D94C4C;
+  --soft-blue: #FFF8F1;
+  --dark-blue: #101726;
 
   /* Theme mappings for 25Thirty Learning */
   --bg-main: var(--warm-white);
@@ -30,20 +30,21 @@
   
   /* Fonts */
   --font-family: 'Inter', Arial, Helvetica, sans-serif;
+  --font-headings: 'Manrope', 'Inter', Arial, Helvetica, sans-serif;
   
   /* Shadows & Radius */
   --radius-card: 16px;
   --radius-button: 12px;
-  --shadow-subtle: 0 4px 12px rgba(7, 17, 31, 0.04);
+  --shadow-subtle: 0 4px 12px rgba(24, 35, 63, 0.04);
   --transition: all 0.2s ease-in-out;
 }
 
 body.dark-mode {
-  --bg-main: var(--navy);
-  --bg-card: #111E2E;
-  --text-main: var(--warm-white);
-  --text-muted: #94A3B8;
-  --border-color: #1E293B;
+  --bg-main: #101726;
+  --bg-card: #18233F;
+  --text-main: #FFF8F1;
+  --text-muted: #A0AEC0;
+  --border-color: #2D3748;
 }
 
 * {
@@ -62,6 +63,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-headings);
   color: var(--text-main);
   margin-bottom: 0.5em;
   text-transform: none; /* Sentence case enforced */

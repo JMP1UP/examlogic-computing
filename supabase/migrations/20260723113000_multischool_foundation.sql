@@ -1,4 +1,4 @@
--- Multi-school SaaS foundations for ExamLogic Computing.
+-- Multi-school SaaS foundations for StudySpice Computing.
 -- A school is the tenant boundary. Authentication and MIS integrations are
 -- configured per school so no customer-specific credentials live in code.
 
@@ -166,7 +166,7 @@ insert into public.identity_providers (
 values (
   'school_1',
   'password',
-  'ExamLogic pilot account',
+  'StudySpice pilot account',
   true
 )
 on conflict (school_id, provider) do nothing;

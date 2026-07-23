@@ -1,5 +1,5 @@
-// Database state layer for GCSE Computer Science Learning Platform (ExamLogic Computing)
-const DB_KEY = 'examlogic_db';
+// Database state layer for GCSE Computer Science Learning Platform (StudySpice)
+const DB_KEY = 'studyspice_db';
 
 const defaultDatabase = {
   schemaVersion: 10,
@@ -1608,11 +1608,11 @@ class LocalDB {
   // Auth helper
   setSessionToken(token) {
     this.sessionToken = token;
-    localStorage.setItem('examlogic_session_token', token);
+    localStorage.setItem('studyspice_session_token', token);
   }
 
   getSessionToken() {
-    return this.sessionToken || localStorage.getItem('examlogic_session_token');
+    return this.sessionToken || localStorage.getItem('studyspice_session_token');
   }
 
   // Getters & Setters

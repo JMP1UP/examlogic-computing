@@ -1,5 +1,5 @@
 /**
- * ExamLogic Computing App Controller
+ * StudySpice App Controller
  * GCSE Computer Science Learning Platform by 25Thirty
  */
 
@@ -243,7 +243,7 @@ class App {
   }
 
   loadSession() {
-    const saved = localStorage.getItem('examlogic_session');
+    const saved = localStorage.getItem('studyspice_session');
     if (saved) {
       this.currentUser = JSON.parse(saved);
       this.activeTab = this.currentUser.role === 'student' ? 'stud-dashboard' : 'teach-overview';
@@ -252,12 +252,12 @@ class App {
 
   saveSession(user) {
     this.currentUser = user;
-    localStorage.setItem('examlogic_session', JSON.stringify(user));
+    localStorage.setItem('studyspice_session', JSON.stringify(user));
   }
 
   clearSession() {
     this.currentUser = null;
-    localStorage.removeItem('examlogic_session');
+    localStorage.removeItem('studyspice_session');
     this.activeTab = 'stud-dashboard';
   }
 
@@ -729,7 +729,7 @@ class App {
             </div>
             <h3 style="font-size: 22px; margin-bottom: 8px; font-weight: 700; color: var(--text-main);">🔢 Binary shifts & conversions</h3>
             <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 24px; max-width: 90%;">You last practised conversions three weeks ago. Let's strengthen it today.</p>
-            <button class="btn btn-primary btn-lg" id="today-rec-btn" style="min-width: 180px; align-self: flex-start; min-height: 40px;">Start activity (5 mins)</button>
+            <button class="btn btn-primary btn-lg" id="today-rec-btn" style="min-width: 180px; align-self: flex-start; min-height: 40px;">Continue practice</button>
           </div>
         `;
       }
@@ -849,9 +849,9 @@ class App {
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
           <div>
             <h1 style="margin-bottom: 6px; font-weight: 700;">${greeting}, ${shortName}</h1>
-            <p style="font-size:16px; color: var(--text-muted); margin: 0;">${greetingText}</p>
+            <p style="font-size:16px; color: var(--text-muted); margin: 0;">Ready for a quick Computing session?</p>
             <div style="margin-top: 8px; font-size: 14px; color: var(--text-muted); font-weight: 500;">
-              Course status: Paper 1: <strong style="color: #1B6E66;">Developing</strong> &middot; Paper 2: <strong style="color: #1B6E66;">Revisit</strong>
+              Course status: Paper 1: <strong style="color: var(--teal);">Getting there</strong> &middot; Paper 2: <strong style="color: var(--teal);">Needs practice</strong>
             </div>
           </div>
           <!-- Profile Control -->

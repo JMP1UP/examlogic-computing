@@ -1,4 +1,4 @@
--- ExamLogic Computing core schema.
+-- StudySpice Computing core schema.
 -- Serverless API routes access these tables with the Supabase service-role key.
 -- Browser clients receive no direct table access.
 
