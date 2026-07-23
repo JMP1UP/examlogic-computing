@@ -8,7 +8,7 @@ jest.mock('../lib/db', () => ({
 }));
 
 const db = require('../lib/db');
-const loginHandler = require('../api/login');
+const loginHandler = require('../lib/auth-routes/login');
 const syncHandler = require('../api/sync');
 
 function responseMock() {

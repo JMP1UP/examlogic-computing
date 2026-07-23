@@ -15,11 +15,11 @@ jest.mock('../lib/db', () => {
 });
 
 const db = require('../lib/db');
-const validateSessionHandler = require('../api/validate-session');
+const validateSessionHandler = require('../lib/auth-routes/validate-session');
 const resetPasswordHandler = require('../api/reset-password');
 const sendInviteHandler = require('../api/send-invite');
 const syncHandler = require('../api/sync');
-const loginHandler = require('../api/login');
+const loginHandler = require('../lib/auth-routes/login');
 
 describe('🛡️ Security & Authentication Suite', () => {
   beforeEach(() => {

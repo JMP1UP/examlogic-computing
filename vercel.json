@@ -9,6 +9,14 @@
   ],
   "rewrites": [
     {
+      "source": "/api/login",
+      "destination": "/api/auth?action=login"
+    },
+    {
+      "source": "/api/validate-session",
+      "destination": "/api/auth?action=validate-session"
+    },
+    {
       "source": "/signup",
       "destination": "/index.html"
     }
