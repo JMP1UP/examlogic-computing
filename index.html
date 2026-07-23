@@ -24,7 +24,7 @@
       <div class="landing-header-container">
         <div class="landing-brand">
           <img src="favicon.svg" alt="StudySpice logo" style="width: 24px; height: 24px; border-radius: 6px;">
-          <span class="landing-brand-name" style="font-family: var(--font-headings); font-weight: 700; color: var(--text-main);">Study<span style="color: var(--teal);">Spice</span></span>
+          <span class="landing-brand-name" style="font-family: var(--font-headings); font-weight: 700; color: var(--white);">Study<span style="color: var(--teal);">Spice</span></span>
         </div>
         <nav class="landing-nav">
           <a href="#how-it-works">How it works</a>
@@ -188,40 +188,42 @@
       <span>⚠️ Demonstration Environment — You are viewing mock student data. Changes will not be saved.</span>
     </div>
     
-    <aside class="sidebar">
-      <div>
-        <div class="brand" style="display: flex; align-items: center; gap: 10px; margin-bottom: 24px;">
-          <img src="favicon.svg" alt="StudySpice logo" style="width: 28px; height: 28px; border-radius: 6px; background-color: var(--white); padding: 2px;">
-          <div style="display: flex; flex-direction: column;">
-            <span class="brand-name" style="font-size: 16px; line-height: 1.2; font-family: var(--font-headings); font-weight: 700; color: var(--white);">Study<span style="color: var(--teal);">Spice</span></span>
-            <span class="brand-endorsement">by 25Thirty</span>
+    <div class="app-body">
+      <aside class="sidebar">
+        <div>
+          <div class="brand" style="display: flex; align-items: center; gap: 10px; margin-bottom: 24px;">
+            <img src="favicon.svg" alt="StudySpice logo" style="width: 28px; height: 28px; border-radius: 6px; background-color: var(--white); padding: 2px;">
+            <div style="display: flex; flex-direction: column;">
+              <span class="brand-name" style="font-size: 16px; line-height: 1.2; font-family: var(--font-headings); font-weight: 700; color: var(--white);">Study<span style="color: var(--teal);">Spice</span></span>
+              <span class="brand-endorsement">by 25Thirty</span>
+            </div>
+          </div>
+          <button id="mobile-nav-toggle" aria-controls="app-role-navigation" aria-expanded="false" style="display: none;"></button>
+          <!-- Navigation bar links -->
+          <nav id="app-role-navigation">
+            <ul class="nav-links" id="nav-links-list">
+              <!-- Populated dynamically via app.js -->
+            </ul>
+          </nav>
+        </div>
+
+        <div class="sidebar-footer">
+          <div id="user-profile-summary">
+            <strong id="user-display-name" style="color: var(--white);">Harriet Potter</strong>
+            <div style="font-size: 12px; color: #94A3B8;" id="user-display-role">Student · Year 10</div>
+          </div>
+          
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <button class="btn btn-secondary btn-sm" id="theme-toggle-btn" title="Toggle theme">🌓 Theme</button>
+            <button class="btn btn-destructive btn-sm" id="logout-btn">Sign out</button>
           </div>
         </div>
-        <button id="mobile-nav-toggle" aria-controls="app-role-navigation" aria-expanded="false" style="display: none;"></button>
-        <!-- Navigation bar links -->
-        <nav id="app-role-navigation">
-          <ul class="nav-links" id="nav-links-list">
-            <!-- Populated dynamically via app.js -->
-          </ul>
-        </nav>
-      </div>
+      </aside>
 
-      <div class="sidebar-footer">
-        <div id="user-profile-summary">
-          <strong id="user-display-name" style="color: var(--white);">Harriet Potter</strong>
-          <div style="font-size: 12px; color: #94A3B8;" id="user-display-role">Student · Year 10</div>
-        </div>
-        
-        <div style="display: flex; gap: 8px; margin-top: 8px;">
-          <button class="btn btn-secondary btn-sm" id="theme-toggle-btn" title="Toggle theme">🌓 Theme</button>
-          <button class="btn btn-destructive btn-sm" id="logout-btn">Sign out</button>
-        </div>
-      </div>
-    </aside>
-
-    <main class="main-content" id="main-panel">
-      <!-- Screens injected here by app.js -->
-    </main>
+      <main class="main-content" id="main-panel">
+        <!-- Screens injected here by app.js -->
+      </main>
+    </div>
 
   </div>
 

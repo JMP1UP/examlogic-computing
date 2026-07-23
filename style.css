@@ -851,3 +851,18 @@ tr:hover td {
   color: var(--text-muted);
   margin: 0;
 }
+
+/* App Body Layout Wrapper */
+.app-body {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .app-body {
+    flex-direction: column;
+    overflow: visible;
+  }
+}
