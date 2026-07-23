@@ -258,4 +258,3 @@ set name = excluded.name,
     country = excluded.country,
     domain = excluded.domain,
     updated_at = now();
-

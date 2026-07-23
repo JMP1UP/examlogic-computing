@@ -78,4 +78,3 @@ describe('multi-school tenant foundation', () => {
     }));
   });
 });
-
