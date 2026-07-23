@@ -1,0 +1,8 @@
+.env
+.env.*
+!.env.example
+.vercel/
+scratch/
+node_modules/
+coverage/
+*.log
