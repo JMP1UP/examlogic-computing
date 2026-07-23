@@ -1,5 +1,6 @@
 // Vercel Serverless Function: api/auth-microsoft.js
-// Securely verifies Microsoft ID tokens and issues signed JWT session tokens for Admins, Coordinators, and Students.
+// Securely exchanges Microsoft OAuth authorization codes with PKCE verification
+// and issues signed JWT session tokens for GCSE computer science students and teachers.
 
 const crypto = require('crypto');
 const db = require('../lib/db');
@@ -62,50 +63,105 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Missing request body' });
   }
 
-  const { credential, schoolId } = req.body;
-  if (!credential) {
-    return res.status(400).json({ error: 'Missing Microsoft credential token' });
+  const { code, verifier, schoolId } = req.body;
+  if (!code) {
+    return res.status(400).json({ error: 'Missing Microsoft authorization code' });
   }
 
+  const targetSchoolId = schoolId || 'school_1';
+
   try {
-    const parts = credential.split('.');
-    if (parts.length !== 3) {
-      return res.status(400).json({ error: 'Malformed Microsoft ID Token' });
-    }
+    const isMock = code.startsWith('mock_code_');
+    let email = '';
+    let name = '';
 
-    const [headerB64, payloadB64, signatureB64] = parts;
-    const header = JSON.parse(base64urlDecode(headerB64));
-    const payload = JSON.parse(base64urlDecode(payloadB64));
+    if (isMock) {
+      // STRICT PRODUCTION CHECK: Reject mock credentials in production environments
+      const isProduction = process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production';
+      if (isProduction) {
+        return res.status(403).json({ error: 'Mock authentication is disabled in production.' });
+      }
 
-    // 1. Verify standard JWT claims
-    const isMockToken = credential.includes('mock_microsoft_token_');
-    if (!isMockToken) {
+      // Decode simulated mock payload from mock code
+      const payloadString = code.substring(10);
+      try {
+        const decodedPayload = JSON.parse(Buffer.from(payloadString, 'base64').toString('utf8'));
+        email = decodedPayload.email;
+        name = decodedPayload.name || email.split('@')[0];
+      } catch (err) {
+        return res.status(400).json({ error: 'Malformed mock authorization code' });
+      }
+    } else {
+      // Real Entra ID exchange
+      const providers = await db.select('identity_providers', `school_id=eq.${encodeURIComponent(targetSchoolId)}&provider=eq.microsoft`);
+      const provider = providers[0];
+      if (!provider || !provider.enabled) {
+        return res.status(400).json({ error: 'Microsoft identity provider is not enabled for this school' });
+      }
+
+      const clientId = provider.client_id;
+      const tenant = provider.tenant_identifier || 'common';
+      const secretRef = provider.secret_reference;
+      const clientSecret = secretRef ? process.env[secretRef] : null;
+
+      // Exchange Auth Code + PKCE Verifier for Tokens
+      const origin = req.headers.origin || 'http://localhost:3000';
+      const redirectUri = origin + '/';
+      
+      const tokenParams = new URLSearchParams();
+      tokenParams.append('client_id', clientId);
+      tokenParams.append('scope', 'openid profile email');
+      tokenParams.append('code', code);
+      tokenParams.append('redirect_uri', redirectUri);
+      tokenParams.append('grant_type', 'authorization_code');
+      tokenParams.append('code_verifier', verifier || '');
+      if (clientSecret) {
+        tokenParams.append('client_secret', clientSecret);
+      }
+
+      const tokenRes = await fetch(`https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: tokenParams.toString()
+      });
+
+      if (!tokenRes.ok) {
+        const tokenErr = await tokenRes.text();
+        throw new Error(`Microsoft token exchange failed: ${tokenErr}`);
+      }
+
+      const tokenData = await tokenRes.json();
+      const idToken = tokenData.id_token;
+      if (!idToken) {
+        throw new Error('Microsoft token response did not contain an id_token');
+      }
+
+      // Decode and verify the ID Token JWT
+      const parts = idToken.split('.');
+      if (parts.length !== 3) {
+        throw new Error('Malformed Microsoft ID Token JWT');
+      }
+
+      const [headerB64, payloadB64, signatureB64] = parts;
+      const header = JSON.parse(base64urlDecode(headerB64));
+      const payload = JSON.parse(base64urlDecode(payloadB64));
+
+      // 1. Verify Issuer and Expiration
       if (!payload.iss || (!payload.iss.includes('login.microsoftonline.com') && !payload.iss.includes('windows.net'))) {
-        return res.status(400).json({ error: 'Invalid Microsoft token issuer' });
+        throw new Error('Invalid Microsoft token issuer');
       }
       if (payload.exp * 1000 < Date.now()) {
-        return res.status(400).json({ error: 'Microsoft token has expired' });
+        throw new Error('Microsoft token has expired');
       }
-    }
-
-    // Lookup the school identity provider to verify the client_id/audience
-    const targetSchoolId = schoolId || payload.tid || 'school_1';
-    const providers = await db.select('identity_providers', `school_id=eq.${encodeURIComponent(targetSchoolId)}&provider=eq.microsoft`);
-    const provider = providers[0];
-
-    if (!isMockToken && provider) {
-      const audience = payload.aud || payload.appid;
-      if (provider.client_id && audience !== provider.client_id) {
-        return res.status(400).json({ error: 'Microsoft token audience mismatch' });
+      if (payload.aud !== clientId) {
+        throw new Error('Microsoft token audience mismatch');
       }
-    }
 
-    // 2. Validate signature if not running local mock tests
-    if (!isMockToken) {
+      // 2. Validate JWT Signature using JWKS
       const keys = await getMicrosoftPublicKeys();
       const jwk = keys.find(k => k.kid === header.kid);
       if (!jwk) {
-        return res.status(400).json({ error: 'Public key not found for Microsoft ID Token kid' });
+        throw new Error('Public key not found for Microsoft ID Token kid');
       }
 
       const pem = jwkToPem(jwk);
@@ -117,20 +173,25 @@ module.exports = async function handler(req, res) {
         .verify(pem, signatureB64, 'base64url');
 
       if (!verified) {
-        return res.status(400).json({ error: 'Invalid Microsoft token signature' });
+        throw new Error('Invalid Microsoft token signature');
       }
+
+      email = (payload.email || payload.upn || payload.preferred_username || '').toLowerCase().trim();
+      name = payload.name || email.split('@')[0];
     }
 
-    // 3. Authenticate User (Coordinators or Students)
-    const email = (payload.email || payload.upn || payload.preferred_username || '').toLowerCase().trim();
     if (!email) {
-      return res.status(400).json({ error: 'Microsoft token must contain an email address claim' });
+      return res.status(400).json({ error: 'Microsoft account must contain an email address' });
     }
 
+    // Authenticate Coordinator/Teacher
     const coordinators = await db.select('coordinators', `email=eq.${email}`);
     const coordinator = coordinators[0];
 
     if (coordinator) {
+      if (coordinator.school_id !== targetSchoolId) {
+        return res.status(403).json({ error: 'Access denied: School tenant mismatch' });
+      }
       if (!coordinator.approved) {
         return res.status(401).json({ error: 'Forbidden: Your coordinator account is pending approval.' });
       }
@@ -155,10 +216,14 @@ module.exports = async function handler(req, res) {
       });
     }
 
+    // Authenticate Student
     const students = await db.select('students', `email=eq.${email}`);
     const student = students[0];
 
     if (student) {
+      if (student.school_id !== targetSchoolId) {
+        return res.status(403).json({ error: 'Access denied: School tenant mismatch' });
+      }
       if (!student.active) {
         return res.status(401).json({ error: 'Forbidden: Your student account is inactive.' });
       }
@@ -183,16 +248,16 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // If student/teacher doesn't exist but has valid school domain, auto-provision client-side mapping
+    // If valid domain but profile not seeded yet, provision in browser
     return res.status(200).json({
       success: true,
       provisionRequired: true,
       email,
-      name: payload.name || email.split('@')[0]
+      name
     });
 
   } catch (err) {
-    console.error('Microsoft Sign-In backend failure:', err);
-    return res.status(500).json({ error: 'Authentication processing failed: ' + err.message });
+    console.error('Microsoft OAuth exchange backend failure:', err);
+    return res.status(500).json({ error: 'Authentication exchange failed: ' + err.message });
   }
 };

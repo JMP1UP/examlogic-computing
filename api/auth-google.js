@@ -98,7 +98,12 @@ module.exports = async function handler(req, res) {
     }
 
     // 2. Validate signature if not running local mock validation tests
-    if (!credential.includes('mock_google_token_')) {
+    if (credential.includes('mock_google_token_')) {
+      const isProduction = process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production';
+      if (isProduction) {
+        return res.status(403).json({ error: 'Mock authentication is disabled in production.' });
+      }
+    } else {
       const keys = await getGooglePublicKeys();
       const jwk = keys.find(k => k.kid === header.kid);
       if (!jwk) {

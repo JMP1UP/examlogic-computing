@@ -186,7 +186,57 @@ class App {
     const reportBtn = 'safeguarding-report-btn';
   }
 
+  async checkMicrosoftCallback() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const state = urlParams.get('state');
+    if (code && state) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      const storedState = sessionStorage.getItem('oauth_state');
+      if (state !== storedState) {
+        this.alert('Authentication error: State mismatch (request hijacked).');
+        return;
+      }
+      
+      const verifier = sessionStorage.getItem('pkce_verifier');
+      const schoolId = sessionStorage.getItem('oauth_school_id') || 'school_1';
+      
+      try {
+        const response = await fetch('/api/auth-microsoft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, verifier, schoolId })
+        });
+        
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Failed to exchange authorization code');
+        }
+        
+        const data = await response.json();
+        if (data.success && data.token) {
+          window.db.saveSessionToken(data.token);
+          this.saveSession({
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
+            role: data.user.role === 'student' ? 'student' : 'teacher',
+            yearGroup: data.user.role === 'student' ? 'Year 10' : undefined,
+            title: data.user.role === 'coordinator' ? 'Coordinator' : undefined
+          });
+          this.activeTab = data.user.role === 'student' ? 'stud-dashboard' : 'teach-overview';
+          window.db.addAuditLog('Sign In', `${data.user.name} logged in via Microsoft School account.`, data.user.name);
+          this.render();
+        }
+      } catch (err) {
+        this.alert(`Microsoft SSO login failed: ${err.message}`);
+      }
+    }
+  }
+
   init() {
+    this.checkMicrosoftCallback();
     this.loadSession();
     this.bindEvents();
     this.render();
@@ -308,7 +358,6 @@ class App {
     const errorMsg = document.getElementById('auth-error-msg');
     if (errorMsg) errorMsg.textContent = '';
 
-    // Restriction check: Only Leicester High school accounts allowed (single-school mode)
     const domain = email.split('@')[1];
     if (!domain || domain.toLowerCase() !== 'leicesterhigh.edu') {
       if (errorMsg) errorMsg.textContent = 'Access restricted: Only verified Leicester High School Microsoft accounts are permitted.';
@@ -318,54 +367,71 @@ class App {
     const submitBtn = document.getElementById('login-submit-btn');
     if (submitBtn) {
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Signing in...';
+      submitBtn.textContent = 'Checking config…';
     }
 
     try {
-      // Construct a mock Microsoft JWT token representing the student/teacher identity
-      const mockHeader = { kid: 'mock-kid' };
-      const mockPayload = {
-        email: email,
-        name: email.split('@')[0].replace('.', ' '),
-        tid: 'school_1',
-        exp: Math.floor(Date.now() / 1000) + 3600
-      };
-      
-      // Helper for base64url encoding
-      const b64 = (obj) => btoa(JSON.stringify(obj)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-      const mockToken = `${b64(mockHeader)}.${b64(mockPayload)}.mock_microsoft_token_`;
-
-      const response = await fetch('/api/auth-microsoft', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential: mockToken, schoolId: 'school_1' })
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || 'Authentication failed');
+      let configResponse;
+      try {
+        configResponse = await fetch('/api/config');
+      } catch (e) {
+        throw new Error('API offline');
       }
-
-      const data = await response.json();
-      if (data.success && data.token) {
-        window.db.saveSessionToken(data.token);
-        this.saveSession({
-          id: data.user.id,
-          name: data.user.name,
-          email: data.user.email,
-          role: data.user.role === 'student' ? 'student' : 'teacher',
-          yearGroup: data.user.role === 'student' ? 'Year 10' : undefined,
-          title: data.user.role === 'coordinator' ? 'Coordinator' : undefined
-        });
+      
+      const configData = await configResponse.json();
+      
+      if (!configData.mockMode) {
+        const schoolConfigResponse = await fetch(`/api/school-config?email=${encodeURIComponent(email)}`);
+        if (!schoolConfigResponse.ok) {
+          throw new Error('School is not configured for Microsoft SSO.');
+        }
         
-        this.activeTab = data.user.role === 'student' ? 'stud-dashboard' : 'teach-overview';
-        this.closeModal('microsoft-auth-modal');
-        window.db.addAuditLog('Sign In', `${data.user.name} logged in via Microsoft School account.`, data.user.name);
-        this.render();
+        const schoolConfig = await schoolConfigResponse.json();
+        const msProvider = schoolConfig.signInMethods.find(m => m.provider === 'microsoft');
+        if (!msProvider) {
+          throw new Error('Microsoft SSO is not configured for this school.');
+        }
+        
+        const generateVerifier = () => {
+          const array = new Uint32Array(32);
+          window.crypto.getRandomValues(array);
+          return Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('');
+        };
+        
+        const sha256 = async (plain) => {
+          const encoder = new TextEncoder();
+          const data = encoder.encode(plain);
+          const hash = await window.crypto.subtle.digest('SHA-256', data);
+          return btoa(String.fromCharCode(...new Uint8Array(hash)))
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=/g, '');
+        };
+        
+        const verifier = generateVerifier();
+        const challenge = await sha256(verifier);
+        const state = Math.random().toString(36).substring(2, 15);
+        
+        sessionStorage.setItem('pkce_verifier', verifier);
+        sessionStorage.setItem('oauth_state', state);
+        sessionStorage.setItem('oauth_school_id', schoolConfig.school.id);
+        
+        const redirectUri = window.location.origin + '/';
+        const authorizeUrl = `https://login.microsoftonline.com/${msProvider.tenant || 'common'}/oauth2/v2.0/authorize?` +
+          `client_id=${msProvider.clientId}&` +
+          `response_type=code&` +
+          `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+          `response_mode=query&` +
+          `scope=openid%20profile%20email&` +
+          `state=${state}&` +
+          `code_challenge=${challenge}&` +
+          `code_challenge_method=S256`;
+          
+        window.location.href = authorizeUrl;
         return;
       }
     } catch (err) {
-      console.warn('API authentication failed or unavailable, falling back to local simulation:', err.message);
+      console.warn('Redirecting to real Microsoft SSO failed or mock mode active. Falling back to local simulation:', err.message);
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;
@@ -373,7 +439,7 @@ class App {
       }
     }
 
-    // Check against local database mock profiles
+    // Local simulation fallback
     const students = window.db.getStudents();
     const coordinators = window.db.getCoordinators();
 
@@ -393,7 +459,6 @@ class App {
       window.db.addAuditLog('Sign In', `${teacher.name} logged in via Microsoft School account.`, teacher.name);
       this.render();
     } else {
-      // Simulate new account creation from Microsoft directory mapping
       const newName = email.split('@')[0].replace('.', ' ');
       const formattedName = newName.charAt(0).toUpperCase() + newName.slice(1);
       
@@ -2054,7 +2119,11 @@ class App {
         }
       };
       this.pythonWorker.addEventListener('message', onMessage);
-      this.pythonWorker.addEventListener('error', () => reject(new Error('The protected Python runner could not start.')), { once: true });
+      this.pythonWorker.addEventListener('error', (err) => {
+        console.error('Python Worker Error Event:', err);
+        clearTimeout(timeout);
+        reject(new Error(`The protected Python runner could not start. (Diagnostic: ${err.message || 'Worker blocked or script error'})`));
+      }, { once: true });
     });
     return this.pythonWorkerReadyPromise;
   }
@@ -2412,52 +2481,19 @@ class App {
     const actionSpan = document.getElementById('ai-action');
     const fPanel = document.getElementById('ai-feedback-panel');
 
-    // Run basic evaluation of keywords in JS
-    let scoreVal = 1;
-    let strengths = 'Identified relevant concerns regarding the scenario.';
-    let improvements = 'Need to develop points further with technical explanations.';
-    let action = 'Connect your ideas clearly to the target stakeholders described in the scenario.';
+    const feedback = calculateDeterministicWrittenFeedback({
+      commandWord: question.commandWord,
+      marks: question.marks,
+      response: responseText,
+      indicativeContent: question.indicativeContent,
+      question: question.question,
+      id: question.id
+    });
 
-    const lowerText = responseText.toLowerCase();
-
-    if (question.id === 'wq_1') {
-      // upgrade desktop disposal
-      const hasEwaste = lowerText.includes('recycle') || lowerText.includes('e-waste') || lowerText.includes('landfill');
-      const hasData = lowerText.includes('wipe') || lowerText.includes('privacy') || lowerText.includes('erase') || lowerText.includes('gdpr');
-      
-      if (hasEwaste && hasData) {
-        scoreVal = 4;
-        strengths = 'Well-structured response explaining data erasure for ethical issues and recycling for environmental concerns.';
-        improvements = 'Integrate the specific regulations (e.g. Data Protection Act 2018 / GDPR) to secure the highest marks.';
-        action = 'Reference GDPR explicitly in relation to school file disposal.';
-      } else if (hasEwaste || hasData) {
-        scoreVal = 2;
-        strengths = 'Identified one core issue (either data protection or physical recycling).';
-        improvements = 'Explain both required strands (ethical and environmental) to achieve the full 4 marks.';
-        action = 'Develop the missing side of the argument (disposal or security).';
-      }
-    } else if (question.id === 'wq_2') {
-      // cloud storage discuss
-      const hasAdv = lowerText.includes('backup') || lowerText.includes('security team') || lowerText.includes('encrypt') || lowerText.includes('loss');
-      const hasDis = lowerText.includes('internet') || lowerText.includes('phishing') || lowerText.includes('password');
-
-      if (hasAdv && hasDis) {
-        scoreVal = 5;
-        strengths = 'Balanced discuss structure with detailed analysis of external professional security and phishing threat vectors.';
-        improvements = 'Include a brief justified overall conclusion or recommendation for the school.';
-        action = 'Conclude by suggesting whether MFA resolves the disadvantage.';
-      } else if (hasAdv || hasDis) {
-        scoreVal = 3;
-        strengths = 'Outlined security parameters of cloud databases.';
-        improvements = 'Discuss both advantages and disadvantages in detail to move to the highest mark band.';
-        action = 'State at least one threat, such as weak user passwords.';
-      }
-    }
-
-    estMarkSpan.textContent = `${scoreVal} / ${question.marks}`;
-    strengthsSpan.textContent = strengths;
-    improvementsSpan.textContent = improvements;
-    actionSpan.textContent = action;
+    estMarkSpan.textContent = `${feedback.estimatedMark} / ${question.marks} (formative estimate)`;
+    strengthsSpan.textContent = feedback.strength;
+    improvementsSpan.textContent = feedback.improvement;
+    actionSpan.textContent = `${feedback.revisionPrompt} ${feedback.rubricEvidence}`;
     
     const titleEl = document.querySelector('#ai-feedback-panel h3');
     if (titleEl) {
@@ -2471,10 +2507,11 @@ class App {
       studentId: this.currentUser.id,
       questionId: question.id,
       response: responseText,
-      estimatedMark: String(scoreVal),
-      strengths,
-      improvements,
-      actionItem: action
+      estimatedMark: String(feedback.estimatedMark),
+      strengths: feedback.strength,
+      improvements: feedback.improvement,
+      actionItem: feedback.revisionPrompt,
+      feedbackSource: 'deterministic'
     });
   }
 

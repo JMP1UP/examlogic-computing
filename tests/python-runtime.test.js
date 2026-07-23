@@ -27,7 +27,8 @@ describe('real browser Python runtime', () => {
   test('Pyodide CDN release serves a valid module', async () => {
     const https = require('https');
     const checkUrl = (url) => new Promise((resolve, reject) => {
-      https.get(url, (res) => {
+      https.get(url, { agent: false }, (res) => {
+        res.resume();
         if (res.statusCode === 200) resolve(true);
         else reject(new Error(`Status: ${res.statusCode}`));
       }).on('error', reject);
