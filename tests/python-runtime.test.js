@@ -6,8 +6,8 @@ describe('real browser Python runtime', () => {
   const worker = fs.readFileSync(path.join(__dirname, '..', 'python-worker.mjs'), 'utf8');
 
   test('runs pinned Pyodide away from the main interface thread', () => {
-    expect(worker).toContain('pyodide/v0.27.7/full/pyodide.mjs');
-    expect(app).toContain("new Worker('/python-worker.mjs', { type: 'module' })");
+    expect(worker).toContain('pyodide/v0.26.3/full/pyodide.js');
+    expect(app).toContain("new Worker('/python-worker.mjs');");
   });
 
   test('executes controlled tests and restricts advanced operations', () => {
@@ -38,7 +38,7 @@ describe('real browser Python runtime', () => {
         req.destroy();
       });
     });
-    const success = await checkUrl('https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.mjs');
+    const success = await checkUrl('https://cdn.jsdelivr.net/pyodide/v0.26.3/full/pyodide.js');
     expect(success).toBe(true);
   });
 });

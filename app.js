@@ -334,21 +334,22 @@ class App {
     }
   }
 
-  quickLogin(role) {
+  async quickLogin(role) {
     try {
       if (role === 'student') {
-        this.handleMicrosoftLogin('harriet@leicesterhigh.edu', 'password');
+        await this.handleMicrosoftLogin('harriet@leicesterhigh.edu', 'password');
         if (this.currentUser) {
           this.currentUser.isDemo = true;
           this.saveSession(this.currentUser);
         }
       } else if (role === 'teacher') {
-        this.handleMicrosoftLogin('smith@leicesterhigh.edu', 'password');
+        await this.handleMicrosoftLogin('smith@leicesterhigh.edu', 'password');
         if (this.currentUser) {
           this.currentUser.isDemo = true;
           this.saveSession(this.currentUser);
         }
       }
+      this.render();
     } catch (err) {
       alert("Quick Login Error: " + err.message + "\nStack: " + err.stack);
     }
@@ -1057,6 +1058,60 @@ class App {
       }
     });
 
+    const TOPIC_LESSONS = {
+      'topic_1_2': {
+        overview: 'Understanding this objective is essential for your exam revision. It relates directly to how binary bits are grouped to build larger data structures.',
+        keyPoints: [
+          'Hexadecimal is base 16. It uses numbers 0-9 and letters A-F to represent values 10-15.',
+          'One hex character represents exactly 4 bits (a nibble).',
+          'Data size formula for audio: Sample Rate (Hz) x Bit Depth x Length (seconds) x Channels.',
+          'Data size formula for images: Width (pixels) x Height (pixels) x Colour Depth (bits).'
+        ],
+        misconceptionTitle: 'Hex representation vs Storage',
+        misconceptionIncorrect: 'Hexadecimal is used because it saves storage space inside computer memory.',
+        misconceptionCorrect: 'Computers always store data in binary. Hexadecimal is used purely for humans to read and write easily. A hex value takes the exact same storage space as its binary equivalent.',
+        checkpointQuestion: 'Convert 10111100 into Hexadecimal.',
+        checkpointHint: 'Hint: Split the byte into two nibbles: 1011 and 1100.',
+        checkpointAnswer: 'BC',
+        checkpointSuccess: '✅ Correct! 1011 is 11 (B) and 1100 is 12 (C). Total is BC.',
+        checkpointFailure: '❌ Incorrect. Hint: 1011 = 11 (B) and 1100 = 12 (C). Try again!'
+      },
+      'topic_2_2': {
+        overview: 'Programming fundamentals are the building blocks of writing source code. You must understand how values are stored, how decisions are made, and how code repeats.',
+        keyPoints: [
+          'Variables and constants store data in named memory locations. A variable can change, but a constant remains fixed during execution.',
+          'Three basic programming constructs: Sequence (line by line), Selection (IF-ELSE decisions), and Iteration (FOR/WHILE loops).',
+          'Basic data types: Integer (whole number), Real/Float (decimal), Boolean (True/False), Character (single symbol), and String (text).',
+          'Arrays are data structures that store multiple items of the same data type under a single identifier, accessed via an index.'
+        ],
+        misconceptionTitle: 'Variables vs Constants & Assignment',
+        misconceptionIncorrect: 'Constants can be modified during program execution, and writing x = 5 is a mathematical equation.',
+        misconceptionCorrect: 'Constants cannot be altered once defined. The assignment operator (=) is not an equation; it assigns the evaluated value on the right-hand side to the variable on the left-hand side.',
+        checkpointQuestion: 'What is the correct construct for a pre-conditioned loop that repeats while a condition is True?',
+        checkpointHint: 'Hint: Enter either FOR or WHILE.',
+        checkpointAnswer: 'WHILE',
+        checkpointSuccess: '✅ Correct! A WHILE loop is a pre-conditioned iteration construct that repeats while its condition is True.',
+        checkpointFailure: '❌ Incorrect. Hint: It is a loop that repeats while a condition is True, e.g. WHILE. Try again!'
+      }
+    };
+
+    const activeLesson = TOPIC_LESSONS[this.activeTopicId] || {
+      overview: `In this section we cover the core principles of ${activeTopic ? activeTopic.name : 'this topic'}. Focus on the relationships between key elements.`,
+      keyPoints: [
+        `Understand the core terminology of ${activeTopic ? activeTopic.name : 'this unit'}.`,
+        'Prepare to apply these concepts to OCR exam specification points.',
+        'Review key terms and test your understanding using checkpoints.'
+      ],
+      misconceptionTitle: 'General Concept Application',
+      misconceptionIncorrect: 'Memorising definitions is enough to score full marks in long-answer questions.',
+      misconceptionCorrect: 'You must apply definitions to the scenario provided in the question. Use the PEEL structure (Point, Evidence, Explanation, Link) for 6-mark and 8-mark written responses.',
+      checkpointQuestion: `What is the first step of the Fetch-Decode-Execute cycle?`,
+      checkpointHint: 'Hint: Enter either FETCH, DECODE, or EXECUTE.',
+      checkpointAnswer: 'FETCH',
+      checkpointSuccess: '✅ Correct! The Fetch stage retrieves instructions from RAM.',
+      checkpointFailure: '❌ Incorrect. Hint: It is the first step (FETCH). Try again!'
+    };
+
     panel.innerHTML = `
       <div style="display: grid; grid-template-columns: 280px 1fr; gap: 32px;">
         <div style="border-right: 1px solid var(--border-color); padding-right: 24px;">
@@ -1085,33 +1140,30 @@ class App {
 
           <div style="max-width: 720px;">
             <h3 style="margin-bottom: 8px;">1. Overview</h3>
-            <p>Understanding this objective is essential for your exam revision. It relates directly to how binary bits are grouped to build larger data structures.</p>
+            <p>${activeLesson.overview}</p>
 
             <h3 style="margin-top:24px; margin-bottom: 8px;">2. Key knowledge</h3>
             <div class="card" style="background-color: var(--bg-card); margin-bottom: 24px;">
               <h4 style="margin-bottom: 8px;">Crucial theory points</h4>
               <ul style="padding-left: 20px; font-size:14px; color: var(--text-muted); display:flex; flex-direction:column; gap:8px;">
-                <li>Hexadecimal is base 16. It uses numbers 0-9 and letters A-F to represent values 10-15.</li>
-                <li>One hex character represents exactly 4 bits (a nibble).</li>
-                <li>Data size formula for audio: Sample Rate (Hz) x Bit Depth x Length (seconds) x Channels.</li>
-                <li>Data size formula for images: Width (pixels) x Height (pixels) x Colour Depth (bits).</li>
+                ${activeLesson.keyPoints.map(point => `<li>${point}</li>`).join('')}
               </ul>
             </div>
 
             <h3 style="margin-top:24px; margin-bottom: 8px;">3. Common misconceptions</h3>
             <div class="card" style="border-left: 5px solid var(--coral); background-color: rgba(244,63,94,0.02); margin-bottom: 24px;">
-              <h4 style="color: var(--coral);">Misconception Alert: Hex representation vs Storage</h4>
-              <p style="margin: 0; font-size: 14px;"><strong>Incorrect:</strong> "Hexadecimal is used because it saves storage space inside computer memory."<br>
-              <strong>Correct:</strong> Computers always store data in binary. Hexadecimal is used purely for humans to read and write easily. A hex value takes the exact same storage space as its binary equivalent.</p>
+              <h4 style="color: var(--coral);">Misconception Alert: ${activeLesson.misconceptionTitle}</h4>
+              <p style="margin: 0; font-size: 14px;"><strong>Incorrect:</strong> "${activeLesson.misconceptionIncorrect}"<br>
+              <strong>Correct:</strong> ${activeLesson.misconceptionCorrect}</p>
             </div>
 
             <h3 style="margin-top:24px; margin-bottom: 12px;">4. Quick checkpoint</h3>
             <div class="card">
-              <h4 style="margin-bottom: 8px;">Convert 10111100 into Hexadecimal.</h4>
-              <p style="font-size:13px;">Hint: Split the byte into two nibbles: 1011 and 1100.</p>
+              <h4 style="margin-bottom: 8px;">${activeLesson.checkpointQuestion}</h4>
+              <p style="font-size:13px;">${activeLesson.checkpointHint}</p>
               
               <div style="display: flex; gap: 8px; align-items: center; margin-top: 12px;">
-                <input type="text" id="checkpoint-answer" class="form-control" style="max-width: 120px;" placeholder="e.g. BC">
+                <input type="text" id="checkpoint-answer" class="form-control" style="max-width: 120px;" placeholder="Answer...">
                 <button class="btn btn-primary" id="checkpoint-btn">Check</button>
               </div>
               <div id="checkpoint-feedback" style="margin-top:12px; font-size:14px; font-weight:600;"></div>
@@ -1127,11 +1179,11 @@ class App {
       chkBtn.onclick = () => {
         const val = document.getElementById('checkpoint-answer').value.trim().toUpperCase();
         const fback = document.getElementById('checkpoint-feedback');
-        if (val === 'BC') {
-          fback.textContent = '✅ Correct! 1011 is 11 (B) and 1100 is 12 (C). Total is BC.';
+        if (val === activeLesson.checkpointAnswer) {
+          fback.textContent = activeLesson.checkpointSuccess;
           fback.style.color = 'var(--green)';
         } else {
-          fback.textContent = '❌ Incorrect. Hint: 1011 = 11 (B) and 1100 = 12 (C). Try again!';
+          fback.textContent = activeLesson.checkpointFailure;
           fback.style.color = 'var(--red)';
         }
       };
@@ -2105,7 +2157,7 @@ class App {
 
   getPythonWorker() {
     if (this.pythonWorker && this.pythonWorkerReadyPromise) return this.pythonWorkerReadyPromise;
-    this.pythonWorker = new Worker('/python-worker.mjs', { type: 'module' });
+    this.pythonWorker = new Worker('/python-worker.mjs');
     this.pythonWorkerReadyPromise = new Promise((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error('Python took too long to load. Check the internet connection and try again.')), 30000);
       const onMessage = event => {

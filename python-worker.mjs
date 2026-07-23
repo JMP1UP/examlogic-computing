@@ -1,9 +1,10 @@
-import { loadPyodide } from 'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.mjs';
+
+importScripts('https://cdn.jsdelivr.net/pyodide/v0.26.3/full/pyodide.js');
 
 let pyodide;
 
 async function initialise() {
-  pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/' });
+  pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.3/full/' });
   self.postMessage({ type: 'ready' });
 }
 

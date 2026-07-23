@@ -141,9 +141,10 @@ alter table public.students
   alter column password_hash drop not null;
 
 insert into public.school_domains (school_id, domain, is_primary, verified_at)
-select id, domain, true, now()
-from public.schools
-where domain is not null
+values
+  ('school_1', 'leicesterhigh.edu', true, now()),
+  ('school_2', 'goethe.edu', true, now()),
+  ('school_3', 'lycee.edu', true, now())
 on conflict (school_id, domain) do nothing;
 
 insert into public.identity_providers (
@@ -153,8 +154,8 @@ values (
   'school_1',
   'microsoft',
   'Leicester High Microsoft account',
-  'leicester-high-tenant-id-placeholder',
-  'leicester-high-client-id-placeholder',
+  '89b66541-893d-4f1a-926d-17941da298a1',
+  '4e6aeb58-0d43-43d1-81c4-e6082b4fc077',
   true
 )
 on conflict (school_id, provider) do nothing;
