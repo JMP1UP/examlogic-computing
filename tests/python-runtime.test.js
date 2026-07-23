@@ -27,11 +27,16 @@ describe('real browser Python runtime', () => {
   test('Pyodide CDN release serves a valid module', async () => {
     const https = require('https');
     const checkUrl = (url) => new Promise((resolve, reject) => {
-      https.get(url, { agent: false }, (res) => {
+      const req = https.get(url, { agent: false }, (res) => {
         res.resume();
         if (res.statusCode === 200) resolve(true);
         else reject(new Error(`Status: ${res.statusCode}`));
-      }).on('error', reject);
+        req.destroy();
+      });
+      req.on('error', (err) => {
+        reject(err);
+        req.destroy();
+      });
     });
     const success = await checkUrl('https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.mjs');
     expect(success).toBe(true);

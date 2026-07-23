@@ -37,7 +37,7 @@ describe('Content Security Policy deployment configuration', () => {
 
   test('allows the pinned Python runtime in a same-origin worker', () => {
     expect(enforcedPolicy.value).toContain("worker-src 'self'");
-    expect(enforcedPolicy.value).toContain("script-src 'self' https://cdn.jsdelivr.net");
+    expect(enforcedPolicy.value).toContain("script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net");
     expect(enforcedPolicy.value).toContain("connect-src 'self' https://cdn.jsdelivr.net");
   });
 });
