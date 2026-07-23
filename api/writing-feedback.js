@@ -18,20 +18,93 @@ function setCors(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }
 
-function deterministicFeedback({ commandWord, marks, response, indicativeContent }) {
+const QUESTION_KEYWORDS = {
+  wq_1: [
+    /privacy|data|wipe|leak|gdpr|law|protection|ethical/i,
+    /landfill|scaveng|developing|poison|harm|expose/i,
+    /toxic|lead|mercury|pollut|soil|water|chemical|e-waste|electronic waste/i,
+    /recycle|precious|metal|copper|gold|conserve|resource|mine|mining/i
+  ],
+  wq_3: [
+    /clock speed|gigahertz|ghz|cycle|fetch/i,
+    /core|parallel|multitask|throughput|thread/i,
+    /cache|fast|memory|reduce|ram|access/i
+  ],
+  wq_4: [
+    /virtual memory|hdd|ssd|secondary/i,
+    /swap|page|transfer|move/i,
+    /performance|slow|thrash|lag/i
+  ],
+  wq_5: [
+    /mesh|topology|reliability|redundancy|route/i,
+    /switch|central|star|failure|hub/i,
+    /cost|cable|install|admin/i
+  ],
+  wq_6: [
+    /analogue|microphone|continuous|sound|wave/i,
+    /sampl|measure|interval|amplitude|rate/i,
+    /quantiz|binary|digit/i,
+    /store|metadata|bit depth/i
+  ],
+  wq_7: [
+    /midpoint|middle|split/i,
+    /compare|greater|less|discard/i,
+    /sublist|new list/i,
+    /stop|match/i
+  ],
+  wq_8: [
+    /authentication|password|username|mfa/i,
+    /validation|format|length|range/i,
+    /sanitis|strip|sql|inject/i,
+    /maintain|comment|indent|name/i
+  ],
+  wq_9: [
+    /compile|execut|fast|exe|source code|hide|intellectual/i,
+    /interpret|line-by-line|slow|debug/i,
+    /platform|portable|os/i
+  ]
+};
+
+function getQuestionId(questionText, passedId) {
+  if (passedId) return passedId;
+  const txt = String(questionText || '').toLowerCase();
+  if (txt.includes('dispos') || txt.includes('hardware')) return 'wq_1';
+  if (txt.includes('clock speed') || txt.includes('cores')) return 'wq_3';
+  if (txt.includes('virtual memory') || txt.includes('thrashing')) return 'wq_4';
+  if (txt.includes('mesh') || txt.includes('topology')) return 'wq_5';
+  if (txt.includes('analogue') || txt.includes('sampling')) return 'wq_6';
+  if (txt.includes('binary search') || txt.includes('sorted')) return 'wq_7';
+  if (txt.includes('defensive design') || txt.includes('login console')) return 'wq_8';
+  if (txt.includes('compiler') || txt.includes('interpreter')) return 'wq_9';
+  return null;
+}
+
+function deterministicFeedback({ commandWord, marks, response, indicativeContent, question, questionId }) {
   const lower = response.toLowerCase();
-  const matched = indicativeContent.filter(point => point.toLowerCase().split(/\W+/).filter(word => word.length > 5).some(word => lower.includes(word))).length;
+  const qId = getQuestionId(question, questionId);
+  const matchers = QUESTION_KEYWORDS[qId] || [];
+  
+  let matched = 0;
+  if (matchers.length > 0) {
+    matched = matchers.filter(regex => regex.test(response)).length;
+  } else {
+    matched = indicativeContent.filter(point => point.toLowerCase().split(/\W+/).filter(word => word.length > 5).some(word => lower.includes(word))).length;
+  }
+  
   const developed = /because|therefore|so that|this means|as a result|consequently/i.test(response);
   const applied = /school|student|user|program|scenario|data|computer/i.test(response);
   const balance = commandWord === 'Discuss' ? /however|whereas|on the other hand|advantage|disadvantage/i.test(response) : true;
-  const ratio = Math.min(1, (matched / Math.max(2, indicativeContent.length)) + (developed ? 0.2 : 0) + (applied ? 0.1 : 0) + (balance ? 0.1 : 0));
+  
+  const maxPossibleMatches = matchers.length > 0 ? matchers.length : Math.max(2, indicativeContent.length);
+  const ratio = Math.min(1, (matched / maxPossibleMatches) + (developed ? 0.2 : 0) + (applied ? 0.1 : 0) + (balance ? 0.1 : 0));
   const estimatedMark = Math.max(1, Math.min(marks, Math.round(ratio * marks)));
+  
   return {
     estimatedMark,
     strength: developed ? 'You develop at least one idea by explaining why it matters.' : 'You identify a relevant idea connected to the question.',
     improvement: commandWord === 'Discuss' && !balance ? 'Develop both sides before reaching a justified conclusion.' : 'Add one more precise technical point and explain its effect in this scenario.',
     revisionPrompt: 'Revise one paragraph using: point → technical explanation → application to the scenario.',
-    rubricEvidence: matched ? `${matched} indicative content area${matched === 1 ? '' : 's'} detected.` : 'Relevant content is present, but it needs a clearer link to the indicative content.',
+    rubricEvidence: matched ? `${matched} concept area${matched === 1 ? '' : 's'} detected.` : 'Relevant content is present, but it needs a clearer link to the indicative content.',
     source: 'deterministic'
   };
 }
@@ -69,6 +142,7 @@ module.exports = async function handler(req, res) {
   recentRequests.set(decoded.id, Date.now());
   const body = req.body && typeof req.body === 'object' ? req.body : {};
   const task = {
+    questionId: cleanText(body.questionId, 100),
     studentId: decoded.id, question: cleanText(body.question, 1200), response: cleanText(body.response, 6000),
     commandWord: COMMAND_WORDS.has(body.commandWord) ? body.commandWord : 'Explain', marks: Math.min(12, Math.max(1, Number(body.marks) || 1)),
     rubric: Array.isArray(body.rubric) ? body.rubric.slice(0, 8).map(item => cleanText(item, 500)) : [],

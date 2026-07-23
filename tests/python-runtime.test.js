@@ -23,4 +23,16 @@ describe('real browser Python runtime', () => {
     expect(app).not.toContain('Python execution simulator check');
     expect(app).not.toContain("codeVal.includes('range(1, 6)')");
   });
+
+  test('Pyodide CDN release serves a valid module', async () => {
+    const https = require('https');
+    const checkUrl = (url) => new Promise((resolve, reject) => {
+      https.get(url, (res) => {
+        if (res.statusCode === 200) resolve(true);
+        else reject(new Error(`Status: ${res.statusCode}`));
+      }).on('error', reject);
+    });
+    const success = await checkUrl('https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.mjs');
+    expect(success).toBe(true);
+  });
 });

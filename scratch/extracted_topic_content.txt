@@ -1,0 +1,1463 @@
+=== FILE: 558027-specification-gcse-computer-science-j277.pdf | PAGE: 3 ===
+Version 3.1 © Cambridge OCR 2026 
+Cambridge OCR Level 1/Level 2 GCSE (9-1) in Computer Science        1
+Contents
+1 Why choose an OCR GCSE (9–1) in Computer Science? 2
+1a.	 Why	choose	an	OCR	qualification?	 2
+1b. Aims and learning outcomes 3
+1c.	 What	are	the	key	features	of	this	specification?	 3
+1d.	 How	do	I	find	out	more	information?	 4
+2	 The	specification	overview	  5
+2a. OCR’s GCSE (9–1) in Computer Science (J277) 5
+2b. Content of Computer systems (J277/01) 6
+2c.	 Content	of	Computational	thinking,	algorithms	and	programming	(J277/02)	 15
+2d.	 Practical	Programming	skills	 22
+2e.	 Prior	knowledge,	learning	and	progression	 22
+3 Assessment of GCSE (9–1) in Computer Science 23
+3a. Forms of assessment 23
+3b.	 Assessment	of	Practical	Programming	skills:	Component	2	 24
+3c. OCR Exam Reference Language 25
+3d. Command words  32
+3e.	 Assessment	Objectives	 34
+3f.	 Total	qualification	time	 34
+3g.		 Qualification	availability	outside	of	England	 34
+3h.  Language 35
+3i.	 Assessment	availability	 35
+3j.	 Retaking	the	qualification	 35
+3k. Assessment of extended response 35
+3l.	 Mathematical	skills	requirement	 35
+3m.	 Synoptic	assessment		 35
+3n.	 Calculating	qualification	result	 35
+4	 Admin:	what	you	need	to	know  36
+4a. Pre-assessment 36
+4b.	 Special	consideration		 37
+4c. External assessment arrangements 37
+4d.	 Practical	Programming	skills	administration	requirements	 38
+4e.	 Results	and	certificates	 38
+4f.	 Post-results	services	 39
+4g.	 Malpractice		 39
+5 Appendices  40
+5a. Grade descriptors 40
+5b.	 Overlap	with	other	qualifications	 41
+5c. Accessibility 41
+6 Summary of updates 42
+J277:	Summary	of	updates	 42
+J276	to	J277:	Summary	of	updates	–	key	changes	 45
+7	 Pathways	for	Computing  46
+
+========================================
+
+=== FILE: 558027-specification-gcse-computer-science-j277.pdf | PAGE: 5 ===
+1
+Version 3.1 © Cambridge OCR 2026 
+Cambridge OCR Level 1/Level 2 GCSE (9-1) in Computer Science        3
+1b. Aims and learning outcomes
+OCR’s GCSE (9–1) in Computer Science will encourage 
+students	to:
+• understand and apply the fundamental 
+principles	and	concepts	of	Computer	Science,	
+including	abstraction,	decomposition,	logic,	
+algorithms,	and	data	representation
+• analyse	problems	in	computational	terms	
+through	practical	experience	of	solving	such	
+problems,	including	designing,	writing	and	
+debugging programs 
+• think	creatively,	innovatively,	analytically,	
+logically	and	critically
+• understand the components that make up 
+digital	systems,	and	how	they	communicate	
+with one another and with other systems
+• understand the impacts of digital technology  
+to	the	individual	and	to	wider	society
+• apply	mathematical	skills	relevant	to	Computer	
+Science.
+The key features of OCR’s GCSE (9–1) in Computer 
+Science	for	you	and	your	students	are:
+•	 a	simple	and	intuitive	assessment	model,	
+consisting	of	two	papers,	one	focusing	on 
+computer systems and one with a focus on 
+programming,	computational	thinking, and 
+algorithms.	Both	papers	have	identical	
+weighting	and	mark	allocations
+•	 a	specification	developed	with	teachers	
+specifically	for	teachers.	The	specification	 
+lays out the subject content clearly
+•	 a	flexible	support	package	formed	after	
+listening to teachers’ needs. The support 
+package will enable teachers to easily 
+understand the requirements of the 
+qualification	and	how	it	is	assessed
+•	 a	team	of	OCR	Subject	Advisors	who	support	
+teachers	directly	and	manage	the	qualification	
+nationally
+•	 the	specification	has	been	designed	to	
+transition	seamlessly	into	Computer	Science	 
+at	AS	Level	and/or	A	Level.
+This	specification/qualification	will	enable	students	 
+to	develop:	
+•	 valuable	thinking	and	programming	skills	  
+that	are	extremely	attractive	in	the	modern	
+workplace
+•	 a	deep	understanding	of	computational	
+thinking and how to apply it through a chosen 
+programming language.
+1c.	 What	are	the	key	features	of	this	specification?
+
+========================================
+
+=== FILE: 558027-specification-gcse-computer-science-j277.pdf | PAGE: 7 ===
+2
+Version 3.1 © Cambridge OCR 2026 
+Cambridge OCR Level 1/Level 2 GCSE (9-1) in Computer Science        5
+Students take J277/01 and J277/02 to be awarded the OCR GCSE (9–1) in Computer Science. 
+Content	Overview Assessment	Overview
+J277/01: Computer systems
+This	component	will	assess:	
+• 1.1 Systems architecture 
+• 1.2 Memory and storage 
+•	 1.3	Computer	networks,	connections	and	
+protocols 
+• 1.4 Network security 
+•	 1.5	Systems	software	
+•	 1.6	Ethical,	legal,	cultural	and	environmental	
+impacts of digital technology 
+Written	paper:	1	hour	and	30	minutes	
+50% of total GCSE
+80	marks	
+This is a non-calculator paper. 
+All	questions	are	mandatory.	
+This	paper	consists	of	multiple	choice	questions,	
+short	response	questions	and	extended	response	
+questions.
+J277/02:	Computational	thinking,	algorithms	and	
+programming
+This	component	will	assess:
+• 2.1 Algorithms 
+• 2.2 Programming fundamentals 
+• 2.3 Producing robust programs 
+• 2.4 Boolean logic 
+• 2.5 Programming languages and Integrated 
+Development	Environments	
+Written	paper:	1	hour	and	30	minutes	
+50% of total GCSE
+80	marks 
+This is a non-calculator paper. 
+This	paper	has	two	sections:	Section	A	and	
+Section	B.	Students	must	answer	both	sections.	
+All	questions	are	mandatory.	
+In	Section	B,	questions	assessing	students’	ability	to	
+write	or	refine	algorithms	must	be	answered	using	
+either the OCR Exam Reference Language or the 
+high-level	programming	language	they	are	familiar	
+with. 
+2a. OCR’s GCSE (9–1) in Computer Science (J277)
+2	 The	specification	overview	
+Practical	Programming
+All	students	must	be	given	the	opportunity	to	undertake	a	programming	task(s),	either	to	a	specification	or	
+to	solve	a	problem	(or	problems),	during	their	course	of	study.		Students	may	draw	on	some	of	the	content	
+in	both	components	when	engaged	in	Practical	Programming.	
+Please	see	Sections	2d	and	4d	for	further	information.
+ii
+
+========================================
+
+=== FILE: 558027-specification-gcse-computer-science-j277.pdf | PAGE: 11 ===
+2
+Version 3.1 © Cambridge OCR 2026 
+Cambridge OCR Level 1/Level 2 GCSE (9-1) in Computer Science        9
+Sub topic Guidance
+Characters
+¨	 The use of binary codes to represent characters
+¨	 The term ‘character set’
+¨	 The	relationship	between	the	number	of	bits	per	character	in	a	
+character	set,	and	the	number	of	characters	which	can	be	
+represented,	e.g.:	
+o ASCII
+o Unicode
+Images
+¨	 How	an	image	is	represented	as	a	series	of	pixels,	represented	in	
+binary
+¨	 Metadata
+¨	 The	effect	of	colour	depth	and	resolution	on:
+o The quality of the image
+o The	size	of	an	image	file
+Sound
+¨	 How sound can be sampled and stored in digital form
+¨	 The	effect	of	sample	rate,	duration	and	bit	depth	on:
+o The playback quality
+o The	size	of	a	sound	file
+Required
+ü	 How characters are represented in binary
+ü	 How the number of characters stored is limited by the bits 
+available
+ü	 The	differences	between	and	impact	of	each	character	set
+ü	 Understand	how	character	sets	are	logically	ordered,	e.g.	the	
+character code for ‘B’ will be one more than the character code 
+for ‘A’
+ü	 Binary	representation	of	ASCII	in	the	exam	will	use	8	bits
+Not required
+û	 Memorisation	of	character	set	codes
+Required
+ü	 Each	pixel	has	a	specific	colour,	represented	by	a	specific	code
+ü	 The	effect	on	image	size	and	quality	when	changing	colour	depth	
+and	resolution
+ü	 Metadata	stores	additional	image	information	(e.g.	height,	width,	
+etc.)
+Required
+ü	 Analogue sounds must be stored in binary
+ü	 Sample rate – measured in Hertz (Hz)
+ü	 Duration	–	how	many	seconds	of	audio	the	sound	file	contains
+ü	 Bit	depth	–	number	of	bits	available	to	store	each	sample	 
+(e.g. 16-bit)
+1.2.5 Compression
+¨	 The need for compression
+¨	 Types	of	compression:
+o Lossy
+o Lossless
+Required
+ü	 Common scenarios where compression may be needed
+ü	 Advantages	and	disadvantages	of	each	type	of	compression
+ü	 Effects	on	the	file	for	each	type	of	compression
+Not required
+û	 Ability	to	carry	out	specific	compression	algorithms
+
+========================================
+
+=== FILE: 558027-specification-gcse-computer-science-j277.pdf | PAGE: 17 ===
+2
+Version 3.1 © Cambridge OCR 2026 
+Cambridge OCR Level 1/Level 2 GCSE (9-1) in Computer Science        15
+2.1 – Algorithms
+Sub topic Guidance
+2.1.1	Computational	thinking
+¨	 Principles	of	computational	thinking:
+o Abstraction
+o Decomposition
+o Algorithmic thinking
+Required
+ü	 Understanding of these principles and how they are used to 
+define	and	refine	problems
+2.1.2	Designing,	creating	and	refining	algorithms
+¨	 Identify	the	inputs,	processes,	and	outputs	for	a	problem
+¨	 Structure diagrams
+¨	 Create,	interpret,	correct,	complete,	and	refine	algorithms	using:
+o Pseudocode
+o Flowcharts 
+o Reference	language/high-level	programming	language
+¨	 Identify	common	errors
+¨	 Trace tables
+Required
+ü	 Produce	simple	diagrams	to	show:
+§	 The structure of a problem
+§	 Subsections	and	their	links	to	other	subsections
+ü	 Complete,	write	or	refine	an	algorithm	using	the	techniques	listed
+ü	 Identify	syntax/logic	errors	in	code	and	suggest	fixes
+ü	 Create and use trace tables to follow an algorithm
+ü	 Use	of	nesting	for	selection	and	iteration
+Flowchart	symbols
+Line Input/
+Output
+Process Decision
+Sub 
+program
+Terminal
+2c.	 Content	of	Computational	thinking,	algorithms	and	programming	(J277/02)
+
+========================================
+
+=== FILE: 558027-specification-gcse-computer-science-j277.pdf | PAGE: 18 ===
+2
+ Version 3.1 © Cambridge OCR 2026 
+16 Cambridge OCR Level 1/Level 2 GCSE (9-1) in Computer Science
+2.1.3	Searching	and	sorting	algorithms
+¨	 Standard	searching	algorithms:
+o Binary search
+o Linear search
+¨	 Standard	sorting	algorithms:
+o Bubble sort
+o Merge sort
+o Insertion	sort
+Required
+ü	 Understand the main steps of the algorithm and the segments of 
+code in it
+ü	 Understand any pre-requisites of an algorithm
+ü	 Apply the algorithm to a data set
+ü	 Identify	an	algorithm	if	given	the	code,	pseudocode	or	Exam	
+Reference Language for it
+Not required
+û	 To	remember	the	code,	pseudocode	or	Exam	Reference	Language	
+for these algorithms
+
+========================================
+
+=== FILE: 558027-specification-gcse-computer-science-j277.pdf | PAGE: 21 ===
+2
+Version 3.1 © Cambridge OCR 2026 
+Cambridge OCR Level 1/Level 2 GCSE (9-1) in Computer Science        19
+2.3 – Producing robust programs
+Sub topic Guidance
+2.3.1 Defensive design
+¨	 Defensive	design	considerations:
+o Anticipating	misuse
+o Authentication
+¨	 Input	validation
+¨	 Maintainability:
+o Use of sub programs
+o Naming	conventions
+o Indentation
+o Commenting
+Required
+ü	 Understanding of the issues a programmer should consider to 
+ensure	that	a	program	caters	for	all	likely	input	values
+ü	 Understanding	of	how	to	deal	with	invalid	data	in	a	program
+ü	 Authentication	to	confirm	the	identity	of	a	user
+ü	 Practical	experience	of	designing	input	validation	and	simple	
+authentication	(e.g.	username	and	password)	
+ü	 Understand	why	commenting	is	useful	and	apply	this	
+appropriately
+2.3.2	Testing
+¨	 The	purpose	of	testing
+¨	 Types	of	testing:
+o Iterative
+o Final/terminal
+¨	 Identify	syntax	and	logic	errors
+¨	 Selecting	and	using	suitable	test	data:
+o Normal
+o Boundary
+o Invalid/Erroneous
+¨	 Refining	algorithms
+Required
+ü	 The	difference	between	testing	modules	of	a	program	during	
+development	and	testing	the	program	at	the	end	of	production
+ü	 Syntax	errors	as	errors	which	break	the	grammatical	rules	of	the	
+programming language and stop it from being run/translated
+ü	 Logic errors as errors which produce unexpected output
+ü	 Normal test data as data which should be accepted by a program 
+without causing errors
+ü	 Boundary test data as data of the correct type which is on the 
+very	edge	of	being	valid
+ü	 Invalid	test	data	as	data	of	the	correct	data	type	which	should	be	
+rejected by a computer system
+ü	 Erroneous test data as data of the incorrect data type which 
+should be rejected by a computer system
+ü	 Ability	to	identify	suitable	test	data	for	a	given	scenario
+ü	 Ability to create/complete a test plan
+
+========================================
+
+=== FILE: 558027-specification-gcse-computer-science-j277.pdf | PAGE: 22 ===
+ Version 3.1 © Cambridge OCR 2026 
+20 Cambridge OCR Level 1/Level 2 GCSE (9-1) in Computer Science
+2.4 – Boolean logic
+Sub topic Guidance
+2.4.1 Boolean logic
+¨	 Simple	logic	diagrams	using	the	operators	AND,	OR	
+and NOT
+¨	 Truth tables
+¨	 Combining	Boolean	operators	using	AND,	OR	and	
+NOT
+¨	 Applying	logical	operators	in	truth	tables	to	solve	
+problems
+Required
+ü	 Knowledge of the truth tables for each logic gate
+ü	 Recognition	of	each	gate	symbol
+ü	 Understanding	of	how	to	create,	complete	or	edit	logic	diagrams	and	truth	
+tables	for	given	scenarios
+ü	 Ability to work with more than one gate in a logic diagram
+Boolean Operators Logic Gate Symbol
+AND
+(Conjunction)
+OR
+(Disjunction)
+NOT
+(Negation)
+Truth Tables
+AND OR NOT
+A B A AND B A B A OR B A NOT A
+0 0 0 0 0 0 0 1
+0 1 0 0 1 1 1 0
+1 0 0 1 0 1
+1 1 1 1 1 1
+Alternatives
+•	 Use	of	other	valid	notation	will	be	accepted	within	the	examination,	e.g.	Using	
+T/F	for	1/0,	or	V	for	OR,	etc.
+2
+
+========================================
+
+=== FILE: 558027-specification-gcse-computer-science-j277.pdf | PAGE: 25 ===
+Version 3.1 © Cambridge OCR 2026 
+Cambridge OCR Level 1/Level 2 GCSE (9-1) in Computer Science        23
+3
+OCR’s GCSE (9–1) in Computer Science consists of two compulsory components that are externally assessed.
+J277/01: Computer systems
+This is a compulsory component. It is worth 80	marks,	
+representing	50% of the total marks for the 
+GCSE (9–1). 
+This	component	is	an	externally	assessed	written	
+examination	testing	AO1	and	AO2.	
+The	examination	lasts	1 hour 30 minutes.
+All	the	questions	are	mandatory.
+Students	are	not	permitted	to	use	a	calculator	in	the	
+examination.
+The	question	paper	will	consist	of	short	and	medium	
+answer	questions.	There	will	also	be	one	8-mark	
+extended	response	question.	This	question	will	enable	
+students to demonstrate the ability to construct and 
+develop	a	sustained	line	of	reasoning.	
+3a. Forms of assessment
+3 Assessment of GCSE (9–1) in Computer Science
+J277/02:	Computational	thinking,	algorithms	and	programming
+This is a compulsory component. It is worth 80	marks,	
+representing	50% of the total marks for the 
+GCSE (9–1). 
+This	component	is	an	externally	assessed	written	
+examination	testing	AO1,	AO2	and	AO3.	
+The	examination	lasts	1 hour 30 minutes and is 
+formed	of	two	sections.
+All	the	questions	are	mandatory.
+Section	A is worth 50	marks,	and	assesses	students’	
+knowledge and understanding of concepts of 
+Computer Science. Students then apply these to 
+problems	in	computational	terms,	where	they	may	
+use an algorithmic approach.
+Section	B is worth 30	marks,	and	assesses	students’	
+Practical	Programming	skills	and	their	ability	to	design,	
+write,	test	and	refine	programs.
+Students	are	not	permitted	to	use	a	calculator	in	the	
+examination.
+The	question	paper	will	consist	of	short	and	medium	
+answer	questions.	
+Sample	Assessment	Materials	and	other	resources	which	exemplify	our	approach	to	the	examinations	can	be	
+found on the J277 web page of the OCR website.
+ii
+
+========================================
+
+=== FILE: 558027-specification-gcse-computer-science-j277.pdf | PAGE: 36 ===
+3
+ Version 3.1 © Cambridge OCR 2026 
+34 Cambridge OCR Level 1/Level 2 GCSE (9-1) in Computer Science
+3e.	 Assessment	Objectives
+There	are	three	Assessment	Objectives	(AOs)	in	OCR	GCSE	(9–1)	in	Computer	Science.	These	are	detailed	in	the	
+table below.
+Students	are	expected	to:
+Assessment	Objective
+AO1 Demonstrate knowledge and understanding of the key concepts and principles of Computer 
+Science.
+AO2 Apply knowledge and understanding of key concepts and principles of Computer Science.
+AO3 Analyse	problems	in	computational	terms:
+• to make reasoned judgements
+•	 to	design,	program,	evaluate	and	refine	solutions.
+The	relationship	between	the	Assessment	Objectives	and	the	components	are	shown	in	the	following	table:
+Component
+% of overall GCSE (9–1) in Computer Science (J277)
+AO1 AO2 AO3
+Computer systems (J277/01) 21 29 0
+Computational	thinking,	algorithms	and	
+programming (J277/02) 9 11 30
+Total (%) 30% 40% 30%
+Assessment	Objective	weightings	in	OCR	GCSE	(9–1)	in	Computer	Science
+3f.	 Total	qualification	time
+Total	qualification	time	(TQT)	is	the	total	amount	of	
+time,	in	hours,	expected	to	be	spent	by	a	learner	to	
+achieve	a	qualification.	It	includes	both	guided	learning	
+hours	and	hours	spent	in	preparation,	study,	and	
+assessment.	The	total	qualification	time	for	GCSE	
+Computer Science is 140 hours. The total guided 
+learning	time	is	120-140	hours.
+3g.		 Qualification	availability	outside	of	England
+This	qualification	is	available	in	England.	For	Wales	
+and	Northern	Ireland	please	check	the	Qualifications	
+in Wales Portal (QIW) or the Northern Ireland 
+Department	of	Education	Performance	Measures	/	
+Northern	Ireland	Entitlement	Framework	
+Qualifications	Accreditation	Number	(NIEFQAN)	list	to	
+see	current	availability.
+
+========================================
+
+=== FILE: 558027-specification-gcse-computer-science-j277.pdf | PAGE: 38 ===
+ Version 3.1 © Cambridge OCR 2026 
+36 Cambridge OCR Level 1/Level 2 GCSE (9-1) in Computer Science
+4	 Admin:	what	you	need	to	know
+The	information	in	this	section	gives	an	overview	of	the	processes	involved	in	administering	this	qualification.	
+All	of	the	following	processes	require	you	to	submit	something	to	OCR	by	a	specific	deadline.	More	information	
+about	the	processes	and	deadlines	involved	at	each	stage	of	the	assessment	cycle	can	be	found	in	the	
+Administration	area	of	the	OCR	website.
+OCR’s Admin overview	is	available	on	the	OCR	website	at	https://www.ocr .org.uk/administration
+4a. Pre-assessment
+Estimated	entries
+Estimated	entries	are	your	best	projection	of	the	
+number of students who will be entered for a 
+qualification	in	a	particular	series.	Estimated	entries	
+should	be	submitted	to	OCR	by	the	specified	
+deadline. They are free and do not commit  
+your centre in any way.
+Final entries
+Final	entries	provide	OCR	with	detailed	data	for	 
+each	student,	showing	each	assessment	to	be	taken.	 
+It	is	essential	that	you	use	the	correct	entry	code,	
+considering	the	relevant	entry	rules	and	ensuring	 
+that	you	choose	the	entry	option	for	the	moderation	
+you intend to use. 
+Final	entries	must	be	submitted	to	OCR	by	the	
+published deadlines or late entry fees will apply.
+All students taking a GCSE (9–1) in Computer  
+Science must be entered for the following entry 
+option.
+Entry	option Components
+Entry code Title Code Title Assessment type
+J277 Computer 
+Science
+01 Computer systems External assessment
+02 Computational	thinking,	
+algorithms and programming
+External assessment
+4
+Collecting	evidence	of	student	performance	to	ensure	resilience	in	the	qualifications	system
+Regulators	have	published	guidance	on	collecting	
+evidence	of	student	performance	as	part	of	long-term	
+contingency	arrangements	to	improve	the	resilience	
+of	the	qualifications	system.	You	should	review	and	
+consider	this	guidance	when	delivering	this	
+qualification	to	students	at	your	centre.
+For	more	detailed	information	on	collecting	evidence	
+of	student	performance	please	visit	our	website	at:	
+https://www.ocr .org.uk/administration/general-
+qualifications/assessment/ 
+
+========================================
+
+=== FILE: 558027-specification-gcse-computer-science-j277.pdf | PAGE: 44 ===
+ Version 3.1 © Cambridge OCR 2026 
+42 Cambridge OCR Level 1/Level 2 GCSE (9-1) in Computer Science
+This	specification	is	an	updated	version	of	the	J276	GCSE	(9–1)	Computer	Science	specification	to	meet	Ofqual	
+requirements	introduced	for	first	assessment	2022.		All	exam	boards	offering	GCSE	Computer	Science	have	to	
+assess	Practical	Programming	skills	in	the	external	examination	from	2022	onwards.
+We	have	summarised	the	key	changes	between	our	J276	and	J277	specifications	on	the	next	page.
+ii
+Date Version Section Title	of	section Change
+June 2020 2 2b	-	1.2.3,	1.2.4,	
+1.3.1,	1.5.1
+2c	-	2.1.3,	2.2.3,	
+2.3.2
+Content of Computer 
+systems (J277/01)
+Content	of	Computational	
+thinking,	algorithms	and	
+programming (J277/02)
+Based on feedback 
+received,	we	have	updated	
+our	guidance	to	provide	
+additional	support	and	
+greater clarity.  A black line in 
+the margin indicates where 
+an update has been made.
+Exam Reference Lan-
+guage
+String	handling/operations Added	concatenation	
+Arrays Added	an	additional	way	of	
+declaring 1D arrays
+7 Pathways	for	computing New	section	to	provide	
+information	on	other	OCR	
+computing	qualifications	
+available
+Various Various Minor updates marked with 
+a black line in the margin
+January 2021 2.1 Cover Update	to	specification	
+covers	to	meet	digital	
+accessibility standards
+July 2023 2.2 3 Assessment of GCSE (9–1) 
+in Computer Science
+Insertion	of	new	section	3f.	
+Total	qualification	time.
+6 Summary of updates
+6
+J277: Summary of updates
+
+========================================
+
+=== FILE: 558027-specification-gcse-computer-science-j277.pdf | PAGE: 45 ===
+2
+3
+4
+5
+1
+Version 3.1 © Cambridge OCR 2026 
+Cambridge OCR Level 1/Level 2 GCSE (9-1) in Computer Science        43
+Date Version Section Title	of	section Change
+February 
+2024
+2.3 2b - 1.5.2 Content of Computer 
+systems (J277/01)
+Updated our guidance to 
+provide	additional	support	
+and	greater	clarity:
+In the ‘Required’ P	section:
+1.5.2	Clarified	the	utility	
+software	in	the	second	P.  
+Added a new P	‘Utility	
+software	is	needed	to	
+perform	additional	tasks	that	
+may not be carried out by an 
+operating	system’ .
+2c	-	2.1.2,	2.1.3 Content	of	Computational	
+thinking,	algorithms	and	
+programming (J277/02)
+2.1.2 Added a new P ‘Use of 
+nesting	for	selection	and	
+iteration’.
+2.1.3	Updated	the	first	Pon 
+algorithms to include ‘and 
+the segments of code in it’.
+Minor	grammatical	updates	
+to the guidance.
+3c. OCR Exam Reference 
+Language
+Operators:	updated	Modulus	
+to Modulo.
+Iteration:	updated	DO	WHILE	
+loop to DO UNTIL loop.
+String	handling:	added	ꞌ to 
+(A)	and	corrected	formatting	
+of ꞌaꞌ.
+3g and 3h Qualification	availability	
+and Language
+Inclusion of disclaimer 
+regarding	availability	and	
+language.
+4a Pre-assessment Update to include resilience 
+guidance.
+Checklist Inclusion of Teach 
+Cambridge.
+6
+
+========================================
+
+=== FILE: 558027-specification-gcse-computer-science-j277.pdf | PAGE: 48 ===
+2
+3
+4
+5
+1
+ Version 3.1 © Cambridge OCR 2026 
+46 Cambridge OCR Level 1/Level 2 GCSE (9-1) in Computer Science
+Career and 
+progressionKS3 KS4 KS5
+KS4 qualifications
+We offer a range of qualifications at KS4, each with a different focus. This allows you the ultimate flexibility in how you 
+shape your computing curriculum to suit a wide range of students’ needs.
+GCSE (9–1) Computer Science Computer systems, computational thinking, algorithms 
+and programming
+Cambridge National Certificate in Information Technologies IT, data management and project management
+Cambridge National Certificate in Creative iMedia Websites, animation, gaming concepts, sound
+University
+Apprenticeship 
+Level 2 & 3 / Higher 
+Apprenticeship
+Employment
+Entry Level 
+Computer Science
+Use Entry Level  
+as a potential structure/
+assessment for KS3
+Entry Level is designed as  
+a KS4 course. However, 
+some centres may find it a 
+useful structure/assessment 
+for KS3. 
+GCSE (9 -1) 
+Computer Science*
+Guide students towards 
+suitable pathway
+* Progress 8 and 
+performance points
+AS Level 
+Computer Science**
+A Level 
+Computer Science**
+Stimulating and 
+engaging KS5 options
+Cambridge Nationals 
+Creative iMedia*
+Cambridge Nationals 
+Information 
+Technologies*
+** Performance points
+† Performance points 
+apply to certain 
+qualifications
+Cambridge Technicals 
+IT Level 2 and 3†
+7	 Pathways	for	Computing
+7
+
+========================================
+
+=== FILE: 727535-question-paper-computational-thinking-algorithms-and-programming.pdf | PAGE: 1 ===
+Oxford Cambridge and RSA
+Please write clearly in black ink. Do not write in the barcodes.
+First name(s)
+Last name
+Centre number Candidate number
+OCR is an exempt Charity
+Turn over
+Tuesday 21 May 2024 – Afternoon
+GCSE (9–1) Computer Science
+J277/02 Computational thinking, algorithms and programming
+ Time allowed: 1 hour 30 minutes
+Do not use:
+• a calculator
+*1380028907*
+*J27702*
+INSTRUCTIONS
+• Use black ink.
+• Write your answer to each question in the space provided. If you need extra space use 
+the lined pages at the end of this booklet. The question numbers must be clearly shown.
+• Answer all the questions.
+INFORMATION
+• The total mark for this paper is 80.
+• The marks for each question are shown in brackets [ ] .
+• This document has 20 pages.
+ADVICE
+• Read each question carefully before you start your answer.
+• We advise you to spend approximately 50 minutes on Section A and approximately 
+40 minutes on Section B.
+© OCR 2024 [601/8355/X]
+DC (ST) 342920/6
+
+========================================
+
+=== FILE: 727535-question-paper-computational-thinking-algorithms-and-programming.pdf | PAGE: 4 ===
+4
+© OCR 2024 
+(c)
+(i) Show how a binary search will be used to find the number 10 in the following data set:
+1   2   5   6   7   10   20
+ ..........................................................................................................................................................
+ ..........................................................................................................................................................
+ ..........................................................................................................................................................
+ ..........................................................................................................................................................
+ ..........................................................................................................................................................
+ .....................................................................................................................................................[3]
+(ii) State one pre-requisite for a binary search algorithm.
+ ..........................................................................................................................................................
+ .....................................................................................................................................................[1]
+(iii) Tick (✓) one box to identify the name of the sorting algorithm that splits data into individual items 
+before recombining in order.
+ Bubble sort
+ Insertion sort
+ Merge sort 
+ [1]
+4 A program allows users to search for and watch videos. Users give a rating to the videos they watch.
+(a) Identify one input and one output for the program.
+Input  .................................................................................................................................................
+Output  ..............................................................................................................................................
+[2]
+(b)  Describe one method of defensive design that can be used when creating the program.
+ ..........................................................................................................................................................
+ ..........................................................................................................................................................
+ ..........................................................................................................................................................
+ ..........................................................................................................................................................
+ ..........................................................................................................................................................
+ .....................................................................................................................................................[2]
+
+========================================
+
+=== FILE: 727653-mark-scheme-computational-thinking-algorithms-and-programming.pdf | PAGE: 1 ===
+ 
+Oxford Cambridge and RSA Examinations  
+ 
+GCSE          
+ 
+Computer Science 
+ 
+J277/02: Computational thinking, algorithms and 
+programming 
+ 
+General Certificate of Secondary Education 
+ 
+Mark Scheme for June 2024 
+ 
+
+========================================
+
+=== FILE: 727653-mark-scheme-computational-thinking-algorithms-and-programming.pdf | PAGE: 13 ===
+J277/02 Mark Scheme June 2024 
+12 
+4 (b)  Only 1 method asked for. Could be name and description/example or description 
+and example 
+• Authentication 
+• …checking users allowed to access the site / know identity of users 
+• … by example (e.g. username and password) 
+• Anticipating misuse // preventing misuse 
+• ….stopping the user breaking / hacking into the system 
+• …by example (e.g. restricting entry to integers) 
+• Validation 
+• …check / only allow sensible data to be entered / check data is sensible 
+• …by example (e.g. restrict ratings to 1 to 10 / presence check / format check) 
+• Input sanitisation 
+• …removing invalid/special  characters 
+• …by example (e.g. remove quotation marks / semicolons) 
+• Maintainability 
+• ...ensuring program is able to be understood by others 
+• ...by example (e.g. modularisation / comments) 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+2 
+(AO1) 
+Allow validation / input 
+sanitisation /  passwords as 
+expansion of anticipating 
+misuse. 
+ 
+Allow mark for description 
+with no / incorrect name 
+ 
+Allow any 2 points from 
+mark scheme as long as 
+clearly linked to a single 
+defensive design method.  
+ 
+ 
+
+========================================
+
+=== FILE: J277-02 QP Jun22.pdf | PAGE: 1 ===
+Oxford Cambridge and RSA
+   
+Please write clearly in black ink. Do not write in the barcodes.
+First name(s)
+Last name
+Centre number Candidate number
+  
+OCR is an exempt Charity
+Turn over
+INSTRUCTIONS
+• Use black ink.
+• Write your answer to each question in the space provided. If you need extra space use 
+the lined pages at the end of this booklet. The question numbers must be clearly shown.
+• Answer all the questions.
+INFORMATION
+• The total mark for this paper is 80.
+• The marks for each question are shown in brackets [ ] .
+• This document has 20 pages.
+ADVICE
+• Read each question carefully before you start your answer.
+Do not use:
+• a calculator
+*J27702*
+*9138649804*
+Friday 27 May 2022 – Afternoon
+GCSE (9–1) Computer Science
+J277/02 Computational thinking, algorithms and programming
+ Time allowed: 1 hour 30 minutes
+© OCR 2022 [601/8355/X]  
+DC (ST/CT) 319567/4 R
+
+========================================
+
+=== FILE: J277-02 QP Jun22.pdf | PAGE: 7 ===
+7
+Turn over© OCR 2022
+3 A program stores the following list of positive and negative numbers. The numbers need sorting 
+into ascending order using a merge sort.
+45 12 –99 100 –13 0 17 –27
+ (a) The first step is to divide the list into individual lists of one number each. This has been done 
+for you.
+  Complete the merge sort of the data by showing each step of the process.
+45 12 –99 100 –13 0 17 –27
+[3]
+
+========================================
+
+=== FILE: J277-02 QP Jun22.pdf | PAGE: 8 ===
+8
+© OCR 2022
+ (b) Once the numbers are in order, a binary search can be run on the data.
+  Describe the steps a binary search will follow to look for a number in a sorted list.
+ ...................................................................................................................................................
+ ...................................................................................................................................................
+ ...................................................................................................................................................
+ ...................................................................................................................................................
+ ...................................................................................................................................................
+ ...................................................................................................................................................
+ ...................................................................................................................................................
+ ...................................................................................................................................................
+ ...................................................................................................................................................
+ .............................................................................................................................................. [4]
+ (c) A linear search could be used instead of a binary search.
+  Describe the steps a linear search would follow when searching for a number that is not in 
+the given list.
+ ...................................................................................................................................................
+ ...................................................................................................................................................
+ ...................................................................................................................................................
+ .............................................................................................................................................. [2]
+
+========================================
+
+=== FILE: J277-02_MS_Jun22.pdf | PAGE: 1 ===
+ 
+Oxford Cambridge and RSA Examinations  
+ 
+GCSE          
+ 
+Computer Science 
+ 
+J277/02: Computational thinking, algorithms and 
+programming 
+ 
+General Certificate of Secondary Education 
+ 
+Mark Scheme for June 2022 
+ 
+
+========================================
+
+=== FILE: J277-02_MS_Jun22.pdf | PAGE: 11 ===
+J277/02 Mark Scheme June 2022 
+ 
+Question Answer Mark Guidance 
+3 (a)  • Merge into correct sorted lists of size 2 (12 45 / -99 100 / -13 0 / 
+-27 17) 
+• Merge into correct sorted lists of size 4 (-99 12 45 100 / -27 -13 
+0 17) …  
+• …Merge into correct sorted list of size 8 (-99 -27 -13 0 12 17 45 
+100) 
+ 
+3 
+(AO2 1b) 
+ 
+Do not credit BP3 simply for a sorted list. 
+ 
+Groups of numbers must clearly be the correct size. 
+ 
+Do not all allow answers that show lists being merged 
+and then sorting in place, this is incorrect.  
+3 (b)  Any four bullet points for 1 mark each 
+• Select / choose / pick middle number (or left/right of middle as 
+even number) and … 
+• …check if selected number is equal to / matches target 
+number (not just compare) 
+• …if searched number is larger, discard left half // if searched 
+number is smaller, discard right half   
+• Repeat until number found 
+• … or remaining list is of size 1 / 0 (number not found) 
+ 
+4 
+(AO1 1b) 
+ 
+Do not allow “split the list in half” on its own as first step, 
+this is incorrect. 
+ 
+Can get BP1 and 2 in one step (e.g. “check if the middle 
+number is the one we’re looking for”) 
+ 
+For BP3, accept focussing on correct half 
+ 
+Repeat (BP4) must be in the context of an attempt at a  
+binary search. Allow correct reference to recursion. 
+ 
+“until number is not in the list” is NE for final BP. Need to 
+explain how this is known. 
+3 (c)  1 mark each 
+• Starting with the first value 
+• Checking all values in order  
+ 
+ 
+2 
+(AO1 1b) 
+ 
+2nd bullet point must cover both ideas of checking all of 
+the values AND being done in order. 
+ 
+“Checks each value” / “one by one” / “step by step” by 
+itself is NE, does not say in order. 
+ 
+Do not accept “repeat until value found” for BP2 
+(question says number is not in the list) 
+ 
+“Checks each value from beginning to end” implies order 
+so gets both BP1 and BP2. 
+ 
+ 
+ 
+  
+
+========================================
+
+=== FILE: Knowledge Organiser 01.pdf | PAGE: 1 ===
+Knowledge Organiser Written by: Mr B Hanif 
+GCSE COMPUTER SCIENCE Exam Board: OCR 
+ 
+ 
+Computer Architecture1.1
+Memory 1.2
+Storage1.3
+Wired and Wireless Networks1.4
+Network Topologies, Protocols & layers1.5
+System Security1.6
+Systems Software1.7
+Ethical, Legal, Cultural & Environmental concerns1.8
+Paper 1: Computer Systems 
+ 
+1 hour 30 minutes 
+Written Exam Paper 
+80 marks 
+50% of total GCSE 
+ 
+Paper 2: Computational thinking, 
+algorithms and programming 
+ 
+1 hour 30 minutes 
+Written Exam Paper 
+80 marks 
+50% of total GCSE 
+ 
+ 
+Algorithms2.1
+Programming Techniques2.2
+Producing Robust Programs2.3
+Computational Logic2.4
+Translators & Facilitators of Language2.5
+Data Representation2.6
+
+========================================
+
+=== FILE: Knowledge Organiser 01.pdf | PAGE: 9 ===
+2.1 ALGORITHMS 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+COMPUTATIONAL THINKING 
+ 
+PSEUDOCODE 
+START 
+IF the Decision = TRUE THEN: 
+Perform Action 1 
+ELSE 
+Perform Action 2 
+ENDIF 
+END  
+ 
+ Universal language, planning 
+phase before actual coding in 
+for e.g. python 
+ Work out where you need 
+inputs, outputs, decisions, 
+loops and variables. 
+•Focussing on just the important 
+details of a problemAbstraction
+•Breaking a problem down into smaller 
+parts so that it is easier to solveDecomposition
+•creating a step by step solution to a 
+problem
+Algorithmic 
+thinking
+FLOWCHART 
+ 
+SEARCHING ALGORITHMS 
+ 
+To find an item in a list, computers need to use a 
+searching algorithm. A linear search and binary search 
+are both examples of sorting algorithms. 
+ 
+Linear Search: Checks each item in the list one by one 
+until it finds what it is looking for 
++ Simple, list doesn’t need to be ordered 
+- Not efficient, takes time with lots of data 
+ 
+Binary Search: Finds the middle item in an ordered 
+list by doing (n+1)/2. IF the middle item is what it 
+is searching for it stops. If not, it compares the 
+item you are searching for to the middle item so that 
+it knows whether to look in the first half or second 
+half of the list. Then it repeats these steps until 
+the item is found 
++ More efficient than a linear search 
+- Only works on an ordered list, complex to program 
+SORTING ALGORITHMS 
+ 
+Sorting algorithms sort items into an ordered list. 
+ 
+Bubble Sort: Checks the first two items in a list, swaps them if 
+they are in the wrong order and then moves onto the next two 
+items and repeats the process. Once it has passed through the 
+list once it goes through again until none of the items need 
+swapping. + Simple. – Takes a long time 
+ 
+Merge Sort: Finds the middle item (n+1)/2 and splits the list in 
+half. Repeats this step until the list is split into individual 
+items (sub-lists). It them merges (joins) the sublists in pairs. 
+Each time the sublists are paired they are sorted into the 
+correct order. + Efficient – Slow 
+ 
+Insertion Sort: Looks at the second item in a list and compares 
+it to the items that are in front of it, then inserts it into 
+the right place. It then moves to the next item in the list and 
+repeats these steps. + Quick for sorting small lists – slow with 
+long lists 
+ 
+
+========================================
+
+=== FILE: Knowledge Organiser 01.pdf | PAGE: 13 ===
+2.3 PRODUCING ROBUST PROGRAMS 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+DEFENSIVE DESIGN 
+ 
+ 
+Programmers try to protect their programs by testing them to 
+reduce the number of errors, predicting how users might misuse 
+their program and trying to prevent it and making sure their 
+code is well maintained. 
+ 
+Input Sanitisation – removes any unwanted characters that have 
+been entered into a program 
+ 
+Input Validation – Checks if the data meets certain criteria 
+before passing it through the program. The following validation 
+checks can be used: 
+ 
+Presence 
+check 
+Checks that data has been entered 
+Length check Checks the data is the correct length 
+Range check Checks the data is within a set range 
+Format check Checks it’s in the correct format 
+(Eg:dd/mm/yy) 
+Check digit Checks numerical data is entered correctly 
+Look-up table Checks against a table of accepted values 
+ 
+Authentication – Where a program confirms the identity of a 
+user before giving them access to the full program. This could 
+be done through usernames and passwords.  
+ 
+Maintainability – Code that has been well maintained is easy to 
+edit without causing errors. A well maintained code will have 
+comments to help other programmers understand the code, as well 
+as appropriate names for variables and sub programs, and 
+indentation so that it is easy for programmers to see the flow 
+of the program. Global variables should only be used where 
+necessary so that they don’t impact on the rest of your code.  
+TESTING 
+ 
+ 
+A program should be tested to check for any errors. 
+ 
+Final Testing – The program goes is tested once at 
+the end of development. Everything is tested in one 
+go. 
+ 
+Iterative testing - a program is tested and then 
+changes are made as it goes through the development 
+cycle again. It may go through this process a few 
+times to make sure it is exactly what the customer 
+wants. 
+ 
+Test data can fit into 3 different categories: 
+ 
+Normal Data which is likely to be entered 
+into the program and should be 
+accepted 
+Extreme/ 
+boundary 
+Data on the limit of what should be 
+accepted 
+Erroneous Data that should not be accepted 
+ 
+TYPES OF ERROR 
+ 
+ 
+A program should be tested to check for any errors. 
+ 
+Syntax Error – something which doesn’t fit the rules 
+or grammar of the programming language. 
+ 
+Logic Error – the program runs but not as expected. 
+Eg: < user instead of >. 
+
+========================================
+
+=== FILE: Knowledge Organiser 02.pdf | PAGE: 15 ===
+DISK DEFRAGMENTATION:
+Computing GCSE – 1.7b
+J276/01 – Systems Software
+KEY VOCABULARY
+Utility Software
+Utility software supports the OS by 
+performing a limited and specific task. 
+They are used to manage specific 
+actions of the system, or undertake 
+maintenance operations. 
+Encryption 
+software
+In order to keep data secure, 
+especially against outside threats, 
+data must be encrypted. Encryption 
+software uses complex algorithms to 
+encode data so it cannot be read 
+without the private access keys. 
+Disk 
+Defragmentation
+Over time, through multiple updates 
+and saves, files will become split up 
+and distributed over the platters. It 
+takes longer for the files to be 
+accessed, slowing the machine down. 
+Defragmentation reorganises the files’ 
+parts to bring them together. See fig 1. 
+Data 
+Compressions
+Allows files to be made smaller by 
+removal of empty space or through 
+compression algorithms (lossy or 
+lossless) – see KO2.6b
+Back Up
+In case of hardware failure or other 
+computer problems, data should be 
+copied to external media so that it can 
+be restored if lost or damaged.
+Antivirus
+Continually scans the system to find, 
+quarantine, and clean any file infected 
+with viruses. 
+Anti-malware
+Continually scans to identify any 
+malicious software from being 
+introduced to the system. 
+TYPES OF BACK UP
+Description Positives Negatives
+Full
+All files and folders are 
+backed up every time
+Only requires last back 
+up to restore; quickest to 
+restore
+Requires the most space 
+on back up drive; 
+slowest to back up
+Incremental
+Only new files or files 
+that have been 
+changed since the last 
+back up are copied
+Faster to back up; 
+requires less space; does 
+not store duplicate files
+Slowest to restore; 
+needs at least one full 
+back up to start
+A
+B
+C
+Over time, as new files get added, 
+old ones deleted and files increase 
+through use, the parts of files get 
+separated around the HDD.  (A to B)
+This separation causes computer 
+slow-down. 
+In order to improve performance, 
+disk defrag applications shuffle file 
+parts back into order, and moves all 
+free space to the end of the 
+drive.(C)  
+This improves data access times 
+and overall system performance. 
+A computing 
+joke… get it?
+
+
+========================================
+
+=== FILE: Knowledge Organiser 02.pdf | PAGE: 18 ===
+Computing GCSE – 2.1a
+J276/02 – Algorithms: Searching and Sorting 
+KEY VOCABULARY
+Algorithm
+An abstracted program which 
+completes a given task, whatever the 
+data provided
+Search
+Searching is looking through data, 
+making comparisons with a search 
+term, until the algorithm either finds the 
+data, or identifies that it is not present.
+Sort
+Putting given sets of data into specified 
+order – usually ascending 
+(alphabetical) or descending (reverse 
+alphabetical)
+Linear Search
+A type of search where the computer 
+checks every variable, in order, until it 
+finds the search term. Potentially very 
+slow. 
+Binary Search
+A search type based on repeatedly 
+halving the searchable data, until the 
+search term is found
+Bubble Sort
+A method of sorting data which looks at 
+pairs of variable, and swaps them 
+around if out of order. This continues 
+until there are no more swaps to be 
+made
+Merge Sort
+Splits the data into increasingly small 
+segments, until single data points are 
+reached, then reassembles the data 
+structure one item at a time. 
+Insertion Sort
+Checks through the data until finding 
+the first incorrectly places item. The 
+algorithm then checks all the previous 
+places to see where the data fits, 
+before inserting it into this slot. 
+LINEAR SEARCH BINARY SEARCH
+INSERTION SORT MERGE SORT
+BUBBLE SORT
+
+========================================
+
+=== FILE: Knowledge Organiser 02.pdf | PAGE: 19 ===
+Computing GCSE – 2.1b
+J276/02 – Algorithms: Pseudo Code & Flow Charts 
+KEY VOCABULARY
+Algorithm An abstracted program which completes a 
+given task, whatever the data provided
+Abstraction
+Abstraction is moving a problem out of the 
+specific in order to create a general 
+solution that would work in similar 
+scenarios. Ignoring the gritty details to 
+focus on the problem
+Decomposition Breaking a problem down into smaller, 
+computational solvable chunks
+Pseudo Code
+A structured way of planning code, which 
+is ‘computational’ in style (uses Boolean 
+logic, variables, comparisons and 
+arithmetic for example) but is not tied to a 
+strict high-level language’s syntax
+Flow Diagram
+A diagram, made using specific shaped 
+boxes, that mocks up the flow of a 
+program through various stages, 
+processes and decisions. 
+Program Control Using Boolean logic to guide the computer 
+through a program based on decisions
+Comparison 
+Operators
+The symbols used to look at a variable or 
+piece of data in relation to is similarity to 
+another piece of data or variable
+Arithmetic 
+Operators
+The symbols used to show the 
+mathematics to be carried out on a piece 
+of data
+
+
+========================================
+
+=== FILE: Knowledge Organiser 03.pdf | PAGE: 9 ===
+Knowledge Organiser 9 : Algorithms
+3.Flowcharts, Pseudocode and OCR Reference Language
+Flowchart A method of representing the sequences of steps in an algorithm in 
+the form of a diagram. Sometimes called a Flow diagram
+Structure DiagramA diagram showing a top-down breakdown of a complex problem
+Pseudocode A text based alternative of representing the sequences of steps in an 
+algorithm. Pseudo-code can be thought of as a simpliﬁed form of 
+programming code.
+OCR Reference 
+Language
+You must be able to read this but you can always use Python in your 
+exams—but be precise
+1.Computational Thinking
+Abstraction The process of removing unnecessary details and including only the 
+relevant details.It is a method of computational thinking that focusses 
+on what is important in problem solving
+DecompositionThe process of  breaking a complex problem down into smaller more 
+manageable parts. Dealing with many different stages of a problem at 
+once is much more difﬁcult than breaking a problem down into a 
+number of smaller problems and solving each, one at time.
+Advantages of 
+Program 
+Decomposition
+•Makes problems easier to solve. Different people can work on 
+different parts of a problem at the same time… 
+•…reducing development time. 
+•Program components developed in one program can easily be used 
+in other programs
+Algorithmic 
+Thinking
+A way of getting to a solution by identifying the individual steps 
+needed. By creating a set of rules, an algorithm that is followed 
+precisely, leads to an answer. Algorithmic thinking allows solutions to be 
+automated.
+2.Input Processes and Output
+Inputs •Anything which needs to be supplied to the program so it can meet 
+its goals. 
+•Often input by the user. 
+•Consider an appropriate variable name and data type for the input.
+Processes •Consider what calculations need to be performed while the program 
+is running. 
+•Does data need to change formats or data types
+Outputs •Consider what your program need to output. 
+•Consider what form this output need to take. 
+•Consider an appropriate variable name and data type for any output 
+3.Structure Diagrams
+•Structure diagrams illustrate problem decomposition.  
+•They can be used for developers to understand a problem to code and to share with 
+users during systems analysis. 
+•They are produced using a method known as step-wise reﬁnement. 
+•Break problem down using decomposition into ever smaller components. 
+•Some areas of the program will needed breaking down more than others. 
+•The lowest level nodes should achieve a single task.  
+•These can then be coded as a single module or sub-program.
+4.Types of Errors
+Syntax Error Syntax errors are errors which break the grammatical rules of the 
+programming language. They stop it from being run/translated 
+Logic Errors Logic errors are errors which produce unexpected output. On their 
+own they won’t stop the program running 
+5.Trace Tables
+•A vital skill for understanding program ﬂow and testing the accuracy of an algorithm 
+for logic is called “Tracing Execution” . 
+•Examine a printed extract of program code and running thorough the program. 
+•Take each line at a time and write out in a trace table the current state of each variable. 
+Noting down any output the program produces. 
+•Each variable present in the program should have its own column in the trace table. 
+•A new row should be added under any column if the state of a variable changes. 
+•Trace tables are an excellent way to track down logic errors in a problem.
+
+========================================

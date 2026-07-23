@@ -147,14 +147,15 @@ where domain is not null
 on conflict (school_id, domain) do nothing;
 
 insert into public.identity_providers (
-  school_id, provider, display_name, tenant_identifier, enabled
+  school_id, provider, display_name, tenant_identifier, client_id, enabled
 )
 values (
   'school_1',
   'microsoft',
   'Leicester High Microsoft account',
-  null,
-  false
+  'leicester-high-tenant-id-placeholder',
+  'leicester-high-client-id-placeholder',
+  true
 )
 on conflict (school_id, provider) do nothing;
 

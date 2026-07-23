@@ -43,8 +43,11 @@
         <h1 class="hero-title" style="margin-top: 8px;">GCSE Computer Science practice that knows what you need next</h1>
         <p class="hero-subtitle">A joined-up learning platform combining retrieval practice, spaced theory recall, Python programming development, and classroom integration — built for manageable, weekly routines.</p>
         
-        <div class="hero-ctas">
-          <button class="btn btn-primary btn-lg" id="hero-login-btn">Sign in with school Microsoft account</button>
+        <div class="hero-ctas" style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px;">
+          <button class="btn btn-primary" id="hero-login-btn">Sign in with Microsoft</button>
+          <button class="btn btn-secondary" id="hero-demo-student-btn">Explore Student Demo</button>
+          <button class="btn btn-secondary" id="hero-demo-teacher-btn">Explore Teacher Demo</button>
+          <a href="#pricing" class="btn btn-secondary" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">Request a demo</a>
         </div>
         <p class="hero-trust">Single sign-on · Verified school rosters · OCR J277 specification ready</p>
       </div>
@@ -82,7 +85,7 @@
           <div class="card" style="padding: 24px;">
             <div style="font-size: 24px; color: var(--teal); margin-bottom: 16px; font-weight: 700;">02</div>
             <h3 style="font-size: 18px; margin-bottom: 12px; font-weight: 600;">Targeted practice</h3>
-            <p style="font-size: 15px; color: var(--text-muted); line-height: 1.6; margin: 0;">Complete math drills, Python compiler sandbox challenges, or scaffolded written answers with automated formative marking.</p>
+            <p style="font-size: 15px; color: var(--text-muted); line-height: 1.6; margin: 0;">Complete math drills, Python compiler sandbox challenges, or scaffolded written answers with automated formative feedback.</p>
           </div>
           <div class="card" style="padding: 24px;">
             <div style="font-size: 24px; color: var(--teal); margin-bottom: 16px; font-weight: 700;">03</div>
@@ -112,7 +115,7 @@
           </div>
           <div class="card" style="padding: 24px; border-left: 4px solid var(--teal);">
             <h3 style="font-size: 18px; margin-bottom: 8px; font-weight: 600;">Scaffolded essays</h3>
-            <p style="font-size: 14px; color: var(--text-muted); line-height: 1.5; margin: 0;">Develop detailed answers for high-mark ethical, legal, and environmental issues with constructive formative markings.</p>
+            <p style="font-size: 14px; color: var(--text-muted); line-height: 1.5; margin: 0;">Develop detailed answers for high-mark ethical, legal, and environmental issues with constructive formative feedback.</p>
           </div>
           <div class="card" style="padding: 24px; border-left: 4px solid var(--teal);">
             <h3 style="font-size: 18px; margin-bottom: 8px; font-weight: 600;">Spaced retrieval</h3>
@@ -179,7 +182,11 @@
   </div>
 
   <!-- Main Platform Shell (Initially Hidden) -->
-  <div class="app-container" id="app-shell" style="display: none;">
+  <div class="app-container" id="app-shell" style="display: none; flex-direction: column;">
+    <!-- Demo Warning Banner -->
+    <div id="demo-banner" class="demo-banner" style="display: none; background-color: var(--amber-alert); color: var(--amber-text); border-bottom: 1px solid var(--border-color); padding: 10px 16px; font-size: 13px; font-weight: 600; text-align: center; z-index: 1000;">
+      <span>⚠️ Demonstration Environment — You are viewing mock student data. Changes will not be saved.</span>
+    </div>
     
     <aside class="sidebar">
       <div>

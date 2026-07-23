@@ -72,7 +72,9 @@ async function selectOptionalTable(table) {
   } catch (error) {
     const message = String(error?.message || error);
     if (/schema cache|does not exist|could not find the table/i.test(message)) {
-      console.warn(`Optional sync table is unavailable: ${table}`);
+      if (process.env.NODE_ENV !== 'test') {
+        console.warn(`Optional sync table is unavailable: ${table}`);
+      }
       return [];
     }
     throw error;
