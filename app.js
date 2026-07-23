@@ -1074,7 +1074,20 @@ class App {
         checkpointHint: 'Hint: Enter the abbreviation, e.g. PC.',
         checkpointAnswer: 'PC',
         checkpointSuccess: '✅ Correct! The Program Counter (PC) stores the address of the next instruction.',
-        checkpointFailure: '❌ Incorrect. Hint: It points to the next instruction in sequence (PC). Try again!'
+        checkpointFailure: '❌ Incorrect. Hint: It points to the next instruction in sequence (PC). Try again!',
+        flashcards: [
+          { term: 'ALU', definition: 'Arithmetic Logic Unit. Performs arithmetic calculations and logical decisions.' },
+          { term: 'Control Unit', definition: 'Co-ordinates CPU activities, directs the flow of data, and manages the Fetch-Decode-Execute cycle.' },
+          { term: 'Cache', definition: 'Small, super-fast memory inside or next to the CPU. Stores frequently accessed data for rapid retrieval.' }
+        ],
+        modelExam: {
+          question: 'Explain the purpose of the Accumulator (ACC) register.',
+          marks: 2,
+          guidance: [
+            'State that it is a dedicated register inside the CPU\'s Arithmetic Logic Unit (ALU).',
+            'Explain that it temporarily stores the intermediate results of calculations and logical operations.'
+          ]
+        }
       },
       'topic_1_2': {
         overview: 'Memory and Storage deals with volatile and non-volatile memory technologies. You must understand the differences between RAM, ROM, Virtual Memory, and various Secondary Storage media.',
@@ -1091,7 +1104,21 @@ class App {
         checkpointHint: 'Hint: Enter SOLID STATE.',
         checkpointAnswer: 'SOLID STATE',
         checkpointSuccess: '✅ Correct! Solid State storage has no moving parts, making it fast and durable.',
-        checkpointFailure: '❌ Incorrect. Hint: It uses electronic flash memory (SOLID STATE). Try again!'
+        checkpointFailure: '❌ Incorrect. Hint: It uses electronic flash memory (SOLID STATE). Try again!',
+        flashcards: [
+          { term: 'Volatile Memory', definition: 'Temporary storage (like RAM) that loses its contents immediately when power is turned off.' },
+          { term: 'Non-Volatile', definition: 'Permanent storage (like ROM or SSD) that retains data even when the device has no power.' },
+          { term: 'BIOS', definition: 'Basic Input Output System. Bootstrap code stored in ROM that starts up the system hardware.' }
+        ],
+        modelExam: {
+          question: 'Explain why computers require virtual memory.',
+          marks: 3,
+          guidance: [
+            'Required when physical RAM is full / insufficient for running applications.',
+            'Uses a portion of the secondary storage (HDD/SSD) to simulate extra RAM.',
+            'Prevents applications or the system from crashing by swapping inactive memory pages.'
+          ]
+        }
       },
       'topic_1_3': {
         overview: 'Data Representation explains how computers store all information as binary. You must master number conversions, sound, images, and characters representation.',
@@ -1108,7 +1135,21 @@ class App {
         checkpointHint: 'Hint: Split the byte into two nibbles: 1011 (11) and 1100 (12).',
         checkpointAnswer: 'BC',
         checkpointSuccess: '✅ Correct! 1011 is B and 1100 is C. The hex value is BC.',
-        checkpointFailure: '❌ Incorrect. Hint: 1011 = 11 (B), 1100 = 12 (C). Try again!'
+        checkpointFailure: '❌ Incorrect. Hint: 1011 = 11 (B), 1100 = 12 (C). Try again!',
+        flashcards: [
+          { term: 'Pixel', definition: 'The smallest addressable picture element in a digital image.' },
+          { term: 'Sample Rate', definition: 'The number of audio samples recorded per second, measured in Hertz (Hz).' },
+          { term: 'Bit Depth', definition: 'The number of bits allocated to represent each sample or pixel (determines range of colours/amplitudes).' }
+        ],
+        modelExam: {
+          question: 'Calculate the size in bytes of a 4-second audio file sampled at 100Hz with a bit depth of 8 bits, in mono.',
+          marks: 3,
+          guidance: [
+            'Apply sound size formula: Sample Rate (100) * Bit Depth (8) * Length (4) * Channels (1) = 3200 bits.',
+            'Convert bits to bytes by dividing by 8: 3200 / 8 = 400 bytes.',
+            'Show full working and units to secure all marks.'
+          ]
+        }
       },
       'topic_1_4': {
         overview: 'Computer Networks covers network topologies, protocols, packet switching, IP/MAC addressing, and the conceptual layers of the TCP/IP stack.',
@@ -1125,7 +1166,20 @@ class App {
         checkpointHint: 'Hint: Enter the protocol name, e.g. HTTPS.',
         checkpointAnswer: 'HTTPS',
         checkpointSuccess: '✅ Correct! HTTPS encrypts traffic between the browser and the web server.',
-        checkpointFailure: '❌ Incorrect. Hint: It is the secure version of HTTP (HTTPS). Try again!'
+        checkpointFailure: '❌ Incorrect. Hint: It is the secure version of HTTP (HTTPS). Try again!',
+        flashcards: [
+          { term: 'Protocol', definition: 'A standard set of rules governing how devices format and transmit data across a network.' },
+          { term: 'Packet Switching', definition: 'Splitting data into small packets, routing them dynamically, and reassembling them at the destination.' },
+          { term: 'MAC Address', definition: 'Media Access Control. A unique physical address assigned to a network card at manufacture.' }
+        ],
+        modelExam: {
+          question: 'Describe the role of a Router in a computer network.',
+          marks: 2,
+          guidance: [
+            'Connects different networks together (such as a Local Area Network to the Internet).',
+            'Inspects the destination IP address of packets and routes them efficiently to their next node.'
+          ]
+        }
       },
       'topic_1_5': {
         overview: 'Network Security explores vulnerabilities, cyber-attacks, and defensive measures used to protect networks and digital assets.',
@@ -1142,7 +1196,21 @@ class App {
         checkpointHint: 'Hint: Enter DDoS.',
         checkpointAnswer: 'DDOS',
         checkpointSuccess: '✅ Correct! Distributed Denial of Service (DDoS) attempts to crash servers.',
-        checkpointFailure: '❌ Incorrect. Hint: It stands for Distributed Denial of Service (DDOS). Try again!'
+        checkpointFailure: '❌ Incorrect. Hint: It stands for Distributed Denial of Service (DDOS). Try again!',
+        flashcards: [
+          { term: 'Social Engineering', definition: 'Manipulating individuals into giving away confidential login details or private data (e.g. Phishing).' },
+          { term: 'SQL Injection', definition: 'Inserting malicious database command strings into web forms to trick web servers into dumping SQL data.' },
+          { term: 'Firewall', definition: 'Software or hardware that monitors and filters network traffic based on predefined security rules.' }
+        ],
+        modelExam: {
+          question: 'Explain how a brute force attack differs from a phishing attack.',
+          marks: 3,
+          guidance: [
+            'Brute force is a technical attack using automated software to crack passwords by trial-and-error.',
+            'Phishing is a social engineering attack that tricks humans into giving away details via fake emails.',
+            'Contrast: Brute force targets security credentials directly; phishing exploits human trust/vulnerability.'
+          ]
+        }
       },
       'topic_1_6': {
         overview: 'Systems Software covers the purpose of operating systems (OS) and the utilities that optimize hardware performance.',
@@ -1159,7 +1227,21 @@ class App {
         checkpointHint: 'Hint: Enter DEFRAGMENTATION.',
         checkpointAnswer: 'DEFRAGMENTATION',
         checkpointSuccess: '✅ Correct! Defragmentation merges scattered file fragments.',
-        checkpointFailure: '❌ Incorrect. Hint: Enter DEFRAGMENTATION. Try again!'
+        checkpointFailure: '❌ Incorrect. Hint: Enter DEFRAGMENTATION. Try again!',
+        flashcards: [
+          { term: 'Operating System', definition: 'Systems software that manages computer hardware, memory, files, programs, and user interfaces.' },
+          { term: 'Device Driver', definition: 'Software that acts as a translator between the operating system and specific external hardware peripherals.' },
+          { term: 'Utility Software', definition: 'Systems software designed to analyze, configure, optimize, or maintain a computer system.' }
+        ],
+        modelExam: {
+          question: 'Explain how defragmentation software improves hard drive performance.',
+          marks: 3,
+          guidance: [
+            'Re-organises scattered blocks of data so that files are stored in contiguous segments.',
+            'Groups free space together to prevent new files from being fragmented.',
+            'Reduces physical disk read/write head movement, speeding up file access time.'
+          ]
+        }
       },
       'topic_1_7': {
         overview: 'Ethical, Legal, Cultural and Environmental Impacts addresses how computer systems influence society, resources, laws, and individual privacy.',
@@ -1176,7 +1258,20 @@ class App {
         checkpointHint: 'Hint: Enter DATA PROTECTION ACT.',
         checkpointAnswer: 'DATA PROTECTION ACT',
         checkpointSuccess: '✅ Correct! The Data Protection Act regulates user data protection.',
-        checkpointFailure: '❌ Incorrect. Hint: It is the Data Protection Act. Try again!'
+        checkpointFailure: '❌ Incorrect. Hint: It is the Data Protection Act. Try again!',
+        flashcards: [
+          { term: 'Digital Divide', definition: 'The social gap between demographics/regions that have access to modern technology and those that do not.' },
+          { term: 'Open Source', definition: 'Software whose source code is freely available to the public for use, inspection, modification, and sharing.' },
+          { term: 'Computer Misuse Act', definition: 'UK legislation that outlaws unauthorized access to computer systems, data theft, and hacking.' }
+        ],
+        modelExam: {
+          question: 'State two benefits of proprietary software over open-source software.',
+          marks: 2,
+          guidance: [
+            'Comes with professional customer support, guarantees, regular updates, and warranty protections.',
+            'Source code is compiled and secure, preventing copying or reverse engineering by competitors.'
+          ]
+        }
       },
       'topic_2_1': {
         overview: 'Algorithms focuses on binary/linear search, bubble/merge sort, flowcharts, pseudocode, and algorithm efficiency.',
@@ -1193,7 +1288,20 @@ class App {
         checkpointHint: 'Hint: Enter BINARY SEARCH.',
         checkpointAnswer: 'BINARY SEARCH',
         checkpointSuccess: '✅ Correct! Binary search requires sorted data.',
-        checkpointFailure: '❌ Incorrect. Hint: It divides elements in half (BINARY SEARCH). Try again!'
+        checkpointFailure: '❌ Incorrect. Hint: It divides elements in half (BINARY SEARCH). Try again!',
+        flashcards: [
+          { term: 'Pseudocode', definition: 'A text-based layout representation of algorithm steps written in structured plain English.' },
+          { term: 'Linear Search', definition: 'A search method that inspects every element in a list one-by-one from the beginning until a match is found.' },
+          { term: 'Bubble Sort', definition: 'A sorting algorithm that compares adjacent pairs and swaps them if they are in the wrong order, looping until sorted.' }
+        ],
+        modelExam: {
+          question: 'Describe one advantage of a binary search compared to a linear search.',
+          marks: 2,
+          guidance: [
+            'Binary search is far faster and more efficient on large datasets.',
+            'It has logarithmic time complexity (halving search space each step), while linear search takes proportional time.'
+          ]
+        }
       },
       'topic_2_2': {
         overview: 'Programming Fundamentals deals with variable scopes, iteration constructs, string operations, and local arrays.',
@@ -1210,7 +1318,20 @@ class App {
         checkpointHint: 'Hint: Enter either FOR or WHILE.',
         checkpointAnswer: 'WHILE',
         checkpointSuccess: '✅ Correct! A WHILE loop runs continuously while a condition remains True.',
-        checkpointFailure: '❌ Incorrect. Hint: Enter WHILE. Try again!'
+        checkpointFailure: '❌ Incorrect. Hint: Enter WHILE. Try again!',
+        flashcards: [
+          { term: 'Scope', definition: 'The region of a program code where a variable is visible and accessible (Local vs Global).' },
+          { term: 'Iteration', definition: 'A control construct that repeats a sequence of statements (loops like FOR or WHILE).' },
+          { term: 'Array', definition: 'A static data structure that stores multiple items of the same data type under a single identifier name.' }
+        ],
+        modelExam: {
+          question: 'Explain the difference between a variable and a constant.',
+          marks: 2,
+          guidance: [
+            'A variable\'s value can be changed / overwritten during the program\'s execution.',
+            'A constant\'s value is set at compile/creation time and cannot be altered during execution.'
+          ]
+        }
       },
       'topic_2_3': {
         overview: 'Producing Robust Programs covers defensive design, syntax/logic errors, user input validation, and testing schedules.',
@@ -1227,15 +1348,28 @@ class App {
         checkpointHint: 'Hint: Enter LOGIC ERROR.',
         checkpointAnswer: 'LOGIC ERROR',
         checkpointSuccess: '✅ Correct! Logic errors run but yield incorrect results.',
-        checkpointFailure: '❌ Incorrect. Hint: It is a mistake in algorithm logic (LOGIC ERROR). Try again!'
+        checkpointFailure: '❌ Incorrect. Hint: It is a mistake in algorithm logic (LOGIC ERROR). Try again!',
+        flashcards: [
+          { term: 'Validation', definition: 'Automatic checks performed by a program on input data to ensure it is sensible and acceptable.' },
+          { term: 'Authentication', definition: 'A mechanism that verifies the identity of a user (such as checking usernames against passwords).' },
+          { term: 'Logic Error', definition: 'A bug in code design that allows compilation but produces incorrect or unexpected output calculations.' }
+        ],
+        modelExam: {
+          question: 'Describe two types of input validation checks.',
+          marks: 2,
+          guidance: [
+            'Range check: confirms numerical inputs fall within logical boundaries (e.g. exam score between 0 and 100).',
+            'Length check: checks if the string has a sensible number of characters (e.g. password of at least 8 characters).'
+          ]
+        }
       },
       'topic_2_4': {
         overview: 'Boolean Logic covers logic gates, logic diagrams, and truth tables to model computer logic circuits.',
         keyPoints: [
           'Computers use logic gates to process electrical signals represented as binary.',
           'NOT gate has one input and outputs the opposite state.',
-          'AND gate outputs True only if both inputs are True.',
-          'OR gate outputs True if at least one input is True.'
+          'AND gate outputs True (1) only if both inputs are True (1).',
+          'OR gate outputs True (1) if at least one input is True (1).'
         ],
         misconceptionTitle: 'OR gate behaviour',
         misconceptionIncorrect: 'An OR gate outputs True only when one input is True, but not both.',
@@ -1244,7 +1378,19 @@ class App {
         checkpointHint: 'Hint: Enter AND.',
         checkpointAnswer: 'AND',
         checkpointSuccess: '✅ Correct! The AND gate requires all inputs to be True.',
-        checkpointFailure: '❌ Incorrect. Hint: Enter AND. Try again!'
+        checkpointFailure: '❌ Incorrect. Hint: Enter AND. Try again!',
+        flashcards: [
+          { term: 'Truth Table', definition: 'A tabular layout representation mapping all input state permutations to the resulting output state of a logic circuit.' },
+          { term: 'AND Gate', definition: 'A Boolean logic gate outputting True (1) only when all of its input signals are True (1).' },
+          { term: 'NOT Gate', definition: 'A single-input logic gate that inverts the input signal (outputs the logical opposite).' }
+        ],
+        modelExam: {
+          question: 'State the output of an OR gate when Input A is 1 and Input B is 0.',
+          marks: 1,
+          guidance: [
+            'Output is 1 (True) because at least one of the inputs is 1.'
+          ]
+        }
       },
       'topic_2_5': {
         overview: 'Programming Languages and IDEs covers language translation layers and the tools provided by integrated development environments.',
@@ -1261,7 +1407,20 @@ class App {
         checkpointHint: 'Hint: Enter COMPILER.',
         checkpointAnswer: 'COMPILER',
         checkpointSuccess: '✅ Correct! A compiler translates the entire codebase upfront.',
-        checkpointFailure: '❌ Incorrect. Hint: It compiles the code into a standalone executable (COMPILER). Try again!'
+        checkpointFailure: '❌ Incorrect. Hint: It compiles the code into a standalone executable (COMPILER). Try again!',
+        flashcards: [
+          { term: 'High-Level Language', definition: 'A human-friendly programming language (like Python) that uses English keywords and must be translated.' },
+          { term: 'Machine Code', definition: 'A low-level binary code (ones and zeros) that the CPU logic circuits can execute directly.' },
+          { term: 'Debugger', definition: 'An IDE tool that detects, isolates, and lists syntax or logical bugs in a source program.' }
+        ],
+        modelExam: {
+          question: 'Describe the difference in how compilers and interpreters translate source code.',
+          marks: 2,
+          guidance: [
+            'A compiler translates the entire source code at once into an executable machine code file prior to run.',
+            'An interpreter translates and executes the source code line-by-line in real-time.'
+          ]
+        }
       }
     };
 
@@ -1279,7 +1438,20 @@ class App {
       checkpointHint: 'Hint: Enter either FETCH, DECODE, or EXECUTE.',
       checkpointAnswer: 'FETCH',
       checkpointSuccess: '✅ Correct! The Fetch stage retrieves instructions from RAM.',
-      checkpointFailure: '❌ Incorrect. Hint: It is the first step (FETCH). Try again!'
+      checkpointFailure: '❌ Incorrect. Hint: It is the first step (FETCH). Try again!',
+      flashcards: [
+        { term: 'Key Term 1', definition: 'Generic definition placeholder for this topic.' },
+        { term: 'Key Term 2', definition: 'Generic definition placeholder for this topic.' },
+        { term: 'Key Term 3', definition: 'Generic definition placeholder for this topic.' }
+      ],
+      modelExam: {
+        question: 'State one method of learning theory for GCSE exams.',
+        marks: 2,
+        guidance: [
+          'Identify retrieval practice as a method.',
+          'Explain that testing yourself helps build memory pathways.'
+        ]
+      }
     };
 
     panel.innerHTML = `
@@ -1293,7 +1465,7 @@ class App {
                 ${u.topics.map(t => `
                   <li>
                     <a href="#" class="learn-topic-link" data-topic-id="${t.id}" style="font-size: 14px; text-decoration:none; color: ${t.id === this.activeTopicId ? 'var(--teal)' : 'var(--text-main)'}; font-weight: ${t.id === this.activeTopicId ? '600' : '400'}">
-                      ${t.name}
+                       ${t.name}
                     </a>
                   </li>
                 `).join('')}
@@ -1308,6 +1480,35 @@ class App {
             <h1 style="margin-top: 8px;">${activeTopic ? activeTopic.name : 'Choose a topic'}</h1>
           </div>
 
+          <!-- Topic Progress & Actions Quick Dashboard -->
+          <div class="card" style="margin-bottom: 32px; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; border-left: 5px solid var(--teal); background-color: var(--bg-card);">
+            <div>
+              <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">Topic Practice Stats</div>
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <span class="badge" style="background-color: var(--amber-alert); color: var(--amber-text); font-weight: 600;">Needs practice</span>
+                <span style="font-size: 14px; font-weight: 500; color: var(--text-main);">Accuracy: <strong>72%</strong></span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-secondary btn-sm" onclick="app.switchTab('stud-test-prep')" style="font-size: 13px; min-height: 38px; padding: 8px 16px;">
+                📝 Practice Exam Questions
+              </button>
+              ${this.activeTopicId === 'topic_2_2' || this.activeTopicId === 'topic_2_3' || this.activeTopicId === 'topic_2_5' ? `
+                <button class="btn btn-primary btn-sm" onclick="app.switchTab('stud-programme')" style="font-size: 13px; min-height: 38px; padding: 8px 16px;">
+                  💻 Run Python Sandbox
+                </button>
+              ` : ''}
+              ${this.activeTopicId === 'topic_1_3' || this.activeTopicId === 'topic_2_4' ? `
+                <button class="btn btn-primary btn-sm" onclick="app.switchTab('stud-practise')" style="font-size: 13px; min-height: 38px; padding: 8px 16px;">
+                  🔢 Try Number Calculations
+                </button>
+              ` : ''}
+              <button class="btn btn-secondary btn-sm" onclick="app.switchTab('stud-dashboard')" style="font-size: 13px; min-height: 38px; padding: 8px 16px; background-color: transparent; border: 1px solid var(--border-color); color: var(--text-main);">
+                ⚡ Go to Spaced Recall
+              </button>
+            </div>
+          </div>
+
           <div style="max-width: 720px;">
             <h3 style="margin-bottom: 8px;">1. Overview</h3>
             <p>${activeLesson.overview}</p>
@@ -1320,14 +1521,45 @@ class App {
               </ul>
             </div>
 
-            <h3 style="margin-top:24px; margin-bottom: 8px;">3. Common misconceptions</h3>
+            <h3 style="margin-top:24px; margin-bottom: 12px;">3. Interactive terminology flashcards</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+              ${activeLesson.flashcards.map((fc, index) => `
+                <div class="card flashcard-item" id="flashcard-${index}" style="padding: 20px; cursor: pointer; text-align: center; border-top: 4px solid var(--teal); min-height: 120px; display: flex; flex-direction: column; justify-content: center; transition: var(--transition);">
+                  <div class="flashcard-front" id="flashcard-front-${index}" style="font-weight: 700; font-size: 16px; color: var(--text-main);">${fc.term}</div>
+                  <div class="flashcard-back" id="flashcard-back-${index}" style="display: none; font-size: 13px; color: var(--text-muted); text-align: left; line-height: 1.4;">${fc.definition}</div>
+                  <div style="font-size: 11px; color: var(--teal); margin-top: 10px; font-weight: 500;" id="flashcard-prompt-${index}">Click to flip</div>
+                </div>
+              `).join('')}
+            </div>
+
+            <h3 style="margin-top:24px; margin-bottom: 8px;">4. Common misconceptions</h3>
             <div class="card" style="border-left: 5px solid var(--coral); background-color: rgba(244,63,94,0.02); margin-bottom: 24px;">
               <h4 style="color: var(--coral);">Misconception Alert: ${activeLesson.misconceptionTitle}</h4>
               <p style="margin: 0; font-size: 14px;"><strong>Incorrect:</strong> "${activeLesson.misconceptionIncorrect}"<br>
               <strong>Correct:</strong> ${activeLesson.misconceptionCorrect}</p>
             </div>
 
-            <h3 style="margin-top:24px; margin-bottom: 12px;">4. Quick checkpoint</h3>
+            <h3 style="margin-top:24px; margin-bottom: 12px;">5. Scaffolded model exam question</h3>
+            <div class="card" style="margin-bottom: 24px; background-color: var(--bg-card); border-left: 5px solid var(--amber);">
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                <h4 style="margin: 0; color: var(--text-main); font-size: 15px;">Model Exam Practice</h4>
+                <span class="badge" style="background-color: var(--amber-alert); color: var(--amber-text);">${activeLesson.modelExam.marks} Marks</span>
+              </div>
+              <p style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-main);">${activeLesson.modelExam.question}</p>
+              
+              <button class="btn btn-secondary btn-sm" id="toggle-model-scaffold-btn" style="min-height: 36px; font-size: 12px;">
+                Show marking guidance & model answer
+              </button>
+              
+              <div id="model-scaffold-details" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border-color);">
+                <strong style="font-size: 13px; color: var(--text-main);">OCR Exam Marking Criteria:</strong>
+                <ul style="padding-left: 20px; font-size: 13px; color: var(--text-muted); margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
+                  ${activeLesson.modelExam.guidance.map(g => `<li>${g}</li>`).join('')}
+                </ul>
+              </div>
+            </div>
+
+            <h3 style="margin-top:24px; margin-bottom: 12px;">6. Quick checkpoint</h3>
             <div class="card">
               <h4 style="margin-bottom: 8px;">${activeLesson.checkpointQuestion}</h4>
               <p style="font-size:13px;">${activeLesson.checkpointHint}</p>
@@ -1358,6 +1590,44 @@ class App {
         }
       };
     }
+
+    // Toggle model answer scaffold
+    const scaffoldBtn = document.getElementById('toggle-model-scaffold-btn');
+    if (scaffoldBtn) {
+      scaffoldBtn.onclick = () => {
+        const details = document.getElementById('model-scaffold-details');
+        if (details.style.display === 'none') {
+          details.style.display = 'block';
+          scaffoldBtn.textContent = 'Hide marking guidance & model answer';
+        } else {
+          details.style.display = 'none';
+          scaffoldBtn.textContent = 'Show marking guidance & model answer';
+        }
+      };
+    }
+
+    // Interactive terminology flashcards flipping
+    activeLesson.flashcards.forEach((fc, index) => {
+      const card = document.getElementById(`flashcard-${index}`);
+      if (card) {
+        card.onclick = () => {
+          const front = document.getElementById(`flashcard-front-${index}`);
+          const back = document.getElementById(`flashcard-back-${index}`);
+          const prompt = document.getElementById(`flashcard-prompt-${index}`);
+          if (front.style.display === 'none') {
+            front.style.display = 'block';
+            back.style.display = 'none';
+            prompt.textContent = 'Click to flip';
+            card.style.backgroundColor = 'var(--bg-card)';
+          } else {
+            front.style.display = 'none';
+            back.style.display = 'block';
+            prompt.textContent = 'Click to close';
+            card.style.backgroundColor = 'var(--soft-blue)';
+          }
+        };
+      }
+    });
 
     // Programmatically bind syllabus links to comply with CSP
     panel.querySelectorAll('.learn-topic-link').forEach(link => {
