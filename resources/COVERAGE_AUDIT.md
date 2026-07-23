@@ -9,6 +9,36 @@
 
 Past-paper wording and mark schemes should inform original practice design. They should not be copied wholesale into generated activities.
 
+## Non-negotiable whole-course requirement
+
+StudySpice must enable a pupil to learn, practise, revisit and prepare for assessment on **every assessable aspect of the current OCR GCSE Computer Science J277 specification**. A topic title, navigation entry, short overview or isolated question does not count as coverage.
+
+Coverage is only evidenced when every individual specification point is mapped to age-appropriate content and has:
+
+1. A student-friendly explanation and worked example.
+2. Explicit key terms and common misconceptions.
+3. A diagnostic check.
+4. Retrieval practice.
+5. Application practice in an unfamiliar context.
+6. Exam-transfer practice using appropriate command words, response forms and mark allocations.
+7. Feedback that explains how to improve rather than merely giving an answer.
+8. Sufficient alternate items for revisit and spaced practice without immediate repetition.
+
+The whole-course requirement also includes:
+
+- all Paper 1 and Paper 2 theory;
+- practical programming taught as a cumulative, separately visible pathway rather than being buried in general practice;
+- Python programming;
+- OCR Exam Reference Language, separately taught and tracked from Python;
+- program reading, tracing, completing, debugging, constructing, testing and refining;
+- algorithmic thinking and translation between Python and OCR Exam Reference Language where appropriate;
+- test design using normal, boundary, invalid and erroneous data;
+- exam technique, including command words, mark allocation, scenario interpretation and answer improvement;
+- short, medium and extended written responses, including long-answer evaluation and discussion;
+- mixed, cumulative and topic-specific preparation for final examinations.
+
+No topic or specification point may be labelled **complete**, **fully covered**, **course ready** or **quality assured** until the mapped explanation and every evidence type above exist, have been checked against the current specification, and have passed teacher quality assurance. Generated quantity alone is not evidence of accuracy or sufficient depth.
+
 ## Assessment model the app must prepare pupils for
 
 - Paper 1: Computer systems, 80 marks, 1 hour 30 minutes, 50%.
