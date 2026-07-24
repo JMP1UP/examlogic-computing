@@ -2,7 +2,979 @@
 const DB_KEY = 'studyspice_db';
 
 const defaultDatabase = {
-  schemaVersion: 10,
+  schemaVersion: 11,
+  theoryNotes: [
+    {
+      id: 'tn_1_1',
+      topicId: 'topic_1_1',
+      code: '1.1',
+      paper: 'Paper 1',
+      title: 'Systems Architecture',
+      subtitle: 'CPU Architecture, Registers, Fetch-Decode-Execute Cycle & Embedded Systems',
+      summary: 'Master the central processing unit: Von Neumann architecture, internal registers, performance factors, and embedded firmware.',
+      specificationPoints: [
+        '1.1.1 Architecture of the CPU: Purpose of CPU, ALU, CU, Cache, Registers (MAR, MDR, PC, ACC)',
+        '1.1.2 CPU Performance: Clock speed, Cache size, Number of Cores',
+        '1.1.3 Embedded Systems: Purpose and characteristics'
+      ],
+      sections: [
+        {
+          heading: '1. Architecture & Components of the CPU',
+          content: `The <strong>Central Processing Unit (CPU)</strong> is the brain of the computer system. Its primary purpose is to fetch, decode, and execute instructions.<br><br>
+          <strong>Core Components:</strong>
+          <ul>
+            <li><strong>Control Unit (CU):</strong> Manages the execution of instructions by sending timing and control signals to other CPU components. It decodes instructions and controls the FDE cycle flow.</li>
+            <li><strong>Arithmetic Logic Unit (ALU):</strong> Performs all arithmetic calculations (e.g. addition, subtraction) and logical comparisons (e.g. AND, OR, equal to, greater than).</li>
+            <li><strong>Cache Memory:</strong> Extremely fast, small static RAM (SRAM) memory located directly on or near the CPU die. It stores frequently used instructions and data to avoid slow trips to main RAM.</li>
+          </ul>`,
+          workedExample: `<strong>CPU Registers Breakdown:</strong><br>
+          • <strong>Program Counter (PC):</strong> Holds the memory address of the <em>NEXT</em> instruction to be fetched.<br>
+          • <strong>Memory Address Register (MAR):</strong> Holds the RAM memory address currently being read from or written to.<br>
+          • <strong>Memory Data Register (MDR):</strong> Holds the actual data or instruction fetched from RAM, or data waiting to be written to RAM.<br>
+          • <strong>Accumulator (ACC):</strong> Temporarily holds the mathematical result of calculations performed by the ALU.`,
+          examinerTip: 'Examiner Warning: Do not confuse MAR and MDR! MAR holds the ADDRESS (location); MDR holds the DATA/INSTRUCTION (content).'
+        },
+        {
+          heading: '2. The Fetch-Decode-Execute (FDE) Cycle',
+          content: `Every instruction processed by the CPU goes through three continuous phases:
+          <ol>
+            <li><strong>FETCH:</strong> The memory address in the <strong>PC</strong> is copied to the <strong>MAR</strong>. The CPU fetches the instruction stored at that MAR address in RAM and places it into the <strong>MDR</strong>. The <strong>PC</strong> is incremented by 1 to point to the next instruction.</li>
+            <li><strong>DECODE:</strong> The <strong>Control Unit (CU)</strong> decodes the instruction in the MDR to determine what operation needs to be performed (opcode) and what data to use (operand).</li>
+            <li><strong>EXECUTE:</strong> The instruction is carried out. For arithmetic or logic, the <strong>ALU</strong> performs the calculation and stores the output in the <strong>Accumulator (ACC)</strong> or writes it back to RAM via MAR/MDR.</li>
+          </ol>`,
+          workedExample: `<strong>Step-by-Step FDE Execution Example:</strong><br>
+          1. <em>PC = 0100</em> $\\rightarrow$ MAR receives 0100.<br>
+          2. RAM at 0100 returns instruction <code>ADD #5</code> $\\rightarrow$ MDR receives <code>ADD #5</code>.<br>
+          3. PC increments to <em>0101</em>.<br>
+          4. CU decodes <code>ADD #5</code> $\\rightarrow$ ALU adds 5 to current Accumulator value (e.g. $10 + 5 = 15$).<br>
+          5. ACC now holds <em>15</em>.`,
+          examinerTip: 'In 4-mark exam questions on the FDE cycle, make sure to explicitly state that the PC increments during the Fetch stage!'
+        },
+        {
+          heading: '3. Factors Affecting CPU Performance',
+          content: `Three hardware variables determine how fast a CPU can process instructions:
+          <ul>
+            <li><strong>Clock Speed:</strong> Measured in Hertz (Hz) or Gigahertz (GHz). It represents the number of FDE cycles the CPU can execute per second. A 3.5 GHz CPU performs 3.5 billion cycles per second.</li>
+            <li><strong>Cache Size & Levels:</strong> Larger cache allows more instructions to be retrieved in nanoseconds without waiting for RAM. <strong>L1 Cache</strong> is fastest but smallest; <strong>L3 Cache</strong> is larger but slightly slower.</li>
+            <li><strong>Number of Cores:</strong> A core is an independent processing unit containing its own ALU, CU, and registers. Dual-core CPUs have 2 cores; Quad-core CPUs have 4 cores.</li>
+          </ul>`,
+          workedExample: `<strong>Why doubling cores doesn't always double speed:</strong><br>
+          If a software program is sequential (e.g. Step B requires the result of Step A), it cannot be split across multiple cores. Extra cores only boost speed when software supports <em>parallel processing</em> or multi-tasking.`,
+          examinerTip: 'Always mention that higher clock speeds generate more heat and consume more power!'
+        },
+        {
+          heading: '4. Embedded Systems',
+          content: `An <strong>embedded system</strong> is a dedicated computer system built inside a larger mechanical or electrical hardware device to perform one specific task.<br><br>
+          <strong>Key Characteristics:</strong>
+          <ul>
+            <li>Fixed function (cannot install new general-purpose software like a PC).</li>
+            <li>Firmware usually stored on ROM or Flash memory.</li>
+            <li>Low energy consumption, high reliability, and low unit cost.</li>
+            <li>Examples: Dishwashers, Microwave ovens, Car ABS braking systems, Digital watches, Traffic lights.</li>
+          </ul>`,
+          workedExample: `<strong>Embedded vs General Purpose Systems:</strong><br>
+          • <em>Laptop / Smartphone:</em> General purpose (runs games, web browsers, spreadsheets).<br>
+          • <em>Washing Machine Controller:</em> Embedded system (monitors water level, controls drum speed).`,
+          examinerTip: 'Do not give desktop PCs, laptops, or tablets as examples of embedded systems on exams!'
+        }
+      ],
+      keyTerms: ['CPU', 'ALU', 'CU', 'Cache', 'MAR', 'MDR', 'Program Counter', 'Accumulator', 'FDE Cycle', 'Clock Speed', 'Cores', 'Embedded System'],
+      examTraps: [
+        'Confusing MAR (Memory Address Register) with MDR (Memory Data Register). Remember: MAR = Address, MDR = Data.',
+        'Claiming 4 cores makes a computer 4x faster in all situations. Extra cores only help if software supports parallel processing.'
+      ]
+    },
+    {
+      id: 'tn_1_2',
+      topicId: 'topic_1_2',
+      code: '1.2',
+      paper: 'Paper 1',
+      title: 'Memory and Storage',
+      subtitle: 'Primary Memory (RAM/ROM), Virtual Memory & Secondary Storage Technologies',
+      summary: 'Understand the difference between volatile primary memory and non-volatile secondary storage technologies.',
+      specificationPoints: [
+        '1.2.1 Primary Storage: RAM, ROM, Volatility, Virtual Memory',
+        '1.2.2 Secondary Storage: Magnetic, Optical, Solid State technologies (Capacity, Speed, Portability, Durability, Reliability, Cost)'
+      ],
+      sections: [
+        {
+          heading: '1. Primary Storage: RAM vs ROM',
+          content: `Primary storage directly interacts with the CPU.
+          <table class="table" style="width:100%; border-collapse:collapse; margin: 12px 0;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-color); text-align:left;">
+                <th style="padding: 8px;">Feature</th>
+                <th style="padding: 8px;">RAM (Random Access Memory)</th>
+                <th style="padding: 8px;">ROM (Read Only Memory)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 8px;"><strong>Volatility</strong></td>
+                <td style="padding: 8px;">Volatile (loses contents when power is turned off)</td>
+                <td style="padding: 8px;">Non-Volatile (retains contents permanently)</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 8px;"><strong>Access Rights</strong></td>
+                <td style="padding: 8px;">Read and Write</td>
+                <td style="padding: 8px;">Read-Only</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px;"><strong>Purpose</strong></td>
+                <td style="padding: 8px;">Stores open programs, OS files, and active data currently in use</td>
+                <td style="padding: 8px;">Stores BIOS / UEFI startup bootloader instructions</td>
+              </tr>
+            </tbody>
+          </table>`,
+          workedExample: `<strong>Why is RAM needed?</strong><br>
+          Secondary storage (e.g. SSD/HDD) is too slow for the CPU to fetch instructions directly. RAM acts as a high-speed workspace operating at gigabytes per second.`,
+          examinerTip: 'Always use the word "volatile" or "non-volatile" explicitly when describing RAM vs ROM.'
+        },
+        {
+          heading: '2. Virtual Memory',
+          content: `When RAM becomes full (e.g. running 15 heavy browser tabs and video editor simultaneously), the operating system allocates a portion of secondary storage (hard drive/SSD) to act as <strong>Virtual Memory</strong>.<br><br>
+          <strong>How Virtual Memory Works:</strong>
+          <ul>
+            <li>Inactive memory blocks (pages) are moved from RAM to Virtual Memory on the disk.</li>
+            <li>When those pages are needed again, they are swapped back into RAM.</li>
+          </ul>`,
+          workedExample: `<strong>Disadvantage of Virtual Memory (Disk Thrashing):</strong><br>
+          Secondary storage is significantly slower than RAM. Constant swapping of data between RAM and Virtual Memory causes severe system slowdown known as <em>disk thrashing</em>.`,
+          examinerTip: 'Virtual memory is a temporary fallback when RAM is full, NOT a replacement for physical RAM.'
+        },
+        {
+          heading: '3. Secondary Storage Technologies',
+          content: `Secondary storage is <strong>non-volatile</strong> memory used to permanently store files, programs, and operating systems.<br><br>
+          <strong>Three Main Media Types:</strong>
+          <ul>
+            <li><strong>Magnetic Storage (e.g. HDD, Magnetic Tape):</strong> Uses spinning magnetic platters and read/write heads. <em>Pros:</em> Very high capacity, lowest cost per GB. <em>Cons:</em> Slow read/write speeds, damaged by drops or magnetic fields.</li>
+            <li><strong>Optical Storage (e.g. CD, DVD, Blu-Ray):</strong> Uses lasers to read/write pits and lands on reflective discs. <em>Pros:</em> Extremely portable, low cost per disc. <em>Cons:</em> Very low capacity (CD 700MB, DVD 4.7GB, Blu-ray 25GB), easily scratched.</li>
+            <li><strong>Solid State Storage (e.g. SSD, USB Flash Drives, SD cards):</strong> Uses flash memory transistors (floating-gate MOSFETs) with zero moving parts. <em>Pros:</em> Extremely fast, durable, silent, power-efficient. <em>Cons:</em> More expensive per GB than HDDs.</li>
+          </ul>`,
+          workedExample: `<strong>Exam Comparison Matrix (6 Characteristics):</strong><br>
+          1. <em>Capacity:</em> HDD > SSD > Optical<br>
+          2. <em>Speed:</em> SSD >> HDD > Optical<br>
+          3. <em>Portability:</em> USB/SD/Optical > SSD > HDD<br>
+          4. <em>Durability:</em> SSD > HDD > Optical<br>
+          5. <em>Reliability:</em> SSD > HDD > Optical<br>
+          6. <em>Cost per GB:</em> Optical < HDD < SSD`,
+          examinerTip: 'When asked to recommend storage for a specific scenario (e.g. GoPro action camera), justify using key metrics: SSD/SD card due to durability (no moving parts) and portability.'
+        }
+      ],
+      keyTerms: ['RAM', 'ROM', 'Volatile', 'Non-Volatile', 'Virtual Memory', 'Secondary Storage', 'Magnetic Storage', 'Optical Storage', 'Solid State Storage', 'Durability', 'Portability'],
+      examTraps: [
+        'Writing that ROM stores personal files or photos. Personal files are saved to secondary storage (SSD/HDD), not ROM!',
+        'Thinking Virtual Memory increases physical RAM capacity. It only uses secondary storage space as temporary overflow.'
+      ]
+    },
+    {
+      id: 'tn_1_3',
+      topicId: 'topic_1_3',
+      code: '1.3',
+      paper: 'Paper 1',
+      title: 'Data Representation',
+      subtitle: 'Binary, Hexadecimal, Binary Arithmetic, Characters, Images, Sound & Compression',
+      summary: 'Master how numbers, text, images, and audio are encoded into binary digits (bits) and compressed.',
+      specificationPoints: [
+        '1.2.3 Units of Data: bit, nibble, byte, KB, MB, GB, TB, PB',
+        '1.2.4a Data Storage - Numbers: Binary, Denary, Hexadecimal, Binary Addition, Logical Shifts',
+        '1.2.4b Data Storage - Characters: Character sets (ASCII, Unicode)',
+        '1.2.4c Data Storage - Images: Bitmap, Pixels, Resolution, Colour Depth, Metadata',
+        '1.2.4d Data Storage - Sound: Sampling rate, Bit depth, Sample interval',
+        '1.2.5 Compression: Lossy vs Lossless compression'
+      ],
+      sections: [
+        {
+          heading: '1. Units of Data & Number Conversions',
+          content: `All computer data is represented in binary (0s and 1s).<br>
+          <strong>Data Units Hierarchy:</strong><br>
+          Bit (b) $\\rightarrow$ Nibble (4 bits) $\\rightarrow$ Byte (8 bits) $\\rightarrow$ Kilobyte (1,000 Bytes / 1 KiB = 1,024 B) $\\rightarrow$ Megabyte (1,000 KB) $\\rightarrow$ Gigabyte (1,000 MB) $\\rightarrow$ Terabyte (1,000 GB).<br><br>
+          <strong>Base Number Systems:</strong>
+          <ul>
+            <li><strong>Denary (Base 10):</strong> Uses digits 0-9.</li>
+            <li><strong>Binary (Base 2):</strong> Uses digits 0 and 1. Place values: 128, 64, 32, 16, 8, 4, 2, 1.</li>
+            <li><strong>Hexadecimal (Base 16):</strong> Uses digits 0-9 and A=10, B=11, C=12, D=13, E=14, F=15. One hex digit represents 4 binary bits (1 nibble).</li>
+          </ul>`,
+          workedExample: `<strong>Converting 1B (Hex) to Denary:</strong><br>
+          • Split hex digits: <code>1</code> and <code>B</code> (B = 11).<br>
+          • Formula: $(1 \\times 16) + (11 \\times 1) = 16 + 11 = 27$ in denary.<br>
+          • In 8-bit binary: <code>0001 1011</code>.`,
+          examinerTip: 'Why use Hexadecimal? Hex is shorter and easier for humans to read and remember than long binary strings (e.g. RGB color codes #FF0000), reducing transcription errors.'
+        },
+        {
+          heading: '2. Binary Addition & Logical Binary Shifts',
+          content: `<strong>Binary Addition Rules:</strong><br>
+          $0 + 0 = 0$<br>
+          $0 + 1 = 1$<br>
+          $1 + 1 = 0 \\text{ (carry 1)}$<br>
+          $1 + 1 + 1 = 1 \\text{ (carry 1)}$<br><br>
+          <strong>Overflow Error:</strong> Occurs when the sum of two 8-bit numbers requires 9 bits (exceeds 255). The CPU drops or flags the 9th bit, causing incorrect mathematical results.<br><br>
+          <strong>Logical Binary Shifts:</strong>
+          <ul>
+            <li><strong>Left Shift ($<< n$):</strong> Moves bits left by $n$ places, filling empty right slots with 0s. Multiplies the number by $2^n$.</li>
+            <li><strong>Right Shift ($>> n$):</strong> Moves bits right by $n$ places. Divides the number by $2^n$ (truncates fractional digits).</li>
+          </ul>`,
+          workedExample: `<strong>Left Shift Example:</strong><br>
+          Binary <code>0000 0110</code> (Denary 6).<br>
+          Left shift by 2 places ($<< 2$): <code>0001 1000</code>.<br>
+          New denary value: $16 + 8 = 24$ ($6 \\times 2^2 = 24$).`,
+          examinerTip: 'Make sure to explicitly write down carry bits above columns during binary addition in exam papers!'
+        },
+        {
+          heading: '3. Character Sets: ASCII vs Unicode',
+          content: `A <strong>character set</strong> is a defined collection of characters and symbols mapped to unique binary codes.<br><br>
+          <ul>
+            <li><strong>ASCII (American Standard Code for Information Interchange):</strong> Uses 7 bits per character (128 unique characters) or 8 bits in Extended ASCII (256 characters). <em>Limitation:</em> Only covers English alphabet, basic numbers, and symbols.</li>
+            <li><strong>Unicode:</strong> Uses 16-bit to 32-bit encodings (over 1.1 million unique characters). <em>Advantage:</em> Represents characters from all global languages (Chinese, Arabic, Cyrillic), emojis, and technical symbols. <em>Disadvantage:</em> Requires more storage space per character (2-4 bytes vs 1 byte).</li>
+          </ul>`,
+          workedExample: `If 'A' is ASCII code 65 (binary <code>01000001</code>), then 'B' is 66 (<code>01000010</code>) and 'a' is 97 (<code>01100001</code>).`,
+          examinerTip: 'Remember that Unicode is backwards compatible with ASCII for the first 128 character codes.'
+        },
+        {
+          heading: '4. Image & Sound Representation',
+          content: `<strong>Bitmap Images:</strong> Made of a grid of pixels.<br>
+          • <strong>Resolution:</strong> Total number of pixels ($\text{width} \\times \\text{height}$).<br>
+          • <strong>Colour Depth:</strong> Number of bits allocated per pixel ($n$ bits = $2^n$ unique colours).<br>
+          • <strong>Metadata:</strong> Information stored in the image file describing width, height, colour depth, camera model, and date.<br>
+          • <strong>Image File Size Formula:</strong> $\\text{Width} \\times \\text{Height} \\times \\text{Colour Depth (in bits)}$<br><br>
+          <strong>Sound Representation:</strong> Continuous analogue sound waves sampled at fixed intervals.<br>
+          • <strong>Sample Rate:</strong> Number of samples taken per second (measured in Hertz / Hz).<br>
+          • <strong>Bit Depth / Sample Resolution:</strong> Number of bits allocated per sample.<br>
+          • <strong>Sound File Size Formula:</strong> $\\text{Sample Rate (Hz)} \\times \\text{Bit Depth} \\times \\text{Duration (seconds)}$`,
+          workedExample: `<strong>Calculate Image File Size in Bytes:</strong><br>
+          Image width = 800 px, height = 600 px, colour depth = 16 bits.<br>
+          1. Total bits = $800 \\times 600 \\times 16 = 7,680,000$ bits.<br>
+          2. Convert to Bytes: $7,680,000 \\div 8 = 960,000$ Bytes ($\approx 960$ KB).`,
+          examinerTip: 'Always check what unit the question asks for! If it asks for Bytes, divide total bits by 8.'
+        },
+        {
+          heading: '5. Data Compression',
+          content: `Compression reduces file size to save storage space and increase transfer speeds across networks.<br><br>
+          <ul>
+            <li><strong>Lossy Compression (e.g. JPEG, MP3, MP4):</strong> Permanently removes unnoticeable or high-frequency data. <em>Pros:</em> Drastic reduction in file size. <em>Cons:</em> Original quality cannot be restored.</li>
+            <li><strong>Lossless Compression (e.g. PNG, ZIP, FLAC, RLE):</strong> Reduces file size by encoding patterns without losing any original data. <em>Pros:</em> Original file is perfectly restored when decompressed. <em>Cons:</em> Smaller file size reduction compared to lossy.</li>
+          </ul>`,
+          workedExample: `<strong>Where Lossless is Mandatory:</strong><br>
+          Executable software programs (<code>.exe</code>), database files, and text documents MUST use lossless compression. Removing even a single byte from executable code would break the program!`,
+          examinerTip: 'Do not just say "lossy loses quality". Specify that it *permanently removes data*.'
+        }
+      ],
+      keyTerms: ['Bit', 'Nibble', 'Byte', 'Binary', 'Hexadecimal', 'Overflow', 'Binary Shift', 'ASCII', 'Unicode', 'Resolution', 'Colour Depth', 'Metadata', 'Sample Rate', 'Lossy Compression', 'Lossless Compression'],
+      examTraps: [
+        'Forgetting to divide by 8 when an exam question asks for file size in Bytes rather than bits.',
+        'Assuming lossy compression can be used on text or python script files. Lossy ruins text and code!'
+      ]
+    },
+    {
+      id: 'tn_1_4',
+      topicId: 'topic_1_4',
+      code: '1.4',
+      paper: 'Paper 1',
+      title: 'Computer Networks, Connections & Protocols',
+      subtitle: 'Topologies, Hardware, Client-Server vs P2P, TCP/IP 4-Layer Model & DNS',
+      summary: 'Explore network structures, hardware devices, wireless protocols, and how data travels across the internet.',
+      specificationPoints: [
+        '1.3.1 Networks and Topologies: LAN vs WAN, Star & Mesh topologies, Routers, Switches, NICs, Wireless Encryption',
+        '1.3.2 Protocols and Layers: HTTP/S, FTP, POP, IMAP, SMTP, TCP/IP 4-layer model, DNS lookup process'
+      ],
+      sections: [
+        {
+          heading: '1. LAN vs WAN & Network Topologies',
+          content: `<strong>LAN (Local Area Network):</strong> Covers a small geographical site (e.g. school, house, office). Infrastructure is owned and maintained by the organization.<br>
+          <strong>WAN (Wide Area Network):</strong> Covers a large geographical area (e.g. the Internet connecting global cities). Relies on leased telecommunication infrastructure.<br><br>
+          <strong>Network Topologies:</strong>
+          <ul>
+            <li><strong>Star Topology:</strong> All devices connect to a central switch or hub. <em>Pros:</em> If one cable fails, only that device is disconnected; easy to add new nodes. <em>Cons:</em> If the central switch fails, the entire network drops.</li>
+            <li><strong>Mesh Topology:</strong> Every node connects to multiple other nodes (Full vs Partial Mesh). <em>Pros:</em> Highly resilient (packets reroute if a node drops). <em>Cons:</em> High cabling cost and complex setup.</li>
+          </ul>`,
+          workedExample: `Star topology is the standard topology for school computer labs because isolating cable faults is easy and network traffic is efficiently directed by switches.`,
+          examinerTip: 'Remember that switches inspect MAC addresses to send data only to the specific target node in a Star topology.'
+        },
+        {
+          heading: '2. Network Hardware & Wireless Encryption',
+          content: `<strong>Core Network Hardware:</strong>
+          <ul>
+            <li><strong>Network Interface Card (NIC):</strong> Internal hardware component giving a device a unique physical <strong>MAC address</strong> to connect to a network.</li>
+            <li><strong>Switch:</strong> Connects devices on a LAN. Inspects packet MAC addresses to forward data only to the intended destination node.</li>
+            <li><strong>Router:</strong> Connects different networks together (e.g. connects a home LAN to the ISP WAN internet). Inspects <strong>IP addresses</strong> to route packets.</li>
+            <li><strong>Wireless Access Point (WAP):</strong> Uses radio waves to allow wireless-enabled devices to connect to a wired network.</li>
+          </ul>
+          <strong>Wireless Encryption (WPA2 / WPA3):</strong> Scrambles data transmitted over radio waves so it can only be decoded by devices holding the network security key.`,
+          workedExample: `<strong>MAC Address vs IP Address:</strong><br>
+          • <em>MAC Address:</em> Hardcoded into NIC by manufacturer (48-bit hex e.g. <code>00:1A:2B:3C:4D:5E</code>). Unchanging physical identity on a LAN.<br>
+          • <em>IP Address:</em> Assigned dynamically by network router (e.g. IPv4 <code>192.168.1.15</code>). Logical address used for routing across global WAN networks.`,
+          examinerTip: 'Switches operate on MAC addresses inside a LAN; Routers operate on IP addresses across networks!'
+        },
+        {
+          heading: '3. Application Protocols & DNS Lookup',
+          content: `A <strong>protocol</strong> is an agreed set of rules governing communication between network devices.<br><br>
+          <strong>Common Protocols:</strong>
+          <ul>
+            <li><strong>HTTP / HTTPS:</strong> Web page retrieval (HTTPS encrypts web traffic using SSL/TLS).</li>
+            <li><strong>FTP:</strong> File Transfer Protocol for uploading/downloading files.</li>
+            <li><strong>SMTP:</strong> Simple Mail Transfer Protocol used to <em>send</em> emails to a server.</li>
+            <li><strong>POP3:</strong> Downloads email from server to client device and <em>deletes</em> it from the server.</li>
+            <li><strong>IMAP:</strong> Syncs email with server, keeping copies so emails can be read across multiple devices.</li>
+          </ul>
+          <strong>DNS (Domain Name System) Lookup Steps:</strong>
+          <ol>
+            <li>User enters domain name URL (e.g. <code>studyspice.co.uk</code>) in browser.</li>
+            <li>Browser queries DNS server for the IP address matching that domain.</li>
+            <li>DNS server looks up domain in its database and returns IP address (e.g. <code>185.199.108.153</code>).</li>
+            <li>Browser sends HTTP request directly to that IP address.</li>
+          </ol>`,
+          workedExample: `If the DNS server does not have the domain IP cached, it queries higher-level TLD (Top-Level Domain) root servers until the IP address is found.`,
+          examinerTip: 'In 4-mark DNS questions, clearly separate domain names (human readable) from IP addresses (numerical machine routing).'
+        },
+        {
+          heading: '4. TCP/IP 4-Layer Model',
+          content: `Networking protocols are organized into 4 abstraction layers. Each layer has a specific job and communicates only with adjacent layers.<br><br>
+          <table class="table" style="width:100%; border-collapse:collapse; margin: 12px 0;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-color); text-align:left;">
+                <th style="padding: 8px;">Layer</th>
+                <th style="padding: 8px;">Name</th>
+                <th style="padding: 8px;">Function & Protocols</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 8px;"><strong>Layer 4</strong></td>
+                <td style="padding: 8px;">Application Layer</td>
+                <td style="padding: 8px;">Encodes data into user-facing formats (HTTP, HTTPS, FTP, SMTP, IMAP)</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 8px;"><strong>Layer 3</strong></td>
+                <td style="padding: 8px;">Transport Layer</td>
+                <td style="padding: 8px;">Splits data into packets, adds sequence numbers & port numbers (TCP, UDP)</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 8px;"><strong>Layer 2</strong></td>
+                <td style="padding: 8px;">Internet / Network Layer</td>
+                <td style="padding: 8px;">Adds source & destination IP addresses; routes packets across networks (IP)</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px;"><strong>Layer 1</strong></td>
+                <td style="padding: 8px;">Link / Physical Layer</td>
+                <td style="padding: 8px;">Converts packets into electrical signals/radio waves; handles MAC addresses (Ethernet, Wi-Fi)</td>
+              </tr>
+            </tbody>
+          </table>`,
+          workedExample: `<strong>Benefits of Layering:</strong><br>
+          Layering separates complex networking into self-contained modules. Developers can change Layer 1 (e.g. upgrade Wi-Fi hardware) without needing to rewrite Layer 4 web browser software!`,
+          examinerTip: 'Memorize the order of the TCP/IP layers from top to bottom: Application $\\rightarrow$ Transport $\\rightarrow$ Internet $\\rightarrow$ Link.'
+        }
+      ],
+      keyTerms: ['LAN', 'WAN', 'Star Topology', 'Mesh Topology', 'Router', 'Switch', 'NIC', 'MAC Address', 'IP Address', 'DNS', 'HTTP', 'HTTPS', 'TCP/IP', 'Application Layer'],
+      examTraps: [
+        'Confusing POP3 and IMAP. POP3 deletes emails from server after downloading; IMAP syncs emails across devices.',
+        'Confusing Routers and Switches. Switches operate on MAC addresses within a LAN; Routers operate on IP addresses between networks.'
+      ]
+    },
+    {
+      id: 'tn_1_5',
+      topicId: 'topic_1_5',
+      code: '1.5',
+      paper: 'Paper 1',
+      title: 'Network Security',
+      subtitle: 'Cyber Security Threats & Defensive Prevention Technologies',
+      summary: 'Learn to identify digital vulnerabilities, social engineering tactics, malware, and technical counter-measures.',
+      specificationPoints: [
+        '1.4.1 Threats to computer systems and networks: Malware, Phishing, Social engineering, Brute force, DDoS, SQL injection',
+        '1.4.2 Identifying and preventing vulnerabilities: Firewalls, Encryption, Passwords, Penetration testing, User access levels'
+      ],
+      sections: [
+        {
+          heading: '1. Threats to Computer Systems & Networks',
+          content: `Cyber attacks exploit technical or human vulnerabilities to compromise data confidentiality, integrity, or availability.<br><br>
+          <strong>Major Cyber Security Threats:</strong>
+          <ul>
+            <li><strong>Malware (Malicious Software):</strong>
+              <ul>
+                <li><em>Virus:</em> Program attached to files that replicates when opened.</li>
+                <li><em>Worm:</em> Self-replicating program that spreads independently across networks.</li>
+                <li><em>Trojans:</em> Malware disguised as legitimate software.</li>
+                <li><em>Ransomware:</em> Encrypts victim files and demands payment for the decryption key.</li>
+                <li><em>Spyware / Keyloggers:</em> Secretly records user keystrokes to steal passwords.</li>
+              </ul>
+            </li>
+            <li><strong>Phishing:</strong> Deceptive emails or fraudulent links pretending to be trusted institutions to trick users into revealing sensitive credentials.</li>
+            <li><strong>Social Engineering:</strong> Manipulating people into breaking security procedures (e.g. <em>Shoulder Surfing</em>, <em>Pretexting</em>).</li>
+            <li><strong>Brute Force Attack:</strong> Automated software testing thousands of password combinations until the correct one is found.</li>
+            <li><strong>DDoS (Distributed Denial of Service):</strong> Flooding a web server with artificial traffic from a network of infected devices (botnet) to crash the server.</li>
+            <li><strong>SQL Injection:</strong> Inserting malicious SQL database code into an unsecured web form field to view, alter, or delete database tables.</li>
+          </ul>`,
+          workedExample: `<strong>SQL Injection Example:</strong><br>
+          Entering <code>' OR '1'='1</code> into an unsecured login text box can force the database query to evaluate to TRUE, granting unauthorized admin access without a password!`,
+          examinerTip: 'For SQL Injection, always mention that input validation and sanitized parameters prevent this vulnerability.'
+        },
+        {
+          heading: '2. Defensive Prevention Methods',
+          content: `Organisations use layered technical and administrative controls to protect networks:<br><br>
+          <ul>
+            <li><strong>Firewall:</strong> Software or hardware that monitors incoming and outgoing network traffic, blocking unauthorized packets based on strict rules.</li>
+            <li><strong>Encryption:</strong> Scrambling plain text data into unreadable ciphertext using an algorithm. Data can only be decrypted using the corresponding decryption key.</li>
+            <li><strong>Penetration Testing (Pen Testing):</strong> Authorized ethical hackers intentionally attempting to breach a network to identify and patch security holes before criminal hackers exploit them.</li>
+            <li><strong>User Access Levels:</strong> Restricting file access permissions based on employee roles (e.g. students have read-only access to homework drives; teachers have write access).</li>
+            <li><strong>Strong Passwords & 2FA:</strong> Multi-factor authentication requiring two verification steps (e.g. password + SMS/authenticator code).</li>
+            <li><strong>Anti-Malware & Software Patching:</strong> Scanning files against known virus signatures and updating software to fix security bugs.</li>
+          </ul>`,
+          workedExample: `<strong>How Firewalls Protect Networks:</strong><br>
+          A firewall inspects packet headers (source IP, destination port). If a packet attempts to access blocked port 21 (FTP) from an unknown external IP, the firewall drops the packet.`,
+          examinerTip: 'In 4-mark answers on security, match the threat to its exact solution (e.g. SQL Injection $\\rightarrow$ Input sanitisation; Malware $\\rightarrow$ Anti-virus & patching).'
+        }
+      ],
+      keyTerms: ['Malware', 'Phishing', 'Social Engineering', 'Brute Force Attack', 'DDoS', 'SQL Injection', 'Firewall', 'Encryption', 'Penetration Testing', 'User Access Levels', '2FA'],
+      examTraps: [
+        'Confusing Phishing with Pharming. Phishing uses fake emails/messages; Pharming redirects website traffic to fake sites via DNS poisoning.',
+        'Thinking a firewall stops viruses inside an opened email attachment. Firewalls filter network traffic packets; anti-virus software scans files.'
+      ]
+    },
+    {
+      id: 'tn_1_6',
+      topicId: 'topic_1_6',
+      code: '1.6',
+      paper: 'Paper 1',
+      title: 'Systems Software',
+      subtitle: 'Operating System Functions & Utility Software Tools',
+      summary: 'Understand how operating systems manage hardware resources and how utility programs optimize computer performance.',
+      specificationPoints: [
+        '1.5.1 Operating Systems: User interface, Memory management & multitasking, Peripheral management & drivers, File and user management',
+        '1.5.2 Utility Software: Purpose of utility software (Defragmentation, Backup, Encryption, Compression)'
+      ],
+      sections: [
+        {
+          heading: '1. Operating System (OS) Core Functions',
+          content: `The <strong>Operating System</strong> is system software that manages hardware components, provides an interface for users, and provides a platform for application software to run.<br><br>
+          <strong>5 Key OS Functions:</strong>
+          <ol>
+            <li><strong>User Interface (UI):</strong> Provides a way for humans to interact with the computer.
+              <ul>
+                <li><em>GUI (Graphical User Interface):</em> Visual WIMP interface (Windows, Icons, Menus, Pointer). Easy for non-technical users.</li>
+                <li><em>CLI (Command Line Interface):</em> Text-based interface. Fast, resource-light, powerful for advanced administrators.</li>
+              </ul>
+            </li>
+            <li><strong>Memory Management & Multitasking:</strong> Allocates RAM blocks to active applications. Enables multitasking by allocating CPU time slices to processes using scheduling algorithms.</li>
+            <li><strong>Peripheral Management & Drivers:</strong> Uses <em>device drivers</em> (translator software) allowing the OS to communicate with hardware peripherals (printers, keyboards, graphics cards).</li>
+            <li><strong>File Management:</strong> Organizes files into hierarchical folder directory structures; manages file access permissions (Read/Write/Execute).</li>
+            <li><strong>User Management:</strong> Handles user authentication (logins, passwords), user account privileges, and audit logging.</li>
+          </ol>`,
+          workedExample: `<strong>What is a Device Driver?</strong><br>
+          A driver acts as a translator between the operating system and hardware. If you plug in a new printer, the OS uses the printer driver to convert generic print commands into the specific control signals required by that printer model.`,
+          examinerTip: 'Always mention device drivers when asked how the OS manages peripherals!'
+        },
+        {
+          heading: '2. Utility Software',
+          content: `<strong>Utility software</strong> comprises specialized maintenance programs that help maintain, optimize, and configure a computer system.<br><br>
+          <strong>Key Utility Tools:</strong>
+          <ul>
+            <li><strong>Defragmentation Software:</strong> Reorganizes fragmented file clusters on a magnetic Hard Disk Drive (HDD) so related file sectors are stored contiguously. <em>Benefit:</em> Reduces read/write head movement, speeding up file access times.</li>
+            <li><strong>Backup Utilities:</strong> Creates duplicate copies of files to protect against data loss.
+              <ul>
+                <li><em>Full Backup:</em> Copies every single file on the system. Takes long to run, but quick to restore.</li>
+                <li><em>Incremental Backup:</em> Copies only files modified since the last backup. Fast to run, but slower to restore.</li>
+              </ul>
+            </li>
+            <li><strong>Encryption Utilities:</strong> Scrambles stored files on disk using encryption keys to prevent unauthorized access if the device is stolen.</li>
+            <li><strong>Compression Utilities:</strong> Compresses file sizes to save disk space (e.g. creating <code>.zip</code> archives).</li>
+          </ul>`,
+          workedExample: `<strong>Why SSDs should NOT be defragmented:</strong><br>
+          Solid State Drives (SSDs) have no moving read/write heads, so fragmentation does not slow them down. Defragmenting an SSD causes unnecessary write cycles, wearing out the flash memory transistors early!`,
+          examinerTip: 'Examiner Trap: Defragmentation is ONLY useful for magnetic HDDs, NOT optical discs or SSDs!'
+        }
+      ],
+      keyTerms: ['Operating System', 'GUI', 'CLI', 'Memory Management', 'Multitasking', 'Device Driver', 'File Management', 'User Management', 'Defragmentation', 'Full Backup', 'Incremental Backup'],
+      examTraps: [
+        'Stating that defragmentation creates extra free storage space. Defragmentation only reorganizes existing files into contiguous blocks; it does NOT delete data to increase free space!',
+        'Recommending defragmentation for Solid State Drives (SSDs).'
+      ]
+    },
+    {
+      id: 'tn_1_7',
+      topicId: 'topic_1_7',
+      code: '1.7',
+      paper: 'Paper 1',
+      title: 'Ethical, Legal, Cultural & Environmental Impacts',
+      subtitle: 'UK Computer Legislation, Licensing Models, E-Waste & Digital Privacy',
+      summary: 'Evaluate the broader societal impacts of technology, UK computer laws, open-source licensing, and environmental footprints.',
+      specificationPoints: [
+        '1.6.1 Ethical, legal, cultural and environmental impact of technology',
+        '1.6.2 Legislation: Data Protection Act 2018 (GDPR), Computer Misuse Act 1990, Copyright Designs and Patents Act 1988, Software licences (Open-source vs Proprietary)'
+      ],
+      sections: [
+        {
+          heading: '1. UK Computer Legislation',
+          content: `Technology is governed by three primary UK acts of parliament:<br><br>
+          <ul>
+            <li><strong>Data Protection Act 2018 (incorporating UK GDPR):</strong> Regulates how organizations collect, store, and process personal data.<br>
+            <em>Core Principles:</em> Data must be processed lawfully and fairly, used for specified explicit purposes, accurate and up-to-date, kept no longer than necessary, and secured against unauthorized access.</li>
+            <li><strong>Computer Misuse Act 1990:</strong> Criminalises unauthorized access to computer systems.<br>
+            <em>3 Primary Offences:</em>
+            <ol>
+              <li>Unauthorized access to computer material (e.g. guessing a friend's password).</li>
+              <li>Unauthorized access with intent to commit a further crime (e.g. hacking into a bank system to steal money).</li>
+              <li>Unauthorized modification of computer material (e.g. spreading viruses, deleting files, or launching DDoS attacks).</li>
+            </ol>
+            </li>
+            <li><strong>Copyright, Designs and Patents Act 1988:</strong> Protects intellectual property (software code, music, images, videos) from unauthorized copying, modification, or distribution.</li>
+          </ul>`,
+          workedExample: `<strong>Applying Legislation in Exam Scenarios:</strong><br>
+          If an employee downloads customer credit card records without permission, they breach the <em>Data Protection Act 2018</em> (unsecured personal data handling) AND the <em>Computer Misuse Act 1990</em> (unauthorized access to data).`,
+          examinerTip: 'Always name the exact law in 6-8 mark essay questions (e.g. "Computer Misuse Act 1990", not just "hacking law").'
+        },
+        {
+          heading: '2. Software Licensing: Open-Source vs Proprietary',
+          content: `<table class="table" style="width:100%; border-collapse:collapse; margin: 12px 0;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-color); text-align:left;">
+                <th style="padding: 8px;">Feature</th>
+                <th style="padding: 8px;">Open-Source Software (e.g. Linux, Python, VLC)</th>
+                <th style="padding: 8px;">Proprietary Software (e.g. MS Windows, Adobe Photoshop)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 8px;"><strong>Source Code Access</strong></td>
+                <td style="padding: 8px;">Publicly available to inspect, modify, and adapt</td>
+                <td style="padding: 8px;">Compiled secret code; protected by copyright law</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 8px;"><strong>Cost & Licensing</strong></td>
+                <td style="padding: 8px;">Usually free to use and distribute under open licences</td>
+                <td style="padding: 8px;">Requires paid licence fee or recurring subscription</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px;"><strong>Support & Quality</strong></td>
+                <td style="padding: 8px;">Community driven; no official corporate guarantee</td>
+                <td style="padding: 8px;">Official vendor support, regular tested updates, documentation</td>
+              </tr>
+            </tbody>
+          </table>`,
+          workedExample: `A start-up company with a low budget might choose Open-Source OS (Linux) to avoid initial licensing fees, but must train staff to manage community updates.`,
+          examinerTip: 'Do not assume open-source software has no copyright. It uses licenses (e.g. MIT, GPL) that govern how modified code can be shared.'
+        },
+        {
+          heading: '3. Environmental, Cultural & Ethical Concerns',
+          content: `<strong>Environmental Impacts:</strong>
+          <ul>
+            <li><em>E-Waste (Electronic Waste):</em> Old devices dumped in landfills leak toxic heavy metals (lead, mercury) into groundwater.</li>
+            <li><em>Energy Consumption:</em> Massive server farms and AI data centers consume huge amounts of electricity, contributing to carbon emissions.</li>
+            <li><em>Precious Metal Extraction:</em> Mining gold, copper, and lithium causes deforestation and habitat destruction.</li>
+          </ul>
+          <strong>Cultural & Ethical Issues:</strong>
+          <ul>
+            <li><em>Digital Divide:</em> Inequality between those with access to high-speed internet/computers and those without (affecting education and job opportunities).</li>
+            <li><em>Privacy vs Surveillance:</em> Facial recognition cameras and mobile tracking enhance public safety, but risk infringing on personal privacy.</li>
+          </ul>`,
+          workedExample: `<strong>Structure for 8-Mark Extended Prose Questions:</strong><br>
+          1. <em>Introduction:</em> Define the context.<br>
+          2. <em>Paragraph 1 (Ethical/Cultural):</em> Impact on privacy or digital divide.<br>
+          3. <em>Paragraph 2 (Legal):</em> Reference Data Protection Act 2018 / GDPR.<br>
+          4. <em>Paragraph 3 (Environmental):</em> E-waste or power usage.<br>
+          5. <em>Justified Conclusion:</em> Summarize and weigh balance.`,
+          examinerTip: 'Ensure extended essay answers present a balanced argument with points on both sides before reaching a conclusion!'
+        }
+      ],
+      keyTerms: ['Data Protection Act', 'GDPR', 'Computer Misuse Act', 'Copyright Act', 'Open-Source', 'Proprietary', 'E-Waste', 'Digital Divide', 'Surveillance'],
+      examTraps: [
+        'Writing "Data Protection Act" without the year 2018 or GDPR reference.',
+        'Confusing open-source with illegal file sharing. Open-source is legitimate software published with open source code!'
+      ]
+    },
+    {
+      id: 'tn_2_1',
+      topicId: 'topic_2_1',
+      code: '2.1',
+      paper: 'Paper 2',
+      title: 'Algorithms',
+      subtitle: 'Computational Thinking, Searching & Sorting Algorithms & Trace Tables',
+      summary: 'Master algorithm design, pseudocode tracing, searching (Linear vs Binary), and sorting (Bubble, Merge, Insertion).',
+      specificationPoints: [
+        '2.1.1 Computational Thinking: Abstraction, Decomposition, Algorithmic Thinking',
+        '2.1.2 Designing, Creating & Refining Algorithms: Flowcharts, Pseudocode, Trace Tables',
+        '2.1.3 Searching & Sorting Algorithms: Linear Search, Binary Search, Bubble Sort, Merge Sort, Insertion Sort'
+      ],
+      sections: [
+        {
+          heading: '1. Computational Thinking Pillars',
+          content: `Computational thinking is the problem-solving process used to formulate problems so their solutions can be carried out by a computer.<br><br>
+          <ul>
+            <li><strong>Abstraction:</strong> Removing unnecessary details from a problem to focus only on the essential characteristics needed to solve it. <em>Example:</em> London Underground map removes precise geographical distances to show clear station connections.</li>
+            <li><strong>Decomposition:</strong> Breaking down a complex problem into smaller, more manageable sub-problems. <em>Example:</em> Breaking a game project into player movement, scoring system, graphics, and sound modules.</li>
+            <li><strong>Algorithmic Thinking:</strong> Creating a logical step-by-step sequence of instructions to solve a problem.</li>
+          </ul>`,
+          workedExample: `<strong>Abstraction vs Decomposition:</strong><br>
+          • <em>Decomposition</em> splits a task into parts.<br>
+          • <em>Abstraction</em> simplifies details within those parts.`,
+          examinerTip: 'Memorize the exact definition of Abstraction for 2-mark recall questions!'
+        },
+        {
+          heading: '2. Searching Algorithms',
+          content: `<strong>1. Linear Search:</strong> Examines every item in a list sequentially from index 0 to the end.<br>
+          • <em>Requirement:</em> Works on <strong>unsorted</strong> or sorted lists.<br>
+          • <em>Efficiency:</em> Slow for large datasets ($O(n)$).<br><br>
+          <strong>2. Binary Search:</strong> Repeatedly divides a list in half.<br>
+          • <em>Mandatory Requirement:</em> The list MUST be <strong>sorted</strong> in alphabetical or numerical order!<br>
+          • <em>Algorithm Steps:</em>
+          <ol>
+            <li>Find middle item of the list.</li>
+            <li>If middle item == target, search complete.</li>
+            <li>If target < middle item, discard the right half.</li>
+            <li>If target > middle item, discard the left half.</li>
+            <li>Repeat until target is found or sublist is empty.</li>
+          </ol>`,
+          workedExample: `<strong>Binary Search Tracing Example:</strong><br>
+          Target = 7 in sorted list: <code>[2, 4, 7, 9, 12, 15, 18]</code> (7 items).<br>
+          1. Mid index = 3 (Value = 9). Target (7) < 9 $\\rightarrow$ Keep left sublist: <code>[2, 4, 7]</code>.<br>
+          2. Mid index = 1 (Value = 4). Target (7) > 4 $\\rightarrow$ Keep right sublist: <code>[7]</code>.<br>
+          3. Mid index = 0 (Value = 7). Target match found in 3 comparisons! (Linear search would take 3 comparisons here, but Binary is far faster on 10,000 items).`,
+          examinerTip: 'If an exam question asks why Binary Search cannot be used on a given list, check if the list is unsorted!'
+        },
+        {
+          heading: '3. Sorting Algorithms',
+          content: `<strong>1. Bubble Sort:</strong> Compares adjacent pairs of items. If out of order, swaps them. Repeats full passes until a pass occurs with ZERO swaps.<br>
+          • <em>Pros:</em> Simple, requires little memory.<br>
+          • <em>Cons:</em> Inefficient and slow ($O(n^2)$).<br><br>
+          <strong>2. Merge Sort:</strong> Divide-and-conquer algorithm.<br>
+          • <em>Step 1 (Divide):</em> Recursively splits list into sublists of size 1.<br>
+          • <em>Step 2 (Conquer/Merge):</em> Merges adjacent sublists back together in sorted order.<br>
+          • <em>Pros:</em> Extremely fast for large lists ($O(n \\log n)$).<br>
+          • <em>Cons:</em> Requires additional RAM memory to hold temporary sublists.<br><br>
+          <strong>3. Insertion Sort:</strong> Takes elements from unsorted list one-by-one and inserts them into their correct position in a growing sorted sublist.`,
+          workedExample: `<strong>Bubble Sort Pass 1:</strong><br>
+          Unsorted: <code>[5, 1, 4, 2]</code><br>
+          • Compare 5 and 1 $\\rightarrow$ Swap: <code>[1, 5, 4, 2]</code><br>
+          • Compare 5 and 4 $\\rightarrow$ Swap: <code>[1, 4, 5, 2]</code><br>
+          • Compare 5 and 2 $\\rightarrow$ Swap: <code>[1, 4, 2, 5]</code> (Largest item 5 has "bubbled" to the end).`,
+          examinerTip: 'Know how to identify which sort has taken place based on intermediate pass outputs!'
+        },
+        {
+          heading: '4. Flowchart Symbols & Trace Tables',
+          content: `<strong>Standard Flowchart Symbols:</strong><br>
+          • <strong>Oval / Rounded Box:</strong> Terminal Start / End.<br>
+          • <strong>Rectangle:</strong> Process / Calculation block (e.g. <code>x = x + 1</code>).<br>
+          • <strong>Parallelogram:</strong> Input / Output block (e.g. <code>INPUT age</code>, <code>PRINT name</code>).<br>
+          • <strong>Diamond:</strong> Decision block (e.g. <code>is score >= 50?</code>) with Yes/No branches.<br><br>
+          <strong>Trace Tables:</strong> Used to track variable values line-by-line during algorithm execution to identify logic errors.`,
+          workedExample: `<strong>Trace Table Layout:</strong><br>
+          Columns represent variables (e.g. <code>count</code>, <code>total</code>, <code>output</code>). Every time a variable changes value, write the new value on a NEW row below.`,
+          examinerTip: 'In trace table questions, never write multiple variable changes on the same line if they happen on different loop iterations!'
+        }
+      ],
+      keyTerms: ['Abstraction', 'Decomposition', 'Algorithmic Thinking', 'Linear Search', 'Binary Search', 'Bubble Sort', 'Merge Sort', 'Insertion Sort', 'Flowchart', 'Trace Table'],
+      examTraps: [
+        'Attempting a Binary Search on an unsorted list.',
+        'Forgetting that Bubble Sort must complete one full pass with ZERO swaps before stopping.'
+      ]
+    },
+    {
+      id: 'tn_2_2',
+      topicId: 'topic_2_2',
+      code: '2.2',
+      paper: 'Paper 2',
+      title: 'Programming Fundamentals',
+      subtitle: 'Constructs, Data Types, Arrays, String Handling, Subprograms & OCR ERL',
+      summary: 'Master procedural programming concepts in Python and OCR Exam Reference Language (ERL).',
+      specificationPoints: [
+        '2.2.1 Programming Fundamentals: Variables, Constants, Sequence, Selection, Iteration',
+        '2.2.2 Data Types: Integer, Real, Boolean, Character, String, Casting, Operators (DIV, MOD)',
+        '2.2.3 Additional Programming Techniques: 1D & 2D Arrays, File Handling, String Operations, Subprograms (Functions/Procedures, Parameters, Scope)'
+      ],
+      sections: [
+        {
+          heading: '1. Three Basic Programming Constructs',
+          content: `All computer programs are built from three fundamental control structures:
+          <ol>
+            <li><strong>Sequence:</strong> Executing code statements line-by-line in sequential order from top to bottom.</li>
+            <li><strong>Selection:</strong> Decision points where different code paths are executed based on conditional evaluation (<code>IF ... THEN ... ELSE</code>).</li>
+            <li><strong>Iteration:</strong> Repeating a block of code using loops.
+              <ul>
+                <li><em>Count-Controlled Loop (FOR loop):</em> Repeats a fixed number of times.</li>
+                <li><em>Condition-Controlled Loop (WHILE loop):</em> Repeats while a condition evaluates to TRUE.</li>
+              </ul>
+            </li>
+          </ol>`,
+          workedExample: `<strong>Variables vs Constants:</strong><br>
+          • <em>Variable:</em> Named RAM memory location whose value CAN change during execution (e.g. <code>score = score + 10</code>).<br>
+          • <em>Constant:</em> Named memory location whose value CANNOT be altered during execution (e.g. <code>VAT_RATE = 0.20</code>).`,
+          examinerTip: 'In OCR exam questions, constants are usually written in UPPERCASE letters.'
+        },
+        {
+          heading: '2. Division Operators: DIV vs MOD',
+          content: `Beyond standard mathematical division (<code>/</code> returning float decimals), computer science uses integer division operators:<br><br>
+          <ul>
+            <li><strong>DIV (Quotient Division - <code>//</code> in Python):</strong> Returns the whole integer number of times a division fits, discarding the remainder.</li>
+            <li><strong>MOD (Modulo Division - <code>%</code> in Python):</strong> Returns ONLY the remainder left over from integer division.</li>
+          </ul>`,
+          workedExample: `<strong>DIV and MOD Calculations:</strong><br>
+          Calculate $17 \\div 5$:<br>
+          • $17 \\text{ DIV } 5 = 3$ (because 5 fits into 17 three times).<br>
+          • $17 \\text{ MOD } 5 = 2$ (because $17 - (3 \\times 5) = 2$ remainder).<br><br>
+          <em>Real-World Use Case:</em> Checking if a number is even: <code>IF num MOD 2 == 0 THEN ...</code>`,
+          examinerTip: 'Memorize: DIV = Quotient (whole number), MOD = Remainder!'
+        },
+        {
+          heading: '3. 1D & 2D Arrays',
+          content: `An <strong>array</strong> is a data structure storing multiple data items of the same data type under a single variable name, accessed using zero-based indices.<br><br>
+          <ul>
+            <li><strong>1D Array:</strong> Linear list. e.g. <code>scores = [45, 88, 92]</code> $\\rightarrow$ <code>scores[0]</code> is 45.</li>
+            <li><strong>2D Array:</strong> Grid layout structured as rows and columns. e.g. <code>grid[row][col]</code>.</li>
+          </ul>`,
+          workedExample: `<strong>Accessing 2D Arrays:</strong><br>
+          <code>board = [["X", "O", "X"], ["-", "X", "-"], ["O", "-", "O"]]</code><br>
+          • <code>board[0][1]</code> accesses Row 0, Column 1 $\\rightarrow$ <code>"O"</code>.`,
+          examinerTip: 'Remember arrays in Python/ERL use 0-based indexing! The first element is always index 0.'
+        },
+        {
+          heading: '4. Subprograms: Functions vs Procedures',
+          content: `Subprograms are self-contained blocks of code executed when called by name.<br><br>
+          <ul>
+            <li><strong>Procedure:</strong> Executes a set of instructions but DOES NOT return a value to the main program.</li>
+            <li><strong>Function:</strong> Executes instructions and <strong>RETURNS a value</strong> back to the calling code using a <code>return</code> statement.</li>
+            <li><strong>Parameters vs Arguments:</strong> <em>Parameters</em> are variable placeholders in the subprogram definition. <em>Arguments</em> are actual values passed into parameters during a call.</li>
+            <li><strong>Variable Scope:</strong> <em>Local variables</em> exist only inside the subprogram; <em>Global variables</em> exist throughout the entire script.</li>
+          </ul>`,
+          workedExample: `<strong>Python Subprogram Example:</strong><br>
+          <pre><code>def calculate_tax(price): # price is parameter
+    tax = price * 0.20 # tax is local variable
+    return tax # Function returns value
+
+final_tax = calculate_tax(100) # 100 is argument</code></pre>`,
+          examinerTip: 'If a subprogram ends with `return result`, it is a FUNCTION. If it has no return statement, it is a PROCEDURE.'
+        }
+      ],
+      keyTerms: ['Sequence', 'Selection', 'Iteration', 'Variable', 'Constant', 'Casting', 'DIV', 'MOD', '1D Array', '2D Array', 'Subprogram', 'Function', 'Procedure', 'Parameter', 'Scope'],
+      examTraps: [
+        'Confusing DIV and MOD. DIV gives the whole quotient; MOD gives the remainder.',
+        'Forgetting that array indexes start at 0, not 1.'
+      ]
+    },
+    {
+      id: 'tn_2_3',
+      topicId: 'topic_2_3',
+      code: '2.3',
+      paper: 'Paper 2',
+      title: 'Producing Robust Programs',
+      subtitle: 'Defensive Design, Input Validation, Maintainability & Testing Strategies',
+      summary: 'Learn how to build resilient programs using input validation, maintainability rules, and structured test plans.',
+      specificationPoints: [
+        '2.3.1 Defensive Design: Input validation (range, length, presence, type, format), Authentication, Maintainability (comments, indentation, naming)',
+        '2.3.2 Testing: Purpose of testing, Normal, Boundary, Invalid, Erroneous test data, Syntax vs Logic errors'
+      ],
+      sections: [
+        {
+          heading: '1. Defensive Design & Input Validation',
+          content: `<strong>Defensive design</strong> ensures programs keep running smoothly even under unexpected user input or system failures.<br><br>
+          <strong>Input Validation Checks:</strong>
+          <ul>
+            <li><strong>Range Check:</strong> Checks if a number falls within specified minimum and maximum limits (e.g. month between 1 and 12).</li>
+            <li><strong>Length Check:</strong> Checks if string length meets minimum/maximum character requirements (e.g. password $\ge 8$ chars).</li>
+            <li><strong>Presence Check:</strong> Checks that a field has not been left empty.</li>
+            <li><strong>Type Check:</strong> Checks that input matches the expected data type (e.g. age must be an Integer).</li>
+            <li><strong>Format Check:</strong> Checks input matches a required pattern (e.g. postcode format <code>AA11 1AA</code>).</li>
+          </ul>`,
+          workedExample: `<strong>Validation vs Verification:</strong><br>
+          • <em>Validation:</em> Automated computer check testing if input is sensible and meets rules.<br>
+          • <em>Verification:</em> Checking if data matches the original source (e.g. entering password twice or double-entry verification).`,
+          examinerTip: 'Validation checks if data is SENSIBLE; it cannot check if data is 100% truthful (e.g. entering fake valid DOB).'
+        },
+        {
+          heading: '2. Code Maintainability Techniques',
+          content: `Maintainable code can be easily understood, debugged, and updated by other programmers.<br><br>
+          <strong>4 Maintainability Rules:</strong>
+          <ol>
+            <li><strong>Comments (<code>#</code>):</strong> Explains non-obvious logic to future developers.</li>
+            <li><strong>Indentation:</strong> Clearly demarcates code blocks inside loops, subprograms, and <code>IF</code> statements.</li>
+            <li><strong>Meaningful Variable Names:</strong> Use clear names like <code>total_score</code> instead of single letters like <code>x</code>.</li>
+            <li><strong>Modular Code:</strong> Splitting program into reusable subprograms (functions/procedures).</li>
+          </ol>`,
+          workedExample: `Unmaintainable: <code>def f(a,b): return a*b</code><br>
+          Maintainable:
+          <pre><code># Calculate rectangle area
+def calculate_area(width, height):
+    return width * height</code></pre>`,
+          examinerTip: 'When asked how to improve code maintainability on exam code snippets, list indentation, comments, and clear identifier names.'
+        },
+        {
+          heading: '3. Testing Strategies & Test Data Types',
+          content: `<strong>Syntax Errors vs Logic Errors:</strong><br>
+          • <em>Syntax Error:</em> Violation of language grammar rules (e.g. missing colon <code>if x == 5</code>). Prevents code from compiling/running.<br>
+          • <em>Logic Error:</em> Program runs without crashing but produces incorrect output due to bad logic (e.g. <code>average = a + b / 2</code> missing brackets).<br><br>
+          <strong>4 Categories of Test Data:</strong>
+          <ul>
+            <li><strong>Normal Data:</strong> Typical valid data within expected range (e.g. score = 50 for range 0-100).</li>
+            <li><strong>Boundary Data:</strong> Values on the exact minimum and maximum edges of acceptance (e.g. 0 and 100).</li>
+            <li><strong>Invalid Data:</strong> Out-of-range data of the correct data type that should be rejected (e.g. -1 or 105).</li>
+            <li><strong>Erroneous Data:</strong> Data of the wrong data type that should be rejected (e.g. "fifty" instead of number).</li>
+          </ul>`,
+          workedExample: `<strong>Designing a Test Plan Table:</strong><br>
+          Every test plan entry requires 4 columns: <em>Test Number</em>, <em>Test Data Category</em>, <em>Input Value</em>, and <em>Expected Result</em>.`,
+          examinerTip: 'Always include both the value AND the expected result (e.g. "Input 100 -> Expected: Accepted") in test plan questions!'
+        }
+      ],
+      keyTerms: ['Defensive Design', 'Input Validation', 'Range Check', 'Length Check', 'Presence Check', 'Type Check', 'Maintainability', 'Syntax Error', 'Logic Error', 'Normal Data', 'Boundary Data', 'Invalid Data', 'Erroneous Data'],
+      examTraps: [
+        'Confusing Validation (computer check) with Verification (source comparison check).',
+        'Writing boundary test data without specifying expected output.'
+      ]
+    },
+    {
+      id: 'tn_2_4',
+      topicId: 'topic_2_4',
+      code: '2.4',
+      paper: 'Paper 2',
+      title: 'Boolean Logic',
+      subtitle: 'Logic Gates (AND, OR, NOT), Truth Tables & Circuit Diagrams',
+      summary: 'Master Boolean logic operations, 2-input and 3-input truth tables, and logic gate circuit diagrams.',
+      specificationPoints: [
+        '2.4.1 Boolean Logic: Logic gate symbols (AND, OR, NOT), Truth tables (2 and 3 inputs), Combining logic gates'
+      ],
+      sections: [
+        {
+          heading: '1. Three Fundamental Logic Gates',
+          content: `Logic gates process binary inputs (0 or 1) and produce a single binary output.<br><br>
+          <ul>
+            <li><strong>AND Gate:</strong> Output is 1 ONLY if <em>both</em> Input A AND Input B are 1.</li>
+            <li><strong>OR Gate:</strong> Output is 1 if <em>at least one</em> input (A OR B) is 1.</li>
+            <li><strong>NOT Gate (Inverter):</strong> Takes 1 input and flips it (0 becomes 1; 1 becomes 0).</li>
+          </ul>`,
+          workedExample: `<strong>Truth Table for 2-Input Gates:</strong><br>
+          <table class="table" style="width:100%; border-collapse:collapse; margin: 12px 0;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-color); text-align:left;">
+                <th style="padding: 6px;">A</th>
+                <th style="padding: 6px;">B</th>
+                <th style="padding: 6px;">A AND B</th>
+                <th style="padding: 6px;">A OR B</th>
+                <th style="padding: 6px;">NOT A</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding: 6px;">0</td><td style="padding: 6px;">0</td><td style="padding: 6px;">0</td><td style="padding: 6px;">0</td><td style="padding: 6px;">1</td></tr>
+              <tr><td style="padding: 6px;">0</td><td style="padding: 6px;">1</td><td style="padding: 6px;">0</td><td style="padding: 6px;">1</td><td style="padding: 6px;">1</td></tr>
+              <tr><td style="padding: 6px;">1</td><td style="padding: 6px;">0</td><td style="padding: 6px;">0</td><td style="padding: 6px;">1</td><td style="padding: 6px;">0</td></tr>
+              <tr><td style="padding: 6px;">1</td><td style="padding: 6px;">1</td><td style="padding: 6px;">1</td><td style="padding: 6px;">1</td><td style="padding: 6px;">0</td></tr>
+            </tbody>
+          </table>`,
+          examinerTip: 'Ensure you recognize standard gate shapes: AND gate has a D-shaped flat back; OR gate has a curved back; NOT gate is a triangle with a circle at the tip.'
+        },
+        {
+          heading: '2. 3-Input Truth Tables & Combined Circuits',
+          content: `Complex logic circuits combine multiple gates into Boolean expressions.<br>
+          A 3-input truth table (Inputs A, B, C) requires $2^3 = 8$ rows to cover all combinations (000 to 111).<br><br>
+          <strong>Step-by-Step Strategy for Evaluating Circuits:</strong>
+          <ol>
+            <li>Evaluate intermediate gate outputs first and write them in dedicated sub-columns.</li>
+            <li>Combine intermediate values into the final output column $Q$.</li>
+          </ol>`,
+          workedExample: `<strong>Evaluating $Q = (A \\text{ AND } B) \\text{ OR } (\\text{NOT } C)$:</strong><br>
+          Let $A=1, B=1, C=1$:<br>
+          1. Intermediate $P = A \\text{ AND } B = 1 \\text{ AND } 1 = 1$.<br>
+          2. Intermediate $R = \\text{NOT } C = \\text{NOT } 1 = 0$.<br>
+          3. Final $Q = P \\text{ OR } R = 1 \\text{ OR } 0 = 1$.`,
+          examinerTip: 'Always double-check that a 3-input truth table has exactly 8 rows!'
+        }
+      ],
+      keyTerms: ['Boolean Logic', 'AND Gate', 'OR Gate', 'NOT Gate', 'Truth Table', 'Logic Circuit'],
+      examTraps: [
+        'Drawing an AND gate with a curved back (which looks like an OR gate). Keep AND D-shaped!',
+        'Missing rows in 3-input truth tables. 3 inputs = 8 rows total.'
+      ]
+    },
+    {
+      id: 'tn_2_5',
+      topicId: 'topic_2_5',
+      code: '2.5',
+      paper: 'Paper 2',
+      title: 'Programming Languages & IDEs',
+      subtitle: 'High-Level vs Low-Level Languages, Translators & IDE Development Tools',
+      summary: 'Compare high-level code with assembly and machine code, understand Compilers vs Interpreters, and explore IDE tools.',
+      specificationPoints: [
+        '2.5.1 Languages & Translators: High-level vs Low-level languages, Compilers vs Interpreters',
+        '2.5.2 IDE Tools: Editors, Error Diagnostics, Debuggers, Run-time Environment'
+      ],
+      sections: [
+        {
+          heading: '1. High-Level vs Low-Level Languages',
+          content: `Computer code exists at different levels of abstraction from physical CPU hardware:<br><br>
+          <ul>
+            <li><strong>High-Level Languages (e.g. Python, Java, C#):</strong>
+              <ul>
+                <li>Human-readable code using English-like keywords (<code>if</code>, <code>while</code>, <code>print</code>).</li>
+                <li>Portable (runs on different CPU hardware architectures).</li>
+                <li>Uses data structures (variables, arrays) and subprograms.</li>
+                <li>Must be translated into machine code before CPU execution.</li>
+              </ul>
+            </li>
+            <li><strong>Low-Level Languages:</strong>
+              <ul>
+                <li><em>Assembly Language:</em> Uses short mnemonic codes (e.g. <code>INP</code>, <code>STA</code>, <code>ADD</code>). Translated by an <strong>Assembler</strong>.</li>
+                <li><em>Machine Code:</em> Raw binary (1s and 0s) directly executed by the CPU. Hardware-specific (non-portable).</li>
+              </ul>
+            </li>
+          </ul>`,
+          workedExample: `High-Level: <code>total = x + y</code><br>
+          Assembly: <code>LDA x</code> $\\rightarrow$ <code>ADD y</code> $\\rightarrow$ <code>STA total</code><br>
+          Machine Code: <code>01010000 00011011</code>`,
+          examinerTip: 'Low-level code runs faster and gives direct hardware memory control, but is hard to write and non-portable.'
+        },
+        {
+          heading: '2. Translators: Compilers vs Interpreters',
+          content: `CPU hardware ONLY executes machine code. High-level languages require a translator program.<br><br>
+          <table class="table" style="width:100%; border-collapse:collapse; margin: 12px 0;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-color); text-align:left;">
+                <th style="padding: 8px;">Feature</th>
+                <th style="padding: 8px;">Compiler</th>
+                <th style="padding: 8px;">Interpreter</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 8px;"><strong>Translation Process</strong></td>
+                <td style="padding: 8px;">Translates entire source code into a standalone machine code executable file (<code>.exe</code>) in one pass</td>
+                <td style="padding: 8px;">Translates and executes source code line-by-line in real time</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 8px;"><strong>Execution Speed</strong></td>
+                <td style="padding: 8px;">Fast execution after compilation is complete</td>
+                <td style="padding: 8px;">Slower execution (must re-translate lines in loops)</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 8px;"><strong>Error Reporting</strong></td>
+                <td style="padding: 8px;">Reports all errors at the end of compilation</td>
+                <td style="padding: 8px;">Stops immediately on the line where an error occurs</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px;"><strong>Code Protection</strong></td>
+                <td style="padding: 8px;">Source code is hidden inside compiled machine code file</td>
+                <td style="padding: 8px;">Source code must be provided to user along with interpreter</td>
+              </tr>
+            </tbody>
+          </table>`,
+          workedExample: `Developers use an <strong>Interpreter</strong> during coding for fast debugging, then compile the final project with a <strong>Compiler</strong> to produce a fast <code>.exe</code> for commercial release.`,
+          examinerTip: 'Remember: Compilers produce standalone executable files; Interpreters require the interpreter software installed on the destination computer.'
+        },
+        {
+          heading: '3. Integrated Development Environment (IDE) Tools',
+          content: `An <strong>IDE</strong> is a software application providing comprehensive tools for programmers:<br><br>
+          <ul>
+            <li><strong>Code Editor:</strong> Provides syntax highlighting (colouring keywords), line numbering, and auto-indentation.</li>
+            <li><strong>Error Diagnostics / Linting:</strong> Highlights syntax errors in real-time before code is executed.</li>
+            <li><strong>Debugger:</strong> Helps locate logic errors using <em>breakpoints</em> (pausing execution), <em>single-stepping</em> (line-by-line execution), and <em>variable watch windows</em>.</li>
+            <li><strong>Run-time Environment:</strong> Allows programmers to run and test code instantly within the IDE with a single click.</li>
+          </ul>`,
+          workedExample: `Python IDLE, VS Code, and PyCharm are examples of IDEs containing editors, run-time environments, and debuggers.`,
+          examinerTip: 'List specific IDE features (e.g. Breakpoints, Syntax Highlighting, Variable Watch) when answering 4-mark questions on IDE capabilities.'
+        }
+      ],
+      keyTerms: ['High-Level Language', 'Low-Level Language', 'Assembly Language', 'Machine Code', 'Compiler', 'Interpreter', 'Assembler', 'IDE', 'Debugger', 'Syntax Highlighting', 'Breakpoint'],
+      examTraps: [
+        'Thinking interpreters produce executable files. Only compilers produce standalone `.exe` files!',
+        'Confusing low-level assembly language with machine code. Assembly uses mnemonics; Machine code is binary 1s and 0s.'
+      ]
+    }
+  ],
   schools: [
     {
       id: 'school_1',
@@ -230,6 +1202,42 @@ const defaultDatabase = {
       planningLabels: ['Potential benefit', 'Privacy risk', 'Legal/data issue', 'Accuracy or bias', 'Conclusion'],
       modelPlan: ['efficient attendance/safeguarding benefit', 'continuous monitoring may feel intrusive', 'biometric data needs lawful secure handling', 'false matches may affect groups unfairly', 'weigh safeguards against benefit'],
       retryQuestion: 'Discuss whether a school should use monitoring software on every pupil-owned device connected to its Wi-Fi.'
+    },
+    {
+      id: 'transfer_5', specificationPointId: '1.1.1', topicId: 'topic_1_1', paper: 'Paper 1', commandWord: 'Explain', marks: 4, minutes: 6, purpose: 'exam-transfer',
+      question: 'Describe the steps taken by the CPU during the Fetch phase of the Fetch-Decode-Execute (FDE) cycle. Name all registers involved.',
+      decodePrompt: 'The command requires listing the exact sequence of register transfers and data flow during the fetch step.',
+      requiredElements: ['PC value copied to MAR', 'MAR address sent to RAM', 'Instruction retrieved into MDR', 'PC incremented by 1'],
+      planningLabels: ['PC to MAR', 'RAM lookup', 'MDR receive', 'PC increment'],
+      modelPlan: ['PC address copied to MAR', 'read request sent to RAM at MAR address', 'data placed into MDR', 'Program Counter incremented by 1'],
+      retryQuestion: 'Explain the function of the Accumulator (ACC) during the Execute phase of an arithmetic instruction.'
+    },
+    {
+      id: 'transfer_6', specificationPointId: '1.2.1', topicId: 'topic_1_2', paper: 'Paper 1', commandWord: 'Compare', marks: 4, minutes: 6, purpose: 'exam-transfer',
+      question: 'Compare RAM and ROM in terms of volatility, access rights, and primary function within a computer system.',
+      decodePrompt: 'A comparison requires contrasting pairs of points for both memory types.',
+      requiredElements: ['RAM is volatile, ROM is non-volatile', 'RAM is read-write, ROM is read-only', 'RAM holds active OS/apps, ROM holds BIOS boot instructions'],
+      planningLabels: ['Volatility contrast', 'Access rights contrast', 'Function contrast', 'Summary'],
+      modelPlan: ['RAM volatile loses contents / ROM non-volatile retains data', 'RAM read/write / ROM read-only', 'RAM stores active open software / ROM stores BIOS bootloader'],
+      retryQuestion: 'Compare Solid State Drives (SSDs) and Hard Disk Drives (HDDs) for use in a laptop.'
+    },
+    {
+      id: 'transfer_7', specificationPointId: '2.1.3', topicId: 'topic_2_1', paper: 'Paper 2', commandWord: 'Explain', marks: 4, minutes: 6, purpose: 'exam-transfer',
+      question: 'Explain why a Binary Search is more efficient than a Linear Search for a sorted list of 1,000,000 items.',
+      decodePrompt: 'Identify the worst-case comparison count for both algorithms and explain why binary search reduces search space faster.',
+      requiredElements: ['Linear search compares up to 1,000,000 items', 'Binary search divides list in half each step', 'Binary search takes maximum ~20 comparisons', 'Binary search scales logarithmically'],
+      planningLabels: ['Linear search worst case', 'Binary search method', 'Binary search maximum steps', 'Conclusion on efficiency'],
+      modelPlan: ['Linear search takes up to 1,000,000 checks in worst case', 'Binary search halves search area with each comparison', 'Binary search takes at most 20 checks (2^20 > 1,000,000)', 'Binary search requires far fewer steps on large datasets'],
+      retryQuestion: 'Explain why a Binary Search cannot be performed on an unsorted list.'
+    },
+    {
+      id: 'transfer_8', specificationPointId: '2.5.1', topicId: 'topic_2_5', paper: 'Paper 2', commandWord: 'Discuss', marks: 6, minutes: 9, purpose: 'exam-transfer',
+      question: 'A software company is choosing between a Compiler and an Interpreter for releasing a commercial video game. Discuss which translator should be used.',
+      decodePrompt: 'Weigh advantages and disadvantages of both compilers and interpreters in a commercial gaming context.',
+      requiredElements: ['Compiler creates standalone executable', 'Compiler execution is faster', 'Compiler protects source code', 'Interpreter runs slower due to line-by-line translation', 'Justified recommendation for Compiler'],
+      planningLabels: ['Compiler advantages for games', 'Interpreter drawbacks', 'Code security', 'Justified decision'],
+      modelPlan: ['Compiler produces fast machine code executable needed for high-frame-rate games', 'Compiler hides source code so competitors cannot steal logic', 'Interpreter line-by-line translation is too slow for games', 'Recommend Compiler for release version'],
+      retryQuestion: 'Discuss why an Interpreter is beneficial during the early coding and testing phase of a software project.'
     }
   ],
   keyTerms: [
@@ -265,6 +1273,246 @@ const defaultDatabase = {
     { id: 'term_pseudocode', term: 'Pseudocode', topicId: 'topic_2_1', definition: 'A structured, language-independent way to describe the steps of an algorithm.', keywords: ['structured', 'language-independent', 'algorithm'] }
   ],
   questions: [
+    {
+      "id": "q_1_1_a",
+      "topicId": "topic_1_1",
+      "specificationPointId": "1.1.1",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "What is the primary function of the Control Unit (CU) inside the CPU?",
+      "options": [
+        "To manage the execution of instructions and control the flow of data through the CPU",
+        "To perform arithmetic calculations and logical comparisons",
+        "To hold the RAM memory address of the next instruction",
+        "To store frequently used instructions close to the processor die"
+      ],
+      "answer": "To manage the execution of instructions and control the flow of data through the CPU",
+      "explanation": "The Control Unit (CU) decodes instructions, sends timing signals, and coordinates the FDE cycle."
+    },
+    {
+      "id": "q_1_1_b",
+      "topicId": "topic_1_1",
+      "specificationPointId": "1.1.1",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "Which CPU register holds the memory address of the NEXT instruction to be fetched?",
+      "options": [
+        "Program Counter (PC)",
+        "Memory Address Register (MAR)",
+        "Memory Data Register (MDR)",
+        "Accumulator (ACC)"
+      ],
+      "answer": "Program Counter (PC)",
+      "explanation": "The Program Counter (PC) holds the memory address of the next instruction to fetch, and increments during each fetch phase."
+    },
+    {
+      "id": "q_1_1_c",
+      "topicId": "topic_1_1",
+      "specificationPointId": "1.1.2",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "Why does increasing CPU Cache size improve overall system performance?",
+      "options": [
+        "Cache is faster than RAM, so storing frequently used data in Cache reduces slow RAM fetch delays",
+        "Cache increases the clock speed frequency of the CPU cores",
+        "Cache allows the CPU to run 64-bit applications instead of 32-bit",
+        "Cache prevents the CPU from overheating under heavy workloads"
+      ],
+      "answer": "Cache is faster than RAM, so storing frequently used data in Cache reduces slow RAM fetch delays",
+      "explanation": "Cache memory operates at near-CPU speeds. Having more cache reduces the frequency of slow RAM access trips."
+    },
+    {
+      "id": "q_1_2_a",
+      "topicId": "topic_1_2",
+      "specificationPointId": "1.2.1",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "Which statement correctly describes the difference between RAM and ROM?",
+      "options": [
+        "RAM is volatile and read/write; ROM is non-volatile and read-only",
+        "RAM is non-volatile and read-only; ROM is volatile and read/write",
+        "RAM holds the BIOS boot instructions; ROM holds open applications",
+        "RAM is secondary storage; ROM is primary memory"
+      ],
+      "answer": "RAM is volatile and read/write; ROM is non-volatile and read-only",
+      "explanation": "RAM loses its data when power is lost (volatile). ROM retains data permanently (non-volatile) and stores bootloader instructions."
+    },
+    {
+      "id": "q_1_2_b",
+      "topicId": "topic_1_2",
+      "specificationPointId": "1.2.2",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "Why is a Solid State Drive (SSD) more suitable for an action camera than a hard disk drive (HDD)?",
+      "options": [
+        "SSDs have zero moving parts, making them durable against bumps and drops",
+        "SSDs have lower cost per gigabyte than HDDs",
+        "SSDs use optical lasers to read data through water",
+        "SSDs do not require power from the camera battery"
+      ],
+      "answer": "SSDs have zero moving parts, making them durable against bumps and drops",
+      "explanation": "SSDs use flash memory transistors with no mechanical heads, making them shock-resistant and ideal for mobile devices."
+    },
+    {
+      "id": "q_1_3_a",
+      "topicId": "topic_1_3",
+      "specificationPointId": "1.2.4a",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "What is the denary equivalent of the 8-bit binary number 0010 1100?",
+      "options": [
+        "44",
+        "36",
+        "52",
+        "28"
+      ],
+      "answer": "44",
+      "explanation": "Place values: 32 + 8 + 4 = 44."
+    },
+    {
+      "id": "q_1_3_b",
+      "topicId": "topic_1_3",
+      "specificationPointId": "1.2.4a",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "What happens when an 8-bit binary left shift by 2 places is performed on 0000 0101 (5)?",
+      "options": [
+        "The number becomes 0001 0100 (20) because a left shift by 2 multiplies by 4",
+        "The number becomes 0000 0001 (1) because it divides by 4",
+        "The number becomes 0000 1010 (10) because it multiplies by 2",
+        "An overflow error immediately occurs"
+      ],
+      "answer": "The number becomes 0001 0100 (20) because a left shift by 2 multiplies by 4",
+      "explanation": "Shifting left by 2 places multiplies the binary value by 2^2 = 4 (5 * 4 = 20)."
+    },
+    {
+      "id": "q_1_3_c",
+      "topicId": "topic_1_3",
+      "specificationPointId": "1.2.4d",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "Which formula correctly calculates the uncompressed file size of a sound file in bits?",
+      "options": [
+        "Sample Rate (Hz) × Bit Depth × Duration (seconds)",
+        "Width × Height × Colour Depth",
+        "Sample Rate (Hz) ÷ Bit Depth × 8",
+        "Resolution × Compression Ratio"
+      ],
+      "answer": "Sample Rate (Hz) × Bit Depth × Duration (seconds)",
+      "explanation": "Sound size in bits = samples per second * bits per sample * total seconds."
+    },
+    {
+      "id": "q_1_4_a",
+      "topicId": "topic_1_4",
+      "specificationPointId": "1.3.1",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "What is the main function of a router in a network?",
+      "options": [
+        "To forward data packets between different networks using IP addresses",
+        "To connect devices on a single LAN using MAC addresses",
+        "To convert digital signals into analogue sound waves",
+        "To store website files for local network caching"
+      ],
+      "answer": "To forward data packets between different networks using IP addresses",
+      "explanation": "Routers connect distinct networks (e.g. LAN to internet WAN) by inspecting IP packet headers."
+    },
+    {
+      "id": "q_1_4_b",
+      "topicId": "topic_1_4",
+      "specificationPointId": "1.3.2",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "Which layer of the TCP/IP model handles web protocols such as HTTP, HTTPS, and FTP?",
+      "options": [
+        "Application Layer",
+        "Transport Layer",
+        "Internet Layer",
+        "Link Layer"
+      ],
+      "answer": "Application Layer",
+      "explanation": "The Application Layer (Layer 4) provides user-facing application protocols like HTTP, FTP, and SMTP."
+    },
+    {
+      "id": "q_1_5_c",
+      "topicId": "topic_1_5",
+      "specificationPointId": "1.4.2",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "How does a firewall protect a computer network?",
+      "options": [
+        "By monitoring network traffic and blocking packets that do not meet security rules",
+        "By encrypting all files stored on local hard drives",
+        "By automatically scanning downloaded files for virus signatures",
+        "By preventing physical theft of server hardware"
+      ],
+      "answer": "By monitoring network traffic and blocking packets that do not meet security rules",
+      "explanation": "A firewall acts as a filter on network ports to block unauthorized packet transmissions."
+    },
+    {
+      "id": "q_1_6_a",
+      "topicId": "topic_1_6",
+      "specificationPointId": "1.5.1",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "What is the purpose of a device driver in an operating system?",
+      "options": [
+        "To act as a translator allowing the OS to communicate with hardware peripherals",
+        "To defragment hard disk drive sectors for faster access",
+        "To compile high-level Python code into machine code",
+        "To manage user logins and access privileges"
+      ],
+      "answer": "To act as a translator allowing the OS to communicate with hardware peripherals",
+      "explanation": "Device drivers translate generic OS hardware commands into specific peripheral control signals."
+    },
+    {
+      "id": "q_1_7_a",
+      "topicId": "topic_1_7",
+      "specificationPointId": "1.6.2",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "Which UK law makes it a criminal offence to access a computer system without authorization?",
+      "options": [
+        "Computer Misuse Act 1990",
+        "Data Protection Act 2018",
+        "Copyright, Designs and Patents Act 1988",
+        "Freedom of Information Act 2000"
+      ],
+      "answer": "Computer Misuse Act 1990",
+      "explanation": "The Computer Misuse Act 1990 criminalises unauthorized access, hacking, and malware creation."
+    },
+    {
+      "id": "q_2_4_e",
+      "topicId": "topic_2_4",
+      "specificationPointId": "2.4.1",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "What is the output of an OR gate when Input A is 0 and Input B is 1?",
+      "options": [
+        "1",
+        "0",
+        "Undefined",
+        "-1"
+      ],
+      "answer": "1",
+      "explanation": "An OR gate outputs 1 if at least one input is 1."
+    },
+    {
+      "id": "q_2_5_e",
+      "topicId": "topic_2_5",
+      "specificationPointId": "2.5.1",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "What is the main difference between a Compiler and an Interpreter?",
+      "options": [
+        "A compiler translates entire source code into an executable file at once; an interpreter translates and runs code line-by-line",
+        "A compiler is used for low-level assembly; an interpreter is used for machine code",
+        "A compiler finds logic errors; an interpreter finds syntax errors",
+        "A compiler runs code slower than an interpreter during runtime"
+      ],
+      "answer": "A compiler translates entire source code into an executable file at once; an interpreter translates and runs code line-by-line",
+      "explanation": "Compilers produce standalone executable files; interpreters translate and execute source code line-by-line."
+    },
     {
       "id": "q_2_1_a",
       "topicId": "topic_2_1",
@@ -1515,6 +2763,18 @@ const defaultDatabase = {
       code: 'def linear_search(values, target):\n    # Examine each index in order\n    pass', expectedOutput: '2', supportLadder: ['The inputs are a list and a target; the output is an index.', 'Use a loop over the valid indexes.', 'Return immediately on a match; return -1 only after the loop.'],
       testCases: [{ input: '[4, 7, 9, 7], 9', inputs: [], functionName: 'linear_search', functionArgs: [[4, 7, 9, 7], 9], expected: '2' }, { input: '[4, 7, 9], 5', inputs: [], functionName: 'linear_search', functionArgs: [[4, 7, 9], 5], expected: '-1' }, { input: '[7, 7, 9], 7', inputs: [], functionName: 'linear_search', functionArgs: [[7, 7, 9], 7], expected: '0' }],
       explainQuestion: 'Explain why `return -1` must be placed after the loop.', explainModelAnswer: 'The complete list must be checked before the program can conclude that the target is absent.'
+    },
+    {
+      id: 'pc_10', level: 10, concept: 'Grade 9 Extension: 2D Array Matrix Search', title: 'Grade 9 Drill: 2D Grid Search', instructions: 'Write `search_grid(grid, target)` to return the coordinate array [row, col] of the target in a 2D grid, or [-1, -1] if not found.', problem: 'Iterate through nested 2D array rows and columns.',
+      code: 'def search_grid(grid, target):\n    # Return [row, col] or [-1, -1]\n    pass', expectedOutput: '[1, 0]', supportLadder: ['Use nested loops: `for r in range(len(grid)):` and `for c in range(len(grid[r])):`', 'Access elements using `grid[r][c]`.', 'Return `[r, c]` as soon as `grid[r][c] == target`.'],
+      testCases: [{ input: 'grid=[[1,2],[5,6]], target=5', inputs: [], functionName: 'search_grid', functionArgs: [[[1,2],[5,6]], 5], expected: '[1, 0]' }, { input: 'grid=[[1,2],[5,6]], target=9', inputs: [], functionName: 'search_grid', functionArgs: [[[1,2],[5,6]], 9], expected: '[-1, -1]' }],
+      explainQuestion: 'Explain how 2D array indexing differs from 1D array indexing.', explainModelAnswer: '1D arrays require a single index `arr[i]` to access a row element; 2D arrays require two indexes `grid[row][col]` to specify both the row and column coordinates.'
+    },
+    {
+      id: 'pc_11', level: 11, concept: 'Grade 9 Extension: Subprograms & File Input', title: 'Grade 9 Drill: Process Student Scores', instructions: 'Write `get_high_scorers(scores, threshold)` that returns a list of names scoring above the threshold.', problem: 'Filter names from parallel lists or dictionary structures.',
+      code: 'def get_high_scorers(scores, threshold):\n    # Return list of names scoring >= threshold\n    pass', expectedOutput: "['Harriet', 'Alex']", supportLadder: ['Loop through dictionary key-value pairs or index tuples.', 'Append matching names to a results list.', 'Return the list at the end.'],
+      testCases: [{ input: "{'Harriet':85, 'Dev':40, 'Alex':92}, 50", inputs: [], functionName: 'get_high_scorers', functionArgs: [{ 'Harriet': 85, 'Dev': 40, 'Alex': 92 }, 50], expected: "['Harriet', 'Alex']" }],
+      explainQuestion: 'Explain why return values are preferable to global variable mutations in modular programming.', explainModelAnswer: 'Return values allow functions to pass data cleanly back to callers without creating side-effects or mutating global states.'
     }
   ],
   attempts: [
@@ -1840,6 +3100,8 @@ class LocalDB {
     return newMsg;
   }
 
+  getTheoryNotes() { return this.cachedData.theoryNotes || []; }
+  getTheoryNoteByTopic(topicId) { return (this.cachedData.theoryNotes || []).find(t => t.topicId === topicId); }
   getFlags() { return this.cachedData.flags || []; }
   getMatches() { return this.cachedData.matches || []; }
 

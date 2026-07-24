@@ -590,6 +590,7 @@ class App {
       const links = [
         { id: 'stud-dashboard', label: 'Home', icon: SVG_ICONS.home },
         { id: 'stud-learn', label: 'Learn', icon: SVG_ICONS.learn },
+        { id: 'stud-simulators', label: 'Simulators', icon: SVG_ICONS.learn },
         { id: 'stud-programming', label: 'Programming', icon: SVG_ICONS.programme },
         { id: 'stud-practise', label: 'Practise', icon: SVG_ICONS.practise },
         { id: 'stud-recall', label: 'Exam preparation', icon: SVG_ICONS.revise },
@@ -639,6 +640,9 @@ class App {
         break;
       case 'stud-learn':
         this.renderStudentLearn(mainPanel);
+        break;
+      case 'stud-simulators':
+        this.renderStudentSimulators(mainPanel);
         break;
       case 'stud-programming':
         this.renderStudentProgrammingHub(mainPanel);
@@ -1078,11 +1082,174 @@ class App {
       todayRecBtn.onclick = () => { this.switchTab('stud-practise'); };
     }
 
-    const toggleSeeMoreBtn = document.getElementById('toggle-see-more-btn');
-    if (toggleSeeMoreBtn) {
-      toggleSeeMoreBtn.onclick = () => {
-        this.dashboardSeeMoreExpanded = !this.dashboardSeeMoreExpanded;
-        this.render();
+  // ==================== STUDENT LEARN THEORY HUB ====================
+  renderStudentLearn(panel) {
+    const theoryNotes = window.db.getTheoryNotes();
+    const activeNote = window.db.getTheoryNoteByTopic(this.activeTopicId) || theoryNotes[0];
+    const currentPaper = activeNote ? activeNote.paper : 'Paper 1';
+
+    // Group notes by paper
+    const paper1Notes = theoryNotes.filter(n => n.paper === 'Paper 1');
+    const paper2Notes = theoryNotes.filter(n => n.paper === 'Paper 2');
+
+    panel.innerHTML = `
+      <div class="learn-hub-container">
+        <!-- Header -->
+        <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <span class="badge badge-primary">GCSE Computer Science Specification &middot; 25Thirty Learning</span>
+            <h1 style="font-size: 28px; font-weight: 700; margin: 8px 0 4px 0;">Learn & Review Theory</h1>
+            <p style="font-size: 15px; color: var(--text-muted); margin: 0;">Comprehensive, specification-aligned revision guides, worked examples, and examiner tips.</p>
+          </div>
+          <!-- Quick Quiz & Copy Note CTAs -->
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <button class="btn btn-secondary copy-theory-summary-btn" style="min-height: 44px; padding: 0 16px; font-weight: 600;">
+              📋 Copy Notes & Terms
+            </button>
+            <button class="btn btn-primary start-topic-quiz-btn" data-topic-id="${activeNote.topicId}" style="min-height: 44px; padding: 0 20px; font-weight: 600;">
+              ⚡ Test this topic (5-min Quiz) &rarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- Paper Selector Tabs -->
+        <div style="display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 12px;">
+          <button class="btn ${currentPaper === 'Paper 1' ? 'btn-primary' : 'btn-secondary'} paper-tab-btn" data-paper="Paper 1" style="border-radius: 8px; font-weight: 600;">
+            💻 Paper 1: Computer Systems
+          </button>
+          <button class="btn ${currentPaper === 'Paper 2' ? 'btn-primary' : 'btn-secondary'} paper-tab-btn" data-paper="Paper 2" style="border-radius: 8px; font-weight: 600;">
+            🧩 Paper 2: Computational Thinking, Algorithms & Programming
+          </button>
+        </div>
+
+        <!-- Topic Pills Navigation -->
+        <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 16px; margin-bottom: 24px;">
+          ${(currentPaper === 'Paper 1' ? paper1Notes : paper2Notes).map(note => `
+            <button class="btn ${note.topicId === activeNote.topicId ? 'btn-primary' : 'btn-secondary'} topic-pill-btn" data-topic-id="${note.topicId}" style="white-space: nowrap; font-size: 13px; padding: 6px 14px; border-radius: 20px; font-weight: 600;">
+              ${note.code} ${note.title}
+            </button>
+          `).join('')}
+        </div>
+
+        <!-- Active Topic Details Header -->
+        <div class="card" style="padding: 24px; margin-bottom: 24px; border-left: 5px solid var(--teal); background-color: var(--bg-card);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="badge badge-primary" style="font-size: 13px;">${activeNote.code} &middot; ${activeNote.paper}</span>
+              <span style="font-size: 13px; color: var(--text-muted); font-weight: 500;">${activeNote.subtitle}</span>
+            </div>
+          </div>
+          <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">${activeNote.title}</h2>
+          <p style="font-size: 15px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">${activeNote.summary}</p>
+          
+          <!-- Specification Points Covered -->
+          <div style="background-color: rgba(45, 156, 145, 0.08); border-radius: 8px; padding: 14px 18px; border: 1px solid rgba(45, 156, 145, 0.2);">
+            <div style="font-size: 12px; text-transform: uppercase; font-weight: 700; color: var(--teal); margin-bottom: 6px; letter-spacing: 0.5px;">Specification Points Covered</div>
+            <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: var(--text-main); line-height: 1.5;">
+              ${activeNote.specificationPoints.map(sp => `<li>${sp}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+
+        <!-- Section Cards -->
+        <div style="display: flex; flex-direction: column; gap: 24px; margin-bottom: 32px;">
+          ${activeNote.sections.map(section => `
+            <div class="card" style="padding: 24px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
+              <h3 style="font-size: 19px; font-weight: 700; margin-bottom: 14px; color: var(--text-main); border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">
+                ${section.heading}
+              </h3>
+              <div style="font-size: 15px; line-height: 1.7; color: var(--text-main); margin-bottom: 20px;">
+                ${section.content}
+              </div>
+
+              ${section.workedExample ? `
+                <div style="background: rgba(15, 23, 42, 0.04); border-left: 4px solid var(--teal); padding: 16px; border-radius: 0 8px 8px 0; margin-bottom: 16px;">
+                  <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; letter-spacing: 0.5px;">💡 Step-by-Step Worked Example / Application</div>
+                  <div style="font-size: 14px; line-height: 1.6; color: var(--text-main);">${section.workedExample}</div>
+                </div>
+              ` : ''}
+
+              ${section.examinerTip ? `
+                <div style="background: rgba(217, 119, 6, 0.08); border-left: 4px solid var(--amber-alert, #D97706); padding: 14px 16px; border-radius: 0 8px 8px 0;">
+                  <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--amber-alert, #D97706); margin-bottom: 4px; letter-spacing: 0.5px;">⚠️ Examiner Tip & Strategy</div>
+                  <div style="font-size: 13.5px; line-height: 1.5; color: var(--text-main);">${section.examinerTip}</div>
+                </div>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Key Terms & Exam Traps Bottom Cards -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+          <!-- Key Terms -->
+          <div class="card" style="padding: 20px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--text-main);">🔑 Essential Topic Vocabulary</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              ${activeNote.keyTerms.map(kt => `<span class="badge badge-secondary" style="font-size: 12px; padding: 4px 10px;">${kt}</span>`).join('')}
+            </div>
+          </div>
+
+          <!-- Exam Traps -->
+          <div class="card" style="padding: 20px; background-color: var(--bg-card); border: 1.5px solid var(--amber-alert, #D97706);">
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--amber-alert, #D97706);">🚫 Common Examiner Pitfalls</h3>
+            <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: var(--text-main); line-height: 1.6;">
+              ${activeNote.examTraps.map(trap => `<li>${trap}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+
+        <!-- Bottom Call to Action -->
+        <div class="card" style="padding: 28px; text-align: center; background: linear-gradient(135deg, rgba(45, 156, 145, 0.12), rgba(7, 17, 31, 0.05)); border: 2px solid var(--teal);">
+          <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Done reading? Test your knowledge now!</h3>
+          <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px; max-width: 500px; margin-left: auto; margin-right: auto;">
+            Reinforce what you just learned with a quick 5-minute retrieval check on <strong>${activeNote.title}</strong>.
+          </p>
+          <button class="btn btn-primary btn-lg start-topic-quiz-btn" data-topic-id="${activeNote.topicId}" style="min-width: 220px; min-height: 44px; font-weight: 600;">
+            🚀 Start ${activeNote.code} Retrieval Practice
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Event Listeners
+    panel.querySelectorAll('.paper-tab-btn').forEach(btn => {
+      btn.onclick = () => {
+        const paper = btn.getAttribute('data-paper');
+        const firstNote = theoryNotes.find(n => n.paper === paper);
+        if (firstNote) {
+          this.activeTopicId = firstNote.topicId;
+          this.renderStudentLearn(panel);
+        }
+      };
+    });
+
+    panel.querySelectorAll('.topic-pill-btn').forEach(btn => {
+      btn.onclick = () => {
+        this.activeTopicId = btn.getAttribute('data-topic-id');
+        this.renderStudentLearn(panel);
+      };
+    });
+
+    panel.querySelectorAll('.start-topic-quiz-btn').forEach(btn => {
+      btn.onclick = () => {
+        this.activeTopicId = btn.getAttribute('data-topic-id');
+        this.switchTab('stud-practise');
+      };
+    });
+
+    const copyBtn = panel.querySelector('.copy-theory-summary-btn');
+    if (copyBtn) {
+      copyBtn.onclick = () => {
+        const text = `# ${activeNote.code} ${activeNote.title}\n\n${activeNote.summary}\n\n## Specification Points\n${activeNote.specificationPoints.map(sp => `- ${sp}`).join('\n')}\n\n## Key Terms & Flashcards\n${(activeNote.keyTerms || []).map(kt => `- **${kt.term}**: ${kt.definition}`).join('\n')}\n\n## Examiner Warnings\n${(activeNote.examinerTips || []).map(tip => `- ⚠️ ${tip}`).join('\n')}`;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => {
+            this.alert('Success: Theory summary and flashcard terms copied to your clipboard!');
+          }).catch(() => {
+            this.alert('Copied summary notes to clipboard.');
+          });
+        } else {
+          this.alert('Summary notes ready to copy.');
+        }
       };
     }
   }
@@ -2316,6 +2483,320 @@ class App {
     });
   }
 
+  // ==================== INTERACTIVE CS SIMULATORS WORKBENCH ====================
+  renderStudentSimulators(panel) {
+    if (!this.activeSimTool) this.activeSimTool = 'binary-shift';
+    if (!this.binaryBits) this.binaryBits = [0, 0, 0, 0, 0, 1, 1, 0];
+    if (this.fdeStep === undefined) this.fdeStep = 0;
+    if (this.logicInputA === undefined) this.logicInputA = 1;
+    if (this.logicInputB === undefined) this.logicInputB = 0;
+    if (!this.logicGateType) this.logicGateType = 'AND';
+    if (!this.algType) this.algType = 'binary-search';
+
+    // Tool 1 Calculations
+    const denaryVal = this.binaryBits.reduce((acc, bit, idx) => acc + bit * Math.pow(2, 7 - idx), 0);
+    const hexVal = '0x' + denaryVal.toString(16).toUpperCase().padStart(2, '0');
+
+    // Tool 3 Calculations
+    let gateResult = 0;
+    if (this.logicGateType === 'AND') gateResult = (this.logicInputA && this.logicInputB) ? 1 : 0;
+    else if (this.logicGateType === 'OR') gateResult = (this.logicInputA || this.logicInputB) ? 1 : 0;
+    else if (this.logicGateType === 'NOT') gateResult = (!this.logicInputA) ? 1 : 0;
+    else if (this.logicGateType === 'XOR') gateResult = (this.logicInputA !== this.logicInputB) ? 1 : 0;
+
+    panel.innerHTML = `
+      <div style="margin-bottom:20px;">
+        <span class="badge badge-primary">Interactive CS Visualizers &middot; Paper 1 & Paper 2</span>
+        <h1 style="margin-top:8px;">Interactive Simulators Workbench</h1>
+        <p style="font-size:14px; color:var(--text-muted); margin:0;">Manipulate bits, trace CPU registers, build logic circuits, and step through search/sort algorithms.</p>
+      </div>
+
+      <!-- Tool Selector Sub-Tabs -->
+      <div style="display:flex; gap:8px; margin-bottom:24px; border-bottom:2px solid var(--border-color); padding-bottom:12px; overflow-x:auto;">
+        <button class="btn ${this.activeSimTool === 'binary-shift' ? 'btn-primary' : 'btn-secondary'} sim-tool-btn" data-tool="binary-shift">🧮 Binary & Hex Shift</button>
+        <button class="btn ${this.activeSimTool === 'fde-cycle' ? 'btn-primary' : 'btn-secondary'} sim-tool-btn" data-tool="fde-cycle">⚡ CPU FDE Cycle</button>
+        <button class="btn ${this.activeSimTool === 'logic-gates' ? 'btn-primary' : 'btn-secondary'} sim-tool-btn" data-tool="logic-gates">🔌 Logic Gates Workbench</button>
+        <button class="btn ${this.activeSimTool === 'algorithms' ? 'btn-primary' : 'btn-secondary'} sim-tool-btn" data-tool="algorithms">📊 Search & Sort Trace</button>
+        <button class="btn ${this.activeSimTool === 'file-size-calc' ? 'btn-primary' : 'btn-secondary'} sim-tool-btn" data-tool="file-size-calc">📐 File Size Math</button>
+      </div>
+
+      ${this.activeSimTool === 'binary-shift' ? `
+        <div class="card" style="padding:24px;">
+          <h2>🧮 Binary & Hexadecimal Shift Visualizer</h2>
+          <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">Click any bit square to toggle between 0 and 1. Use the shift buttons to perform logical binary shifts.</p>
+          
+          <!-- 8-Bit Interactive Switch Bar -->
+          <div style="display:flex; justify-content:center; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
+            ${this.binaryBits.map((bit, idx) => {
+              const placeVal = Math.pow(2, 7 - idx);
+              return `
+                <div style="text-align:center;">
+                  <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px; font-weight:700;">${placeVal}</div>
+                  <button class="bit-toggle-btn" data-idx="${idx}" style="width:48px; height:54px; font-size:22px; font-weight:700; border-radius:8px; border:2px solid var(--teal); background:${bit ? 'var(--teal)' : 'var(--bg-main)'}; color:${bit ? '#fff' : 'var(--text-main)'}; cursor:pointer; transition:all 0.2s ease;">${bit}</button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <!-- Live Conversion Stats -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px;">
+            <div class="card" style="background:rgba(45,156,145,0.08); border:1px solid var(--teal); text-align:center; padding:16px;">
+              <span style="font-size:12px; text-transform:uppercase; font-weight:700; color:var(--teal);">Denary Integer (Base 10)</span>
+              <div style="font-size:32px; font-weight:800; color:var(--text-main); margin-top:4px;">${denaryVal}</div>
+            </div>
+            <div class="card" style="background:rgba(45,156,145,0.08); border:1px solid var(--teal); text-align:center; padding:16px;">
+              <span style="font-size:12px; text-transform:uppercase; font-weight:700; color:var(--teal);">Hexadecimal (Base 16)</span>
+              <div style="font-size:32px; font-weight:800; color:var(--text-main); margin-top:4px;">${hexVal}</div>
+            </div>
+          </div>
+
+          <!-- Shift Controls -->
+          <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+            <button id="shift-left-1" class="btn btn-secondary">&laquo; Left Shift (&lt;&lt; 1) [x2]</button>
+            <button id="shift-left-2" class="btn btn-secondary">&laquo;&laquo; Left Shift (&lt;&lt; 2) [x4]</button>
+            <button id="shift-reset" class="btn btn-secondary">Reset Bits</button>
+            <button id="shift-right-1" class="btn btn-secondary">Right Shift (&gt;&gt; 1) [/2] &raquo;</button>
+            <button id="shift-right-2" class="btn btn-secondary">Right Shift (&gt;&gt; 2) [/4] &raquo;&raquo;</button>
+          </div>
+        </div>
+      ` : ''}
+
+      ${this.activeSimTool === 'fde-cycle' ? `
+        <div class="card" style="padding:24px;">
+          <h2>⚡ CPU Fetch-Decode-Execute (FDE) Register Animator</h2>
+          <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">Watch data flow between Program Counter (PC), MAR, RAM, MDR, CU, ALU, and ACC step by step.</p>
+          
+          <!-- Animation Registers Grid -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:16px; margin-bottom:24px;">
+            <div class="card" style="border-left:5px solid ${this.fdeStep === 1 || this.fdeStep === 3 ? 'var(--teal)' : 'var(--border-color)'};">
+              <strong style="font-size:13px; color:var(--text-muted);">Program Counter (PC)</strong>
+              <div style="font-size:20px; font-weight:700; margin-top:4px;">${this.fdeStep >= 3 ? '0101' : '0100'}</div>
+            </div>
+            <div class="card" style="border-left:5px solid ${this.fdeStep === 1 ? 'var(--teal)' : 'var(--border-color)'};">
+              <strong style="font-size:13px; color:var(--text-muted);">Memory Address Reg (MAR)</strong>
+              <div style="font-size:20px; font-weight:700; margin-top:4px;">${this.fdeStep >= 1 ? '0100' : '0000'}</div>
+            </div>
+            <div class="card" style="border-left:5px solid ${this.fdeStep === 2 ? 'var(--teal)' : 'var(--border-color)'};">
+              <strong style="font-size:13px; color:var(--text-muted);">Memory Data Reg (MDR)</strong>
+              <div style="font-size:20px; font-weight:700; margin-top:4px;">${this.fdeStep >= 2 ? 'ADD #5' : '---'}</div>
+            </div>
+            <div class="card" style="border-left:5px solid ${this.fdeStep === 4 ? 'var(--teal)' : 'var(--border-color)'};">
+              <strong style="font-size:13px; color:var(--text-muted);">Control Unit (CU)</strong>
+              <div style="font-size:20px; font-weight:700; margin-top:4px;">${this.fdeStep >= 4 ? 'Opcode: ADD' : 'IDLE'}</div>
+            </div>
+            <div class="card" style="border-left:5px solid ${this.fdeStep === 5 ? 'var(--teal)' : 'var(--border-color)'};">
+              <strong style="font-size:13px; color:var(--text-muted);">Accumulator (ACC)</strong>
+              <div style="font-size:20px; font-weight:700; margin-top:4px;">${this.fdeStep >= 5 ? '15 (10 + 5)' : '10'}</div>
+            </div>
+          </div>
+
+          <!-- Step Description Box -->
+          <div style="background:rgba(45,156,145,0.08); border:1px solid var(--teal); padding:16px; border-radius:8px; margin-bottom:20px;">
+            <strong style="color:var(--teal);">Current Phase: Step ${this.fdeStep} of 5</strong>
+            <p style="font-size:14px; margin:4px 0 0 0; line-height:1.5;">
+              ${this.fdeStep === 0 ? 'Cycle reset. Click Step Forward to start the Fetch phase.' : ''}
+              ${this.fdeStep === 1 ? '1. FETCH: Address 0100 in Program Counter (PC) is copied into Memory Address Register (MAR).' : ''}
+              ${this.fdeStep === 2 ? '2. FETCH: RAM lookup at MAR address returns instruction "ADD #5" into Memory Data Register (MDR).' : ''}
+              ${this.fdeStep === 3 ? '3. FETCH: Program Counter (PC) increments by 1 to 0101 to point to the next instruction.' : ''}
+              ${this.fdeStep === 4 ? '4. DECODE: Control Unit (CU) decodes instruction in MDR into Opcode (ADD) and Operand (#5).' : ''}
+              ${this.fdeStep === 5 ? '5. EXECUTE: ALU adds 5 to Accumulator value (10 + 5 = 15) and stores the result in ACC.' : ''}
+            </p>
+          </div>
+
+          <!-- Controls -->
+          <div style="display:flex; gap:12px;">
+            <button id="fde-step-btn" class="btn btn-primary">${this.fdeStep >= 5 ? 'Restart Cycle' : 'Step Forward &rarr;'}</button>
+            <button id="fde-reset-btn" class="btn btn-secondary">Reset</button>
+          </div>
+        </div>
+      ` : ''}
+
+      ${this.activeSimTool === 'logic-gates' ? `
+        <div class="card" style="padding:24px;">
+          <h2>🔌 Logic Gate & Truth Table Workbench</h2>
+          <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">Select a logic gate, toggle inputs A and B, and observe the live truth table evaluation.</p>
+
+          <!-- Gate Selection -->
+          <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
+            ${['AND', 'OR', 'NOT', 'XOR'].map(gate => `
+              <button class="btn ${this.logicGateType === gate ? 'btn-primary' : 'btn-secondary'} gate-select-btn" data-gate="${gate}">${gate} Gate</button>
+            `).join('')}
+          </div>
+
+          <!-- Interactive Circuit Wire Canvas Mock -->
+          <div class="card" style="background:var(--bg-main); padding:20px; margin-bottom:20px; text-align:center;">
+            <div style="display:flex; justify-content:center; align-items:center; gap:24px; flex-wrap:wrap;">
+              <div>
+                <label style="font-weight:700;">Input A</label><br>
+                <button id="toggle-input-a" class="btn ${this.logicInputA ? 'btn-primary' : 'btn-secondary'}" style="width:60px; height:44px; margin-top:6px; font-size:18px; font-weight:700;">${this.logicInputA}</button>
+              </div>
+              ${this.logicGateType !== 'NOT' ? `
+                <div>
+                  <label style="font-weight:700;">Input B</label><br>
+                  <button id="toggle-input-b" class="btn ${this.logicInputB ? 'btn-primary' : 'btn-secondary'}" style="width:60px; height:44px; margin-top:6px; font-size:18px; font-weight:700;">${this.logicInputB}</button>
+                </div>
+              ` : ''}
+              <div style="font-size:24px; font-weight:800; color:var(--teal); margin:0 12px;">&rarr; [ ${this.logicGateType} ] &rarr;</div>
+              <div>
+                <label style="font-weight:700;">Output Q</label><br>
+                <div style="width:60px; height:44px; margin-top:6px; font-size:22px; font-weight:800; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; background:${gateResult ? 'var(--teal)' : '#64748b'}; color:#fff;">${gateResult}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Truth Table -->
+          <div class="card" style="padding:16px;">
+            <h3 style="font-size:16px; margin-bottom:12px;">${this.logicGateType} Gate Truth Table</h3>
+            <table style="width:100%; border-collapse:collapse; text-align:center; font-size:14px;">
+              <thead>
+                <tr style="background:rgba(45,156,145,0.1); border-bottom:2px solid var(--border-color);">
+                  <th style="padding:8px;">Input A</th>
+                  ${this.logicGateType !== 'NOT' ? `<th style="padding:8px;">Input B</th>` : ''}
+                  <th style="padding:8px;">Output Q</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${this.logicGateType === 'NOT' ? `
+                  <tr style="${this.logicInputA === 0 ? 'background:rgba(45,156,145,0.2); font-weight:700;' : ''} border-bottom:1px solid var(--border-color);"><td style="padding:8px;">0</td><td style="padding:8px;">1</td></tr>
+                  <tr style="${this.logicInputA === 1 ? 'background:rgba(45,156,145,0.2); font-weight:700;' : ''}"><td style="padding:8px;">1</td><td style="padding:8px;">0</td></tr>
+                ` : `
+                  <tr style="${this.logicInputA === 0 && this.logicInputB === 0 ? 'background:rgba(45,156,145,0.2); font-weight:700;' : ''} border-bottom:1px solid var(--border-color);"><td style="padding:8px;">0</td><td style="padding:8px;">0</td><td style="padding:8px;">${this.logicGateType === 'AND' ? '0' : this.logicGateType === 'OR' ? '0' : '0'}</td></tr>
+                  <tr style="${this.logicInputA === 0 && this.logicInputB === 1 ? 'background:rgba(45,156,145,0.2); font-weight:700;' : ''} border-bottom:1px solid var(--border-color);"><td style="padding:8px;">0</td><td style="padding:8px;">1</td><td style="padding:8px;">${this.logicGateType === 'AND' ? '0' : this.logicGateType === 'OR' ? '1' : '1'}</td></tr>
+                  <tr style="${this.logicInputA === 1 && this.logicInputB === 0 ? 'background:rgba(45,156,145,0.2); font-weight:700;' : ''} border-bottom:1px solid var(--border-color);"><td style="padding:8px;">1</td><td style="padding:8px;">0</td><td style="padding:8px;">${this.logicGateType === 'AND' ? '0' : this.logicGateType === 'OR' ? '1' : '1'}</td></tr>
+                  <tr style="${this.logicInputA === 1 && this.logicInputB === 1 ? 'background:rgba(45,156,145,0.2); font-weight:700;' : ''}"><td style="padding:8px;">1</td><td style="padding:8px;">1</td><td style="padding:8px;">${this.logicGateType === 'AND' ? '1' : this.logicGateType === 'OR' ? '1' : '0'}</td></tr>
+                `}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ` : ''}
+
+      ${this.activeSimTool === 'algorithms' ? `
+        <div class="card" style="padding:24px;">
+          <h2>📊 Search & Sort Trace Visualizer</h2>
+          <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">Watch Binary Search divide search space logarithmically vs Linear Search checking index by index.</p>
+          
+          <div style="display:flex; gap:12px; margin-bottom:20px;">
+            <button class="btn ${this.algType === 'binary-search' ? 'btn-primary' : 'btn-secondary'} alg-type-btn" data-type="binary-search">Binary Search (Sorted)</button>
+            <button class="btn ${this.algType === 'linear-search' ? 'btn-primary' : 'btn-secondary'} alg-type-btn" data-type="linear-search">Linear Search</button>
+          </div>
+
+          <!-- Sorted Array Visual Bar -->
+          <div style="display:flex; justify-content:center; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
+            ${[3, 8, 14, 21, 35, 47, 59, 72, 88, 95].map((val, idx) => {
+              let isMatch = val === 47;
+              return `
+                <div style="text-align:center;">
+                  <div style="font-size:10px; color:var(--text-muted); font-weight:700;">Index ${idx}</div>
+                  <div style="width:46px; height:50px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; background:${isMatch ? 'var(--teal)' : 'var(--bg-main)'}; color:${isMatch ? '#fff' : 'var(--text-main)'}; border:2px solid ${isMatch ? 'var(--teal)' : 'var(--border-color)'};">${val}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <div style="background:rgba(45,156,145,0.08); border:1px solid var(--teal); padding:16px; border-radius:8px;">
+            <strong style="color:var(--teal);">Target Search Value: 47</strong>
+            <p style="font-size:13.5px; margin:4px 0 0 0; line-height:1.5;">
+              ${this.algType === 'binary-search' ? 'Binary Search divides the list in half. Mid index = 4 (value 35 < 47), so search narrows right to indices 5-9. Mid index = 7 (value 72 > 47), narrows left to index 5 (47). Found in 3 checks!' : 'Linear Search inspects index 0 (3), index 1 (8), index 2 (14), index 3 (21), index 4 (35), index 5 (47). Found in 6 sequential checks!'}
+            </p>
+          </div>
+        </div>
+      ` : ''}
+
+      ${this.activeSimTool === 'file-size-calc' ? `
+        <div class="card" style="padding:24px;">
+          <h2>📐 Image & Sound File Size Math Calculator</h2>
+          <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">Input resolution and audio sampling parameters to calculate uncompressed file sizes step-by-step.</p>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px;">
+            <!-- Bitmap Image Formula -->
+            <div style="background:var(--bg-main); border:1px solid var(--border-color); border-radius:12px; padding:16px;">
+              <h3 style="font-size:16px; margin-bottom:12px; color:var(--teal);">🖼️ Bitmap Image File Size</h3>
+              <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Formula: <code>Width &times; Height &times; Colour Depth (bits)</code></p>
+              <div style="display:flex; flex-direction:column; gap:10px; font-size:13px;">
+                <label>Width (px): <input type="number" id="calc-img-w" class="form-control" value="800" style="width:100px; display:inline-block;"></label>
+                <label>Height (px): <input type="number" id="calc-img-h" class="form-control" value="600" style="width:100px; display:inline-block;"></label>
+                <label>Colour Depth (bits): <input type="number" id="calc-img-d" class="form-control" value="16" style="width:100px; display:inline-block;"></label>
+                <div id="calc-img-output" style="margin-top:10px; padding:10px; background:var(--bg-card); border-radius:8px; border:1px solid var(--teal);">
+                  <strong>Steps:</strong><br>
+                  1. Bits: 800 &times; 600 &times; 16 = 7,680,000 bits<br>
+                  2. Bytes (&divide; 8): 960,000 Bytes<br>
+                  3. KiB (&divide; 1,024): 937.5 KiB
+                </div>
+              </div>
+            </div>
+
+            <!-- Audio Recording Formula -->
+            <div style="background:var(--bg-main); border:1px solid var(--border-color); border-radius:12px; padding:16px;">
+              <h3 style="font-size:16px; margin-bottom:12px; color:var(--teal);">🎵 Audio File Size</h3>
+              <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Formula: <code>Sample Rate (Hz) &times; Bit Depth &times; Duration (s)</code></p>
+              <div style="display:flex; flex-direction:column; gap:10px; font-size:13px;">
+                <label>Sample Rate (Hz): <input type="number" id="calc-aud-r" class="form-control" value="44100" style="width:100px; display:inline-block;"></label>
+                <label>Bit Depth (bits): <input type="number" id="calc-aud-d" class="form-control" value="16" style="width:100px; display:inline-block;"></label>
+                <label>Duration (secs): <input type="number" id="calc-aud-t" class="form-control" value="60" style="width:100px; display:inline-block;"></label>
+                <div id="calc-aud-output" style="margin-top:10px; padding:10px; background:var(--bg-card); border-radius:8px; border:1px solid var(--teal);">
+                  <strong>Steps:</strong><br>
+                  1. Bits: 44100 &times; 16 &times; 60 = 42,336,000 bits<br>
+                  2. Bytes (&divide; 8): 5,292,000 Bytes<br>
+                  3. MiB (&divide; 1,048,576): ~5.05 MiB
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ` : ''}
+    `;
+
+    // Tool Switch Event Listeners
+    panel.querySelectorAll('.sim-tool-btn').forEach(btn => {
+      btn.onclick = () => {
+        this.activeSimTool = btn.getAttribute('data-tool');
+        this.renderStudentSimulators(panel);
+      };
+    });
+
+    // Tool 1 Bit Toggles & Shift buttons
+    panel.querySelectorAll('.bit-toggle-btn').forEach(btn => {
+      btn.onclick = () => {
+        const idx = Number(btn.getAttribute('data-idx'));
+        this.binaryBits[idx] = this.binaryBits[idx] === 1 ? 0 : 1;
+        this.renderStudentSimulators(panel);
+      };
+    });
+
+    const bind = (id, action) => { const el = document.getElementById(id); if (el) el.onclick = action; };
+    bind('shift-left-1', () => { this.binaryBits.shift(); this.binaryBits.push(0); this.renderStudentSimulators(panel); });
+    bind('shift-left-2', () => { this.binaryBits.shift(); this.binaryBits.shift(); this.binaryBits.push(0); this.binaryBits.push(0); this.renderStudentSimulators(panel); });
+    bind('shift-right-1', () => { this.binaryBits.pop(); this.binaryBits.unshift(0); this.renderStudentSimulators(panel); });
+    bind('shift-right-2', () => { this.binaryBits.pop(); this.binaryBits.pop(); this.binaryBits.unshift(0); this.binaryBits.unshift(0); this.renderStudentSimulators(panel); });
+    bind('shift-reset', () => { this.binaryBits = [0, 0, 0, 0, 0, 1, 1, 0]; this.renderStudentSimulators(panel); });
+
+    // Tool 2 FDE Step Controls
+    bind('fde-step-btn', () => {
+      this.fdeStep = (this.fdeStep >= 5) ? 0 : this.fdeStep + 1;
+      this.renderStudentSimulators(panel);
+    });
+    bind('fde-reset-btn', () => { this.fdeStep = 0; this.renderStudentSimulators(panel); });
+
+    // Tool 3 Gate Selection & Input Toggles
+    panel.querySelectorAll('.gate-select-btn').forEach(btn => {
+      btn.onclick = () => {
+        this.logicGateType = btn.getAttribute('data-gate');
+        this.renderStudentSimulators(panel);
+      };
+    });
+    bind('toggle-input-a', () => { this.logicInputA = this.logicInputA === 1 ? 0 : 1; this.renderStudentSimulators(panel); });
+    bind('toggle-input-b', () => { this.logicInputB = this.logicInputB === 1 ? 0 : 1; this.renderStudentSimulators(panel); });
+
+    // Tool 4 Alg Type Toggle
+    panel.querySelectorAll('.alg-type-btn').forEach(btn => {
+      btn.onclick = () => {
+        this.algType = btn.getAttribute('data-type');
+        this.renderStudentSimulators(panel);
+      };
+    });
+  }
+
   // ==================== OCR EXAM REFERENCE LANGUAGE ====================
   renderStudentExamTransfer(panel) {
     const tasks = window.db.getExamTransferTasks();
@@ -2326,25 +2807,160 @@ class App {
     const stageIndex = stages.indexOf(this.examTransferStage);
     const progress = ((stageIndex + 1) / stages.length) * 100;
     const plan = this.examTransferPlan;
+
+    // Helper for keyphrase detection
+    const scanKeyphrases = (text) => {
+      if (!text || !task.requiredElements) return 0;
+      const lower = text.toLowerCase();
+      return task.requiredElements.filter(req => {
+        const words = req.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+        return words.some(w => lower.includes(w));
+      }).length;
+    };
+
     panel.innerHTML = `
-      <div style="margin-bottom:20px;"><span class="badge badge-primary">Exam question coach · ${task.paper} · ${task.minutes} mins</span><h1 style="margin-top:8px;">Apply knowledge: ${topicName} (${task.specificationPointId})</h1><p>Work through one step at a time. The support fades before the retry.</p></div>
-      <div style="height:7px; background:var(--border-color); border-radius:4px; margin-bottom:20px;"><div style="height:100%; width:${progress}%; background:var(--teal); border-radius:4px;"></div></div>
-      <div class="card" style="margin-bottom:18px;"><label for="exam-transfer-task-select" style="font-weight:700;">Question</label><select id="exam-transfer-task-select" class="form-control" style="margin-top:7px;">${tasks.map(item => `<option value="${item.id}" ${item.id === task.id ? 'selected' : ''}>${item.paper} · ${item.specificationPointId} · ${item.commandWord} (${item.marks})</option>`).join('')}</select><p style="font-size:16px; font-weight:600; margin:14px 0 0; line-height:1.5;">${this.escapeHTML(task.question)}</p></div>
-      ${this.examTransferStage === 'decode' ? `<div class="card"><span class="badge badge-primary">1. Decode</span><h2 style="font-size:18px; margin-top:10px;">What is the question asking you to do?</h2><p><strong>${task.commandWord}</strong>: ${this.escapeHTML(task.decodePrompt)}</p><label for="transfer-decode-response">Write the required outcome in your own words</label><textarea id="transfer-decode-response" class="form-control" rows="3"></textarea><button id="transfer-to-plan" class="btn btn-primary" style="margin-top:12px;">Next: plan</button></div>` : ''}
-      ${this.examTransferStage === 'plan' ? `<div class="card"><span class="badge badge-primary">2. Plan</span><h2 style="font-size:18px; margin-top:10px;">Build the answer structure</h2>${task.planningLabels.map((label, index) => `<div class="form-group"><label for="transfer-plan-${index}">${index + 1}. ${this.escapeHTML(label)}</label><input id="transfer-plan-${index}" class="form-control" value="${this.escapeHTML(plan[index] || '')}"></div>`).join('')}<button id="transfer-back-decode" class="btn btn-secondary">Back</button><button id="transfer-to-answer" class="btn btn-primary" style="margin-left:8px;">Next: answer independently</button></div>` : ''}
-      ${this.examTransferStage === 'answer' ? `<div class="card"><span class="badge badge-primary">3. Answer</span><h2 style="font-size:18px; margin-top:10px;">Now answer without the scaffold</h2><p style="font-size:13px; color:var(--text-muted);">Aim for about ${Math.max(3, Math.round(task.minutes * 0.65))} minutes. Include working where appropriate.</p><textarea id="transfer-answer-response" class="form-control" rows="9">${this.escapeHTML(this.examTransferResponse)}</textarea><button id="transfer-back-plan" class="btn btn-secondary" style="margin-top:12px;">Back to plan</button><button id="transfer-to-check" class="btn btn-primary" style="margin:12px 0 0 8px;">Check against evidence</button></div>` : ''}
-      ${this.examTransferStage === 'check' ? `<div class="card"><span class="badge badge-primary">4. Check</span><h2 style="font-size:18px; margin-top:10px;">Evidence the examiner could credit</h2><p>This is formative evidence, not a final mark. Tick only what your answer actually communicates.</p>${task.requiredElements.map((element, index) => `<label style="display:block; margin:10px 0;"><input type="checkbox" class="transfer-evidence-checkbox" value="${index}"> ${this.escapeHTML(element)}</label>`).join('')}<details style="margin-top:14px;"><summary style="cursor:pointer; font-weight:700;">Compare with a concise plan</summary><ol>${task.modelPlan.map(item => `<li>${this.escapeHTML(item)}</li>`).join('')}</ol></details><button id="transfer-to-retry" class="btn btn-primary" style="margin-top:14px;">Retry a similar question</button></div>` : ''}
-      ${this.examTransferStage === 'retry' ? `<div class="card"><span class="badge badge-primary">5. Retry without support</span><h2 style="font-size:18px; margin-top:10px;">Transfer the method</h2><p style="font-size:16px; font-weight:600;">${this.escapeHTML(task.retryQuestion)}</p><textarea id="transfer-retry-response" class="form-control" rows="8"></textarea><button id="transfer-finish" class="btn btn-primary" style="margin-top:12px;">Finish and record practice</button></div>` : ''}`;
+      <div style="margin-bottom:20px;">
+        <span class="badge badge-primary">ExamLogic Scaffolding Engine &middot; ${task.paper} &middot; ${task.marks} Marks (${task.minutes} mins)</span>
+        <h1 style="margin-top:8px;">Apply Knowledge: ${topicName} (${task.specificationPointId})</h1>
+        <p style="font-size:14px; color:var(--text-muted); margin:0;">Follow the 5-stage ExamLogic pipeline to master high-mark exam questions.</p>
+      </div>
+
+      <div style="height:8px; background:var(--border-color); border-radius:4px; margin-bottom:20px; overflow:hidden;">
+        <div style="height:100%; width:${progress}%; background:var(--teal); transition: width 0.3s ease;"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:18px; border-left: 5px solid var(--teal);">
+        <label for="exam-transfer-task-select" style="font-weight:700;">Select Exam Question Scenario</label>
+        <select id="exam-transfer-task-select" class="form-control" style="margin-top:7px;">
+          ${tasks.map(item => `<option value="${item.id}" ${item.id === task.id ? 'selected' : ''}>${item.paper} &middot; ${item.specificationPointId} &middot; ${item.commandWord} (${item.marks} Marks)</option>`).join('')}
+        </select>
+        <p style="font-size:16px; font-weight:600; margin:14px 0 0; line-height:1.5; color: var(--text-main);">${this.escapeHTML(task.question)}</p>
+      </div>
+
+      ${this.examTransferStage === 'decode' ? `
+        <div class="card" style="padding: 24px;">
+          <span class="badge badge-primary">Stage 1 of 5: Decode Command Word</span>
+          <h2 style="font-size:18px; margin-top:10px;">Deconstruct the Question Requirements</h2>
+          <div style="background: rgba(45, 156, 145, 0.08); padding: 14px; border-radius: 8px; border: 1px solid var(--teal); margin: 12px 0;">
+            <strong style="color: var(--teal);">Command Word: ${task.commandWord}</strong>
+            <p style="font-size: 13.5px; margin: 4px 0 0 0; line-height: 1.5;">${this.escapeHTML(task.decodePrompt)}</p>
+          </div>
+          <label for="transfer-decode-response" style="font-weight: 600; font-size: 14px;">In your own words, what must your answer contain to secure full marks?</label>
+          <textarea id="transfer-decode-response" class="form-control" rows="3" placeholder="e.g. Needs 2 linked reasons with technical terms..."></textarea>
+          <button id="transfer-to-plan" class="btn btn-primary" style="margin-top:14px; min-height: 40px;">Next: Build Answer Structure &rarr;</button>
+        </div>
+      ` : ''}
+
+      ${this.examTransferStage === 'plan' ? `
+        <div class="card" style="padding: 24px;">
+          <span class="badge badge-primary">Stage 2 of 5: Structure & Plan</span>
+          <h2 style="font-size:18px; margin-top:10px;">Scaffold Your Main Points</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Fill in bullet notes for each required mark-scheme component:</p>
+          ${task.planningLabels.map((label, index) => `
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label for="transfer-plan-${index}" style="font-weight: 600; font-size: 13.5px;">Point ${index + 1}: ${this.escapeHTML(label)}</label>
+              <input id="transfer-plan-${index}" class="form-control" placeholder="Write key point or formula..." value="${this.escapeHTML(plan[index] || '')}">
+            </div>
+          `).join('')}
+          <div style="display: flex; gap: 10px; margin-top: 16px;">
+            <button id="transfer-back-decode" class="btn btn-secondary">&larr; Back</button>
+            <button id="transfer-to-answer" class="btn btn-primary">Next: Write Independent Answer &rarr;</button>
+          </div>
+        </div>
+      ` : ''}
+
+      ${this.examTransferStage === 'answer' ? `
+        <div class="card" style="padding: 24px;">
+          <span class="badge badge-primary">Stage 3 of 5: Independent Extended Writing</span>
+          <h2 style="font-size:18px; margin-top:10px;">Write Your Full Response</h2>
+          <p style="font-size:13px; color:var(--text-muted); margin-bottom: 12px;">Aim for approx ${Math.max(3, Math.round(task.minutes * 0.65))} minutes. Show working and use precise technical vocabulary.</p>
+          <textarea id="transfer-answer-response" class="form-control" rows="8" placeholder="Write your full extended response here...">${this.escapeHTML(this.examTransferResponse)}</textarea>
+          
+          <!-- Real-Time Scanner Badge -->
+          <div id="live-keyphrase-scanner" style="margin-top:14px; background:rgba(45, 156, 145, 0.08); border:1px solid var(--teal); border-radius: 8px; padding:12px 16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 8px;">
+              <span style="font-size:13px; font-weight:700; color:var(--teal);">🔍 Real-Time ExamLogic Scanner</span>
+              <span id="scanner-match-count" class="badge badge-primary" style="font-size: 12px;">
+                ${scanKeyphrases(this.examTransferResponse)} of ${task.requiredElements.length} Mark Scheme Criteria Detected
+              </span>
+            </div>
+            <p style="font-size:12px; color:var(--text-muted); margin:4px 0 0 0;">As you type, the scanner detects technical terms and mark-scheme concepts live.</p>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top:16px;">
+            <button id="transfer-back-plan" class="btn btn-secondary">&larr; Back to Plan</button>
+            <button id="transfer-to-check" class="btn btn-primary">Check Against Mark Scheme &rarr;</button>
+          </div>
+        </div>
+      ` : ''}
+
+      ${this.examTransferStage === 'check' ? `
+        <div class="card" style="padding: 24px;">
+          <span class="badge badge-primary">Stage 4 of 5: Mark Scheme Self-Check</span>
+          <h2 style="font-size:18px; margin-top:10px;">Formative Mark Scheme Checklist</h2>
+          <p>This is formative evidence, not a final mark. Tick only what your answer actually communicates.</p>
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+            ${task.requiredElements.map((element, index) => `
+              <label style="display:flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-main); border-radius: 6px; border: 1px solid var(--border-color); font-size: 14px; cursor: pointer;">
+                <input type="checkbox" class="transfer-evidence-checkbox" value="${index}" style="width: 18px; height: 18px;">
+                <span>${this.escapeHTML(element)}</span>
+              </label>
+            `).join('')}
+          </div>
+          <details class="card" style="margin-top:14px; background: rgba(7, 17, 31, 0.04); padding: 16px;">
+            <summary style="cursor:pointer; font-weight:700; font-size: 14px;">Compare with Examiner Model Solution</summary>
+            <ol style="margin-top: 10px; padding-left: 20px; font-size: 13.5px; line-height: 1.6;">
+              ${task.modelPlan.map(item => `<li>${this.escapeHTML(item)}</li>`).join('')}
+            </ol>
+          </details>
+          <button id="transfer-to-retry" class="btn btn-primary" style="margin-top:16px; min-height: 40px;">Next: Retry Similar Unassisted Question &rarr;</button>
+        </div>
+      ` : ''}
+
+      ${this.examTransferStage === 'retry' ? `
+        <div class="card" style="padding: 24px;">
+          <span class="badge badge-warning">Stage 5 of 5: Unassisted Method Transfer</span>
+          <h2 style="font-size:18px; margin-top:10px;">Test Your Method Independently</h2>
+          <p style="font-size:16px; font-weight:600; color: var(--text-main); margin-bottom: 12px;">${this.escapeHTML(task.retryQuestion)}</p>
+          <textarea id="transfer-retry-response" class="form-control" rows="8" placeholder="Write your unassisted response here..."></textarea>
+          <button id="transfer-finish" class="btn btn-primary" style="margin-top:16px; min-height: 44px;">Finish & Record Practice Progress</button>
+        </div>
+      ` : ''}
+    `;
+
     const taskSelect = document.getElementById('exam-transfer-task-select');
-    taskSelect.onchange = () => { this.activeExamTransferId = taskSelect.value; this.examTransferStage = 'decode'; this.examTransferPlan = {}; this.examTransferResponse = ''; this.render(); };
+    if (taskSelect) {
+      taskSelect.onchange = () => {
+        this.activeExamTransferId = taskSelect.value;
+        this.examTransferStage = 'decode';
+        this.examTransferPlan = {};
+        this.examTransferResponse = '';
+        this.renderStudentExamTransfer(panel);
+      };
+    }
+
+    // Real-time scanner input event listener on Stage 3
+    const answerTextarea = document.getElementById('transfer-answer-response');
+    if (answerTextarea) {
+      answerTextarea.oninput = () => {
+        const text = answerTextarea.value;
+        const matches = scanKeyphrases(text);
+        const badge = document.getElementById('scanner-match-count');
+        if (badge) {
+          badge.textContent = `${matches} of ${task.requiredElements.length} Mark Scheme Criteria Detected`;
+          badge.className = matches === task.requiredElements.length ? 'badge badge-success' : 'badge badge-primary';
+        }
+      };
+    }
+
     const bind = (id, action) => { const element = document.getElementById(id); if (element) element.onclick = action; };
-    bind('transfer-to-plan', () => { const response = document.getElementById('transfer-decode-response').value.trim(); if (response.length < 8) return this.alert('Describe what the question requires before moving on.'); this.examTransferStage = 'plan'; this.render(); });
-    bind('transfer-back-decode', () => { this.examTransferStage = 'decode'; this.render(); });
-    bind('transfer-to-answer', () => { task.planningLabels.forEach((label, index) => { this.examTransferPlan[index] = document.getElementById(`transfer-plan-${index}`).value.trim(); }); if (Object.values(this.examTransferPlan).filter(Boolean).length < 2) return this.alert('Add at least two useful planning notes.'); this.examTransferStage = 'answer'; this.render(); });
-    bind('transfer-back-plan', () => { this.examTransferResponse = document.getElementById('transfer-answer-response').value; this.examTransferStage = 'plan'; this.render(); });
-    bind('transfer-to-check', () => { this.examTransferResponse = document.getElementById('transfer-answer-response').value.trim(); if (this.examTransferResponse.length < 30) return this.alert('Develop the answer before checking it.'); this.examTransferStage = 'check'; this.render(); });
-    bind('transfer-to-retry', () => { const evidenceCount = panel.querySelectorAll('.transfer-evidence-checkbox:checked').length; window.db.addAttempt({ studentId: this.currentUser.id, type: 'exam_transfer', topic: task.specificationPointId, score: `${evidenceCount}/${task.requiredElements.length}`, supportStepsUsed: 3, questionId: task.id }); this.examTransferStage = 'retry'; this.render(); });
-    bind('transfer-finish', () => { const retry = document.getElementById('transfer-retry-response').value.trim(); if (retry.length < 30) return this.alert('Attempt the retry before finishing.'); window.db.addAttempt({ studentId: this.currentUser.id, type: 'exam_transfer_retry', topic: task.specificationPointId, score: 'completed', supportStepsUsed: 0, questionId: task.id }); this.examTransferStage = 'decode'; this.examTransferPlan = {}; this.examTransferResponse = ''; this.alert('Exam-transfer practice recorded. The retry will inform future recommendations.'); this.switchTab('stud-dashboard'); });
+    bind('transfer-to-plan', () => { const response = document.getElementById('transfer-decode-response').value.trim(); if (response.length < 5) return this.alert('Describe what the question requires before moving on.'); this.examTransferStage = 'plan'; this.renderStudentExamTransfer(panel); });
+    bind('transfer-back-decode', () => { this.examTransferStage = 'decode'; this.renderStudentExamTransfer(panel); });
+    bind('transfer-to-answer', () => { task.planningLabels.forEach((label, index) => { const el = document.getElementById(`transfer-plan-${index}`); if (el) this.examTransferPlan[index] = el.value.trim(); }); if (Object.values(this.examTransferPlan).filter(Boolean).length < 1) return this.alert('Add at least one planning note.'); this.examTransferStage = 'answer'; this.renderStudentExamTransfer(panel); });
+    bind('transfer-back-plan', () => { const el = document.getElementById('transfer-answer-response'); if (el) this.examTransferResponse = el.value; this.examTransferStage = 'plan'; this.renderStudentExamTransfer(panel); });
+    bind('transfer-to-check', () => { const el = document.getElementById('transfer-answer-response'); if (el) this.examTransferResponse = el.value.trim(); if (this.examTransferResponse.length < 15) return this.alert('Develop your answer before checking it.'); this.examTransferStage = 'check'; this.renderStudentExamTransfer(panel); });
+    bind('transfer-to-retry', () => { const evidenceCount = panel.querySelectorAll('.transfer-evidence-checkbox:checked').length; window.db.addAttempt({ studentId: this.currentUser.id, type: 'exam_transfer', topic: task.specificationPointId, score: `${evidenceCount}/${task.requiredElements.length}`, supportStepsUsed: 3, questionId: task.id }); this.examTransferStage = 'retry'; this.renderStudentExamTransfer(panel); });
+    bind('transfer-finish', () => { const retry = document.getElementById('transfer-retry-response').value.trim(); if (retry.length < 15) return this.alert('Attempt the retry before finishing.'); window.db.addAttempt({ studentId: this.currentUser.id, type: 'exam_transfer_retry', topic: task.specificationPointId, score: 'completed', supportStepsUsed: 0, questionId: task.id }); this.examTransferStage = 'decode'; this.examTransferPlan = {}; this.examTransferResponse = ''; this.alert('Exam-transfer practice recorded. The retry will inform future recommendations.'); this.switchTab('stud-dashboard'); });
   }
 
   renderStudentProgrammingHub(panel) {
@@ -2427,22 +3043,48 @@ class App {
     ];
     const task = tasks[this.activePseudocodeTask] || tasks[0];
     panel.innerHTML = `
-      <div style="margin-bottom:24px;"><span class="badge badge-warning">Paper 2 · Section B</span><h1 style="margin-top:8px;">OCR Exam Reference Language and pseudocode</h1><p>Learn to read, trace, complete, write and refine algorithms. OCR exam questions use the Exam Reference Language; design answers may also use clear pseudocode.</p></div>
-      <div class="card" style="margin-bottom:20px; background:var(--bg-main);"><strong>Important:</strong> OCR assignment uses <code>=</code>; comparison for equality uses <code>==</code>. It does not use a left arrow.</div>
-      <div class="card" style="margin-bottom:20px; border-left:5px solid var(--amber);"><h3 style="font-size:16px;">Bridge to a past-paper question</h3><ol style="font-size:13px; line-height:1.6; padding-left:20px; margin-bottom:0;"><li>Circle the command: read, trace, complete, write or refine.</li><li>List the given inputs and the required output.</li><li>Mark where sequence, selection and iteration are needed.</li><li>Use the marks as a checklist, then trace one test value through your answer.</li></ol></div>
+      <div style="margin-bottom:24px;">
+        <span class="badge badge-warning">Paper 2 &middot; Section B Pseudocode & Algorithms</span>
+        <h1 style="margin-top:8px;">OCR Exam Reference Language and Pseudocode</h1>
+        <p style="font-size:14px; color:var(--text-muted); margin:0;">Learn to read, trace, complete, write and refine algorithms. OCR exam questions use the Exam Reference Language (ERL).</p>
+      </div>
+
+      <div class="card" style="margin-bottom:20px; background:var(--bg-main);">
+        <strong>Important:</strong> OCR assignment uses <code>=</code>; comparison for equality uses <code>==</code>. It does not use a left arrow.
+      </div>
+
+      <!-- Interactive Past Paper Strategy Checklist & Cheat Sheet Bar -->
+      <div class="card" style="margin-bottom:20px; border-left:5px solid var(--amber); padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <h3 style="font-size:15px; margin:0; font-weight:700;">Bridge to a past-paper question</h3>
+          <button type="button" class="btn btn-secondary btn-sm" id="syntax-cheat-sheet-btn">📖 Python &leftrightarrow; OCR ERL Cheat Sheet</button>
+        </div>
+        <p style="font-size:12px; color:var(--text-muted); margin:4px 0 8px 0;">Use the inputs-processes-outputs framework to read and predict, write, or find and fix a fault.</p>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-top:8px;">
+          <label style="font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px;"><input type="checkbox" class="exam-prep-chk"> 1. Circle command word (read and predict, trace, write, find and fix a fault)</label>
+          <label style="font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px;"><input type="checkbox" class="exam-prep-chk"> 2. List inputs-processes-outputs</label>
+          <label style="font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px;"><input type="checkbox" class="exam-prep-chk"> 3. Mark sequence, selection & iteration</label>
+          <label style="font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px;"><input type="checkbox" class="exam-prep-chk"> 4. Trace 1 test value against mark scheme</label>
+        </div>
+      </div>
+
       <div style="display:grid; grid-template-columns:240px 1fr; gap:24px; align-items:start;">
         <div class="card"><h3 style="font-size:15px;">Progression</h3>${tasks.map((item, index) => `<button class="btn ${index === this.activePseudocodeTask ? 'btn-primary' : 'btn-secondary'} btn-sm pseudocode-task-btn" data-task-index="${index}" style="width:100%; margin-top:8px; text-align:left;">${item.level}. ${item.skill}: ${item.title}</button>`).join('')}</div>
         <div class="card">
           <span class="badge badge-primary">Level ${task.level}: ${task.skill}</span><h2 style="margin:10px 0;">${task.title}</h2>
           <pre style="padding:16px; border-radius:8px; background:#07111f; color:#e2e8f0; overflow:auto;"><code>${this.escapeHTML(task.code)}</code></pre>
           <p style="font-weight:600;">${task.prompt}</p>
-          <div style="padding:10px 12px; background:var(--bg-main); border-radius:8px; font-size:13px; margin-bottom:12px;"><strong>Decode it first:</strong> command = ${task.skill.toLowerCase()} · identify the expected output · choose the control structure · check boundaries and operators.</div>
+          <div style="padding:10px 12px; background:var(--bg-main); border-radius:8px; font-size:13px; margin-bottom:12px;"><strong>Decode it first:</strong> command = ${task.skill.toLowerCase()} &middot; identify the expected output &middot; choose the control structure &middot; check boundaries and operators.</div>
           <textarea id="pseudocode-response" class="form-control" rows="7" placeholder="Write your answer here..."></textarea>
           <div style="display:flex; gap:10px; margin-top:12px;"><button id="pseudocode-check-btn" class="btn btn-primary">Check with model</button><button id="pseudocode-help-btn" class="btn btn-secondary">Show a hint</button></div>
           <div id="pseudocode-feedback" class="card" style="display:none; margin-top:14px; background:var(--bg-main);"></div>
         </div>
       </div>
     `;
+
+    const cheatBtn = document.getElementById('syntax-cheat-sheet-btn');
+    if (cheatBtn) cheatBtn.onclick = () => this.renderSyntaxConverterModal();
+
     panel.querySelectorAll('.pseudocode-task-btn').forEach(button => button.onclick = () => {
       this.activePseudocodeTask = Number(button.getAttribute('data-task-index'));
       this.render();
@@ -4588,6 +5230,89 @@ class App {
         this.alert('Success: Settings saved successfully.');
       };
     }
+  }
+
+  renderSyntaxConverterModal() {
+    let overlay = document.getElementById('syntax-converter-modal');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'syntax-converter-modal';
+      overlay.className = 'modal-overlay';
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.setAttribute('aria-labelledby', 'syntax-modal-title');
+      document.body.appendChild(overlay);
+    }
+
+    overlay.innerHTML = `
+      <div class="modal-content" style="max-width: 650px; padding: 24px; border-radius: 16px; background: var(--bg-card); color: var(--text-main);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h2 id="syntax-modal-title" style="font-size: 18px; margin: 0; color: var(--text-main);">📖 Python 3 vs. OCR Exam Reference Language (ERL) Cheat Sheet</h2>
+          <button id="close-syntax-modal" class="btn btn-secondary btn-sm" aria-label="Close modal">&times; Close</button>
+        </div>
+
+        <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 16px;">
+          OCR Paper 2 Section B questions require exact Exam Reference Language (ERL) or clear pseudocode. Do not confuse Python keywords with ERL syntax!
+        </p>
+
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left;">
+            <thead>
+              <tr style="background: rgba(45, 156, 145, 0.12); border-bottom: 2px solid var(--border-color);">
+                <th style="padding: 10px;">Construct</th>
+                <th style="padding: 10px;">Python 3 Syntax</th>
+                <th style="padding: 10px;">OCR Reference Language (ERL)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 10px; font-weight: 600;">Assignment</td>
+                <td style="padding: 10px;"><code>x = 5</code></td>
+                <td style="padding: 10px;"><code>x = 5</code></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 10px; font-weight: 600;">Equality Check</td>
+                <td style="padding: 10px;"><code>if x == 5:</code></td>
+                <td style="padding: 10px;"><code>if x == 5 then</code></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 10px; font-weight: 600;">Else If Branch</td>
+                <td style="padding: 10px;"><code>elif x > 5:</code></td>
+                <td style="padding: 10px;"><code>elseif x > 5 then</code></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 10px; font-weight: 600;">End of If Block</td>
+                <td style="padding: 10px;"><em>(Indentation only)</em></td>
+                <td style="padding: 10px;"><code>endif</code></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 10px; font-weight: 600;">Count Loop</td>
+                <td style="padding: 10px;"><code>for i in range(1, 6):</code></td>
+                <td style="padding: 10px;"><code>for i=1 to 5 ... next i</code></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 10px; font-weight: 600;">Condition Loop</td>
+                <td style="padding: 10px;"><code>while x < 10:</code></td>
+                <td style="padding: 10px;"><code>while x < 10 ... endwhile</code></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 10px; font-weight: 600;">Subprograms</td>
+                <td style="padding: 10px;"><code>def calc(a):</code></td>
+                <td style="padding: 10px;"><code>function calc(a) ... endfunction</code></td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 10px; font-weight: 600;">Array Length</td>
+                <td style="padding: 10px;"><code>len(array)</code></td>
+                <td style="padding: 10px;"><code>array.length</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    overlay.classList.add('active');
+    document.getElementById('close-syntax-modal').onclick = () => overlay.classList.remove('active');
   }
 
   alert(msg) {
