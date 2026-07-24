@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 describe('Content Security Policy deployment configuration', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const config = JSON.parse(
     fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8')
   );
@@ -27,6 +28,11 @@ describe('Content Security Policy deployment configuration', () => {
 
     expect(scriptDirective).toBeDefined();
     expect(scriptDirective).not.toContain("'unsafe-inline'");
+  });
+
+  test('page markup contains no JavaScript blocked by the policy', () => {
+    expect(html).not.toMatch(/<script(?![^>]*\bsrc=)[^>]*>/i);
+    expect(html).not.toMatch(/\son(?:click|error|load|submit|keydown)\s*=/i);
   });
 
   test('retains the required framing and connection allowlists', () => {

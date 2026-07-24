@@ -274,10 +274,12 @@ class App {
     const loginTrigger = document.getElementById('nav-login-btn');
     const heroLoginTrigger = document.getElementById('hero-login-btn');
     const authClose = document.getElementById('auth-modal-close');
+    const changePasswordClose = document.getElementById('change-password-modal-close');
     
     if (loginTrigger) loginTrigger.onclick = () => this.openModal('microsoft-auth-modal');
     if (heroLoginTrigger) heroLoginTrigger.onclick = () => this.openModal('microsoft-auth-modal');
     if (authClose) authClose.onclick = () => this.closeModal('microsoft-auth-modal');
+    if (changePasswordClose) changePasswordClose.onclick = () => this.closeModal('change-password-modal');
 
     const mobileNavToggle = document.getElementById('mobile-nav-toggle');
     if (mobileNavToggle) {
