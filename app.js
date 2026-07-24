@@ -1081,6 +1081,7 @@ class App {
     if (todayRecBtn) {
       todayRecBtn.onclick = () => { this.switchTab('stud-practise'); };
     }
+  }
 
   // ==================== STUDENT LEARN THEORY HUB ====================
   renderStudentLearn(panel) {
