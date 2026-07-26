@@ -61,7 +61,8 @@ describe('GCSE learning design', () => {
     expect(appSource).toContain('Computer Science dictionary');
     expect(appSource).toContain('Test me on 10 random terms');
     expect(appSource).toContain('.slice(0, 10)');
-    expect(appSource).toContain('this is formative, not a spelling test');
+    expect(appSource).toContain('Formative feedback only');
+    expect(appSource).toContain('Keyword coverage does not award completion, attainment or mastery');
   });
 
   test('supports targeted publishing and dated intervention sessions', () => {

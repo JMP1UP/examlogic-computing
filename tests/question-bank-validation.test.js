@@ -52,4 +52,34 @@ describe('question-bank identifier and mapping integrity', () => {
       expect(item.specificationPointId).toBeTruthy();
     });
   });
+
+  test('requires answer-safe actionable guidance for every reachable recall question', () => {
+    const reachable = data.units.flatMap(unit =>
+      unit.topics.flatMap(topic => data.questions.filter(question => question.topicId === topic.id).slice(0, 3))
+    );
+    expect(reachable).toHaveLength(36);
+    reachable.forEach(question => {
+      expect(question.retryHint).toEqual(expect.any(String));
+      expect(question.retryHint.length).toBeGreaterThanOrEqual(40);
+      expect(question.retryHint).not.toMatch(/reread|read the question|try again|review the question wording/i);
+      expect(question.retryHint.toLowerCase().replace(/[^a-z0-9]/g, ''))
+        .not.toContain(String(question.answer).toLowerCase().replace(/[^a-z0-9]/g, ''));
+    });
+  });
+
+  test('rejects missing, generic and answer-revealing retry guidance', () => {
+    const reachableId = data.units[0].topics[0].id;
+    const questionId = data.questions.find(question => question.topicId === reachableId).id;
+    const malformed = JSON.parse(JSON.stringify(data));
+    malformed.questions.find(question => question.id === questionId).retryHint = '';
+    expect(() => database.validateQuestionBank(malformed)).toThrow(/actionable conceptual retry guidance/);
+
+    malformed.questions.find(question => question.id === questionId).retryHint = 'Review the question wording and try again after rereading it carefully.';
+    expect(() => database.validateQuestionBank(malformed)).toThrow(/actionable conceptual retry guidance/);
+
+    const revealing = JSON.parse(JSON.stringify(data));
+    const revealingQuestion = revealing.questions.find(question => question.id === questionId);
+    revealingQuestion.retryHint = `The correct answer is ${revealingQuestion.answer}; select that option to continue.`;
+    expect(() => database.validateQuestionBank(revealing)).toThrow(/reveals its answer/);
+  });
 });

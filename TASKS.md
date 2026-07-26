@@ -11,12 +11,13 @@
 - [ ] Ensure action buttons use direct verbs ("Check answer", "Run test").
 
 ## Deferred readiness findings
+- [ ] Define ownership/version rules for locally edited system-content records before changing `mergeSystemRecords` reconciliation behaviour.
 - [ ] Expand application, exam-transfer and spaced alternatives only after this blocker phase.
 - [ ] Review and correct remaining curriculum inaccuracies through teacher quality assurance.
-- [ ] Replace self-reported/model-viewed completion with evidence-based progress rules.
-- [ ] Reconcile the advertised five-minute quiz with broad-topic quiz workloads.
-- [ ] Improve targeted retry and next-step feedback after incorrect answers.
-- [ ] Review hard-coded learner progress and adaptation claims.
+- [x] Replace self-reported/model-viewed completion with evidence-based progress rules.
+- [x] Reconcile the advertised five-minute quiz with broad-topic quiz workloads.
+- [x] Improve targeted retry and next-step feedback after incorrect answers.
+- [x] Review hard-coded learner progress and adaptation claims.
 - [ ] Consider semantic marking only as a separately scoped, safeguarded project.
 - [ ] Consider broader student-interface redesign only after learning and data integrity are stable.
 

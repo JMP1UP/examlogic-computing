@@ -40,6 +40,17 @@ Question objects carry their own specification reference. Legacy duplicate IDs
 remain on renamed objects as `legacyQuestionId` metadata; historical attempts
 continue to resolve to the retained canonical object with the original ID.
 
+New scored quiz and number-skills records use evidence version 2. Each original
+set has stable `activityId` and `attemptSetId` values, its original question IDs
+and denominator, and the latest outcome for every question. A partial retry
+writes a new snapshot for the same activity instead of creating reduced-
+denominator evidence. Schema-12 and earlier schema-13 attempts remain unchanged
+in storage; calculations identify records without versioned activity metadata
+as reduced-precision legacy evidence.
+
+Definition keyword checks are formative records only. They do not contribute to
+completion, attainment or mastery until a trustworthy assessor is available.
+
 ## APIs and integrations
 
 List internal APIs and external services without recording credentials.

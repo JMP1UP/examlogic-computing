@@ -57,6 +57,7 @@ class App {
     // Number skills state
     this.numberSkillsSet = [];
     this.numberSkillsAnswers = {};
+    this.numberSkillsEvidenceSet = null;
     this.numberSkillsDifficulty = 'Supported'; // Guided, Supported, Independent, Challenge
     this.numberSkillsCalculations = {};
 
@@ -64,6 +65,8 @@ class App {
     this.quizQuestions = [];
     this.quizAnswers = {};
     this.quizResults = null;
+    this.quizEvidenceSet = null;
+    this.evidenceIdSequence = 0;
 
     // Written answers scaffold state
     this.scaffoldPoints = { p1: '', exp1: '', p2: '', exp2: '', apply: '' };
@@ -133,9 +136,9 @@ class App {
 
   getAdaptiveSupportLevel(topic = 'binary conversions') {
     if (!this.currentUser) return 'Supported';
-    const attempts = window.db.getAttempts()
-      .filter(a => a.studentId === this.currentUser.id && String(a.topic).toLowerCase().includes(topic.toLowerCase()))
-      .filter(a => this.parseDemonstratedScore(a))
+    const attempts = this.getLatestDemonstratedAttempts(window.db.getAttempts()
+      .filter(a => a.studentId === this.currentUser.id && String(a.topic).toLowerCase().includes(topic.toLowerCase())))
+      .map(item => item.attempt)
       .slice(-3);
     if (attempts.length < 2) return 'Supported';
     const ratios = attempts.map(a => {
@@ -159,25 +162,20 @@ class App {
 
   parseDemonstratedScore(attempt) {
     if (!attempt || attempt.contributesToMastery === false) return null;
-    const demonstratedTypes = new Set(['number_skills', 'spaced_theory', 'definition_test', 'pseudocode_assessed']);
+    const demonstratedTypes = new Set(['number_skills', 'spaced_theory', 'pseudocode_assessed']);
     if (attempt.evidenceType && attempt.evidenceType !== 'demonstrated') return null;
     if (!attempt.evidenceType && !demonstratedTypes.has(attempt.type)) return null;
     const match = String(attempt.score || '').match(/^(\d+)\/(\d+)$/);
     if (!match || Number(match[2]) <= 0) return null;
-    return { earned: Number(match[1]), available: Number(match[2]) };
+    return {
+      earned: Number(match[1]),
+      available: Number(match[2]),
+      precision: Number(attempt.evidenceVersion) >= 2 && attempt.activityId ? 'question-level' : 'legacy'
+    };
   }
 
   getDemonstratedMastery(attempts) {
-    const latestByActivity = new Map();
-    attempts.forEach((attempt, index) => {
-      const score = this.parseDemonstratedScore(attempt);
-      if (!score) return;
-      const activity = attempt.questionId || `${attempt.type || 'activity'}:${attempt.topic || 'unknown'}`;
-      const time = Date.parse(attempt.date || '') || index;
-      const previous = latestByActivity.get(activity);
-      if (!previous || time >= previous.time) latestByActivity.set(activity, { attempt, score, time });
-    });
-    const evidence = [...latestByActivity.values()];
+    const evidence = this.getLatestDemonstratedAttempts(attempts);
     const earned = evidence.reduce((total, item) => total + item.score.earned, 0);
     const available = evidence.reduce((total, item) => total + item.score.available, 0);
     const ratio = available ? earned / available : null;
@@ -185,7 +183,57 @@ class App {
       : ratio >= 0.85 ? 'Secure'
         : ratio >= 0.6 ? 'Developing'
           : 'Needs practice';
-    return { earned, available, ratio, label, evidenceCount: evidence.length };
+    const legacyEvidenceCount = evidence.filter(item => item.score.precision === 'legacy').length;
+    return { earned, available, ratio, label, evidenceCount: evidence.length, legacyEvidenceCount };
+  }
+
+  getLatestDemonstratedAttempts(attempts) {
+    const latestByActivity = new Map();
+    attempts.forEach((attempt, index) => {
+      const score = this.parseDemonstratedScore(attempt);
+      if (!score) return;
+      const activity = attempt.activityId || attempt.questionId || `legacy:${attempt.type || 'activity'}:${attempt.topic || 'unknown'}`;
+      const time = Date.parse(attempt.date || '') || index;
+      const previous = latestByActivity.get(activity);
+      if (!previous || time >= previous.time) latestByActivity.set(activity, { attempt, score, time });
+    });
+    return [...latestByActivity.values()].sort((left, right) => left.time - right.time);
+  }
+
+  createEvidenceSet(type, topic, questions) {
+    const unique = window.crypto && typeof window.crypto.randomUUID === 'function'
+      ? window.crypto.randomUUID()
+      : `${Date.now()}_${++this.evidenceIdSequence}`;
+    const attemptSetId = `${type}_set_${unique}`;
+    return {
+      activityId: `${type}_activity_${unique}`,
+      attemptSetId,
+      topic,
+      originalQuestionIds: questions.map(question => question.id),
+      originalDenominator: questions.length,
+      latestOutcomes: Object.fromEntries(questions.map(question => [question.id, false])),
+      hasOriginalAttempt: false
+    };
+  }
+
+  buildQuestionLevelAttempt(evidenceSet, attemptKind) {
+    const questionEvidence = evidenceSet.originalQuestionIds.map(questionId => ({
+      questionId,
+      correct: evidenceSet.latestOutcomes[questionId] === true
+    }));
+    const earned = questionEvidence.filter(item => item.correct).length;
+    return {
+      activityId: evidenceSet.activityId,
+      attemptSetId: evidenceSet.attemptSetId,
+      originalQuestionIds: [...evidenceSet.originalQuestionIds],
+      originalDenominator: evidenceSet.originalDenominator,
+      questionEvidence,
+      attemptKind,
+      score: `${earned}/${evidenceSet.originalDenominator}`,
+      evidenceVersion: 2,
+      evidenceType: 'demonstrated',
+      contributesToMastery: true
+    };
   }
 
   recordQuizConfidence(attempt, confidence) {
@@ -1393,8 +1441,16 @@ class App {
           if (isSecure) secure++;
           return { item, response, matched, isSecure };
         });
-        window.db.addAttempt({ studentId: this.currentUser.id, type: 'definition_test', topic: 'mixed key terms', score: `${secure}/10` });
-        panel.innerHTML = `<div style="margin-bottom:24px;"><h1>Definition check feedback</h1><p><strong>${secure}/10 definitions included the essential meaning.</strong> Use the feedback to improve precision; this is formative, not a spelling test.</p></div>${results.map((result, index) => `<div class="card" style="margin-bottom:14px; border-left:5px solid ${result.isSecure ? 'var(--green)' : 'var(--amber)'};"><h3>${index + 1}. ${result.item.term}</h3><p style="font-size:13px;"><strong>Your definition:</strong> ${this.escapeHTML(result.response)}</p><p style="font-size:13px;"><strong>Student-friendly model:</strong> ${result.item.definition}</p><p style="font-size:12px; color:var(--text-muted);"><strong>Essential ideas:</strong> ${result.item.keywords.join(', ')}. You included: ${result.matched.join(', ') || 'none yet'}.</p></div>`).join('')}<button class="btn btn-primary" id="another-definition-test-btn">Try another random 10</button><button class="btn btn-secondary" id="dictionary-return-btn" style="margin-left:8px;">Back to dictionary</button>`;
+        window.db.addAttempt({
+          studentId: this.currentUser.id,
+          type: 'definition_test',
+          topic: 'mixed key terms',
+          score: `${secure}/10`,
+          evidenceType: 'formative',
+          contributesToMastery: false,
+          completionStatus: 'formative_only'
+        });
+        panel.innerHTML = `<div style="margin-bottom:24px;"><h1>Definition check feedback</h1><p><strong>Formative feedback only: ${secure}/10 responses included the configured important words.</strong> Keyword coverage does not award completion, attainment or mastery. Use the feedback to improve precision and resubmit.</p></div>${results.map((result, index) => `<div class="card" style="margin-bottom:14px; border-left:5px solid ${result.isSecure ? 'var(--green)' : 'var(--amber)'};"><h3>${index + 1}. ${result.item.term}</h3><p style="font-size:13px;"><strong>Your definition:</strong> ${this.escapeHTML(result.response)}</p><p style="font-size:13px;"><strong>Student-friendly model:</strong> ${result.item.definition}</p><p style="font-size:12px; color:var(--text-muted);"><strong>Important words:</strong> ${result.item.keywords.join(', ')}. You included: ${result.matched.join(', ') || 'none yet'}.</p></div>`).join('')}<button class="btn btn-primary" id="another-definition-test-btn">Improve and try another 10</button><button class="btn btn-secondary" id="dictionary-return-btn" style="margin-left:8px;">Back to dictionary</button>`;
         document.getElementById('another-definition-test-btn').onclick = () => { this.startDefinitionTest(); };
         document.getElementById('dictionary-return-btn').onclick = () => { this.definitionTestMode = false; this.definitionTestTerms = []; this.render(); };
       };
@@ -1770,6 +1826,11 @@ class App {
         { type: 'Audio File size (MB)', question: `An audio file is recorded with a sample rate of ${r4}Hz, ${d4} bits resolution, stereo (2 channels), for ${t4} seconds. Calculate size in Megabytes (MB), using 1,000,000 as the approximate divisor. Round to nearest tenth.`, answer: String(size4_mb), hint: 'Calculate total bits (Rate * Depth * Channels * Duration), divide by 8 for bytes, then divide by 1,000,000 for Megabytes.', supportGrid: false, inputType: 'standard' }
       ];
     }
+    this.numberSkillsSet = this.numberSkillsSet.map((question, index) => ({
+      ...question,
+      id: `number_skill_${this.numberSkillsDifficulty.toLowerCase()}_${index + 1}`
+    }));
+    this.numberSkillsEvidenceSet = this.createEvidenceSet('number_skills', 'binary conversions', this.numberSkillsSet);
   }
 
   gradeNumberSkillsSet() {
@@ -1780,6 +1841,7 @@ class App {
     this.numberSkillsSet.forEach((q, idx) => {
       const studentAns = this.numberSkillsAnswers[idx] || '';
       const isCorrect = studentAns === q.answer;
+      this.numberSkillsEvidenceSet.latestOutcomes[q.id] = isCorrect;
       if (isCorrect) correct++;
       else incorrectQuestions.push(q);
 
@@ -1795,20 +1857,21 @@ class App {
       `;
     });
 
-    const masteryScore = `${correct}/${this.numberSkillsSet.length}`;
+    const attemptKind = this.numberSkillsEvidenceSet.hasOriginalAttempt ? 'retry' : 'original';
+    this.numberSkillsEvidenceSet.hasOriginalAttempt = true;
+    const evidenceAttempt = this.buildQuestionLevelAttempt(this.numberSkillsEvidenceSet, attemptKind);
+    const masteryScore = evidenceAttempt.score;
     window.db.addAttempt({
       studentId: this.currentUser.id,
       type: 'number_skills',
       topic: 'binary conversions',
-      score: masteryScore,
       supportLevel: this.numberSkillsDifficulty,
       supportStepsUsed: this.numberSkillsDifficulty === 'Guided' ? 2 : 0,
-      evidenceType: 'demonstrated',
-      contributesToMastery: true
+      ...evidenceAttempt
     });
 
     // Award achievement if perfect score
-    if (correct === this.numberSkillsSet.length) {
+    if (evidenceAttempt.questionEvidence.every(item => item.correct)) {
       const student = window.db.getStudents().find(s => s.id === this.currentUser.id);
       if (student && !student.achievements.includes('Binary Fluent')) {
         student.achievements.push('Binary Fluent');
@@ -1846,8 +1909,12 @@ class App {
   // ==================== SPACED RETRIEVAL QUIZ ====================
   renderStudentRecall(panel) {
     const topicQuestions = window.db.getQuestions().filter(q => q.topicId === this.activeTopicId);
+    const isRetry = Boolean(this.quizRetryQuestions);
     this.quizQuestions = this.quizRetryQuestions || topicQuestions.slice(0, 3);
     this.quizRetryQuestions = null;
+    if (!isRetry) {
+      this.quizEvidenceSet = this.createEvidenceSet('spaced_theory', this.activeTopicId, this.quizQuestions);
+    }
     const activeTopic = window.db.getUnits().flatMap(unit => unit.topics.map(topic => ({ ...topic, paper: unit.paper }))).find(topic => topic.id === this.activeTopicId);
     this.quizAnswers = {};
     
@@ -1969,6 +2036,7 @@ class App {
 
       if (isCorrect) score++;
       correctness.push(isCorrect);
+      this.quizEvidenceSet.latestOutcomes[q.id] = isCorrect;
 
       feedback += `
         <div class="card" style="margin-bottom: 16px; border-left: 5px solid ${isCorrect ? 'var(--green)' : 'var(--red)'}">
@@ -1983,14 +2051,15 @@ class App {
     });
 
     const incorrectQuestions = this.getRetryQuestions(this.quizQuestions, correctness);
-    const quizScore = `${score}/${this.quizQuestions.length}`;
+    const attemptKind = this.quizEvidenceSet.hasOriginalAttempt ? 'retry' : 'original';
+    this.quizEvidenceSet.hasOriginalAttempt = true;
+    const evidenceAttempt = this.buildQuestionLevelAttempt(this.quizEvidenceSet, attemptKind);
+    const quizScore = evidenceAttempt.score;
     const quizAttempt = window.db.addAttempt({
       studentId: this.currentUser.id,
       type: 'spaced_theory',
       topic: this.activeTopicId,
-      score: quizScore,
-      evidenceType: 'demonstrated',
-      contributesToMastery: true
+      ...evidenceAttempt
     });
 
     this.mainContentHTML(`
@@ -2711,7 +2780,9 @@ class App {
     const challenge = challenges.find(c => c.id === this.activeChallengeId);
 
     if (!challenge) {
-      panel.innerHTML = `<h2>Challenges not found</h2>`;
+      panel.innerHTML = `<div class="card" role="status"><h2>Challenge not found</h2><p>This programming activity is unavailable. Return to the Programming hub and choose another stage.</p><button class="btn btn-secondary" id="missing-challenge-back-btn">Back to Programming</button></div>`;
+      const backButton = document.getElementById('missing-challenge-back-btn');
+      if (backButton) backButton.onclick = () => this.switchTab('stud-programming');
       return;
     }
 
@@ -3557,7 +3628,8 @@ class App {
       const topicAttempts = attempts.filter(attempt => this.attemptMatchesTopic(attempt, topic));
       const mastery = this.getDemonstratedMastery(topicAttempts);
       const badgeClass = mastery.ratio === null ? 'badge-secondary' : mastery.ratio >= 0.85 ? 'badge-success' : mastery.ratio >= 0.6 ? 'badge-warning' : 'badge-primary';
-      const detail = mastery.ratio === null ? 'No scored activity yet' : `${mastery.earned}/${mastery.available} from ${mastery.evidenceCount} latest assessed ${mastery.evidenceCount === 1 ? 'activity' : 'activities'}`;
+      const legacyDetail = mastery.legacyEvidenceCount ? ` · ${mastery.legacyEvidenceCount} reduced-precision legacy ${mastery.legacyEvidenceCount === 1 ? 'record' : 'records'}` : '';
+      const detail = mastery.ratio === null ? 'No scored activity yet' : `${mastery.earned}/${mastery.available} from ${mastery.evidenceCount} latest assessed ${mastery.evidenceCount === 1 ? 'activity' : 'activities'}${legacyDetail}`;
       return `<div style="display:flex; justify-content:space-between; gap:12px; font-size:14px;"><span>${this.escapeHTML(topic.name)}</span><span><span class="badge ${badgeClass}">${mastery.label}</span><span style="display:block; font-size:11px; color:var(--text-muted); text-align:right;">${detail}</span></span></div>`;
     }).join('');
 
@@ -3590,6 +3662,7 @@ class App {
                   <th>Topic</th>
                   <th>Type</th>
                   <th>Score</th>
+                  <th>Evidence status</th>
                   <th>Date</th>
                 </tr>
               </thead>
@@ -3599,6 +3672,9 @@ class App {
                     <td>${a.topic}</td>
                     <td>${a.type}</td>
                     <td>${a.score}</td>
+                    <td>${this.parseDemonstratedScore(a)
+                      ? (Number(a.evidenceVersion) >= 2 ? 'Demonstrated' : 'Demonstrated · reduced-precision legacy')
+                      : a.completionStatus === 'awaiting_review' ? 'Awaiting review' : 'Formative or unassessed'}</td>
                     <td>${new Date(a.date).toLocaleDateString()}</td>
                   </tr>
                 `).join('')}
@@ -3610,8 +3686,8 @@ class App {
         <div>
           <!-- Consistency Badges -->
           <div class="card" style="margin-bottom:24px;">
-            <h3>Consistency Badges</h3>
-            <p style="font-size: 13px; margin-bottom: 16px;">Earned through resilience and regular homework submission:</p>
+          <h3>Earned badges</h3>
+            <p style="font-size: 13px; margin-bottom: 16px;">Shown only when the learner record contains the corresponding consistency or demonstrated-achievement award.</p>
             
             <div style="display:flex; flex-direction:column; gap:12px;">
               <div class="card" style="padding:12px; background-color: var(--bg-main); ${(student.achievements || []).includes('Binary Fluent') ? 'display:flex' : 'display:none'}; gap:12px; align-items:center;">
