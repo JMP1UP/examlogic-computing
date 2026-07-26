@@ -3,8 +3,8 @@
 ## Now
 - [x] Establish 25Thirty Learning design standards in `docs/design.md`.
 - [x] Document practice question and logic challenge user flows in `docs/user-flows.md`.
-- [ ] Audit code display components for high contrast and monospaced font standards.
-- [ ] Verify accessibility of interactive quiz controls and keyboard focus.
+- [x] Audit code display components for high contrast and monospaced font standards.
+- [x] Verify accessibility of interactive quiz controls and keyboard focus.
 
 ## Next
 - [ ] Refine mark scheme step-by-step disclosure UI.
@@ -20,6 +20,9 @@
 - [x] Review hard-coded learner progress and adaptation claims.
 - [ ] Consider semantic marking only as a separately scoped, safeguarded project.
 - [ ] Consider broader student-interface redesign only after learning and data integrity are stable.
+- [ ] Replace strict pseudocode matching with a validated equivalence-marking policy; until then, non-matching meaningful submissions remain awaiting review.
+- [ ] Define a validated scheduling policy before confidence can influence revision timing.
+- [ ] Improve grouping precision only for future evidence; historical records without stable question IDs must remain visibly reduced-precision.
 
 ## Later
 - [ ] Add GCSE specification topic filter toggle.
@@ -30,3 +33,5 @@
 ## Recently completed
 - Documentation and design system alignment to 25Thirty Learning mode.
 - Browser startup, local-data migration, question-ID integrity and canonical Learn-renderer blockers corrected.
+- New-learner demo made selectable without seeded attempts, submissions, progress or badges.
+- Static teacher demonstration narratives labelled so they are not mistaken for calculated learner judgements.

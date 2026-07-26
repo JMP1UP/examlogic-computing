@@ -51,3 +51,18 @@ For a controlled internal pilot, verify the environment, current and rollback ve
 Retain strong safety checks and clear evidence for destructive or irreversible work, live data, authentication, email, migrations, and deployment. Do not mark incomplete checks as passed.
 
 The standard high-risk sequence is implementation, one independent review, correction of confirmed issues, one verification review, human operational action, and a final go/no-go check. Add another review only for new code, an incomplete correction, contradictory deployment evidence, or a material new risk.
+
+## Curriculum integrity
+
+The official GCSE Computer Science specification is the primary curriculum source.
+
+All teaching content and questions must:
+
+- map to an identified specification requirement;
+- use accurate computing terminology;
+- reflect the required level of depth;
+- be written originally rather than copied from textbooks or published assessments;
+- include enough teaching and practice to support both knowledge and application;
+- remain traceable through `docs/curriculum-map.md`.
+
+Do not describe a topic as complete merely because it is named in the application. Coverage must include accurate teaching and suitable assessment.

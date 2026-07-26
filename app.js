@@ -222,6 +222,20 @@ class App {
       .map(item => item.attempt);
   }
 
+  getPendingPseudocodeReviews(attempts) {
+    const latestByLearnerTask = new Map();
+    attempts.forEach((attempt, index) => {
+      if (!['pseudocode_review', 'pseudocode_assessed'].includes(attempt.type)) return;
+      const key = `${attempt.studentId || 'unknown'}:${attempt.questionId || 'unknown'}`;
+      const time = Date.parse(attempt.date || '') || index;
+      const previous = latestByLearnerTask.get(key);
+      if (!previous || time >= previous.time) latestByLearnerTask.set(key, { attempt, time });
+    });
+    return [...latestByLearnerTask.values()]
+      .map(item => item.attempt)
+      .filter(item => item.type === 'pseudocode_review' && item.completionStatus === 'awaiting_review');
+  }
+
   createEvidenceSet(type, topic, questions) {
     const unique = window.crypto && typeof window.crypto.randomUUID === 'function'
       ? window.crypto.randomUUID()
@@ -455,9 +469,13 @@ class App {
 
     // Hero demo buttons
     const heroDemoStudentBtn = document.getElementById('hero-demo-student-btn');
+    const heroDemoCleanStudentBtn = document.getElementById('hero-demo-clean-student-btn');
     const heroDemoTeacherBtn = document.getElementById('hero-demo-teacher-btn');
     if (heroDemoStudentBtn) {
       heroDemoStudentBtn.onclick = () => this.quickLogin('student');
+    }
+    if (heroDemoCleanStudentBtn) {
+      heroDemoCleanStudentBtn.onclick = () => this.quickLogin('clean-student');
     }
     if (heroDemoTeacherBtn) {
       heroDemoTeacherBtn.onclick = () => this.quickLogin('teacher');
@@ -484,9 +502,13 @@ class App {
 
     // CSP-compliant dynamic event binding for Demo buttons
     const demoStudentBtn = document.getElementById('demo-student-btn');
+    const demoCleanStudentBtn = document.getElementById('demo-clean-student-btn');
     const demoTeacherBtn = document.getElementById('demo-teacher-btn');
     if (demoStudentBtn) {
       demoStudentBtn.addEventListener('click', () => this.quickLogin('student'));
+    }
+    if (demoCleanStudentBtn) {
+      demoCleanStudentBtn.addEventListener('click', () => this.quickLogin('clean-student'));
     }
     if (demoTeacherBtn) {
       demoTeacherBtn.addEventListener('click', () => this.quickLogin('teacher'));
@@ -539,6 +561,20 @@ class App {
           this.currentUser.isDemo = true;
           this.saveSession(this.currentUser);
         }
+      } else if (role === 'clean-student') {
+        this.currentUser = {
+          id: 'student_release_fixture',
+          name: 'New Learner',
+          email: 'new-learner@example.invalid',
+          role: 'student',
+          yearGroup: 'New starter',
+          achievements: [],
+          personalRevisionPriorities: [],
+          isDemo: true,
+          isCleanDemo: true
+        };
+        this.activeTab = 'stud-dashboard';
+        this.saveSession(this.currentUser);
       } else if (role === 'teacher') {
         await this.handleMicrosoftLogin('smith@leicesterhigh.edu', 'password');
         if (this.currentUser) {
@@ -2740,7 +2776,7 @@ class App {
         </div>
       </div>
 
-      <div style="display:grid; grid-template-columns:240px 1fr; gap:24px; align-items:start;">
+      <div class="pseudocode-workspace">
         <div class="card"><h3 style="font-size:15px;">Progression</h3>${tasks.map((item, index) => `<button class="btn ${index === this.activePseudocodeTask ? 'btn-primary' : 'btn-secondary'} btn-sm pseudocode-task-btn" data-task-index="${index}" style="width:100%; margin-top:8px; text-align:left;">${item.level}. ${item.skill}: ${item.title}</button>`).join('')}</div>
         <div class="card">
           <span class="badge badge-primary">Level ${task.level}: ${task.skill}</span><h2 style="margin:10px 0;">${task.title}</h2>
@@ -2773,7 +2809,18 @@ class App {
       const isCorrect = this.assessPseudocodeResponse(response, task.answer);
       feedback.style.display = 'block';
       if (!isCorrect) {
-        feedback.innerHTML = '<strong>Not secure yet.</strong><p>Check the required operator, boundary and control structure, then revise your answer and retry. The model remains hidden.</p>';
+        feedback.innerHTML = '<strong>Submitted for review.</strong><p>This answer is meaningfully different from the stored example, so no automated mastery or completion credit has been awarded. A teacher can review equivalent valid logic. You can still revise and resubmit.</p>';
+        window.db.addAttempt({
+          studentId: this.currentUser.id,
+          type: 'pseudocode_review',
+          topic: '2.2.ERL',
+          score: 'awaiting review',
+          questionId: `pseudocode_${this.activePseudocodeTask + 1}`,
+          response,
+          evidenceType: 'unassessed_submission',
+          completionStatus: 'awaiting_review',
+          contributesToMastery: false
+        });
         return;
       }
       feedback.innerHTML = '<strong>Completed from your submitted answer.</strong><p>The structure and logic match the required solution.</p>';
@@ -3742,7 +3789,8 @@ class App {
 
     const writtenCount = wrs.filter(w => w.status === 'Awaiting Teacher Review').length;
     const programmingCount = window.db.getProgrammingSubmissions().filter(item => item.status !== 'Teacher Reviewed').length;
-    const totalAwaitingReview = writtenCount + programmingCount;
+    const pseudocodeReviewCount = this.getPendingPseudocodeReviews(window.db.getAttempts()).length;
+    const totalAwaitingReview = writtenCount + programmingCount + pseudocodeReviewCount;
     const activeThisWeek = students.filter(student => Date.now() - new Date(student.lastActive).getTime() <= 7 * 24 * 3600 * 1000).length;
     const weeklyCompletion = students.length ? Math.round((activeThisWeek / students.length) * 100) : 0;
     const savedPriorityCount = students.filter(student => (student.personalRevisionPriorities || []).length > 0).length;
@@ -3789,7 +3837,7 @@ class App {
           <div class="card card-action" id="metric-awaiting-review" style="padding: 16px 20px; cursor: pointer;">
             <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Work Awaiting Review</h4>
             <strong style="font-size:24px; font-weight: 700; color: var(--amber);">${totalAwaitingReview} submissions</strong>
-            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${writtenCount} written, ${programmingCount} programming</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${writtenCount} written, ${programmingCount} programming, ${pseudocodeReviewCount} pseudocode</div>
           </div>
           <div class="card card-action" id="metric-students-attention" style="padding: 16px 20px; cursor: pointer;">
             <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Saved revision priorities</h4>
@@ -3804,6 +3852,7 @@ class App {
             <!-- Action Centre Card -->
             <div style="margin-bottom: 32px;">
               <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Action centre</h2>
+              <p style="font-size:12px; color:var(--text-muted);">Demonstration narrative: named examples below illustrate intended teacher workflows and are not generated risk, mastery or safeguarding judgements.</p>
               <div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
                 <!-- Top 3 Actions -->
                 <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
@@ -3817,7 +3866,7 @@ class App {
                 <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
                   <div>
                     <h4 style="font-size: 15px; margin: 0 0 2px 0; font-weight: 600; color: var(--text-main);">${totalAwaitingReview} submissions awaiting review</h4>
-                    <span style="font-size: 12px; color: var(--text-muted);">${writtenCount} written paragraph, ${programmingCount} code submissions</span>
+                    <span style="font-size: 12px; color: var(--text-muted);">${writtenCount} written paragraph, ${programmingCount} code submissions, ${pseudocodeReviewCount} pseudocode answers</span>
                   </div>
                   <button class="btn btn-primary btn-sm" id="action-review-written" style="min-height: 36px;">Review work</button>
                 </div>
@@ -3894,6 +3943,7 @@ class App {
             <!-- Students Needing Attention List -->
             <div id="students-needing-attention-section">
               <h2 style="font-size:20px; margin-bottom:16px; font-weight: 600; color: var(--text-main);">Students needing attention</h2>
+              <p style="font-size:12px; color:var(--text-muted);">Demonstration narrative only. These example reasons are not derived intervention decisions.</p>
               <div class="card" style="padding: 0; overflow: hidden;">
                 <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
                   <thead>
@@ -3939,7 +3989,7 @@ class App {
             <!-- Priority Misconceptions Tracker (Top 2 only) -->
             <div class="card card-info" style="margin-bottom: 24px; padding: 24px;">
               <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Priority misconceptions</h3>
-              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Common conceptual errors detected in recent quizzes:</p>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Demonstration narrative only: example conceptual errors are shown without claiming verified class-level detection.</p>
               
               <div style="display: flex; flex-direction: column; gap: 20px;">
                 <div style="padding-bottom: 16px; border-bottom: 1px dashed var(--border-color);">

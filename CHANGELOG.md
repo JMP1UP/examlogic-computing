@@ -14,6 +14,10 @@ All notable changes to ExamLogic Computing are recorded here.
 - Grouped version-2 retry snapshots by activity in Progress so only the latest counted evidence is presented while storage history remains intact.
 - Classified definition keyword checks as formative-only evidence and labelled reduced-precision historical evidence.
 - Added a recovery route for unavailable programming challenges and aligned earned-badge wording with stored awards.
+- Routed meaningful non-matching pseudocode submissions to teacher review without awarding completion or mastery.
+- Added a selectable clean new-learner demo with no seeded evidence, progress or badges.
+- Labelled static teacher examples as demonstration narrative rather than calculated learner judgements.
+- Improved code-display typography, keyboard focus coverage and responsive pseudocode layout.
 
 ### Tests
 - Added production-order browser startup and Student Demo smoke coverage.
@@ -21,6 +25,7 @@ All notable changes to ExamLogic Computing are recorded here.
 - Added question-bank ID and specification-mapping validation.
 - Added Learn-renderer behaviour coverage for objective teaching, worked examples and every selectable topic.
 - Added question-level retry, Progress presentation, adversarial definition-response, recall-hint and clean-learner fixture coverage.
+- Added browser coverage for the selectable clean learner and integrity coverage for pseudocode awaiting review.
 
 ## [Unreleased] - 2026-07-24
 

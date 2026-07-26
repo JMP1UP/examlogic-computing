@@ -91,6 +91,25 @@ body {
   transition: var(--transition);
 }
 
+pre,
+code,
+.code-input {
+  font-family: 'Consolas', 'Courier New', Courier, monospace;
+}
+
+pre {
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: auto;
+}
+
+.pseudocode-workspace {
+  display: grid;
+  grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-headings);
   color: var(--text-main);
@@ -783,6 +802,9 @@ tr:hover td {
 }
 
 @media (max-width: 768px) {
+  .pseudocode-workspace {
+    grid-template-columns: 1fr;
+  }
   .app-container {
     flex-direction: column;
     height: auto;

@@ -55,7 +55,8 @@ describe('learning-record integrity', () => {
       { type: 'pseudocode', score: 'model checked' },
       { type: 'exam_transfer', score: '5/5' },
       { type: 'exam_transfer_self_check', score: 'self-check 5/5', contributesToMastery: false },
-      { type: 'exam_transfer_retry', score: 'awaiting review', contributesToMastery: false }
+      { type: 'exam_transfer_retry', score: 'awaiting review', contributesToMastery: false },
+      { type: 'pseudocode_review', score: 'awaiting review', evidenceType: 'unassessed_submission', contributesToMastery: false, completionStatus: 'awaiting_review' }
     ]);
 
     expect(mastery).toEqual({
@@ -66,6 +67,39 @@ describe('learning-record integrity', () => {
       evidenceCount: 0,
       legacyEvidenceCount: 0
     });
+  });
+
+  test('keeps meaningful non-matching pseudocode available for review without awarding credit', () => {
+    const { app } = loadApp();
+    const reviewAttempt = {
+      type: 'pseudocode_review',
+      topic: '2.2.ERL',
+      score: 'awaiting review',
+      questionId: 'pseudocode_1',
+      response: 'OUTPUT \"Hello\"',
+      evidenceType: 'unassessed_submission',
+      completionStatus: 'awaiting_review',
+      contributesToMastery: false
+    };
+
+    expect(app.getDemonstratedMastery([reviewAttempt])).toMatchObject({
+      earned: 0,
+      available: 0,
+      evidenceCount: 0
+    });
+    expect(app.parseDemonstratedScore(reviewAttempt)).toBeNull();
+  });
+
+  test('counts only the latest pending pseudocode state per learner activity', () => {
+    const { app } = loadApp();
+    const attempts = [
+      { studentId: 's1', questionId: 'pseudocode_1', type: 'pseudocode_review', completionStatus: 'awaiting_review', date: '2026-01-01' },
+      { studentId: 's1', questionId: 'pseudocode_1', type: 'pseudocode_review', completionStatus: 'awaiting_review', date: '2026-01-02' },
+      { studentId: 's1', questionId: 'pseudocode_1', type: 'pseudocode_assessed', completionStatus: 'completed', date: '2026-01-03' },
+      { studentId: 's2', questionId: 'pseudocode_2', type: 'pseudocode_review', completionStatus: 'awaiting_review', date: '2026-01-04' }
+    ];
+
+    expect(app.getPendingPseudocodeReviews(attempts)).toEqual([attempts[3]]);
   });
 
   test('uses only the latest assessed result per activity so repeat retries cannot inflate evidence count', () => {

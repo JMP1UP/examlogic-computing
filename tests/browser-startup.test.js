@@ -79,6 +79,25 @@ describe('production browser startup', () => {
     expect(context.app.activeTab).toBe('stud-dashboard');
   });
 
+  test('opens a selectable new-learner demo without seeded evidence or badges', async () => {
+    const context = loadProductionScripts();
+
+    context.app.render = jest.fn();
+    await context.app.quickLogin('clean-student');
+
+    expect(context.app.currentUser).toMatchObject({
+      id: 'student_release_fixture',
+      role: 'student',
+      isDemo: true,
+      isCleanDemo: true,
+      achievements: []
+    });
+    expect(context.app.currentUser.personalRevisionPriorities).toEqual([]);
+    expect(context.db.getAttempts().filter(item => item.studentId === context.app.currentUser.id)).toEqual([]);
+    expect(context.db.getProgrammingSubmissions().filter(item => item.studentId === context.app.currentUser.id)).toEqual([]);
+    expect(context.db.getWrittenSubmissions().filter(item => item.studentId === context.app.currentUser.id)).toEqual([]);
+  });
+
   test('executes the canonical Learn renderer with objective teaching and a worked example', () => {
     const context = loadProductionScripts();
     const panel = createPanel();
