@@ -62,6 +62,16 @@ the teaching quality of each hint.
 Definition keyword checks are formative records only. They do not contribute to
 completion, attainment or mastery until a trustworthy assessor is available.
 
+The selectable clean-learner demo uses a dedicated non-persisted persona ID, so
+it begins without seeded attempts, submissions, progress or badges. It is a
+product demonstration state rather than a new authentication or database role.
+
+Pseudocode uses strict normalised matching only to recognise the defined
+reference answer. A meaningful non-matching response is stored as
+`pseudocode_review` with `completionStatus: awaiting_review` and does not
+contribute to completion or mastery. This preserves potentially valid equivalent
+algorithms for human review without claiming an unsupported automated judgement.
+
 ## APIs and integrations
 
 List internal APIs and external services without recording credentials.
@@ -76,7 +86,7 @@ Describe operational logs, alerts, metrics, privacy controls, and incident handl
 
 ## Known technical debt
 
-Curriculum completeness, teacher quality assurance, evidence-based progress
-scoring, quiz workload and semantic marking remain outside the release-blocker
-correction phase. StudySpice must not be described as ready for student use on
-the basis of the operational fixes alone.
+Curriculum completeness and teacher quality assurance still require qualified
+human review. Semantic/equivalence marking and any confidence-driven scheduling
+policy require separately validated designs. Historical evidence without stable
+question IDs remains visible with reduced precision rather than being rewritten.

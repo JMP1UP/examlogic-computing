@@ -87,4 +87,14 @@ describe('User experience regression checks', () => {
     expect(app).toContain('safeguarding-report-btn');
     expect(css).toMatch(/@media \(max-width: 768px\)[\s\S]*?\.safeguarding-report-btn[\s\S]*?min-height: 44px;/);
   });
+
+  test('offers a clean learner demo and keeps code workspaces readable and responsive', () => {
+    expect(html).toContain('id="hero-demo-clean-student-btn"');
+    expect(html).toContain('id="demo-clean-student-btn"');
+    expect(app).toContain("quickLogin('clean-student')");
+    expect(css).toMatch(/pre,\s*code,\s*\.code-input/);
+    expect(css).toContain('.pseudocode-workspace');
+    expect(css).toMatch(/@media \(max-width: 768px\)[\s\S]*?\.pseudocode-workspace\s*\{[\s\S]*?grid-template-columns: 1fr;/);
+    expect(css).toContain(':focus-visible');
+  });
 });

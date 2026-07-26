@@ -33,6 +33,9 @@ describe('GCSE learning design', () => {
     expect(appSource).toContain('OCR Exam Reference Language');
     expect(appSource).toContain('Programming replaces another revision activity when assigned');
     expect(appSource).toContain("type: 'pseudocode_assessed'");
+    expect(appSource).toContain("type: 'pseudocode_review'");
+    expect(appSource).toContain("completionStatus: 'awaiting_review'");
+    expect(appSource).toContain("contributesToMastery: false");
     expect(appSource).not.toContain("score: 'model checked'");
   });
 
@@ -84,6 +87,12 @@ describe('GCSE learning design', () => {
     expect(appSource).toContain('const activeThisWeek = students.filter');
     expect(appSource).toContain('opened the app in the last 7 days');
     expect(appSource).not.toContain('22 of 26 active this week');
+  });
+
+  test('labels static teacher examples as demonstration narrative', () => {
+    expect(appSource).toContain('Demonstration narrative: named examples below');
+    expect(appSource).toContain('Demonstration narrative only. These example reasons');
+    expect(appSource).toContain('without claiming verified class-level detection');
   });
 
   test('teaches transfer into original exam-style questions one step at a time', () => {
