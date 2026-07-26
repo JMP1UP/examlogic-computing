@@ -11,7 +11,10 @@ function loadApp() {
     addAttempt,
     getQuestions: jest.fn(() => []),
     getUnits: jest.fn(() => []),
-    getAttempts: jest.fn(() => [])
+    getAttempts: jest.fn(() => []),
+    getStudents: jest.fn(() => []),
+    getProgrammingSubmissions: jest.fn(() => []),
+    getWrittenSubmissions: jest.fn(() => [])
   };
   const document = {
     getElementById: jest.fn(() => null),
@@ -140,6 +143,81 @@ describe('learning-record integrity', () => {
 
     expect(app.getLatestDemonstratedAttempts(database.getAttempts())).toHaveLength(2);
     expect(app.getAdaptiveSupportLevel('binary conversions')).toBe('Supported');
+  });
+
+  test.each([
+    { retryScore: '3/3', expectedScore: '3/3' },
+    { retryScore: '2/3', expectedScore: '2/3' }
+  ])('Progress displays only the latest counted snapshot after a retry ending at $retryScore', ({ retryScore, expectedScore }) => {
+    const { app, database } = loadApp();
+    const attempts = [
+      { studentId: 'student_fixture', activityId: 'activity_one', attemptSetId: 'set_one', evidenceVersion: 2, type: 'spaced_theory', topic: 'topic_fixture', score: '2/3', date: '2026-01-01' },
+      { studentId: 'student_fixture', activityId: 'activity_one', attemptSetId: 'set_one', evidenceVersion: 2, type: 'spaced_theory', topic: 'topic_fixture', score: retryScore, date: '2026-01-02' }
+    ];
+    app.currentUser = { id: 'student_fixture', role: 'student', achievements: [] };
+    database.getAttempts.mockReturnValue(attempts);
+    database.getStudents.mockReturnValue([app.currentUser]);
+    database.getUnits.mockReturnValue([{ topics: [{ id: 'topic_fixture', name: 'Fixture topic' }] }]);
+    const panel = { innerHTML: '' };
+
+    app.renderStudentProgress(panel);
+
+    expect(attempts).toHaveLength(2);
+    expect(app.getDisplayedEvidenceAttempts(attempts)).toHaveLength(1);
+    expect(app.getDisplayedEvidenceAttempts(attempts)[0].score).toBe(expectedScore);
+    expect((panel.innerHTML.match(/<tr>/g) || [])).toHaveLength(2);
+    expect(panel.innerHTML).toContain(`<td>${expectedScore}</td>`);
+    if (expectedScore !== '2/3') expect(panel.innerHTML).not.toContain('<td>2/3</td>');
+    expect(app.getDemonstratedMastery(attempts)).toMatchObject({
+      earned: Number(expectedScore[0]),
+      available: 3,
+      evidenceCount: 1
+    });
+  });
+
+  test('repeated retries share one latest interpretation across mastery, adaptive support and Progress', () => {
+    const { app, database } = loadApp();
+    const attempts = [
+      { studentId: 'student_fixture', activityId: 'activity_one', evidenceVersion: 2, type: 'number_skills', topic: 'binary conversions', score: '1/3', date: '2026-01-01' },
+      { studentId: 'student_fixture', activityId: 'activity_one', evidenceVersion: 2, type: 'number_skills', topic: 'binary conversions', score: '2/3', date: '2026-01-02' },
+      { studentId: 'student_fixture', activityId: 'activity_one', evidenceVersion: 2, type: 'number_skills', topic: 'binary conversions', score: '3/3', date: '2026-01-03' },
+      { studentId: 'student_fixture', activityId: 'activity_two', evidenceVersion: 2, type: 'number_skills', topic: 'binary conversions', score: '3/3', date: '2026-01-04' }
+    ];
+    app.currentUser = { id: 'student_fixture', role: 'student', achievements: [] };
+    database.getAttempts.mockReturnValue(attempts);
+    database.getStudents.mockReturnValue([app.currentUser]);
+    database.getUnits.mockReturnValue([{ topics: [{ id: 'topic_1_3', name: 'Data Representation' }] }]);
+    const panel = { innerHTML: '' };
+
+    app.renderStudentProgress(panel);
+
+    expect(attempts).toHaveLength(4);
+    expect(app.getLatestDemonstratedAttempts(attempts).map(item => item.attempt.score)).toEqual(['3/3', '3/3']);
+    expect(app.getDisplayedEvidenceAttempts(attempts).map(item => item.score)).toEqual(['3/3', '3/3']);
+    expect(app.getDemonstratedMastery(attempts)).toMatchObject({ earned: 6, available: 6, evidenceCount: 2 });
+    expect(app.getAdaptiveSupportLevel('binary conversions')).toBe('Independent');
+    expect((panel.innerHTML.match(/<td>3\/3<\/td>/g) || [])).toHaveLength(2);
+  });
+
+  test('Progress retains legacy, formative and awaiting-review records with honest labels', () => {
+    const { app, database } = loadApp();
+    const attempts = [
+      { studentId: 'student_fixture', type: 'number_skills', topic: 'binary conversions', score: '2/4', date: '2026-01-01' },
+      { studentId: 'student_fixture', type: 'definition_test', topic: 'mixed key terms', score: '8/10', evidenceType: 'formative', contributesToMastery: false, date: '2026-01-02' },
+      { studentId: 'student_fixture', type: 'exam_transfer_retry', topic: '1.2.3', score: 'awaiting review', evidenceType: 'unassessed_submission', contributesToMastery: false, completionStatus: 'awaiting_review', date: '2026-01-03' }
+    ];
+    app.currentUser = { id: 'student_fixture', role: 'student', achievements: [] };
+    database.getAttempts.mockReturnValue(attempts);
+    database.getStudents.mockReturnValue([app.currentUser]);
+    database.getUnits.mockReturnValue([{ topics: [{ id: 'topic_1_3', name: 'Data Representation' }] }]);
+    const panel = { innerHTML: '' };
+
+    app.renderStudentProgress(panel);
+
+    expect(app.getDisplayedEvidenceAttempts(attempts)).toEqual(attempts);
+    expect(panel.innerHTML).toContain('Demonstrated · reduced-precision legacy');
+    expect(panel.innerHTML).toContain('Formative or unassessed');
+    expect(panel.innerHTML).toContain('Awaiting review');
   });
 
   test('rejects empty, placeholder and meaningless learner decisions', () => {

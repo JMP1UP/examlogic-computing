@@ -48,6 +48,17 @@ denominator evidence. Schema-12 and earlier schema-13 attempts remain unchanged
 in storage; calculations identify records without versioned activity metadata
 as reduced-precision legacy evidence.
 
+The Progress evidence list groups version-2 assessed snapshots by `activityId`
+and presents only the latest snapshot as counted evidence. Earlier snapshots
+remain in storage for audit history. Legacy, formative and awaiting-review
+records remain individually visible because their existing metadata does not
+support safe version-2 grouping.
+
+Each question reachable in a five-minute recall set owns its `retryHint` in its
+source content object. Validation enforces structural safety and reviewed
+conceptual anchors, but human curriculum review remains responsible for judging
+the teaching quality of each hint.
+
 Definition keyword checks are formative records only. They do not contribute to
 completion, attainment or mastery until a trustworthy assessor is available.
 

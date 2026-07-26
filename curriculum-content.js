@@ -16,7 +16,7 @@
     workedExample: 'If the PC stores address 42, the next instruction is fetched from address 42. The PC then changes so it identifies the following instruction. The MAR stores an address, whereas the MDR stores the instruction or data at that address.',
     keyTerms: ['CPU', 'control unit', 'ALU', 'cache', 'program counter', 'MAR', 'MDR', 'accumulator'],
     misconception: 'The MAR stores an address, not the data held at that address.',
-    diagnostic: { question: 'Which register stores the address of the next instruction?', options: ['Program counter', 'MDR', 'Accumulator', 'ALU'], answer: 'Program counter', explanation: 'The program counter stores the address of the next instruction. The MAR stores the address currently being accessed.' }
+    diagnostic: { question: 'Which register stores the address of the next instruction?', options: ['Program counter', 'MDR', 'Accumulator', 'ALU'], answer: 'Program counter', explanation: 'The program counter stores the address of the next instruction. The MAR stores the address currently being accessed.', retryHint: 'Follow the fetch stage and ask which register must identify the memory location to fetch before that location is copied elsewhere.' }
   },
   {
     id: '1.1.2', officialSpecificationPointId: '1.1.2', sourcePages: '6',
@@ -25,7 +25,7 @@
     workedExample: 'A video encoder designed for parallel processing may benefit from additional cores. A sequential task may gain little because later instructions depend on earlier results.',
     keyTerms: ['clock speed', 'cache size', 'core', 'parallel processing'],
     misconception: 'A 4 GHz processor does not necessarily execute four billion complete instructions per second.',
-    diagnostic: { question: 'Why might doubling the number of CPU cores fail to halve a program’s running time?', options: ['The program may not divide its work between cores', 'Each core removes half the cache', 'Clock speed becomes zero', 'RAM becomes read-only'], answer: 'The program may not divide its work between cores', explanation: 'Extra cores help only when work can be performed in parallel.' }
+    diagnostic: { question: 'Why might doubling the number of CPU cores fail to halve a program’s running time?', options: ['The program may not divide its work between cores', 'Each core removes half the cache', 'Clock speed becomes zero', 'RAM becomes read-only'], answer: 'The program may not divide its work between cores', explanation: 'Extra cores help only when work can be performed in parallel.', retryHint: 'Consider whether every instruction can run at the same time or whether some parts of the task must wait for earlier parts to finish.' }
   },
   {
     id: '1.1.3', officialSpecificationPointId: '1.1.3', sourcePages: '6',
@@ -34,7 +34,7 @@
     workedExample: 'A thermostat reads a temperature sensor and switches heating on or off. Its computing system has a dedicated purpose and is embedded in the thermostat.',
     keyTerms: ['embedded system', 'dedicated function', 'sensor'],
     misconception: 'A device can contain software and still be embedded; embedded does not mean “no program”.',
-    diagnostic: { question: 'Which is the best example of an embedded system?', options: ['A controller inside a washing machine', 'A general-purpose desktop PC', 'A laptop used for homework', 'A cloud file server'], answer: 'A controller inside a washing machine', explanation: 'The controller is built into a larger device for a specific purpose.' }
+    diagnostic: { question: 'Which is the best example of an embedded system?', options: ['A controller inside a washing machine', 'A general-purpose desktop PC', 'A laptop used for homework', 'A cloud file server'], answer: 'A controller inside a washing machine', explanation: 'The controller is built into a larger device for a specific purpose.', retryHint: 'Look for computing hardware built into a larger product to carry out one dedicated job, rather than a device intended for many user-chosen tasks.' }
   },
   {
     id: '1.2.1', officialSpecificationPointId: '1.2.1', sourcePages: '7',
@@ -43,7 +43,7 @@
     workedExample: 'Opening several large applications may fill RAM. Less-used data is moved to virtual memory and returned to RAM when required, but repeated transfers make the system slower.',
     keyTerms: ['RAM', 'ROM', 'volatile', 'virtual memory', 'cache'],
     misconception: 'Virtual memory is secondary storage used as an overflow area; it is not extra physical RAM.',
-    diagnostic: { question: 'What happens when a system uses virtual memory?', options: ['Data is transferred between RAM and secondary storage', 'ROM becomes volatile', 'The CPU gains another core', 'All files are compressed'], answer: 'Data is transferred between RAM and secondary storage', explanation: 'Virtual memory uses part of secondary storage when RAM does not have enough space.' }
+    diagnostic: { question: 'What happens when a system uses virtual memory?', options: ['Data is transferred between RAM and secondary storage', 'ROM becomes volatile', 'The CPU gains another core', 'All files are compressed'], answer: 'Data is transferred between RAM and secondary storage', explanation: 'Virtual memory uses part of secondary storage when RAM does not have enough space.', retryHint: 'Think about what the operating system does with less-used program data when the available main memory is full, and why this is slower.' }
   },
   {
     id: '1.2.2', officialSpecificationPointId: '1.2.2', sourcePages: '7',
@@ -52,7 +52,7 @@
     workedExample: 'For a camera used during sport, a solid-state memory card is small and has no moving parts. For a large low-cost archive, magnetic storage may offer more capacity for the budget.',
     keyTerms: ['secondary storage', 'magnetic', 'optical', 'solid state'],
     misconception: 'Storage media and storage capacity are different ideas: a device type does not have one fixed capacity.',
-    diagnostic: { question: 'Which factor most directly supports choosing solid-state storage for a camera used while cycling?', options: ['Durability because it has no moving parts', 'It is always the cheapest per gigabyte', 'It requires mains power', 'It is volatile'], answer: 'Durability because it has no moving parts', explanation: 'A device used while moving benefits from storage that is resistant to shocks.' }
+    diagnostic: { question: 'Which factor most directly supports choosing solid-state storage for a camera used while cycling?', options: ['Durability because it has no moving parts', 'It is always the cheapest per gigabyte', 'It requires mains power', 'It is volatile'], answer: 'Durability because it has no moving parts', explanation: 'A device used while moving benefits from storage that is resistant to shocks.', retryHint: 'Use the cycling context: compare how each storage technology copes with vibration and impacts while the camera is moving.' }
   },
   {
     id: '1.2.3', officialSpecificationPointId: '1.2.3', sourcePages: '8',
@@ -61,7 +61,7 @@
     workedExample: 'A text file with 2,000 characters at 8 bits per character contains 16,000 bits, which is 2,000 bytes or 2 KB using decimal units.',
     keyTerms: ['bit', 'nibble', 'byte', 'kilobyte', 'capacity'],
     misconception: 'Bits and bytes are not interchangeable: divide a number of bits by eight to obtain bytes.',
-    diagnostic: { question: 'How many bytes are in 24,000 bits?', options: ['3,000', '24,000', '192,000', '30'], answer: '3,000', explanation: 'There are eight bits in a byte, so 24,000 / 8 = 3,000 bytes.' }
+    diagnostic: { question: 'How many bytes are in 24,000 bits?', options: ['3,000', '24,000', '192,000', '30'], answer: '3,000', explanation: 'There are eight bits in a byte, so 24,000 / 8 = 3,000 bytes.', retryHint: 'Write down how many bits make one byte, then decide whether converting a quantity of bits into the larger unit needs multiplication or division.' }
   },
   {
     id: '1.2.4a', officialSpecificationPointId: '1.2.4', sourcePages: '8',
@@ -70,7 +70,7 @@
     workedExample: '00101101 is 45 in denary and 2D in hexadecimal. Shifting it left once in eight bits gives 01011010, which is 90.',
     keyTerms: ['denary', 'binary', 'hexadecimal', 'overflow', 'binary shift'],
     misconception: 'A shift does not preserve bits that leave the fixed-width representation.',
-    diagnostic: { question: 'What is the eight-bit binary value 11111111 in denary?', options: ['255', '256', '127', 'FF'], answer: '255', explanation: 'Adding the place values 128+64+32+16+8+4+2+1 gives 255.' }
+    diagnostic: { question: 'What is the eight-bit binary value 11111111 in denary?', options: ['255', '256', '127', 'FF'], answer: '255', explanation: 'Adding the place values 128+64+32+16+8+4+2+1 gives 255.', retryHint: 'Label all eight binary place values from the most significant bit to the least significant bit, then total every position containing a one.' }
   },
   {
     id: '1.2.4b', officialSpecificationPointId: '1.2.4', sourcePages: '9',
@@ -79,7 +79,7 @@
     workedExample: 'If A has code 65, B has code 66. In an exam, the ASCII binary code is shown using eight bits.',
     keyTerms: ['character set', 'ASCII', 'Unicode', 'character code'],
     misconception: 'Students do not need to memorise ASCII codes; they must understand how codes represent characters.',
-    diagnostic: { question: 'How many different codes can a six-bit character set represent?', options: ['64', '6', '12', '36'], answer: '64', explanation: 'Six bits have 2^6, or 64, possible patterns.' }
+    diagnostic: { question: 'How many different codes can a six-bit character set represent?', options: ['64', '6', '12', '36'], answer: '64', explanation: 'Six bits have 2^6, or 64, possible patterns.', retryHint: 'Each added bit doubles the number of available patterns. Start with one bit and double the pattern count once for every further bit.' }
   },
   {
     id: '1.2.4c', officialSpecificationPointId: '1.2.4', sourcePages: '9',
@@ -115,7 +115,7 @@
     workedExample: 'A school file server centrally stores work for clients. A switch directs frames within the LAN and a router forwards traffic to other networks.',
     keyTerms: ['LAN', 'WAN', 'client', 'server', 'switch', 'router', 'DNS', 'cloud'],
     misconception: 'The Internet and the World Wide Web are not identical: the web is one service that uses the Internet.',
-    diagnostic: { question: 'Which device normally connects a school LAN to another network?', options: ['Router', 'Switch', 'NIC', 'Wireless mouse'], answer: 'Router', explanation: 'A router forwards data between different networks.' }
+    diagnostic: { question: 'Which device normally connects a school LAN to another network?', options: ['Router', 'Switch', 'NIC', 'Wireless mouse'], answer: 'Router', explanation: 'A router forwards data between different networks.', retryHint: 'Choose the device that inspects network addressing information and selects where a packet should travel next when it leaves the local network.' }
   },
   {
     id: '1.3.2', officialSpecificationPointId: '1.3.2', sourcePages: '11',
@@ -124,7 +124,7 @@
     workedExample: 'A desktop that needs a stable high-speed connection may use Ethernet. A phone uses Wi-Fi for mobility. HTTPS adds encrypted communication for web traffic.',
     keyTerms: ['Ethernet', 'Wi-Fi', 'encryption', 'IP address', 'MAC address', 'protocol', 'layer'],
     misconception: 'OCR requires the benefits of layers, but not the names and functions of every TCP/IP layer.',
-    diagnostic: { question: 'Which protocol is used to send email from a client to a mail server?', options: ['SMTP', 'IMAP', 'POP', 'FTP'], answer: 'SMTP', explanation: 'SMTP sends email; POP and IMAP are used to retrieve or manage received email.' }
+    diagnostic: { question: 'Which protocol is used to send email from a client to a mail server?', options: ['SMTP', 'IMAP', 'POP', 'FTP'], answer: 'SMTP', explanation: 'SMTP sends email; POP and IMAP are used to retrieve or manage received email.', retryHint: 'Separate the protocol used for outgoing mail transfer from protocols used by a client to retrieve or synchronise messages already received.' }
   },
   {
     id: '1.4.1', officialSpecificationPointId: '1.4.1', sourcePages: '12',
@@ -133,7 +133,7 @@
     workedExample: 'A fake password-reset message directs a user to a copied login page. This is phishing: the attacker exploits trust to steal credentials.',
     keyTerms: ['malware', 'social engineering', 'brute force', 'denial of service', 'SQL injection'],
     misconception: 'Phishing is social engineering, not necessarily malware.',
-    diagnostic: { question: 'Which attack attempts many possible passwords until one succeeds?', options: ['Brute force', 'Denial of service', 'Data interception', 'Phishing'], answer: 'Brute force', explanation: 'A brute-force attack systematically tries credential combinations.' }
+    diagnostic: { question: 'Which attack attempts many possible passwords until one succeeds?', options: ['Brute force', 'Denial of service', 'Data interception', 'Phishing'], answer: 'Brute force', explanation: 'A brute-force attack systematically tries credential combinations.', retryHint: 'Focus on the repeated automated guessing of credentials, rather than tricking a person, overwhelming a service or reading traffic in transit.' }
   },
   {
     id: '1.4.2', officialSpecificationPointId: '1.4.2', sourcePages: '12',
@@ -142,7 +142,7 @@
     workedExample: 'Giving pupils read-only access to shared records uses access levels to prevent unauthorised changes even after a valid login.',
     keyTerms: ['penetration testing', 'firewall', 'access level', 'physical security'],
     misconception: 'A firewall does not guarantee that all malware is blocked; it controls network traffic according to rules.',
-    diagnostic: { question: 'Which control deliberately searches a system for exploitable weaknesses?', options: ['Penetration testing', 'Defragmentation', 'Compression', 'File management'], answer: 'Penetration testing', explanation: 'Authorised penetration testing simulates attacks to identify vulnerabilities.' }
+    diagnostic: { question: 'Which control deliberately searches a system for exploitable weaknesses?', options: ['Penetration testing', 'Defragmentation', 'Compression', 'File management'], answer: 'Penetration testing', explanation: 'Authorised penetration testing simulates attacks to identify vulnerabilities.', retryHint: 'Look for an authorised security activity that imitates attack techniques so weaknesses can be discovered and repaired before a real attacker uses them.' }
   },
   {
     id: '1.5.1', officialSpecificationPointId: '1.5.1', sourcePages: '13',
@@ -151,7 +151,7 @@
     workedExample: 'When two applications run, the operating system allocates memory to each and schedules access to the processor while continuing to respond to input devices.',
     keyTerms: ['operating system', 'multitasking', 'driver', 'access rights', 'file management'],
     misconception: 'A driver is software that lets the operating system communicate with hardware; it is not the physical device.',
-    diagnostic: { question: 'Which operating-system function allocates RAM to running applications?', options: ['Memory management', 'File management', 'User interface', 'Encryption'], answer: 'Memory management', explanation: 'Memory management assigns memory to applications and supports multitasking.' }
+    diagnostic: { question: 'Which operating-system function allocates RAM to running applications?', options: ['Memory management', 'File management', 'User interface', 'Encryption'], answer: 'Memory management', explanation: 'Memory management assigns memory to applications and supports multitasking.', retryHint: 'Match the resource named in the question to the operating-system responsibility that tracks free space and assigns that resource to active processes.' }
   },
   {
     id: '1.5.2', officialSpecificationPointId: '1.5.2', sourcePages: '13',
@@ -160,7 +160,7 @@
     workedExample: 'After files on a magnetic hard disk become fragmented, a defragmentation utility reorganises their blocks. It is not used to gain the same benefit on solid-state storage, which has no moving read head.',
     keyTerms: ['utility software', 'encryption', 'defragmentation', 'compression'],
     misconception: 'Defragmentation reorganises file blocks; it does not compress the files.',
-    diagnostic: { question: 'What is the purpose of a defragmentation utility?', options: ['Reorganise file blocks on magnetic storage', 'Encrypt files with a key', 'Remove all metadata', 'Allocate RAM to programs'], answer: 'Reorganise file blocks on magnetic storage', explanation: 'More contiguous blocks can reduce mechanical head movement on a hard disk.' }
+    diagnostic: { question: 'What is the purpose of a defragmentation utility?', options: ['Reorganise file blocks on magnetic storage', 'Encrypt files with a key', 'Remove all metadata', 'Allocate RAM to programs'], answer: 'Reorganise file blocks on magnetic storage', explanation: 'More contiguous blocks can reduce mechanical head movement on a hard disk.', retryHint: 'Consider a hard disk whose parts of one file are scattered across many locations and how reducing mechanical head travel could improve access time.' }
   },
   {
     id: '1.6.1', officialSpecificationPointId: '1.6.1', sourcePages: '14',
@@ -169,7 +169,7 @@
     workedExample: 'Remote working can reduce commuting but increases reliance on devices and data centres. It can improve access for some people while excluding those without suitable equipment or connectivity.',
     keyTerms: ['ethical issue', 'cultural impact', 'environmental impact', 'privacy'],
     misconception: 'An ethical concern is not automatically illegal; law and ethics overlap but are different tests.',
-    diagnostic: { question: 'Which is primarily an environmental impact of digital technology?', options: ['Electronic waste from replaced devices', 'A software licence condition', 'A password length rule', 'A syntax error'], answer: 'Electronic waste from replaced devices', explanation: 'Discarded hardware creates waste and uses resources in manufacture and disposal.' }
+    diagnostic: { question: 'Which is primarily an environmental impact of digital technology?', options: ['Electronic waste from replaced devices', 'A software licence condition', 'A password length rule', 'A syntax error'], answer: 'Electronic waste from replaced devices', explanation: 'Discarded hardware creates waste and uses resources in manufacture and disposal.', retryHint: 'Identify the option that affects physical resources, pollution or disposal, rather than a legal condition, security rule or programming fault.' }
   },
   {
     id: '1.6.2', officialSpecificationPointId: '1.6.1', sourcePages: '14',
@@ -178,7 +178,7 @@
     workedExample: 'A business may choose open-source software to inspect and adapt the code, but it must follow the licence and consider support needs. Buying proprietary software does not transfer copyright ownership.',
     keyTerms: ['Data Protection Act 2018', 'Computer Misuse Act 1990', 'copyright', 'software licence'],
     misconception: '“Open source” does not mean there are no licence conditions or copyright.',
-    diagnostic: { question: 'Which law addresses unauthorised access to computer systems?', options: ['Computer Misuse Act 1990', 'Data Protection Act 2018', 'Copyright, Designs and Patents Act 1988', 'Health and Safety at Work Act'], answer: 'Computer Misuse Act 1990', explanation: 'The Computer Misuse Act covers unauthorised access and related unauthorised acts.' }
+    diagnostic: { question: 'Which law addresses unauthorised access to computer systems?', options: ['Computer Misuse Act 1990', 'Data Protection Act 2018', 'Copyright, Designs and Patents Act 1988', 'Health and Safety at Work Act'], answer: 'Computer Misuse Act 1990', explanation: 'The Computer Misuse Act covers unauthorised access and related unauthorised acts.', retryHint: 'Distinguish legislation about accessing computer systems without permission from laws about personal information, creative ownership and workplace safety.' }
   },
   {
     id: '2.1.1', officialSpecificationPointId: '2.1.1', sourcePages: '15',
@@ -187,7 +187,7 @@
     workedExample: 'For a journey planner, decomposition separates route input, route search and output. Abstraction ignores the colour of buildings, and algorithmic thinking orders the route-search steps.',
     keyTerms: ['decomposition', 'abstraction', 'algorithmic thinking'],
     misconception: 'Abstraction removes irrelevant detail; it does not mean making every part less detailed.',
-    diagnostic: { question: 'A developer ignores the colour of cars when modelling traffic flow. Which principle is used?', options: ['Abstraction', 'Decomposition', 'Iteration', 'Validation'], answer: 'Abstraction', explanation: 'The irrelevant colour detail is removed from the model.' }
+    diagnostic: { question: 'A developer ignores the colour of cars when modelling traffic flow. Which principle is used?', options: ['Abstraction', 'Decomposition', 'Iteration', 'Validation'], answer: 'Abstraction', explanation: 'The irrelevant colour detail is removed from the model.', retryHint: 'Ask which computational-thinking process removes details that do not affect the model, rather than splitting the problem or checking input.' }
   },
   {
     id: '2.1.2', officialSpecificationPointId: '2.1.2', sourcePages: '15',
@@ -196,7 +196,7 @@
     workedExample: 'For an average calculator, inputs are the values, the process totals and divides them, and the output is the average. A trace table records the running total after each iteration.',
     keyTerms: ['input', 'process', 'output', 'flowchart', 'trace table', 'nesting'],
     misconception: 'A trace-table row should represent a meaningful execution step, not merely copy every source-code line.',
-    diagnostic: { question: 'What is the main purpose of a trace table?', options: ['Follow variable values as an algorithm executes', 'Translate code into machine code', 'Store files permanently', 'Draw a network topology'], answer: 'Follow variable values as an algorithm executes', explanation: 'Tracing records how state changes so behaviour and logic errors can be identified.' }
+    diagnostic: { question: 'What is the main purpose of a trace table?', options: ['Follow variable values as an algorithm executes', 'Translate code into machine code', 'Store files permanently', 'Draw a network topology'], answer: 'Follow variable values as an algorithm executes', explanation: 'Tracing records how state changes so behaviour and logic errors can be identified.', retryHint: 'Think about recording program state after each instruction or loop pass so you can see where an algorithm begins to behave unexpectedly.' }
   },
   {
     id: '2.1.3', officialSpecificationPointId: '2.1.3', sourcePages: '16',
@@ -205,7 +205,7 @@
     workedExample: 'To find 31 in [4, 12, 20, 31, 45], binary search checks 20, keeps the right half, then checks 31.',
     keyTerms: ['linear search', 'binary search', 'bubble sort', 'insertion sort', 'merge sort'],
     misconception: 'Binary search cannot correctly discard half of an unsorted list.',
-    diagnostic: { question: 'Which algorithm requires the data to be sorted before searching?', options: ['Binary search', 'Linear search', 'Bubble sort', 'Insertion sort'], answer: 'Binary search', explanation: 'Binary search relies on order to decide which half cannot contain the target.' }
+    diagnostic: { question: 'Which algorithm requires the data to be sorted before searching?', options: ['Binary search', 'Linear search', 'Bubble sort', 'Insertion sort'], answer: 'Binary search', explanation: 'Binary search relies on order to decide which half cannot contain the target.', retryHint: 'Choose the search method that repeatedly rules out half of the remaining items; that decision is reliable only when the items are already ordered.' }
   },
   {
     id: '2.2.1', officialSpecificationPointId: '2.2.1', sourcePages: '17',
@@ -214,7 +214,7 @@
     workedExample: 'If score is 17, score MOD 5 is 2 and score DIV 5 is 3. A selection can output “pass” only when score >= the threshold.',
     keyTerms: ['variable', 'constant', 'assignment', 'selection', 'iteration', 'MOD', 'DIV'],
     misconception: 'The assignment operator changes a stored value; it is not the same operation as testing equality.',
-    diagnostic: { question: 'What is the result of 17 MOD 5?', options: ['2', '3', '3.4', '85'], answer: '2', explanation: 'MOD returns the remainder after integer division.' }
+    diagnostic: { question: 'What is the result of 17 MOD 5?', options: ['2', '3', '3.4', '85'], answer: '2', explanation: 'MOD returns the remainder after integer division.', retryHint: 'Divide the first number by the second using whole groups, then use the amount left over after those complete groups have been removed.' }
   },
   {
     id: '2.2.2', officialSpecificationPointId: '2.2.2', sourcePages: '18',
@@ -223,7 +223,7 @@
     workedExample: 'An age may be an integer, a price a real, a login status a Boolean and a postcode a string. Casting the input string “12” to an integer allows arithmetic.',
     keyTerms: ['integer', 'real', 'Boolean', 'character', 'string', 'casting'],
     misconception: 'Numeric-looking input is often received as a string and may need casting before arithmetic.',
-    diagnostic: { question: 'Which data type is most suitable for a value that can only be true or false?', options: ['Boolean', 'Integer', 'Character', 'Real'], answer: 'Boolean', explanation: 'A Boolean represents exactly two logical values.' }
+    diagnostic: { question: 'Which data type is most suitable for a value that can only be true or false?', options: ['Boolean', 'Integer', 'Character', 'Real'], answer: 'Boolean', explanation: 'A Boolean represents exactly two logical values.', retryHint: 'Look for the data type designed for exactly two logical states, rather than a whole number, decimal value or single symbol.' }
   },
   {
     id: '2.2.3', officialSpecificationPointId: '2.2.3', sourcePages: '18',
@@ -232,7 +232,7 @@
     workedExample: 'SELECT Name FROM Pupil WHERE House = "Red" returns the Name field for records whose House field is Red.',
     keyTerms: ['concatenation', 'slicing', 'record', 'SQL', 'array', 'function', 'procedure', 'local variable'],
     misconception: 'WHERE filters records; it does not choose which fields are displayed.',
-    diagnostic: { question: 'Which SQL clause specifies the condition records must satisfy?', options: ['WHERE', 'SELECT', 'FROM', 'RETURN'], answer: 'WHERE', explanation: 'WHERE filters rows; SELECT chooses fields and FROM identifies the table.' }
+    diagnostic: { question: 'Which SQL clause specifies the condition records must satisfy?', options: ['WHERE', 'SELECT', 'FROM', 'RETURN'], answer: 'WHERE', explanation: 'WHERE filters rows; SELECT chooses fields and FROM identifies the table.', retryHint: 'Separate the clause that chooses output fields from the clause that names the table; you need the remaining clause that filters rows using a condition.' }
   },
   {
     id: '2.2.PY', officialSpecificationPointId: '2d / 2.2', sourcePages: '17-22',
@@ -259,7 +259,7 @@
     workedExample: 'An age input can use a type and range check, repeat the prompt after invalid data, and keep the validation in a clearly named subprogram.',
     keyTerms: ['defensive design', 'authentication', 'validation', 'maintainability'],
     misconception: 'Validation checks acceptability, not truth: a plausible but incorrect date can pass validation.',
-    diagnostic: { question: 'What does authentication confirm?', options: ['The identity of a user', 'That input is factually true', 'That code has no logic errors', 'That a file is compressed'], answer: 'The identity of a user', explanation: 'Authentication checks that a user is who they claim to be.' }
+    diagnostic: { question: 'What does authentication confirm?', options: ['The identity of a user', 'That input is factually true', 'That code has no logic errors', 'That a file is compressed'], answer: 'The identity of a user', explanation: 'Authentication checks that a user is who they claim to be.', retryHint: 'Think about what a login check establishes about the person requesting access, rather than whether entered data is sensible or software is correct.' }
   },
   {
     id: '2.3.2', officialSpecificationPointId: '2.3.2', sourcePages: '19',
@@ -268,7 +268,7 @@
     workedExample: 'For an integer range 1 to 10: 5 is normal, 1 and 10 are boundaries, 11 is invalid, and “five” is erroneous.',
     keyTerms: ['iterative testing', 'terminal testing', 'normal data', 'boundary data', 'invalid data', 'erroneous data'],
     misconception: 'A value just outside a valid range is invalid, not boundary data.',
-    diagnostic: { question: 'For an integer input from 1 to 10, how should the value 11 be classified?', options: ['Invalid', 'Boundary', 'Normal', 'Erroneous'], answer: 'Invalid', explanation: 'It has the correct type but lies outside the accepted range.' }
+    diagnostic: { question: 'For an integer input from 1 to 10, how should the value 11 be classified?', options: ['Invalid', 'Boundary', 'Normal', 'Erroneous'], answer: 'Invalid', explanation: 'It has the correct type but lies outside the accepted range.', retryHint: 'Write the two allowed edge values first, then check whether the supplied value lies inside or outside that inclusive range.' }
   },
   {
     id: '2.4.1', officialSpecificationPointId: '2.4.1', sourcePages: '20',
@@ -277,7 +277,7 @@
     workedExample: 'For (A AND B) OR NOT C with A=1, B=0 and C=0: A AND B is 0, NOT C is 1, so the final output is 1.',
     keyTerms: ['AND', 'OR', 'NOT', 'truth table', 'logic diagram'],
     misconception: 'OR is inclusive in this specification: it outputs 1 when either or both inputs are 1.',
-    diagnostic: { question: 'What is the output of an OR gate when both inputs are 1?', options: ['1', '0', 'Undefined', 'It alternates'], answer: '1', explanation: 'OR outputs 1 when at least one input is 1, including when both are 1.' }
+    diagnostic: { question: 'What is the output of an OR gate when both inputs are 1?', options: ['1', '0', 'Undefined', 'It alternates'], answer: '1', explanation: 'OR outputs 1 when at least one input is 1, including when both are 1.', retryHint: 'Recall the condition that makes this gate active, then check whether the pair of inputs satisfies that condition at least once.' }
   },
   {
     id: '2.5.1', officialSpecificationPointId: '2.5.1', sourcePages: '21',
@@ -286,7 +286,7 @@
     workedExample: 'A compiler can prepare a release build that runs without translating each source instruction again. An interpreter can give immediate feedback while developing and testing.',
     keyTerms: ['high-level language', 'low-level language', 'translator', 'compiler', 'interpreter'],
     misconception: 'Assembler knowledge is not required by OCR J277 2.5.1.',
-    diagnostic: { question: 'Why does high-level source code require a translator?', options: ['The CPU executes machine code', 'The CPU only stores images', 'High-level code is encrypted', 'RAM cannot store text'], answer: 'The CPU executes machine code', explanation: 'A compiler or interpreter translates high-level instructions into operations the processor can execute.' }
+    diagnostic: { question: 'Why does high-level source code require a translator?', options: ['The CPU executes machine code', 'The CPU only stores images', 'High-level code is encrypted', 'RAM cannot store text'], answer: 'The CPU executes machine code', explanation: 'A compiler or interpreter translates high-level instructions into operations the processor can execute.', retryHint: 'Compare the human-readable instructions written by a programmer with the low-level instruction format that processor hardware can carry out.' }
   },
   {
     id: '2.5.2', officialSpecificationPointId: '2.5.2', sourcePages: '21',
@@ -295,7 +295,7 @@
     workedExample: 'A programmer uses the editor to change a condition, reads the diagnostic that identifies a missing delimiter, then runs the corrected program in the IDE.',
     keyTerms: ['IDE', 'editor', 'error diagnostics', 'run-time environment', 'translator'],
     misconception: 'Syntax highlighting may help reading, but the OCR-required editor category is broader than that one feature.',
-    diagnostic: { question: 'Which IDE facility reports where a syntax problem has occurred?', options: ['Error diagnostics', 'Run-time environment', 'File compression', 'User management'], answer: 'Error diagnostics', explanation: 'Diagnostic tools identify errors and help the programmer locate them.' }
+    diagnostic: { question: 'Which IDE facility reports where a syntax problem has occurred?', options: ['Error diagnostics', 'Run-time environment', 'File compression', 'User management'], answer: 'Error diagnostics', explanation: 'Diagnostic tools identify errors and help the programmer locate them.', retryHint: 'Choose the development-environment tool that marks or reports problems in source code and points the programmer towards their location.' }
   }
   ];
 });

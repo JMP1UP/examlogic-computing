@@ -112,7 +112,8 @@
       question: 'When does iterative testing take place?',
       options: ['During development as modules are produced', 'Only after the product is released', 'Only before any code is written', 'After deleting the source code'],
       answer: 'During development as modules are produced',
-      explanation: 'Iterative testing checks parts of the program throughout development.'
+      explanation: 'Iterative testing checks parts of the program throughout development.',
+      retryHint: 'Think about a cycle in which a programmer changes a module, tests it, and uses the result to guide the next change before the product is finished.'
     },
     {
       id: 'priority_232_2', topicId: 'topic_2_3', specificationPointId: '2.3.2', purpose: 'retrieval', type: 'mcq',

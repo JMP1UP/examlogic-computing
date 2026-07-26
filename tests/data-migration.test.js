@@ -52,7 +52,10 @@ describe('StudySpice local-data migrations', () => {
     expect(migrated.curriculumContent.find(item => item.id === 'legacy_curriculum_item')).toEqual(
       schema12Fixture.curriculumContent[0]
     );
-    expect(migrated.questions.find(item => item.id === 'legacy_teacher_question')).toBeDefined();
+    expect(migrated.questions.find(item => item.id === 'legacy_teacher_question')).toEqual(
+      schema12Fixture.questions[0]
+    );
+    expect(migrated.questions.find(item => item.id === 'legacy_teacher_question')).not.toHaveProperty('retryHint');
   });
 
   test('persists the migrated schema instead of silently resetting it', () => {

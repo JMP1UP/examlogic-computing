@@ -1376,7 +1376,8 @@ def calculate_area(width, height):
         "RAM is secondary storage; ROM is primary memory"
       ],
       "answer": "RAM is volatile and read/write; ROM is non-volatile and read-only",
-      "explanation": "RAM loses its data when power is lost (volatile). ROM retains data permanently (non-volatile) and stores bootloader instructions."
+      "explanation": "RAM loses its data when power is lost (volatile). ROM retains data permanently (non-volatile) and stores bootloader instructions.",
+      "retryHint": "Compare what happens to each memory type when power is removed and whether the processor can normally change the stored contents."
     },
     {
       "id": "q_1_2_b",
@@ -1456,7 +1457,8 @@ def calculate_area(width, height):
         "To store website files for local network caching"
       ],
       "answer": "To forward data packets between different networks using IP addresses",
-      "explanation": "Routers connect distinct networks (e.g. LAN to internet WAN) by inspecting IP packet headers."
+      "explanation": "Routers connect distinct networks (e.g. LAN to internet WAN) by inspecting IP packet headers.",
+      "retryHint": "Focus on the device that reads destination addressing information and chooses the next network path for each packet."
     },
     {
       "id": "q_1_4_b",
@@ -1488,7 +1490,8 @@ def calculate_area(width, height):
         "By preventing physical theft of server hardware"
       ],
       "answer": "By monitoring network traffic and blocking packets that do not meet security rules",
-      "explanation": "A firewall acts as a filter on network ports to block unauthorized packet transmissions."
+      "explanation": "A firewall acts as a filter on network ports to block unauthorized packet transmissions.",
+      "retryHint": "Think about a boundary control that compares incoming and outgoing traffic with configured rules before allowing it to pass."
     },
     {
       "id": "q_1_6_a",
@@ -1504,7 +1507,8 @@ def calculate_area(width, height):
         "To manage user logins and access privileges"
       ],
       "answer": "To act as a translator allowing the OS to communicate with hardware peripherals",
-      "explanation": "Device drivers translate generic OS hardware commands into specific peripheral control signals."
+      "explanation": "Device drivers translate generic OS hardware commands into specific peripheral control signals.",
+      "retryHint": "Consider why an operating system needs device-specific software between its general commands and the instructions understood by a peripheral."
     },
     {
       "id": "q_1_7_a",
@@ -1520,7 +1524,8 @@ def calculate_area(width, height):
         "Freedom of Information Act 2000"
       ],
       "answer": "Computer Misuse Act 1990",
-      "explanation": "The Computer Misuse Act 1990 criminalises unauthorized access, hacking, and malware creation."
+      "explanation": "The Computer Misuse Act 1990 criminalises unauthorized access, hacking, and malware creation.",
+      "retryHint": "Match the offence to legislation concerned with entering or changing computer systems without permission, not personal-data handling or copyright."
     },
     {
       "id": "q_2_4_e",
@@ -1536,7 +1541,8 @@ def calculate_area(width, height):
         "-1"
       ],
       "answer": "1",
-      "explanation": "An OR gate outputs 1 if at least one input is 1."
+      "explanation": "An OR gate outputs 1 if at least one input is 1.",
+      "retryHint": "Apply the gate rule by checking whether either input is active; do not require both inputs to have the same state."
     },
     {
       "id": "q_2_5_e",
@@ -1552,6 +1558,7 @@ def calculate_area(width, height):
         "A compiler runs code slower than an interpreter during runtime"
       ],
       "answer": "A compiler translates entire source code into an executable file at once; an interpreter translates and runs code line-by-line",
+      "retryHint": "Compare when translation occurs and whether a separate executable is produced before considering how each translated program is run.",
       "explanation": "Compilers produce standalone executable files; interpreters translate and execute source code line-by-line."
     },
     {
@@ -1777,7 +1784,8 @@ def calculate_area(width, height):
             "The inputs must be different values"
       ],
       "answer": "Both inputs must be 1",
-      "explanation": "An AND gate output is only true (1) if all of its input lines are true (1)."
+      "explanation": "An AND gate output is only true (1) if all of its input lines are true (1).",
+      "retryHint": "Use the gate rule that every input condition must be satisfied together, then test each option against that requirement."
 },
     {
       "id": "q_2_4_b",
@@ -2928,49 +2936,53 @@ const KEY_TERM_SPECIFICATION_MAP = {
   term_pseudocode: '2.2.ERL'
 };
 
-const RETRY_HINTS_BY_SPECIFICATION = {
-  '1.1.1': 'Trace the fetch–decode–execute cycle and distinguish whether each component stores an address, data or an intermediate result.',
-  '1.1.2': 'Compare one processor characteristic at a time, then consider whether the software can use the available hardware effectively.',
-  '1.1.3': 'Check whether the computer is built into a larger device for a dedicated purpose rather than general-purpose use.',
-  '1.2.1': 'Revisit volatility, permitted operations and the role each type of primary storage performs while a computer is running.',
-  '1.2.2': 'Match the storage technology to how it records data, then compare capacity, durability, portability and speed.',
-  '1.2.3': 'Write the unit ladder and convert one step at a time; remember that bits and bytes require an additional conversion.',
-  '1.2.4a': 'Use place values or four-bit groups, and check whether a fixed-width result loses a bit through overflow or shifting.',
-  '1.2.4b': 'Think about how many distinct codes a given number of bits can represent and why larger character sets are needed.',
-  '1.2.4c': 'Identify pixel dimensions and bits per pixel before applying the image-size relationship and converting units.',
-  '1.2.4d': 'Separate how often samples are taken from how precisely each sample is stored, then include duration in size calculations.',
-  '1.2.5': 'Decide whether exact reconstruction matters in the scenario before choosing between the two compression approaches.',
-  '1.3.1': 'Identify the geographical scale and ownership of the network, then separate topology from network type.',
-  '1.3.2': 'Follow the data from application request through addressing and transport, and match each protocol to its purpose.',
-  '1.4.1': 'Identify the attack method first, then distinguish exploiting people, software weaknesses and network traffic.',
-  '1.4.2': 'Match the defence to the stage of the attack it prevents, detects or limits rather than choosing a generic security term.',
-  '1.5.1': 'Separate user-facing utilities from the operating system functions that manage hardware, memory, files and processes.',
-  '1.5.2': 'Focus on the maintenance purpose of the utility, such as protecting, compressing, encrypting or reorganising stored data.',
-  '1.6.1': 'Identify the stakeholder and consequence in the scenario, then distinguish ethical, cultural and environmental considerations.',
-  '1.6.2': 'Match the scenario to the law’s purpose: personal data, unauthorised access, intellectual property or software licensing.',
-  '2.1.1': 'Break the problem into smaller parts and distinguish removing unnecessary detail from identifying inputs, processes and outputs.',
-  '2.1.2': 'Trace the algorithm with a small example and check its prerequisite, stopping condition and worst-case path.',
-  '2.1.3': 'Use the named inputs to calculate the expected result step by step, paying attention to boundaries and integer behaviour.',
-  '2.2.1': 'Trace assignment in sequence and distinguish storing a new value from comparing two existing values.',
-  '2.2.2': 'Choose the control structure by asking whether execution is sequential, conditional, count-controlled or condition-controlled.',
-  '2.2.3': 'Check the data structure, index boundaries and the declared interface of the string, array, record, file or subprogram.',
-  '2.2.PY': 'Trace the supplied test case through the Python code and compare the observed output with the required behaviour.',
-  '2.2.ERL': 'Use OCR Exam Reference Language syntax and check assignment, equality, block endings and inclusive loop boundaries.',
-  '2.3.1': 'Distinguish preventing invalid input from checking identity, and apply each technique to the exact risk in the scenario.',
-  '2.3.2': 'Classify whether the fault prevents translation, stops execution or produces the wrong result, then choose a suitable test.',
-  '2.4.1': 'Evaluate each Boolean input first, then apply the gate or expression one operation at a time.',
-  '2.5.1': 'Compare when translation happens, what output is produced and how errors or execution speed affect the stated scenario.',
-  '2.5.2': 'Match each development-environment tool to the specific job it performs while writing, translating, testing or debugging code.'
+// Human-reviewed conceptual anchors support validation without claiming to automate pedagogical quality.
+const RECALL_HINT_REVIEW = {
+  diagnostic_1_1_1: /fetch|memory location|register/i,
+  diagnostic_1_1_2: /same time|wait|parallel/i,
+  diagnostic_1_1_3: /larger product|dedicated job|many user-chosen tasks/i,
+  diagnostic_1_2_1: /main memory|less-used program data|slower/i,
+  diagnostic_1_2_2: /vibration|impacts|moving/i,
+  q_1_2_a: /power is removed|change the stored contents/i,
+  diagnostic_1_2_3: /bits make one byte|multiplication or division/i,
+  diagnostic_1_2_4a: /binary place values|position containing a one/i,
+  diagnostic_1_2_4b: /doubles|pattern count/i,
+  diagnostic_1_3_1: /addressing information|packet|local network/i,
+  diagnostic_1_3_2: /outgoing mail|retrieve|synchronise/i,
+  q_1_4_a: /destination addressing|network path|packet/i,
+  diagnostic_1_4_1: /automated guessing|credentials/i,
+  diagnostic_1_4_2: /authorised security activity|attack techniques|weaknesses/i,
+  q_1_5_c: /traffic|configured rules|boundary control/i,
+  diagnostic_1_5_1: /tracks free space|active processes|resource/i,
+  diagnostic_1_5_2: /scattered|mechanical head travel|access time/i,
+  q_1_6_a: /device-specific software|peripheral|general commands/i,
+  diagnostic_1_6_1: /physical resources|pollution|disposal/i,
+  diagnostic_1_6_2: /without permission|personal information|creative ownership/i,
+  q_1_7_a: /without permission|personal-data handling|copyright/i,
+  diagnostic_2_1_1: /removes details|splitting the problem|checking input/i,
+  diagnostic_2_1_2: /program state|instruction|loop pass/i,
+  diagnostic_2_1_3: /half|already ordered|search method/i,
+  diagnostic_2_2_1: /whole groups|left over|complete groups/i,
+  diagnostic_2_2_2: /two logical states|whole number|single symbol/i,
+  diagnostic_2_2_3: /filters rows|condition|output fields/i,
+  diagnostic_2_3_1: /login check|person requesting access|entered data/i,
+  diagnostic_2_3_2: /allowed edge values|inside or outside|inclusive range/i,
+  priority_232_1: /cycle|changes a module|before the product is finished/i,
+  diagnostic_2_4_1: /gate active|pair of inputs|at least once/i,
+  q_2_4_e: /either input|gate rule|same state/i,
+  q_2_4_a: /every input condition|satisfied together/i,
+  diagnostic_2_5_1: /human-readable|processor hardware|instruction format/i,
+  diagnostic_2_5_2: /source code|points the programmer|location/i,
+  q_2_5_e: /when translation occurs|separate executable|program is run/i
 };
-const DEFAULT_QUESTION_IDS = new Set(defaultDatabase.questions.map(question => question.id));
+const RECALL_HINT_FORBIDDEN = {
+  diagnostic_1_5_2: /reorganis(?:e|ing)|file blocks?|contiguous/i
+};
 
 function applyContentMappings(data) {
   (data.questions || []).forEach(question => {
     question.specificationPointId = question.specificationPointId || QUESTION_SPECIFICATION_MAP[question.id] || null;
     question.purpose = question.purpose || 'retrieval';
-    if (DEFAULT_QUESTION_IDS.has(question.id)) {
-      question.retryHint = question.retryHint || RETRY_HINTS_BY_SPECIFICATION[question.specificationPointId] || null;
-    }
     if (question.id === 'q_1_2_d') question.topicId = 'topic_1_3';
     if (question.id === 'q_6') question.topicId = 'topic_1_2';
   });
@@ -3029,21 +3041,61 @@ function validateQuestionBank(data) {
   });
 
   const normaliseGuidanceText = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const guidanceWords = value => String(value || '').toLowerCase().match(/[a-z0-9]+/g) || [];
+  const meaningfulAnswerPhrases = answer => {
+    const stopWords = new Set(['a', 'an', 'and', 'as', 'at', 'be', 'between', 'by', 'for', 'from', 'in', 'into', 'is', 'it', 'of', 'on', 'or', 'the', 'to', 'using', 'with']);
+    const words = guidanceWords(answer).filter(word => !stopWords.has(word));
+    return words.slice(0, -1).map((word, index) => `${word} ${words[index + 1]}`);
+  };
   const reachableRecallQuestions = (data.units || []).flatMap(unit =>
     (unit.topics || []).flatMap(topic =>
       (data.questions || []).filter(question => question.topicId === topic.id).slice(0, 3)
     )
   );
+  const seenHints = new Map();
   reachableRecallQuestions.forEach(question => {
     const hint = String(question.retryHint || '').trim();
-    if (hint.length < 40 || /reread|read the question|try again|review the question wording/i.test(hint)) {
+    if (hint.length < 50 || /reread|read the question|try again|review the question wording|review this topic|check your notes|think carefully/i.test(hint)) {
       throw new Error(`Question ${question.id} requires actionable conceptual retry guidance.`);
+    }
+    if (!Object.prototype.hasOwnProperty.call(question, 'retryHint')) {
+      throw new Error(`Question ${question.id} must own its retry guidance.`);
     }
     const normalisedAnswer = normaliseGuidanceText(question.answer);
     const normalisedHint = normaliseGuidanceText(hint);
+    const normalisedQuestion = normaliseGuidanceText(question.question);
+    if (normalisedQuestion.length >= 12 && normalisedHint.includes(normalisedQuestion)) {
+      throw new Error(`Question ${question.id} retry guidance copies the question.`);
+    }
     if (normalisedAnswer.length >= 3 && normalisedHint.includes(normalisedAnswer)) {
       throw new Error(`Question ${question.id} retry guidance reveals its answer.`);
     }
+    const hintWords = ` ${guidanceWords(hint).join(' ')} `;
+    if (meaningfulAnswerPhrases(question.answer).some(phrase => hintWords.includes(` ${phrase} `))) {
+      throw new Error(`Question ${question.id} retry guidance closely paraphrases its answer.`);
+    }
+    const copiedDistractor = (question.options || [])
+      .filter(option => option !== question.answer)
+      .some(option => {
+        const optionWords = guidanceWords(option);
+        if (!optionWords.length || (optionWords.length === 1 && ['a', 'an', 'and', 'at', 'from', 'in', 'of', 'on', 'or', 'the', 'to'].includes(optionWords[0]))) return false;
+        return optionWords.join(' ').length >= 4 && hintWords.includes(` ${optionWords.join(' ')} `);
+      });
+    if (copiedDistractor) {
+      throw new Error(`Question ${question.id} retry guidance repeats a distractor.`);
+    }
+    const conceptualAnchor = RECALL_HINT_REVIEW[question.id];
+    if (!conceptualAnchor || !conceptualAnchor.test(hint)) {
+      throw new Error(`Question ${question.id} retry guidance does not match its reviewed conceptual focus.`);
+    }
+    const forbiddenParaphrase = RECALL_HINT_FORBIDDEN[question.id];
+    if (forbiddenParaphrase && forbiddenParaphrase.test(hint)) {
+      throw new Error(`Question ${question.id} retry guidance closely paraphrases its answer.`);
+    }
+    if (seenHints.has(normalisedHint)) {
+      throw new Error(`Questions ${seenHints.get(normalisedHint)} and ${question.id} reuse identical retry guidance.`);
+    }
+    seenHints.set(normalisedHint, question.id);
   });
 
   return true;

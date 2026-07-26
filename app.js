@@ -200,6 +200,28 @@ class App {
     return [...latestByActivity.values()].sort((left, right) => left.time - right.time);
   }
 
+  getDisplayedEvidenceAttempts(attempts) {
+    const latestVersionedByActivity = new Map();
+    const retainedRecords = [];
+    attempts.forEach((attempt, index) => {
+      const time = Date.parse(attempt.date || '') || index;
+      const isVersionedActivity = Number(attempt.evidenceVersion) >= 2
+        && attempt.activityId
+        && this.parseDemonstratedScore(attempt);
+      if (!isVersionedActivity) {
+        retainedRecords.push({ attempt, time, index });
+        return;
+      }
+      const previous = latestVersionedByActivity.get(attempt.activityId);
+      if (!previous || time >= previous.time) {
+        latestVersionedByActivity.set(attempt.activityId, { attempt, time, index });
+      }
+    });
+    return [...retainedRecords, ...latestVersionedByActivity.values()]
+      .sort((left, right) => left.time - right.time || left.index - right.index)
+      .map(item => item.attempt);
+  }
+
   createEvidenceSet(type, topic, questions) {
     const unique = window.crypto && typeof window.crypto.randomUUID === 'function'
       ? window.crypto.randomUUID()
@@ -3622,6 +3644,7 @@ class App {
   renderStudentProgress(panel) {
     const student = window.db.getStudents().find(s => s.id === this.currentUser.id) || this.currentUser;
     const attempts = window.db.getAttempts().filter(a => a.studentId === this.currentUser.id);
+    const displayedAttempts = this.getDisplayedEvidenceAttempts(attempts);
     const submissions = window.db.getProgrammingSubmissions().filter(s => s.studentId === this.currentUser.id);
     const writtenSubmissions = window.db.getWrittenSubmissions().filter(s => s.studentId === this.currentUser.id);
     const topicMasteryHtml = window.db.getUnits().flatMap(unit => unit.topics).map(topic => {
@@ -3667,7 +3690,7 @@ class App {
                 </tr>
               </thead>
               <tbody>
-                ${attempts.map(a => `
+                ${displayedAttempts.map(a => `
                   <tr>
                     <td>${a.topic}</td>
                     <td>${a.type}</td>
