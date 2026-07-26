@@ -1278,15 +1278,25 @@ class App {
       return;
     }
     const currentPaper = activeNote ? activeNote.paper : 'Paper 1';
-    const objectiveTeaching = window.db.getCurriculumContent().filter(item => {
+    const allObjectiveTeaching = window.db.getCurriculumContent().filter(item => {
       const objective = window.db.getUnits()
         .flatMap(unit => unit.topics)
         .find(topic => topic.id === activeNote.topicId)
         ?.objectives.find(candidate => candidate.id === item.id);
       return Boolean(objective);
     });
+
+    const isFilteredObjective = this.activeObjectiveId && this.activeObjectiveId !== 'all' && allObjectiveTeaching.some(o => o.id === this.activeObjectiveId);
+    const objectiveTeaching = isFilteredObjective
+      ? allObjectiveTeaching.filter(o => o.id === this.activeObjectiveId)
+      : allObjectiveTeaching;
+
+    const totalCoreMins = allObjectiveTeaching.reduce((acc, item) => acc + (item.workload?.coreLearningMinutes || 10), 0);
+
     const objectiveTeachingHtml = objectiveTeaching.length
-      ? objectiveTeaching.map(item => `
+      ? objectiveTeaching.map(item => {
+          const savedPractice = typeof localStorage !== 'undefined' ? (localStorage.getItem(`try_practice_${item.id}`) || '') : '';
+          return `
           <article class="card" style="padding: 22px; border: 1px solid var(--border-color);" aria-labelledby="objective-${this.escapeHTML(item.id)}">
             <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
               <h3 id="objective-${this.escapeHTML(item.id)}" style="font-size: 18px; margin: 0;">${this.escapeHTML(item.id)} &middot; ${this.escapeHTML(item.scope)}</h3>
@@ -1297,9 +1307,27 @@ class App {
               <strong>Worked example</strong>
               <p style="line-height: 1.6; margin: 6px 0 0;">${this.escapeHTML(item.workedExample)}</p>
             </div>
-            <div style="background: var(--bg-main); border-left: 4px solid var(--amber); padding: 14px; border-radius: 0 8px 8px 0; margin-top: 12px;">
-              <strong>Try it with support</strong>
-              <p style="line-height: 1.6; margin: 6px 0 0;">${this.escapeHTML(item.supportedPractice)}</p>
+            <!-- Interactive Try it with support -->
+            <div style="background: var(--bg-main); border-left: 4px solid var(--amber); padding: 16px; border-radius: 0 8px 8px 0; margin-top: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                <strong style="font-size: 15px; color: var(--text-main);">✍️ Try it with support (Guided Practice)</strong>
+                <span class="badge badge-secondary" style="font-size: 11px;">Interactive Practice</span>
+              </div>
+              <p style="line-height: 1.6; margin: 0 0 12px; font-weight: 500;">${this.escapeHTML(item.supportedPractice)}</p>
+              <div class="form-group" style="margin-bottom: 12px;">
+                <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">Your Practice Response / Solution Draft:</label>
+                <textarea id="try-input-${item.id}" class="form-control try-practice-textarea" data-obj-id="${item.id}" rows="3" placeholder="Type your response or step-by-step working here..." style="font-size: 13.5px; line-height: 1.5;">${this.escapeHTML(savedPractice)}</textarea>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                <button type="button" class="btn btn-secondary btn-sm save-try-btn" data-obj-id="${item.id}">💾 Save Response</button>
+                <button type="button" class="btn btn-secondary btn-sm toggle-guide-btn" data-obj-id="${item.id}">💡 Check Worked Solution</button>
+                <button type="button" class="btn btn-primary btn-sm goto-review-btn" data-spec-id="${item.id}">✍️ Practise in Written Answers &rarr;</button>
+              </div>
+              <div id="try-guide-${item.id}" class="card" style="display: none; margin-top: 12px; padding: 14px; background: rgba(45, 156, 145, 0.08); border-left: 4px solid var(--teal);">
+                <strong style="color: var(--teal); font-size: 13px;">Guided Solution Reference:</strong>
+                <p style="font-size: 13.5px; line-height: 1.6; margin: 6px 0 0;">${this.escapeHTML(item.workedExample)}</p>
+              </div>
+              <div id="try-status-${item.id}" style="font-size: 12px; color: var(--teal); margin-top: 6px; display: none; font-weight: 600;"></div>
             </div>
             <p style="font-size: 13px; margin: 12px 0 0;"><strong>Core learning:</strong> about ${item.workload.coreLearningMinutes} minutes. <strong>Optional retrieval:</strong> up to ${item.workload.retrievalMinutes} minutes.</p>
             <p style="font-size: 13px; margin: 6px 0;"><strong>How OCR may assess this:</strong> ${item.assessmentModes.map(mode => this.escapeHTML(mode)).join(', ')}.</p>
@@ -1308,7 +1336,8 @@ class App {
               ${item.keyTerms.map(term => `<span class="badge badge-secondary">${this.escapeHTML(term)}</span>`).join('')}
             </div>
           </article>
-        `).join('')
+          `;
+        }).join('')
       : '<div class="card" role="status"><strong>Objective-level teaching is unavailable for this strand.</strong></div>';
 
     // Group notes by paper
@@ -1363,7 +1392,10 @@ class App {
             </div>
           </div>
           <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">${activeNote.title}</h2>
-          <p style="font-size: 15px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">${activeNote.summary}</p>
+          <p style="font-size: 15px; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px;">${activeNote.summary}</p>
+          <div style="font-size: 13px; color: var(--text-main); margin-bottom: 16px; background: var(--bg-main); padding: 8px 12px; border-radius: 6px; display: inline-block;">
+            ⏱️ <strong>Topic Workload:</strong> ~${totalCoreMins} minutes total across ${allObjectiveTeaching.length} objective modules (~10–15 mins per module).
+          </div>
           
           <!-- Specification Points Covered -->
           <div style="background-color: rgba(45, 156, 145, 0.08); border-radius: 8px; padding: 14px 18px; border: 1px solid rgba(45, 156, 145, 0.2);">
@@ -1376,7 +1408,20 @@ class App {
 
         <!-- Objective-level teaching -->
         <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;">
-          <h2 style="font-size: 21px; margin: 0;">Learn each specification requirement</h2>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <h2 style="font-size: 21px; margin: 0;">Learn each specification requirement</h2>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+              <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">View:</span>
+              <button class="btn ${(!this.activeObjectiveId || this.activeObjectiveId === 'all') ? 'btn-primary' : 'btn-secondary'} objective-filter-btn" data-obj-id="all" style="padding: 4px 12px; font-size: 12px; border-radius: 14px;">
+                All (${allObjectiveTeaching.length})
+              </button>
+              ${allObjectiveTeaching.map(item => `
+                <button class="btn ${this.activeObjectiveId === item.id ? 'btn-primary' : 'btn-secondary'} objective-filter-btn" data-obj-id="${item.id}" style="padding: 4px 12px; font-size: 12px; border-radius: 14px;">
+                  ${item.officialSpecificationPointId}
+                </button>
+              `).join('')}
+            </div>
+          </div>
           ${objectiveTeachingHtml}
         </div>
 
@@ -1448,6 +1493,7 @@ class App {
         const firstNote = theoryNotes.find(n => n.paper === paper);
         if (firstNote) {
           this.activeTopicId = firstNote.topicId;
+          this.activeObjectiveId = 'all';
           this.renderStudentLearn(panel);
         }
       };
@@ -1456,7 +1502,56 @@ class App {
     panel.querySelectorAll('.topic-pill-btn').forEach(btn => {
       btn.onclick = () => {
         this.activeTopicId = btn.getAttribute('data-topic-id');
+        this.activeObjectiveId = 'all';
         this.renderStudentLearn(panel);
+      };
+    });
+
+    panel.querySelectorAll('.objective-filter-btn').forEach(btn => {
+      btn.onclick = () => {
+        this.activeObjectiveId = btn.getAttribute('data-obj-id');
+        this.renderStudentLearn(panel);
+      };
+    });
+
+    panel.querySelectorAll('.save-try-btn').forEach(btn => {
+      btn.onclick = () => {
+        const objId = btn.getAttribute('data-obj-id');
+        const textarea = panel.querySelector(`#try-input-${objId}`);
+        const statusDiv = panel.querySelector(`#try-status-${objId}`);
+        if (textarea) {
+          const val = textarea.value;
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem(`try_practice_${objId}`, val);
+          }
+          if (statusDiv) {
+            statusDiv.textContent = '✓ Response saved locally';
+            statusDiv.style.display = 'block';
+            setTimeout(() => { statusDiv.style.display = 'none'; }, 3000);
+          }
+        }
+      };
+    });
+
+    panel.querySelectorAll('.toggle-guide-btn').forEach(btn => {
+      btn.onclick = () => {
+        const objId = btn.getAttribute('data-obj-id');
+        const guideDiv = panel.querySelector(`#try-guide-${objId}`);
+        if (guideDiv) {
+          guideDiv.style.display = guideDiv.style.display === 'none' ? 'block' : 'none';
+        }
+      };
+    });
+
+    panel.querySelectorAll('.goto-review-btn').forEach(btn => {
+      btn.onclick = () => {
+        const specId = btn.getAttribute('data-spec-id');
+        const writtenQs = window.db.getWrittenQuestions();
+        const targetQ = writtenQs.find(q => q.specificationPointId === specId) || writtenQs[0];
+        if (targetQ) {
+          this.activeWQuestionId = targetQ.id;
+        }
+        this.switchTab('stud-written');
       };
     });
 
@@ -1557,11 +1652,42 @@ class App {
     }
     const points = window.db.getUnits().flatMap(unit => unit.topics.flatMap(topic => topic.objectives.map(objective => ({ ...objective, topicId: topic.id, topicName: topic.name, paper: unit.paper }))));
     const selected = prep.specificationPointIds.map(id => points.find(point => point.id === id)).filter(Boolean);
-    const sessionPoints = selected.slice(0, Math.min(3, selected.length));
+    
+    if (typeof this.testPrepOffset !== 'number') this.testPrepOffset = 0;
+    if (this.testPrepOffset >= selected.length) this.testPrepOffset = 0;
+
+    const showAll = Boolean(this.showAllTestPrepPoints);
+    const sessionPoints = showAll ? selected : selected.slice(this.testPrepOffset, this.testPrepOffset + 3);
     const minutesEach = Math.max(2, Math.floor(prep.sessionMinutes / Math.max(1, sessionPoints.length)));
+
+    const startIdx = showAll ? 1 : this.testPrepOffset + 1;
+    const endIdx = showAll ? selected.length : Math.min(this.testPrepOffset + 3, selected.length);
+
     panel.innerHTML = `
-      <div style="margin-bottom:24px;"><span class="badge badge-primary">${prep.sessionMinutes}-minute session</span><h1 style="margin-top:8px;">${this.escapeHTML(prep.title)}</h1><p>${selected.length} specification points selected · ${this.formatDueDate(prep.testDate).replace('Due ', 'Test ')}</p></div>
-      <div class="card" style="margin-bottom:20px; border-left:5px solid var(--teal);"><strong>Today’s sequence:</strong> quick diagnostic → targeted support → one exam-style transfer. Stop when the ${prep.sessionMinutes}-minute session ends; unfinished work rolls into the next session.</div>
+      <div style="margin-bottom:24px;">
+        <span class="badge badge-primary">${prep.sessionMinutes}-minute session</span>
+        <h1 style="margin-top:8px;">${this.escapeHTML(prep.title)}</h1>
+        <p>${selected.length} specification points selected · ${this.formatDueDate(prep.testDate).replace('Due ', 'Test ')}</p>
+      </div>
+
+      <div class="card" style="margin-bottom:20px; border-left:5px solid var(--teal);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div>
+            <strong>Session sequence (Points ${startIdx}–${endIdx} of ${selected.length}):</strong> quick diagnostic → targeted support → exam transfer.
+          </div>
+          ${selected.length > 3 ? `
+            <div style="display:flex; gap:6px; align-items:center;">
+              ${!showAll ? `
+                <button type="button" class="btn btn-secondary btn-sm prep-prev-batch-btn" ${this.testPrepOffset === 0 ? 'disabled' : ''}>&larr; Prev</button>
+                <span style="font-size:12px; font-weight:600; color:var(--text-muted);">Batch ${Math.floor(this.testPrepOffset / 3) + 1} of ${Math.ceil(selected.length / 3)}</span>
+                <button type="button" class="btn btn-secondary btn-sm prep-next-batch-btn" ${this.testPrepOffset + 3 >= selected.length ? 'disabled' : ''}>Next &rarr;</button>
+              ` : ''}
+              <button type="button" class="btn btn-secondary btn-sm prep-toggle-all-btn">${showAll ? 'Show Batch View' : `Show All (${selected.length})`}</button>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+
       <div style="display:flex; flex-direction:column; gap:14px;">
         ${sessionPoints.map((point, index) => {
           const isPython = point.id === '2.2.PY';
@@ -1576,7 +1702,7 @@ class App {
           }[support] || 'Hints available';
           return `<div class="card" style="display:flex; justify-content:space-between; gap:20px; align-items:center;">
             <div><span class="badge badge-primary">${index === 0 ? 'Diagnostic' : index === sessionPoints.length - 1 ? 'Exam bridge' : 'Targeted practice'} · ${minutesEach} mins</span><h3 style="margin:8px 0 5px;">${point.id} ${point.name}</h3><p style="font-size:13px; color:var(--text-muted); margin:0;">${point.paper} · ${point.topicName} · ${supportDescription}</p></div>
-            <button class="btn btn-primary btn-sm prep-point-start-btn" aria-label="Start ${index === 0 ? 'diagnostic' : index === sessionPoints.length - 1 ? 'exam bridge' : 'targeted practice'}: ${point.id} ${point.name}" data-target-tab="${targetTab}" data-topic-id="${point.topicId}">Start</button>
+            <button class="btn btn-primary btn-sm prep-point-start-btn" aria-label="Start ${index === 0 ? 'diagnostic' : index === sessionPoints.length - 1 ? 'exam bridge' : 'targeted practice'}: ${point.id} ${point.name}" data-target-tab="${targetTab}" data-topic-id="${point.topicId}" data-spec-id="${point.id}">Start</button>
           </div>`;
         }).join('')}
       </div>
@@ -1584,8 +1710,34 @@ class App {
     `;
     panel.querySelectorAll('.prep-point-start-btn').forEach(button => button.onclick = () => {
       this.activeTopicId = button.getAttribute('data-topic-id');
+      const specId = button.getAttribute('data-spec-id');
+      if (specId) this.activeObjectiveId = specId;
       this.switchTab(button.getAttribute('data-target-tab'));
     });
+
+    const prevBatchBtn = panel.querySelector('.prep-prev-batch-btn');
+    if (prevBatchBtn) {
+      prevBatchBtn.onclick = () => {
+        this.testPrepOffset = Math.max(0, this.testPrepOffset - 3);
+        this.renderStudentTestPrep(panel);
+      };
+    }
+
+    const nextBatchBtn = panel.querySelector('.prep-next-batch-btn');
+    if (nextBatchBtn) {
+      nextBatchBtn.onclick = () => {
+        this.testPrepOffset = Math.min(selected.length - 1, this.testPrepOffset + 3);
+        this.renderStudentTestPrep(panel);
+      };
+    }
+
+    const toggleAllBtn = panel.querySelector('.prep-toggle-all-btn');
+    if (toggleAllBtn) {
+      toggleAllBtn.onclick = () => {
+        this.showAllTestPrepPoints = !this.showAllTestPrepPoints;
+        this.renderStudentTestPrep(panel);
+      };
+    }
   }
 
   // ==================== LEARN ALONG ====================
@@ -1978,7 +2130,30 @@ class App {
   renderStudentRecall(panel) {
     const topicQuestions = window.db.getQuestions().filter(q => q.topicId === this.activeTopicId);
     const isRetry = Boolean(this.quizRetryQuestions);
-    this.quizQuestions = this.quizRetryQuestions || topicQuestions.slice(0, 3);
+    let selectedQuestions = [];
+    if (this.quizRetryQuestions) {
+      selectedQuestions = this.quizRetryQuestions;
+    } else if (this.activeObjectiveId && this.activeObjectiveId !== 'all') {
+      const matchingObjQuestions = topicQuestions.filter(q => q.specificationPointId === this.activeObjectiveId);
+      const otherQuestions = topicQuestions.filter(q => q.specificationPointId !== this.activeObjectiveId);
+      selectedQuestions = [...matchingObjQuestions, ...otherQuestions].slice(0, 3);
+    } else {
+      const specPoints = [...new Set(topicQuestions.map(q => q.specificationPointId).filter(Boolean))];
+      if (specPoints.length > 1) {
+        const picked = [];
+        specPoints.forEach(sp => {
+          const q = topicQuestions.find(candidate => candidate.specificationPointId === sp && !picked.includes(candidate));
+          if (q && picked.length < 3) picked.push(q);
+        });
+        topicQuestions.forEach(q => {
+          if (picked.length < 3 && !picked.includes(q)) picked.push(q);
+        });
+        selectedQuestions = picked.slice(0, 3);
+      } else {
+        selectedQuestions = topicQuestions.slice(0, 3);
+      }
+    }
+    this.quizQuestions = selectedQuestions;
     this.quizRetryQuestions = null;
     if (!isRetry) {
       this.quizEvidenceSet = this.createEvidenceSet('spaced_theory', this.activeTopicId, this.quizQuestions);
@@ -3433,9 +3608,7 @@ class App {
             <div style="font-size: 13px; margin-top: 12px; line-height: 1.6; color: var(--text-muted);">
               Key technical details to check in your response:
               <ul style="margin-top: 8px; padding-left: 20px; display: flex; flex-direction: column; gap: 6px;">
-                <li><strong>Data privacy/GDPR:</strong> Securely wiping hard drives to prevent student records leaking.</li>
-                <li><strong>E-waste landfilling:</strong> Preventing toxic lead/mercury from contaminating local ecosystems.</li>
-                <li><strong>Precious metals recycling:</strong> Extracting copper/gold to reduce raw mining depletion.</li>
+                ${(activeQ.indicativeContent && activeQ.indicativeContent.length ? activeQ.indicativeContent : (activeQ.rubric || [])).map(hint => `<li>${this.escapeHTML(hint)}</li>`).join('')}
               </ul>
             </div>
           </details>

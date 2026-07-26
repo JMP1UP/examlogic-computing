@@ -2162,7 +2162,7 @@ def calculate_area(width, height):
       "id": "q_1_4_router_role_alt",
       "legacyQuestionId": "q_1_4_b",
       "topicId": "topic_1_4",
-      "specificationPointId": "1.3.2",
+      "specificationPointId": "1.3.1",
       "type": "mcq",
       "question": "What is the role of a Router on a network?",
       "options": [
@@ -2956,8 +2956,180 @@ const applicationCommandWord = modes => {
   if (modes.includes('trace')) return 'Trace';
   return 'Explain';
 };
+const concreteApplicationDetails = {
+  '1.1.1': {
+    question: 'A CPU fetches an instruction from memory location 0x04. Trace the fetch cycle by describing the specific contents of the PC, MAR, MDR, and Control Unit during this step, and explain which register stores an address versus actual data.',
+    scenario: 'Tracing the CPU fetch-execute cycle for address 0x04.',
+    rubric: [
+      'States that PC contains address 0x04 initially.',
+      'Explains that address 0x04 is copied to MAR while the instruction at 0x04 is loaded into MDR.',
+      'Identifies PC and MAR as address registers, whereas MDR holds data/instructions.'
+    ],
+    modelAnswer: 'The PC starts holding address 0x04. To fetch the instruction, address 0x04 is copied into the MAR. The CPU reads memory address 0x04 and copies the instruction content into the MDR. The PC is then incremented to 0x05. MAR and PC store memory addresses, while MDR stores the data or instruction fetched.'
+  },
+  '1.1.3': {
+    question: 'Compare a washing machine controller, a PlayStation 5, and an office desktop PC. Identify which device contains an embedded system and justify your choice based on hardware flexibility, purpose, and operating system requirements.',
+    scenario: 'Classifying embedded systems versus general-purpose computers.',
+    rubric: [
+      'Identifies the washing machine controller as an embedded system.',
+      'Explains that general-purpose PCs can perform arbitrary user-selected tasks.',
+      'Justifies embedded status using dedicated function, limited user interface, and fixed firmware.'
+    ],
+    modelAnswer: 'The washing machine controller is an embedded system because it is built into a larger device to perform one dedicated purpose (controlling wash cycles). In contrast, a desktop PC and PlayStation 5 are general-purpose devices capable of running multiple unrelated applications chosen by the user.'
+  },
+  '1.2.2': {
+    question: 'A cyclist needs a camera attached to a bike helmet, a school needs a 10 TB nightly backup system, and a publisher needs to distribute 500 physical textbook DVDs. Recommend the best storage technology (Solid State, Magnetic, Optical) for each scenario and justify each choice using capacity, durability, and portability.',
+    scenario: 'Selecting secondary storage media for specific operational constraints.',
+    rubric: [
+      'Recommends Solid State for helmet camera due to high durability and lack of moving parts.',
+      'Recommends Magnetic storage (HDD/tape) for 10 TB backup due to low cost per gigabyte at high capacity.',
+      'Recommends Optical storage for distributing physical textbook DVDs due to low mass production cost.'
+    ],
+    modelAnswer: 'For the helmet camera, solid-state flash storage is best because it has no moving parts and will not be damaged by movement/shocks. For 10 TB nightly backups, magnetic storage (HDD) is best because it provides high capacity at the lowest cost per GB. For distributing physical media, optical storage (DVD) is inexpensive to produce and portable.'
+  },
+  '1.2.3': {
+    question: 'Convert a file size of 32,000 bits into bytes, and then convert bytes into KB using the OCR decimal convention (1 KB = 1,000 bytes). Show all calculation steps clearly.',
+    scenario: 'Calculating data storage units from bits to kilobytes.',
+    rubric: [
+      'Divides 32,000 bits by 8 to obtain 4,000 bytes.',
+      'Divides 4,000 bytes by 1,000 to obtain 4 KB.',
+      'Shows complete arithmetic steps and correct unit labels.'
+    ],
+    modelAnswer: '32,000 bits / 8 = 4,000 bytes. 4,000 bytes / 1,000 = 4 KB. The file size is 4 KB.'
+  },
+  '1.2.4a': {
+    question: 'Convert hexadecimal 3A to 8-bit binary and denary. Next, add the 8-bit binary values 01011100 (92) and 01100101 (101), state whether an overflow error occurs, and trace a 2-place right shift on 01011100.',
+    scenario: 'Performing binary conversions, 8-bit addition, overflow detection, and binary shifts.',
+    rubric: [
+      'Converts 3A to binary 00111010 and denary 58.',
+      'Adds 01011100 + 01100101 to get 11000001 (193) and confirms no overflow occurs (fits in 8 bits).',
+      'Performs right shift of 01011100 by 2 places to produce 00010111 (23).'
+    ],
+    modelAnswer: 'Hexadecimal 3A: 3 = 0011, A = 1010 -> Binary 00111010. Denary: (3 * 16) + 10 = 58. Addition: 01011100 + 01100101 = 11000001 (193 denary). No overflow error occurs because 193 <= 255 (fits in 8 bits). Right shift of 01011100 by 2 bits gives 00010111 (denary 23).'
+  },
+  '1.2.4b': {
+    question: 'Calculate the total number of unique character codes that can be represented using a 7-bit ASCII character set versus a 16-bit Unicode character set. If the ASCII code for character "A" is 65 (01000001), state the binary representation for character "D".',
+    scenario: 'Comparing character set capacities and calculating ASCII binary codes.',
+    rubric: [
+      'Calculates 2^7 = 128 codes for 7-bit ASCII and 2^16 = 65,536 codes for 16-bit Unicode.',
+      'Identifies character "D" as denary code 68.',
+      'Converts 68 to 8-bit binary 01000100.'
+    ],
+    modelAnswer: '7-bit ASCII can represent 2^7 = 128 characters. 16-bit Unicode can represent 2^16 = 65,536 characters. If "A" = 65, then "D" = 68. 68 in 8-bit binary is 01000100.'
+  },
+  '1.2.4c': {
+    question: 'Calculate the uncompressed file size in bytes for a bitmap image with dimensions of 320 by 200 pixels and an 8-bit colour depth. Explain how increasing the colour depth to 16 bits affects both image quality and file size.',
+    scenario: 'Calculating bitmap image file size and evaluating colour depth changes.',
+    rubric: [
+      'Calculates total pixels: 320 * 200 = 64,000 pixels.',
+      'Multiplies 64,000 * 8 bits = 512,000 bits, then divides by 8 = 64,000 bytes (64 KB).',
+      'Explains that 16-bit colour depth doubles file size to 128 KB while allowing 65,536 colours for higher quality.'
+    ],
+    modelAnswer: 'Total pixels = 320 * 200 = 64,000 pixels. File size in bits = 64,000 * 8 = 512,000 bits. File size in bytes = 512,000 / 8 = 64,000 bytes (64 KB). Increasing colour depth to 16 bits doubles the stored bits per pixel, doubling file size to 128 KB while supporting up to 65,536 unique colours for smoother gradients and higher image fidelity.'
+  },
+  '1.2.5': {
+    question: 'Recommend either Lossy or Lossless compression for: (1) Python source code file main.py, (2) a high-resolution photograph on a mobile news app, and (3) a medical chest X-ray. Justify each recommendation.',
+    scenario: 'Choosing lossy versus lossless compression based on data integrity requirements.',
+    rubric: [
+      'Recommends Lossless for Python source code because losing characters creates syntax errors.',
+      'Recommends Lossy for mobile photo to reduce file size and transmission time with negligible visual quality loss.',
+      'Recommends Lossless for medical X-ray because precision cannot be compromised.'
+    ],
+    modelAnswer: '(1) Python source code requires Lossless compression because any data loss would corrupt code syntax. (2) Mobile news photograph should use Lossy compression to significantly cut file size and speed up download times without noticeably impairing viewing quality. (3) Medical X-ray requires Lossless compression because accurate diagnostic details must be preserved with zero data degradation.'
+  },
+  '1.3.2': {
+    question: 'A user has three network tasks: (1) connecting a wireless keyboard to a laptop 1 metre away, (2) streaming 4K video to a smart TV across a house, and (3) connecting a desktop PC directly to a high-speed router. Match Bluetooth, Wi-Fi, and Ethernet to these tasks. Then state the roles of MAC addresses versus IP addresses.',
+    scenario: 'Matching network connection media and distinguishing MAC vs IP addresses.',
+    rubric: [
+      'Matches Task 1 to Bluetooth, Task 2 to Wi-Fi, Task 3 to Ethernet.',
+      'Explains MAC address is a permanent physical identifier burnt into the NIC.',
+      'Explains IP address is a logical network address used for routing across global WAN networks.'
+    ],
+    modelAnswer: 'Task 1 (keyboard) -> Bluetooth (short-range wireless). Task 2 (smart TV) -> Wi-Fi (longer-range wireless LAN). Task 3 (desktop PC) -> Ethernet (high-speed reliable wired connection). A MAC address is a unique, fixed physical address assigned to the NIC hardware. An IP address is a logical address assigned dynamically or statically to locate devices across interconnected networks (WANs/Internet).'
+  },
+  '1.4.1': {
+    question: 'Identify the specific network attack in each scenario and explain how to mitigate it: (A) An employee receives an email claiming to be from IT requesting their password on a fake login page. (B) A company web server becomes unresponsive due to a flood of traffic from thousands of infected bots. (C) An attacker enters "\' OR \'1\'=\'1" into a web form to view unauthorized user data.',
+    scenario: 'Identifying attack vectors (Phishing, DDoS, SQL Injection) and prevention methods.',
+    rubric: [
+      'Identifies Scenario A as Phishing (Social Engineering), B as DDoS, C as SQL Injection.',
+      'Recommends staff training/MFA for Phishing, firewalls/traffic filtering for DDoS, and input validation/parameterized queries for SQL Injection.'
+    ],
+    modelAnswer: 'Scenario A is Phishing: mitigate with staff awareness training, email filters, and multi-factor authentication. Scenario B is a Distributed Denial of Service (DDoS) attack: mitigate using web application firewalls and traffic scrubbing services. Scenario C is SQL Injection: mitigate by using input sanitisation, validation, and parameterized SQL queries.'
+  },
+  '1.5.1': {
+    question: 'Trace the operating system functions involved when a user runs a photo editor while playing audio and sending a file to a printer. Describe how memory management, multitasking, and device drivers coordinate these actions.',
+    scenario: 'Tracing Operating System management of memory, processes, and peripherals.',
+    rubric: [
+      'Describes memory management allocating RAM for photo editor and audio player.',
+      'Explains CPU scheduling (multitasking) switching processing time between active threads.',
+      'Explains printer device driver translating print commands into printer-specific format.'
+    ],
+    modelAnswer: 'Memory management allocates separate RAM areas for the photo editor and audio player to prevent memory overwrites. The OS multitasking scheduler allocates CPU time slices to both applications so audio plays smoothly while photos render. Device drivers communicate with the printer by translating OS print data into hardware-specific control signals.'
+  },
+  '1.5.2': {
+    question: 'Explain the utility tasks performed by Disk Defragmentation, File Compression, and Disk Encryption. Explain why Disk Defragmentation should be run on a magnetic Hard Disk Drive (HDD) but MUST NOT be run on a Solid State Drive (SSD).',
+    scenario: 'Evaluating utility software and HDD vs SSD defragmentation principles.',
+    rubric: [
+      'Explains Defragmentation reorganises split file blocks to adjacent sectors on disk.',
+      'Explains Compression reduces file size and Encryption protects data at rest.',
+      'Explains HDDs benefit because moving read heads read contiguous sectors faster, whereas SSDs have no moving parts and defragmentation causes unnecessary write wear.'
+    ],
+    modelAnswer: 'Disk Defragmentation reorganises fragmented file blocks into contiguous storage blocks. File Compression reduces file size to conserve space. Disk Encryption scrambles data using a key to protect against unauthorized access. HDDs benefit from defragmentation because moving read/write heads read contiguous sectors much faster. SSDs must not be defragmented because they have near-instant random access (no moving parts) and unnecessary writes degrade SSD flash memory lifespans.'
+  },
+  '1.6.2': {
+    question: 'A school is choosing software for 500 student laptops. Option A is Proprietary Commercial Software (£15/user/year, closed source). Option B is Open Source Software (Free, open source). Recommend one option, comparing cost, source code access, and support. Then state which UK law prohibits unauthorized modification of software source code.',
+    scenario: 'Recommending software licensing models and identifying relevant legislation.',
+    rubric: [
+      'Recommends Open Source or Proprietary with valid justification of cost versus official support.',
+      'Compares source code visibility and license terms.',
+      'Identifies the Computer Misuse Act 1990 (or Copyright, Designs and Patents Act 1988 for copyright infringement).'
+    ],
+    modelAnswer: 'Open Source Software is recommended for the school because it eliminates £7,500 annual licensing costs and permits customisation of source code. However, Proprietary Software provides official dedicated technical support. Unauthorized modification of software without permission or hacking into source systems violates the Computer Misuse Act 1990, while distributing unauthorized copies violates the Copyright, Designs and Patents Act 1988.'
+  },
+  '2.1.1': {
+    question: 'Decompose a School Library System into three smaller sub-problems. Then explain how abstraction is applied when modeling a "Book" record by stating two essential attributes included and two non-essential details removed.',
+    scenario: 'Applying decomposition and abstraction to a library software design.',
+    rubric: [
+      'Decomposes library system into 3 logical sub-problems (e.g. User Login, Book Search, Loan Tracking).',
+      'Identifies essential attributes (e.g. ISBN, Title, Borrower ID).',
+      'Identifies abstracted/removed details (e.g. cover font style, physical paper weight, author biography).'
+    ],
+    modelAnswer: 'Decomposition breaks the system into: (1) Book Catalog Search, (2) Student Loan Management, and (3) Overdue Fine Calculation. Abstraction includes essential attributes needed for borrowing: ISBN and Title. It removes irrelevant details such as book cover color, paper thickness, or author font choices.'
+  },
+  '2.2.2': {
+    question: 'A programmer declares pupil variables: name = "Alex", age = "15", score = 84.5, passed = True. (A) Identify the data type of each variable. (B) Explain what error will occur if the programmer attempts `age + 1` without casting, and write the corrected expression.',
+    scenario: 'Identifying data types, diagnosing type mismatch errors, and applying casting.',
+    rubric: [
+      'Identifies name as String, age as String, score as Real/Float, passed as Boolean.',
+      'Explains attempting age + 1 causes a TypeError because string "15" cannot be added to integer 1.',
+      'Provides corrected cast expression: int(age) + 1 (or str(int(age) + 1)).'
+    ],
+    modelAnswer: '(A) name: String, age: String, score: Real/Float, passed: Boolean. (B) Attempting age + 1 results in a Type Error because age is currently a String ("15") and cannot undergo arithmetic addition with integer 1. Corrected expression: `int(age) + 1`.'
+  },
+  '2.4.1': {
+    question: 'A security door opens when keycard A is valid AND passcode B is valid. However, an override switch C disables the door if active. Construct the Boolean expression for door opening, and evaluate the truth value when A=1, B=1, C=0 versus when A=1, B=1, C=1.',
+    scenario: 'Evaluating multi-gate Boolean logic expressions and truth values.',
+    rubric: [
+      'Constructs expression: (A AND B) AND NOT C.',
+      'Evaluates A=1, B=1, C=0 -> Output 1 (Door Opens).',
+      'Evaluates A=1, B=1, C=1 -> Output 0 (Door Disabled).'
+    ],
+    modelAnswer: 'Boolean expression: Output = (A AND B) AND NOT C. Evaluation 1: A=1, B=1 -> (1 AND 1)=1. C=0 -> NOT 0 = 1. 1 AND 1 = 1 (Door Opens). Evaluation 2: A=1, B=1 -> 1. C=1 -> NOT 1 = 0. 1 AND 0 = 0 (Door Remains Closed).'
+  },
+  '2.5.2': {
+    question: 'A Python programmer encounters a ZeroDivisionError on line 14 when running a program in an IDE. Describe how the IDE\'s (1) Syntax Highlighting, (2) Step-by-step Debugger, and (3) Error Console assist the programmer in locating and resolving this fault.',
+    scenario: 'Using IDE tools to locate and fix runtime logic errors.',
+    rubric: [
+      'Describes Error Console pinpointing line number 14 and error type.',
+      'Describes Debugger inspecting variable values at line 14 to see divisor equals 0.',
+      'Describes Syntax Highlighting identifying keywords and variables for code correction.'
+    ],
+    modelAnswer: '(1) The Error Console displays the exact line (line 14) and exception type (ZeroDivisionError). (2) The Step-by-step Debugger allows the programmer to pause execution at line 14 and inspect variable values to confirm the divisor evaluated to 0. (3) Syntax Highlighting visually distinguishes variables and mathematical operators, helping the programmer write a conditional check (`if divisor != 0`) to prevent division by zero.'
+  }
+};
 curriculumContent.forEach(item => {
   if (applicationStrands.has(item.id) || item.id === '2.2.PY') return;
+  const concrete = concreteApplicationDetails[item.id];
   defaultDatabase.writtenQuestions.push({
     id: `curriculum_app_${item.id.replace(/\./g, '_')}`,
     topicId: objectiveLocations.get(item.id),
@@ -2967,15 +3139,15 @@ curriculumContent.forEach(item => {
     contributesToMastery: false,
     commandWord: applicationCommandWord(item.assessmentModes),
     marks: item.assessmentModes.includes('extended response') ? 8 : 4,
-    question: item.supportedPractice,
-    scenario: `Supported-to-independent application for OCR ${item.officialSpecificationPointId}.`,
+    question: concrete ? concrete.question : item.supportedPractice,
+    scenario: concrete ? concrete.scenario : `Supported-to-independent application for OCR ${item.officialSpecificationPointId}.`,
     indicativeContent: [...item.requiredKnowledge, ...item.keyTerms],
-    rubric: [
+    rubric: concrete ? concrete.rubric : [
       'Accurate use of the named computing concepts.',
       'A complete method, comparison or explanation appropriate to the command word.',
       'Reasoning linked to the supplied values or scenario rather than unsupported statements.'
     ],
-    modelAnswer: `Responses vary by the learner's chosen values or design. Teacher review should check the listed criteria and the worked example for OCR ${item.officialSpecificationPointId}; viewing this guidance does not award credit.`,
+    modelAnswer: concrete ? concrete.modelAnswer : `Responses vary by the learner's chosen values or design. Teacher review should check the listed criteria and the worked example for OCR ${item.officialSpecificationPointId}; viewing this guidance does not award credit.`,
     misconceptions: [{ phrase: item.misconception, feedback: item.misconception }],
     completionStatus: 'awaiting_review'
   });
