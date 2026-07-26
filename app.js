@@ -135,17 +135,82 @@ class App {
     if (!this.currentUser) return 'Supported';
     const attempts = window.db.getAttempts()
       .filter(a => a.studentId === this.currentUser.id && String(a.topic).toLowerCase().includes(topic.toLowerCase()))
+      .filter(a => this.parseDemonstratedScore(a))
       .slice(-3);
     if (attempts.length < 2) return 'Supported';
     const ratios = attempts.map(a => {
-      const parts = String(a.score).split('/').map(Number);
-      return parts.length === 2 && parts[1] ? parts[0] / parts[1] : 0;
+      const score = this.parseDemonstratedScore(a);
+      return score.earned / score.available;
     });
     const average = ratios.reduce((sum, value) => sum + value, 0) / ratios.length;
     const usedHelp = attempts.some(a => Number(a.supportStepsUsed || 0) > 1);
     if (average < 0.5) return 'Guided';
     if (average >= 0.85 && !usedHelp) return 'Independent';
     return 'Supported';
+  }
+
+  isMeaningfulLearnerResponse(value, minimumLength = 3) {
+    const normalised = String(value || '').trim().replace(/\s+/g, ' ');
+    if (normalised.length < minimumLength) return false;
+    const compact = normalised.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (compact.length < Math.max(2, minimumLength - 1)) return false;
+    return !/^(.)\1+$/.test(compact) && !['idk', 'dontknow', 'notsure', 'none', 'na', 'test'].includes(compact);
+  }
+
+  parseDemonstratedScore(attempt) {
+    if (!attempt || attempt.contributesToMastery === false) return null;
+    const demonstratedTypes = new Set(['number_skills', 'spaced_theory', 'definition_test', 'pseudocode_assessed']);
+    if (attempt.evidenceType && attempt.evidenceType !== 'demonstrated') return null;
+    if (!attempt.evidenceType && !demonstratedTypes.has(attempt.type)) return null;
+    const match = String(attempt.score || '').match(/^(\d+)\/(\d+)$/);
+    if (!match || Number(match[2]) <= 0) return null;
+    return { earned: Number(match[1]), available: Number(match[2]) };
+  }
+
+  getDemonstratedMastery(attempts) {
+    const latestByActivity = new Map();
+    attempts.forEach((attempt, index) => {
+      const score = this.parseDemonstratedScore(attempt);
+      if (!score) return;
+      const activity = attempt.questionId || `${attempt.type || 'activity'}:${attempt.topic || 'unknown'}`;
+      const time = Date.parse(attempt.date || '') || index;
+      const previous = latestByActivity.get(activity);
+      if (!previous || time >= previous.time) latestByActivity.set(activity, { attempt, score, time });
+    });
+    const evidence = [...latestByActivity.values()];
+    const earned = evidence.reduce((total, item) => total + item.score.earned, 0);
+    const available = evidence.reduce((total, item) => total + item.score.available, 0);
+    const ratio = available ? earned / available : null;
+    const label = ratio === null ? 'No demonstrated evidence'
+      : ratio >= 0.85 ? 'Secure'
+        : ratio >= 0.6 ? 'Developing'
+          : 'Needs practice';
+    return { earned, available, ratio, label, evidenceCount: evidence.length };
+  }
+
+  recordQuizConfidence(attempt, confidence) {
+    const allowed = new Set(['secure_before_feedback', 'partial_before_feedback', 'understood_after_feedback']);
+    if (!attempt || !allowed.has(confidence)) return false;
+    attempt.confidence = confidence;
+    attempt.confidenceRecordedAt = new Date().toISOString();
+    window.db.saveData();
+    return true;
+  }
+
+  assessPseudocodeResponse(response, expected) {
+    if (!this.isMeaningfulLearnerResponse(response, 3)) return false;
+    const normalise = value => String(value).toLowerCase().replace(/\s+/g, ' ').replace(/[^a-z0-9=<>+\-*/ ]/g, '').trim();
+    return normalise(response) === normalise(expected);
+  }
+
+  getRetryQuestions(questions, correctness) {
+    return questions.filter((_, index) => correctness[index] === false);
+  }
+
+  attemptMatchesTopic(attempt, topic) {
+    const recordedTopic = String(attempt?.topic || '').toLowerCase();
+    if (recordedTopic === String(topic.id).toLowerCase() || recordedTopic === String(topic.name || '').toLowerCase()) return true;
+    return topic.id === 'topic_1_3' && recordedTopic === 'binary conversions';
   }
 
   escapeHTML(str) {
@@ -803,6 +868,7 @@ class App {
   renderStudentDashboard(panel) {
     const student = window.db.getStudents().find(s => s.id === this.currentUser.id) || this.currentUser;
     const assignments = window.db.getAssignments().filter(item => this.isPublishedToStudent(item, student));
+    const demonstratedProgress = this.getDemonstratedMastery(window.db.getAttempts().filter(item => item.studentId === student.id));
     const activeTestPreps = window.db.getTestPreps().filter(p => p.status === 'Active' && this.isPublishedToStudent(p, student));
     const upcomingSessions = window.db.getSupportSessions().filter(item => item.published && this.isPublishedToStudent(item, student));
     const controls = window.db.getClassroomControls();
@@ -961,7 +1027,7 @@ class App {
                       <div style="display: flex; flex-direction: column; gap: 4px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">
                         <div style="font-size: 13px; font-weight: 500; color: var(--text-main);">${p}</div>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                          <span style="font-size: 11px; color: var(--text-muted);">Last score: 40%</span>
+                          <span style="font-size: 11px; color: var(--text-muted);">Suggested by your saved revision priorities</span>
                           <button class="btn btn-secondary btn-sm worth-revisiting-btn" data-topic-id="${topicId}" data-target-tab="${targetTab}" style="font-size: 10px; min-height: 24px; padding: 2px 8px;">${btnLabel}</button>
                         </div>
                       </div>
@@ -974,10 +1040,10 @@ class App {
               <div class="card card-progress" style="padding: 20px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
                 <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">Recent progress</h3>
                 <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin: 0;">
-                  Good progress: your CPU Registers score rose from 60% to 75% yesterday.
+                  ${demonstratedProgress.ratio === null ? 'Complete an assessed activity to establish a performance baseline.' : `Current demonstrated score: ${demonstratedProgress.earned}/${demonstratedProgress.available} across the latest assessed activities.`}
                 </p>
                 <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin: 8px 0 0 0; padding-top: 8px; border-top: 1px dashed var(--border-color);">
-                  Recent theory recall: 88%.
+                  Page visits, model views and self-assessment are not counted as mastery.
                 </p>
               </div>
             </div>
@@ -999,7 +1065,7 @@ class App {
             <h1 style="margin-bottom: 6px; font-weight: 700;">${greeting}, ${shortName}</h1>
             <p style="font-size:16px; color: var(--text-muted); margin: 0;">Ready for a quick Computing session?</p>
             <div style="margin-top: 8px; font-size: 14px; color: var(--text-muted); font-weight: 500;">
-              Course status: Paper 1: <strong style="color: var(--teal);">Getting there</strong> &middot; Paper 2: <strong style="color: var(--teal);">Needs practice</strong>
+              Demonstrated performance: <strong style="color: var(--teal);">${demonstratedProgress.label}</strong>
             </div>
           </div>
           <!-- Profile Control -->
@@ -1029,17 +1095,8 @@ class App {
           <div>
             <h2 style="font-size:18px; margin-bottom:12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">This week</h2>
             <div class="card card-progress" style="margin-bottom: 20px; padding: 20px;">
-              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Weekly Streak</h3>
-              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">3 of 4 activities completed</p>
-              <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 16px;">
-                <div style="height: 8px; flex: 1; background-color: var(--teal); border-radius: 4px;" title="Completed"></div>
-                <div style="height: 8px; flex: 1; background-color: var(--teal); border-radius: 4px;" title="Completed"></div>
-                <div style="height: 8px; flex: 1; background-color: var(--teal); border-radius: 4px;" title="Completed"></div>
-                <div style="height: 8px; flex: 1; background-color: var(--border-color); border-radius: 4px;" title="Remaining"></div>
-              </div>
-              <div style="border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 13px; font-weight: 600; color: var(--text-main);">
-                ${student.streak}-week consistency streak
-              </div>
+              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Assessed evidence</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 0;">${demonstratedProgress.evidenceCount} latest assessed ${demonstratedProgress.evidenceCount === 1 ? 'activity' : 'activities'} currently contribute to progress.</p>
             </div>
             <div class="card" style="margin-bottom:20px; padding:16px 20px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
               <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Computing workload</h3>
@@ -1290,7 +1347,7 @@ class App {
     panel.querySelectorAll('.start-topic-quiz-btn').forEach(btn => {
       btn.onclick = () => {
         this.activeTopicId = btn.getAttribute('data-topic-id');
-        this.switchTab('stud-practise');
+        this.switchTab('stud-recall');
       };
     });
 
@@ -1718,11 +1775,13 @@ class App {
   gradeNumberSkillsSet() {
     let correct = 0;
     let feedbackHTML = '';
+    const incorrectQuestions = [];
 
     this.numberSkillsSet.forEach((q, idx) => {
       const studentAns = this.numberSkillsAnswers[idx] || '';
       const isCorrect = studentAns === q.answer;
       if (isCorrect) correct++;
+      else incorrectQuestions.push(q);
 
       feedbackHTML += `
         <div class="card" style="margin-bottom: 16px; border-left: 5px solid ${isCorrect ? 'var(--green)' : 'var(--red)'};">
@@ -1730,8 +1789,7 @@ class App {
           <p style="font-size:14px; font-weight:600; margin-bottom: 8px;">${q.question}</p>
           <div style="font-size: 13px;">
             <strong>Your answer:</strong> ${studentAns} ${isCorrect ? '✅' : '❌'}<br>
-            <strong>Correct answer:</strong> ${q.answer}<br>
-            <strong>Step-by-step resolution:</strong> ${q.hint}
+            ${isCorrect ? '<strong>Outcome:</strong> Correct' : `<strong>Next step:</strong> ${q.hint}<br><span>The answer is withheld so you can retry.</span>`}
           </div>
         </div>
       `;
@@ -1744,7 +1802,9 @@ class App {
       topic: 'binary conversions',
       score: masteryScore,
       supportLevel: this.numberSkillsDifficulty,
-      supportStepsUsed: this.numberSkillsDifficulty === 'Guided' ? 2 : 0
+      supportStepsUsed: this.numberSkillsDifficulty === 'Guided' ? 2 : 0,
+      evidenceType: 'demonstrated',
+      contributesToMastery: true
     });
 
     // Award achievement if perfect score
@@ -1756,7 +1816,8 @@ class App {
       }
     }
 
-    this.numberSkillsSet = []; // Reset for next set
+    this.numberSkillsSet = [];
+    this.numberSkillsAnswers = {};
 
     this.mainContentHTML(`
       <div style="margin-bottom: 24px;">
@@ -1766,9 +1827,16 @@ class App {
       </div>
       <div>
         ${feedbackHTML}
+        ${incorrectQuestions.length ? '<button class="btn btn-primary" id="retry-number-skills-btn" style="margin-top:16px;">Retry incorrect questions</button>' : ''}
         <button class="btn btn-primary" onclick="app.switchTab('stud-dashboard')" style="margin-top: 16px;">Back to dashboard</button>
       </div>
     `);
+    const retryButton = document.getElementById('retry-number-skills-btn');
+    if (retryButton) retryButton.onclick = () => {
+      this.numberSkillsSet = incorrectQuestions;
+      this.numberSkillsAnswers = {};
+      this.renderStudentPractise(document.getElementById('main-panel'));
+    };
   }
 
   mainContentHTML(html) {
@@ -1777,7 +1845,9 @@ class App {
 
   // ==================== SPACED RETRIEVAL QUIZ ====================
   renderStudentRecall(panel) {
-    this.quizQuestions = window.db.getQuestions().filter(q => q.topicId === this.activeTopicId);
+    const topicQuestions = window.db.getQuestions().filter(q => q.topicId === this.activeTopicId);
+    this.quizQuestions = this.quizRetryQuestions || topicQuestions.slice(0, 3);
+    this.quizRetryQuestions = null;
     const activeTopic = window.db.getUnits().flatMap(unit => unit.topics.map(topic => ({ ...topic, paper: unit.paper }))).find(topic => topic.id === this.activeTopicId);
     this.quizAnswers = {};
     
@@ -1801,7 +1871,7 @@ class App {
         <p style="font-size: 15px; color: var(--text-muted); margin: 0;">Assessment-focused mixed sets, mock preparation and timed quiz work.</p>
       </div>
 
-      <div class="card" style="margin-bottom:20px; padding:14px;"><strong>${this.escapeHTML(activeTopic?.paper || 'GCSE')} · ${this.escapeHTML(activeTopic?.name || this.activeTopicId)} · ${this.quizQuestions.length} questions · about ${Math.max(5, this.quizQuestions.length * 2)} minutes</strong><div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Complete this focused set, then return home for the next weakest or least-recently practised area.</div><button type="button" class="btn btn-secondary btn-sm" id="exam-transfer-start-btn" style="margin-top:10px;">Practise applying knowledge to an exam question</button></div>
+      <div class="card" style="margin-bottom:20px; padding:14px;"><strong>${this.escapeHTML(activeTopic?.paper || 'GCSE')} · ${this.escapeHTML(activeTopic?.name || this.activeTopicId)} · ${this.quizQuestions.length} questions · about 5 minutes</strong><div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Complete this focused set, then return home for the next weakest or least-recently practised area.</div><button type="button" class="btn btn-secondary btn-sm" id="exam-transfer-start-btn" style="margin-top:10px;">Practise applying knowledge to an exam question</button></div>
       <form id="quiz-form">
         ${this.quizQuestions.map((q, idx) => {
           let fieldsHTML = '';
@@ -1867,6 +1937,7 @@ class App {
   gradeQuiz() {
     let score = 0;
     let feedback = '';
+    const correctness = [];
 
     this.quizQuestions.forEach((q, idx) => {
       let isCorrect = true;
@@ -1897,6 +1968,7 @@ class App {
       }
 
       if (isCorrect) score++;
+      correctness.push(isCorrect);
 
       feedback += `
         <div class="card" style="margin-bottom: 16px; border-left: 5px solid ${isCorrect ? 'var(--green)' : 'var(--red)'}">
@@ -1904,18 +1976,21 @@ class App {
           <p style="font-size:14px; margin-bottom: 8px;">${q.question}</p>
           <div style="font-size:13px; color: var(--text-muted);">
             <strong>Outcome:</strong> ${isCorrect ? 'Correct ✅' : 'Incorrect ❌'}<br>
-            <strong>Feedback details:</strong> ${q.explanation}
+            <strong>Feedback details:</strong> ${isCorrect ? q.explanation : (q.retryHint || 'Review the question wording and try a different answer. The answer is withheld until you retry.')}
           </div>
         </div>
       `;
     });
 
+    const incorrectQuestions = this.getRetryQuestions(this.quizQuestions, correctness);
     const quizScore = `${score}/${this.quizQuestions.length}`;
-    window.db.addAttempt({
+    const quizAttempt = window.db.addAttempt({
       studentId: this.currentUser.id,
       type: 'spaced_theory',
       topic: this.activeTopicId,
-      score: quizScore
+      score: quizScore,
+      evidenceType: 'demonstrated',
+      contributesToMastery: true
     });
 
     this.mainContentHTML(`
@@ -1928,19 +2003,27 @@ class App {
         
         <div class="card" style="margin-top: 24px; padding: 24px; text-align: center;">
           <h3 style="margin-bottom: 8px;">Self-assessment feedback</h3>
-          <p style="font-size: 14px; margin-bottom: 16px;">This check will adjust scheduling intervals for future reviews. How did you feel about this test?</p>
+          <p style="font-size: 14px; margin-bottom: 16px;">Choose what best describes what you knew before feedback. This reflection is stored separately and does not change your score.</p>
           <div style="display: flex; gap: 8px; justify-content: center;">
-            <button class="btn btn-secondary btn-sm quiz-confidence-btn">I knew this securely</button>
-            <button class="btn btn-secondary btn-sm quiz-confidence-btn">I partly knew this</button>
-            <button class="btn btn-secondary btn-sm quiz-confidence-btn">I understood it after seeing answers</button>
+            <button class="btn btn-secondary btn-sm quiz-confidence-btn" data-confidence="secure_before_feedback">I knew this securely before feedback</button>
+            <button class="btn btn-secondary btn-sm quiz-confidence-btn" data-confidence="partial_before_feedback">I partly knew this before feedback</button>
+            <button class="btn btn-secondary btn-sm quiz-confidence-btn" data-confidence="understood_after_feedback">I understood it only after feedback</button>
           </div>
         </div>
+        ${incorrectQuestions.length ? '<button class="btn btn-primary" id="quiz-retry-btn">Retry incorrect questions</button>' : ''}
       </div>
     `);
 
     document.querySelectorAll('.quiz-confidence-btn').forEach(btn => {
-      btn.onclick = () => this.switchTab('stud-dashboard');
+      btn.onclick = () => {
+        if (this.recordQuizConfidence(quizAttempt, btn.getAttribute('data-confidence'))) this.switchTab('stud-dashboard');
+      };
     });
+    const retryButton = document.getElementById('quiz-retry-btn');
+    if (retryButton) retryButton.onclick = () => {
+      this.quizRetryQuestions = incorrectQuestions;
+      this.renderStudentRecall(document.getElementById('main-panel'));
+    };
   }
 
   // ==================== INTERACTIVE CS SIMULATORS WORKBENCH ====================
@@ -2419,15 +2502,53 @@ class App {
     bind('transfer-to-answer', () => { task.planningLabels.forEach((label, index) => { const el = document.getElementById(`transfer-plan-${index}`); if (el) this.examTransferPlan[index] = el.value.trim(); }); if (Object.values(this.examTransferPlan).filter(Boolean).length < 1) return this.alert('Add at least one planning note.'); this.examTransferStage = 'answer'; this.renderStudentExamTransfer(panel); });
     bind('transfer-back-plan', () => { const el = document.getElementById('transfer-answer-response'); if (el) this.examTransferResponse = el.value; this.examTransferStage = 'plan'; this.renderStudentExamTransfer(panel); });
     bind('transfer-to-check', () => { const el = document.getElementById('transfer-answer-response'); if (el) this.examTransferResponse = el.value.trim(); if (this.examTransferResponse.length < 15) return this.alert('Develop your answer before checking it.'); this.examTransferStage = 'check'; this.renderStudentExamTransfer(panel); });
-    bind('transfer-to-retry', () => { const evidenceCount = panel.querySelectorAll('.transfer-evidence-checkbox:checked').length; window.db.addAttempt({ studentId: this.currentUser.id, type: 'exam_transfer', topic: task.specificationPointId, score: `${evidenceCount}/${task.requiredElements.length}`, supportStepsUsed: 3, questionId: task.id }); this.examTransferStage = 'retry'; this.renderStudentExamTransfer(panel); });
-    bind('transfer-finish', () => { const retry = document.getElementById('transfer-retry-response').value.trim(); if (retry.length < 15) return this.alert('Attempt the retry before finishing.'); window.db.addAttempt({ studentId: this.currentUser.id, type: 'exam_transfer_retry', topic: task.specificationPointId, score: 'completed', supportStepsUsed: 0, questionId: task.id }); this.examTransferStage = 'decode'; this.examTransferPlan = {}; this.examTransferResponse = ''; this.alert('Exam-transfer practice recorded. The retry will inform future recommendations.'); this.switchTab('stud-dashboard'); });
+    bind('transfer-to-retry', () => {
+      const evidenceCount = panel.querySelectorAll('.transfer-evidence-checkbox:checked').length;
+      window.db.addAttempt({
+        studentId: this.currentUser.id,
+        type: 'exam_transfer_self_check',
+        topic: task.specificationPointId,
+        score: `self-check ${evidenceCount}/${task.requiredElements.length}`,
+        supportStepsUsed: 3,
+        questionId: task.id,
+        evidenceType: 'self_assessment',
+        contributesToMastery: false
+      });
+      this.examTransferStage = 'retry';
+      this.renderStudentExamTransfer(panel);
+    });
+    bind('transfer-finish', () => {
+      const retry = document.getElementById('transfer-retry-response').value.trim();
+      if (!this.isMeaningfulLearnerResponse(retry, 20)) return this.alert('Write a meaningful retry before submitting it for review.');
+      window.db.addAttempt({
+        studentId: this.currentUser.id,
+        type: 'exam_transfer_retry',
+        topic: task.specificationPointId,
+        score: 'awaiting review',
+        supportStepsUsed: 0,
+        questionId: task.id,
+        evidenceType: 'unassessed_submission',
+        completionStatus: 'awaiting_review',
+        contributesToMastery: false
+      });
+      this.examTransferStage = 'decode';
+      this.examTransferPlan = {};
+      this.examTransferResponse = '';
+      this.alert('Retry submitted for review. No mastery or completion credit has been awarded yet.');
+      this.switchTab('stud-dashboard');
+    });
   }
 
   renderStudentProgrammingHub(panel) {
     const challenges = window.db.getProgrammingChallenges();
     const submissions = window.db.getProgrammingSubmissions().filter(item => item.studentId === this.currentUser.id);
     const completedChallengeIds = new Set(submissions.filter(item => item.status === 'Passed' || item.status === 'Teacher Reviewed').map(item => item.challengeId));
-    const pseudocodeAttempts = window.db.getAttempts().filter(item => item.studentId === this.currentUser.id && item.type === 'pseudocode');
+    const pseudocodeAttempts = window.db.getAttempts().filter(item =>
+      item.studentId === this.currentUser.id
+      && item.type === 'pseudocode_assessed'
+      && item.contributesToMastery !== false
+      && this.parseDemonstratedScore(item)
+    );
     const completedPseudocodeIds = new Set(pseudocodeAttempts.map(item => item.questionId));
     const nextChallenge = challenges.find(item => !completedChallengeIds.has(item.id)) || challenges[challenges.length - 1];
     const pseudocodeSkills = ['Read', 'Trace', 'Complete', 'Write', 'Refine'];
@@ -2536,7 +2657,7 @@ class App {
           <p style="font-weight:600;">${task.prompt}</p>
           <div style="padding:10px 12px; background:var(--bg-main); border-radius:8px; font-size:13px; margin-bottom:12px;"><strong>Decode it first:</strong> command = ${task.skill.toLowerCase()} &middot; identify the expected output &middot; choose the control structure &middot; check boundaries and operators.</div>
           <textarea id="pseudocode-response" class="form-control" rows="7" placeholder="Write your answer here..."></textarea>
-          <div style="display:flex; gap:10px; margin-top:12px;"><button id="pseudocode-check-btn" class="btn btn-primary">Check with model</button><button id="pseudocode-help-btn" class="btn btn-secondary">Show a hint</button></div>
+          <div style="display:flex; gap:10px; margin-top:12px;"><button id="pseudocode-check-btn" class="btn btn-primary">Check answer</button><button id="pseudocode-help-btn" class="btn btn-secondary">Show a hint</button><button id="pseudocode-model-btn" class="btn btn-secondary">Show model (no progress credit)</button></div>
           <div id="pseudocode-feedback" class="card" style="display:none; margin-top:14px; background:var(--bg-main);"></div>
         </div>
       </div>
@@ -2557,17 +2678,29 @@ class App {
     document.getElementById('pseudocode-check-btn').onclick = () => {
       const feedback = document.getElementById('pseudocode-feedback');
       const response = document.getElementById('pseudocode-response').value.trim();
-      if (!response) return this.alert('Write an answer before checking the model.');
+      if (!this.isMeaningfulLearnerResponse(response, 3)) return this.alert('Write a meaningful answer before checking it.');
+      const isCorrect = this.assessPseudocodeResponse(response, task.answer);
       feedback.style.display = 'block';
-      feedback.innerHTML = `<strong>Model answer</strong><pre style="white-space:pre-wrap; margin-top:8px;"><code>${this.escapeHTML(task.answer)}</code></pre><p style="font-size:13px; margin:8px 0 0;">Compare the logic and precision, then improve your response. Minor syntax slips matter less than correct programming logic, but natural English is not accepted where the question requires OCR Exam Reference Language or a high-level language.</p>`;
+      if (!isCorrect) {
+        feedback.innerHTML = '<strong>Not secure yet.</strong><p>Check the required operator, boundary and control structure, then revise your answer and retry. The model remains hidden.</p>';
+        return;
+      }
+      feedback.innerHTML = '<strong>Completed from your submitted answer.</strong><p>The structure and logic match the required solution.</p>';
       window.db.addAttempt({
         studentId: this.currentUser.id,
-        type: 'pseudocode',
+        type: 'pseudocode_assessed',
         topic: '2.2.ERL',
-        score: 'model checked',
+        score: '1/1',
         questionId: `pseudocode_${this.activePseudocodeTask + 1}`,
-        supportStepsUsed: 0
+        supportStepsUsed: 0,
+        evidenceType: 'demonstrated',
+        contributesToMastery: true
       });
+    };
+    document.getElementById('pseudocode-model-btn').onclick = () => {
+      const feedback = document.getElementById('pseudocode-feedback');
+      feedback.style.display = 'block';
+      feedback.innerHTML = `<strong>Model answer — no progress credit</strong><pre style="white-space:pre-wrap; margin-top:8px;"><code>${this.escapeHTML(task.answer)}</code></pre><p>Use this to study, then attempt a different task independently.</p>`;
     };
   }
 
@@ -3420,6 +3553,13 @@ class App {
     const attempts = window.db.getAttempts().filter(a => a.studentId === this.currentUser.id);
     const submissions = window.db.getProgrammingSubmissions().filter(s => s.studentId === this.currentUser.id);
     const writtenSubmissions = window.db.getWrittenSubmissions().filter(s => s.studentId === this.currentUser.id);
+    const topicMasteryHtml = window.db.getUnits().flatMap(unit => unit.topics).map(topic => {
+      const topicAttempts = attempts.filter(attempt => this.attemptMatchesTopic(attempt, topic));
+      const mastery = this.getDemonstratedMastery(topicAttempts);
+      const badgeClass = mastery.ratio === null ? 'badge-secondary' : mastery.ratio >= 0.85 ? 'badge-success' : mastery.ratio >= 0.6 ? 'badge-warning' : 'badge-primary';
+      const detail = mastery.ratio === null ? 'No scored activity yet' : `${mastery.earned}/${mastery.available} from ${mastery.evidenceCount} latest assessed ${mastery.evidenceCount === 1 ? 'activity' : 'activities'}`;
+      return `<div style="display:flex; justify-content:space-between; gap:12px; font-size:14px;"><span>${this.escapeHTML(topic.name)}</span><span><span class="badge ${badgeClass}">${mastery.label}</span><span style="display:block; font-size:11px; color:var(--text-muted); text-align:right;">${detail}</span></span></div>`;
+    }).join('');
 
     panel.innerHTML = `
       <div style="margin-bottom: 24px;">
@@ -3433,27 +3573,12 @@ class App {
           
           <div class="card" style="margin-bottom:32px;">
             <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-weight:600;">
-              <span>Paper 1 Units</span>
-              <span>Nearly Secure</span>
+              <span>Demonstrated performance</span>
+              <span>Latest assessed evidence only</span>
             </div>
             
             <div style="display:flex; flex-direction:column; gap:12px;">
-              <div style="display:flex; justify-content:space-between; font-size:14px;">
-                <span>Systems Architecture</span>
-                <span class="badge badge-success">Secure</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; font-size:14px;">
-                <span>Memory and Storage</span>
-                <span class="badge badge-success">Secure</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; font-size:14px;">
-                <span>Data Representation</span>
-                <span class="badge badge-warning">Nearly secure</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; font-size:14px;">
-                <span>Networks and Protocols</span>
-                <span class="badge badge-primary">Developing</span>
-              </div>
+              ${topicMasteryHtml}
             </div>
           </div>
 
@@ -3489,14 +3614,14 @@ class App {
             <p style="font-size: 13px; margin-bottom: 16px;">Earned through resilience and regular homework submission:</p>
             
             <div style="display:flex; flex-direction:column; gap:12px;">
-              <div class="card" style="padding:12px; background-color: var(--bg-main); display:flex; gap:12px; align-items:center;">
+              <div class="card" style="padding:12px; background-color: var(--bg-main); ${(student.achievements || []).includes('Binary Fluent') ? 'display:flex' : 'display:none'}; gap:12px; align-items:center;">
                 <span style="font-size:24px;">Habit</span>
                 <div>
-                  <h4 style="margin:0; font-size:14px;">Four-Week Habit</h4>
-                  <p style="margin:0; font-size:12px;">Completed 4 consecutive weekly homework sets.</p>
+                  <h4 style="margin:0; font-size:14px;">Binary Fluent</h4>
+                  <p style="margin:0; font-size:12px;">Earned after a perfect scored number-skills set.</p>
                 </div>
               </div>
-              <div class="card" style="padding:12px; background-color: var(--bg-main); display:flex; gap:12px; align-items:center;">
+              <div class="card" style="padding:12px; background-color: var(--bg-main); ${(student.achievements || []).includes('Debugging Detective') ? 'display:flex' : 'display:none'}; gap:12px; align-items:center;">
                 <span style="font-size:24px;">💻</span>
                 <div>
                   <h4 style="margin:0; font-size:14px;">Debugging Detective</h4>
@@ -3521,6 +3646,7 @@ class App {
     const totalAwaitingReview = writtenCount + programmingCount;
     const activeThisWeek = students.filter(student => Date.now() - new Date(student.lastActive).getTime() <= 7 * 24 * 3600 * 1000).length;
     const weeklyCompletion = students.length ? Math.round((activeThisWeek / students.length) * 100) : 0;
+    const savedPriorityCount = students.filter(student => (student.personalRevisionPriorities || []).length > 0).length;
 
     panel.innerHTML = `
       <div class="dashboard-container">
@@ -3557,7 +3683,7 @@ class App {
         <!-- Top Metrics Grid (Three cards only) -->
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px;">
           <div class="card" style="padding: 16px 20px;">
-            <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Weekly Completion</h4>
+              <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Weekly app activity</h4>
             <strong style="font-size:24px; font-weight: 700; color: var(--text-main);">${weeklyCompletion}%</strong>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${activeThisWeek} of ${students.length} pupils opened the app in the last 7 days</div>
           </div>
@@ -3567,9 +3693,9 @@ class App {
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${writtenCount} written, ${programmingCount} programming</div>
           </div>
           <div class="card card-action" id="metric-students-attention" style="padding: 16px 20px; cursor: pointer;">
-            <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Students Needing Attention</h4>
-            <strong style="font-size:24px; font-weight: 700; color: var(--text-main);">3</strong>
-            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Require immediate follow-up</div>
+            <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Saved revision priorities</h4>
+            <strong style="font-size:24px; font-weight: 700; color: var(--text-main);">${savedPriorityCount}</strong>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Not a mastery or safeguarding judgement</div>
           </div>
         </div>
 
@@ -3638,14 +3764,14 @@ class App {
                     <div>
                       <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin: 0 0 4px 0;">Spaced Theory Check – Data Representation</h3>
                       <div style="font-size: 13px; color: var(--text-muted); font-weight: 500;">
-                        23 of 26 completed &middot; Average 68% &middot; <span style="color: var(--coral); font-weight: 600;">7 students below 50%</span>
+                        No verified completion or accuracy summary is available for this demo assignment.
                       </div>
                     </div>
                     <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-assign')" style="min-height: 36px;">View results</button>
                   </div>
                   <!-- Mini Progress Bar -->
                   <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-                    <div style="width: 88%; height: 100%; background-color: var(--teal);"></div>
+                    <div style="width: 0; height: 100%; background-color: var(--teal);"></div>
                   </div>
                 </div>
                 <div style="padding-top: 16px; border-top: 1px solid var(--border-color);">
@@ -3653,14 +3779,14 @@ class App {
                     <div>
                       <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin: 0 0 4px 0;">Loops and Selection Programming Challenge</h3>
                       <div style="font-size: 13px; color: var(--text-muted); font-weight: 500;">
-                        18 of 26 completed &middot; Average 74% &middot; <span style="color: var(--amber); font-weight: 600;">3 students stuck on test case 4</span>
+                        No verified completion or accuracy summary is available for this demo assignment.
                       </div>
                     </div>
                     <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-programming')" style="min-height: 36px;">View results</button>
                   </div>
                   <!-- Mini Progress Bar -->
                   <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-                    <div style="width: 69%; height: 100%; background-color: var(--teal);"></div>
+                    <div style="width: 0; height: 100%; background-color: var(--teal);"></div>
                   </div>
                 </div>
               </div>
@@ -3719,7 +3845,7 @@ class App {
               <div style="display: flex; flex-direction: column; gap: 20px;">
                 <div style="padding-bottom: 16px; border-bottom: 1px dashed var(--border-color);">
                   <h4 style="font-size: 15px; margin: 0 0 2px 0; font-weight: 600; color: var(--text-main);">Hexadecimal representation</h4>
-                  <div style="font-size: 13px; color: var(--coral); font-weight: 700; margin-bottom: 6px;">6 of 9 students answered incorrectly.</div>
+                  <div style="font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px;">No verified class-level misconception count is available.</div>
                   <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 12px 0;">Confusion between storage notation and hexadecimal values.</p>
                   <div style="display: flex; gap: 8px;">
                     <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-written')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">View</button>
@@ -3728,7 +3854,7 @@ class App {
                 </div>
                 <div>
                   <h4 style="font-size: 15px; margin: 0 0 2px 0; font-weight: 600; color: var(--text-main);">Image File Calculations</h4>
-                  <div style="font-size: 13px; color: var(--amber); font-weight: 700; margin-bottom: 6px;">3 of 9 students struggled with scaling bits.</div>
+                  <div style="font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px;">No verified class-level misconception count is available.</div>
                   <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 12px 0;">Incorrect division by 1000 instead of 1024.</p>
                   <div style="display: flex; gap: 8px;">
                     <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-written')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">View</button>
@@ -3760,28 +3886,28 @@ class App {
                 <div>
                   <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
                     <span style="color: var(--text-muted); font-weight: 500;">Systems Architecture</span>
-                    <strong style="color: var(--text-main);">82% secure</strong>
+                    <strong style="color: var(--text-muted);">No verified class score</strong>
                   </div>
                   <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-                    <div style="width: 82%; height: 100%; background-color: var(--teal);"></div>
+                    <div style="width: 0; height: 100%; background-color: var(--teal);"></div>
                   </div>
                 </div>
                 <div>
                   <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
                     <span style="color: var(--text-muted); font-weight: 500;">Data Representation</span>
-                    <strong style="color: var(--text-main);">68% secure</strong>
+                    <strong style="color: var(--text-muted);">No verified class score</strong>
                   </div>
                   <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-                    <div style="width: 68%; height: 100%; background-color: var(--teal);"></div>
+                    <div style="width: 0; height: 100%; background-color: var(--teal);"></div>
                   </div>
                 </div>
                 <div>
                   <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
                     <span style="color: var(--text-muted); font-weight: 500;">Programming Basics</span>
-                    <strong style="color: var(--text-main);">74% secure</strong>
+                    <strong style="color: var(--text-muted);">No verified class score</strong>
                   </div>
                   <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-                    <div style="width: 74%; height: 100%; background-color: var(--teal);"></div>
+                    <div style="width: 0; height: 100%; background-color: var(--teal);"></div>
                   </div>
                 </div>
               </div>
@@ -3980,7 +4106,7 @@ class App {
                   <h3 style="margin-bottom: 4px;">${a.title}</h3>
                   <div style="font-size: 12px; color: var(--text-muted);">Due: ${a.dueDate} · ${a.status} · ${a.estimatedMinutes || 10} mins</div>
                 </div>
-                <span class="badge badge-primary">${a.completedCount} / 3 Completed</span>
+                <span class="badge badge-primary">${a.completedCount} recorded completions</span>
               </div>
             `).join('')}
           </div>

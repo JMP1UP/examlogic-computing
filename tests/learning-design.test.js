@@ -32,7 +32,8 @@ describe('GCSE learning design', () => {
     expect(appSource).toContain('Practical Python');
     expect(appSource).toContain('OCR Exam Reference Language');
     expect(appSource).toContain('Programming replaces another revision activity when assigned');
-    expect(appSource).toContain("type: 'pseudocode'");
+    expect(appSource).toContain("type: 'pseudocode_assessed'");
+    expect(appSource).not.toContain("score: 'model checked'");
   });
 
   test('reports content-bank readiness separately from pupil mastery', () => {
