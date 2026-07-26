@@ -8,7 +8,7 @@
     root.StudySpiceContent.curriculum = curriculumContent;
   }
 })(typeof window !== 'undefined' ? window : globalThis, function buildCurriculumContent() {
-  return [
+  const content = [
   {
     id: '1.1.1', officialSpecificationPointId: '1.1.1', sourcePages: '6',
     scope: 'CPU purpose; fetch-execute cycle; ALU, CU, cache and registers; MAR, MDR, PC and accumulator.',
@@ -247,7 +247,7 @@
     id: '2.2.ERL', officialSpecificationPointId: '3c / 2.1-2.3', sourcePages: '25-31',
     scope: 'Read, trace, complete, write and refine algorithms using OCR Exam Reference Language.',
     explanation: 'OCR Exam Reference Language is the notation supplied in assessment materials. Learners must recognise its assignment, input/output, selection, iteration, string, array, file and subprogram forms and use it where an exam response requires that language. It should be taught separately from Python so syntax can be translated accurately without confusing the two.',
-    workedExample: 'Python `if score >= 50:` corresponds to the OCR form `if score >= 50 then`; the OCR selection ends explicitly with `end if`.',
+    workedExample: 'Python `if score >= 50:` corresponds to the OCR form `if score >= 50 then`; the OCR selection ends explicitly with `endif`.',
     keyTerms: ['OCR Exam Reference Language', 'assignment', 'selection', 'iteration'],
     misconception: 'Loose natural-language pseudocode may not satisfy a question that explicitly requires OCR Exam Reference Language or a high-level language.',
     diagnostic: { question: 'Why should OCR Exam Reference Language be tracked separately from Python?', options: ['Its notation differs and may be required in exam responses', 'It runs faster than Python', 'It is a low-level language', 'It replaces all practical programming'], answer: 'Its notation differs and may be required in exam responses', explanation: 'Learners need to read and produce the required notation without mixing language syntax.' }
@@ -298,4 +298,67 @@
     diagnostic: { question: 'Which IDE facility reports where a syntax problem has occurred?', options: ['Error diagnostics', 'Run-time environment', 'File compression', 'User management'], answer: 'Error diagnostics', explanation: 'Diagnostic tools identify errors and help the programmer locate them.', retryHint: 'Choose the development-environment tool that marks or reports problems in source code and points the programmer towards their location.' }
   }
   ];
+
+  const supportedPractice = {
+    '1.1.1': 'Use a four-column table headed fetch, decode, execute and store. For fetch, place the PC address in the MAR, copy memory contents to the MDR, copy the instruction to the control unit and increment the PC. Then annotate which register stores an address and which stores data.',
+    '1.1.2': 'Compare two processors for a video-editing task. Change one characteristic at a time, explain the likely effect, then explain why software that cannot run work in parallel may gain little from extra cores.',
+    '1.1.3': 'For a washing machine, games console and desktop PC, identify the larger device, the computing purpose and whether users can choose many unrelated tasks. Justify which examples are embedded systems.',
+    '1.2.1': 'Complete a RAM-versus-ROM table for volatility, purpose and typical contents. Then trace what happens when several applications fill RAM and explain why repeated virtual-memory transfers reduce performance.',
+    '1.2.2': 'Choose storage for a moving camera, an archive and distributing a film. Rank capacity, speed, portability, durability, reliability and cost for each scenario before recommending a technology.',
+    '1.2.3': 'Convert 32,000 bits to bytes and KB using the stated decimal convention. Write every conversion step and unit; if KiB is requested, use 1,024 bytes and label it explicitly.',
+    '1.2.4a': 'Convert 3A from hexadecimal to binary and denary, add two eight-bit values, identify whether overflow occurs, then trace a two-place binary shift including any bits lost.',
+    '1.2.4b': 'Calculate how many codes are available with five bits. Explain why Unicode supports more writing systems than ASCII and use adjacent character codes without memorising a code table.',
+    '1.2.4c': 'For a 320 by 200 bitmap at 8-bit colour depth, calculate bits and bytes. Then predict separately how increased resolution and colour depth affect quality and uncompressed size.',
+    '1.2.4d': 'For a mono recording, multiply sample rate by duration and bit depth. Annotate which factor measures frequency, precision and recording length, then predict quality and size changes.',
+    '1.2.5': 'Recommend lossy or lossless compression for source code, a streamed photograph and a medical image. Link exact reconstruction, quality, storage and transmission time to each decision.',
+    '1.3.1': 'Design a school LAN. Choose client-server or peer-to-peer, label switch, router, NIC, access point and transmission media, then compare star and mesh resilience, cost and fault impact.',
+    '1.3.2': 'Choose Ethernet, Wi-Fi or Bluetooth for three devices. Match each named protocol to its purpose, distinguish IPv4, IPv6 and MAC formats, then explain two benefits of protocol layering without naming individual layers.',
+    '1.4.1': 'For each attack, write how it operates and what the attacker intends. Distinguish malicious software, manipulation of people, repeated credential guesses, service flooding, interception and malicious SQL input.',
+    '1.4.2': 'Match each threat to a proportionate prevention method and explain the mechanism. Include why access levels limit damage after login and why encryption protects intercepted data but does not stop interception.',
+    '1.5.1': 'Trace what the operating system manages when two applications run and a printer is used. Link memory allocation, processor access, drivers, user rights and file operations to the correct OS function.',
+    '1.5.2': 'For encryption, compression and defragmentation utilities, state the housekeeping task, when it is useful and one limitation. Apply defragmentation only to storage with a moving read head.',
+    '1.6.1': 'For facial-recognition attendance, build a balanced table covering ethical, legal, cultural, environmental and privacy effects. Use affected stakeholders and evidence before reaching a justified conclusion.',
+    '1.6.2': 'For each named law, identify its purpose and a permitted or prohibited action. Then recommend open-source or proprietary licensing for a school scenario with one benefit and drawback.',
+    '2.1.1': 'Decompose a library system into linked parts, abstract away details that do not affect borrowing, and write an ordered algorithmic plan. Explain how each principle changes the problem representation.',
+    '2.1.2': 'Draw an IPO table and structure diagram, then translate a decision into a flowchart. Trace a nested loop in a table, locate the first incorrect value and refine the algorithm.',
+    '2.1.3': 'Apply linear and binary search to the same ordered list. Perform one full pass of bubble and insertion sort and one split-and-merge stage, stating prerequisites and recognising each algorithm from its steps.',
+    '2.2.1': 'Write a short algorithm containing input, assignment, sequence, selection and both loop types. Trace DIV, MOD, comparison and Boolean conditions before translating the design into executable code.',
+    '2.2.2': 'Choose types for age, price, login state, initial and postcode. Cast a numeric input string before arithmetic and explain why an unsuitable type would reject values or permit invalid operations.',
+    '2.2.3': 'Complete linked examples for slicing and concatenation, file open/read/write/close, record fields, SELECT-FROM-WHERE, 1D and 2D arrays, functions, procedures, local/global scope and random numbers.',
+    '2.2.PY': 'Progress through reading, tracing, completing, debugging, writing and testing Python. For each constructed program, state inputs, processes and outputs and run normal, boundary and invalid tests before refinement.',
+    '2.2.ERL': 'Translate a short Python selection and loop into current OCR ERL using = for assignment, == for equality and endif. Trace it, complete a missing construct, then write and refine an equivalent solution.',
+    '2.3.1': 'Design a login input routine that anticipates misuse, authenticates identity and validates format. Refactor it into named subprograms with meaningful identifiers, indentation and comments that explain intent.',
+    '2.3.2': 'Create a test plan with normal, both boundary, invalid and erroneous values. Record expected and actual results, identify syntax versus logic faults and refine the program before final testing.',
+    '2.4.1': 'Complete AND, OR and NOT truth tables, then evaluate a two-gate diagram one intermediate output at a time. Finally draw or edit a diagram that matches a stated access-control rule.',
+    '2.5.1': 'Compare high- and low-level languages for readability and hardware control. Choose a compiler or interpreter for development and distribution, linking translation timing, diagnostics and execution.',
+    '2.5.2': 'In an IDE, edit a faulty program, use diagnostics to locate the syntax problem, run the corrected version and identify the translator involved. Record what each facility contributed.'
+  };
+  const assessmentModes = {
+    '1.1.1': ['recall', 'explanation', 'application'], '1.1.2': ['explanation', 'comparison', 'application'], '1.1.3': ['recall', 'application'],
+    '1.2.1': ['recall', 'comparison', 'explanation'], '1.2.2': ['comparison', 'recommendation', 'application'], '1.2.3': ['recall', 'calculation'],
+    '1.2.4a': ['conversion', 'calculation', 'application'], '1.2.4b': ['recall', 'calculation', 'explanation'], '1.2.4c': ['calculation', 'explanation', 'application'],
+    '1.2.4d': ['calculation', 'explanation', 'application'], '1.2.5': ['comparison', 'recommendation'], '1.3.1': ['explanation', 'comparison', 'application'],
+    '1.3.2': ['recall', 'comparison', 'recommendation'], '1.4.1': ['explanation', 'application'], '1.4.2': ['explanation', 'recommendation', 'application'],
+    '1.5.1': ['recall', 'explanation', 'application'], '1.5.2': ['recall', 'explanation', 'application'], '1.6.1': ['discussion', 'evaluation', 'extended response'],
+    '1.6.2': ['recall', 'recommendation', 'application'], '2.1.1': ['explanation', 'application'], '2.1.2': ['design', 'trace', 'complete', 'refine'],
+    '2.1.3': ['trace', 'apply', 'compare'], '2.2.1': ['read', 'trace', 'write', 'programming'], '2.2.2': ['selection', 'explanation', 'programming'],
+    '2.2.3': ['programming', 'trace', 'SQL', 'application'], '2.2.PY': ['design', 'write', 'test', 'refine'], '2.2.ERL': ['read', 'trace', 'complete', 'write', 'refine'],
+    '2.3.1': ['design', 'explanation', 'programming'], '2.3.2': ['design', 'complete', 'application'], '2.4.1': ['truth table', 'diagram', 'application'],
+    '2.5.1': ['explanation', 'comparison', 'recommendation'], '2.5.2': ['recall', 'practical use']
+  };
+  const longerCoreStrands = new Set(['1.2.4a', '1.2.4c', '1.2.4d', '1.3.1', '1.3.2', '1.6.1', '2.1.2', '2.1.3', '2.2.1', '2.2.3', '2.2.PY', '2.2.ERL', '2.3.2', '2.4.1']);
+  return content.map(item => ({
+    ...item,
+    requiredKnowledge: item.scope.split(';').map(part => part.trim()).filter(Boolean),
+    requiredSkills: assessmentModes[item.id] || ['recall'],
+    assessmentModes: assessmentModes[item.id] || ['recall'],
+    supportedPractice: supportedPractice[item.id],
+    workload: {
+      coreLearningMinutes: longerCoreStrands.has(item.id) ? 15 : 10,
+      retrievalMinutes: 5,
+      retryMinutes: 5,
+      retrievalIsOptional: true
+    },
+    qualityStatus: 'implemented-against-j277-v3.1-awaiting-qualified-teacher-qa'
+  }));
 });

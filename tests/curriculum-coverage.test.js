@@ -24,6 +24,12 @@ describe('objective-level curriculum coverage integrity', () => {
 
   test('keeps internal teaching strands traceable to an official OCR requirement', () => {
     const objectives = data.units.flatMap(unit => unit.topics.flatMap(topic => topic.objectives));
+    const officialPoints = [
+      '1.1.1', '1.1.2', '1.1.3', '1.2.1', '1.2.2', '1.2.3', '1.2.4',
+      '1.2.5', '1.3.1', '1.3.2', '1.4.1', '1.4.2', '1.5.1', '1.5.2',
+      '1.6.1', '2.1.1', '2.1.2', '2.1.3', '2.2.1', '2.2.2', '2.2.3',
+      '2.3.1', '2.3.2', '2.4.1', '2.5.1', '2.5.2', '2d / 2.2', '3c / 2.1-2.3'
+    ];
     expect(data.curriculumContent).toHaveLength(objectives.length);
     data.curriculumContent.forEach(item => {
       expect(item.officialSpecificationPointId).toBeTruthy();
@@ -33,8 +39,17 @@ describe('objective-level curriculum coverage integrity', () => {
       expect(item.workedExample.length).toBeGreaterThan(30);
       expect(item.keyTerms.length).toBeGreaterThan(1);
       expect(item.misconception).toBeTruthy();
+      expect(item.requiredKnowledge.length).toBeGreaterThan(0);
+      expect(item.requiredSkills.length).toBeGreaterThan(0);
+      expect(item.assessmentModes.length).toBeGreaterThan(0);
+      expect(item.supportedPractice.length).toBeGreaterThan(80);
+      expect(item.workload.coreLearningMinutes).toBeLessThanOrEqual(15);
+      expect(item.workload.retrievalMinutes).toBeLessThanOrEqual(5);
+      expect(item.qualityStatus).toBe('implemented-against-j277-v3.1-awaiting-qualified-teacher-qa');
     });
     expect(new Set(data.curriculumContent.map(item => item.id))).toEqual(new Set(objectives.map(item => item.id)));
+    expect(new Set(data.curriculumContent.map(item => item.officialSpecificationPointId)))
+      .toEqual(new Set(officialPoints));
   });
 
   test('provides an original diagnostic check for every teaching strand', () => {
@@ -99,11 +114,34 @@ describe('objective-level curriculum coverage integrity', () => {
   });
 
   test('labels learning evidence by purpose rather than counting topic totals as coverage', () => {
-    expect(data.questions.every(question => question.purpose === 'retrieval' || question.purpose === 'diagnostic')).toBe(true);
+    const activeQuestions = data.questions.filter(question => !question.retired);
+    expect(activeQuestions.every(question => question.purpose === 'retrieval' || question.purpose === 'diagnostic')).toBe(true);
     expect(data.writtenQuestions.every(question => question.purpose === 'application')).toBe(true);
     expect(data.examTransferTasks.every(task => task.purpose === 'exam-transfer')).toBe(true);
     expect(data.programmingChallenges.some(task => task.purpose === 'application')).toBe(true);
     expect(data.programmingChallenges.some(task => task.purpose === 'exam-transfer')).toBe(true);
+    expect(data.questions.find(question => question.id === 'q_1_4_b')).toMatchObject({
+      purpose: 'historical',
+      retired: true,
+      assessmentStatus: 'retired_out_of_scope'
+    });
+  });
+
+  test('provides a reviewable application route for every teaching strand without awarding automatic mastery', () => {
+    const objectiveIds = data.units.flatMap(unit => unit.topics.flatMap(topic => topic.objectives.map(objective => objective.id)));
+    const reviewableItems = [...data.writtenQuestions, ...data.programmingChallenges];
+    objectiveIds.forEach(id => {
+      expect(reviewableItems.some(item => item.specificationPointId === id)).toBe(true);
+    });
+    data.writtenQuestions
+      .filter(item => item.id.startsWith('curriculum_app_'))
+      .forEach(item => {
+        expect(item).toMatchObject({
+          evidenceType: 'unassessed_submission',
+          contributesToMastery: false,
+          completionStatus: 'awaiting_review'
+        });
+      });
   });
 
   test('corrects legacy questions that were filed under the wrong broad topic', () => {
@@ -115,6 +153,32 @@ describe('objective-level curriculum coverage integrity', () => {
       topicId: 'topic_1_2',
       specificationPointId: '1.2.1'
     });
+    expect(data.questions.find(question => question.id === 'q_2_2_a')).toMatchObject({
+      topicId: 'topic_2_2',
+      specificationPointId: '2.2.1'
+    });
+  });
+
+  test('keeps corrected scope and terminology out of live learner content', () => {
+    const activeSource = JSON.stringify(data.questions.filter(question => !question.retired));
+    const landingSource = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+    expect(activeSource).not.toContain('Transport');
+    expect(activeSource).not.toContain('permanently embedded');
+    expect(landingSource).not.toContain('specification ready');
+    expect(landingSource).not.toContain('Everything you need to master');
+  });
+
+  test('covers required core programming techniques without labelling them as extensions', () => {
+    const techniques = new Set(data.programmingChallenges.flatMap(item => item.programmingTechniques));
+    [
+      'strings', 'file handling', 'records', 'arrays', '2D arrays', 'function',
+      'random numbers', 'authentication', 'validation', 'boundary testing'
+    ].forEach(technique => expect(techniques.has(technique)).toBe(true));
+    ['pc_10', 'pc_11'].forEach(id => {
+      const challenge = data.programmingChallenges.find(item => item.id === id);
+      expect(`${challenge.concept} ${challenge.title}`).toMatch(/core/i);
+      expect(`${challenge.concept} ${challenge.title}`).not.toMatch(/extension/i);
+    });
   });
 
   test('prevents readiness when required evidence types are absent', () => {
@@ -122,10 +186,12 @@ describe('objective-level curriculum coverage integrity', () => {
     expect(appSource).toContain('getObjectiveCoverage()');
     expect(appSource).toContain("missing.push('objective explanation')");
     expect(appSource).toContain("missing.push('diagnostic')");
-    expect(appSource).toContain("missing.push('retrieval alternatives')");
-    expect(appSource).toContain("missing.push('application')");
-    expect(appSource).toContain("missing.push('exam transfer')");
-    expect(appSource).toContain("missing.push('spaced alternatives')");
+    expect(appSource).toContain("missing.push('retrieval')");
+    expect(appSource).toContain("missing.push('application or review route')");
+    expect(appSource).toContain("missing.push('assessment-mode mapping')");
+    expect(appSource).toContain("missing.push('required-skill mapping')");
+    expect(appSource).not.toContain("missing.push('retrieval alternatives')");
+    expect(appSource).not.toContain("missing.push('spaced alternatives')");
     expect(appSource).toContain("completeEvidence ? 'Awaiting QA'");
     expect(appSource).toContain('Learn each specification requirement');
     expect(appSource).toContain('item.officialSpecificationPointId');

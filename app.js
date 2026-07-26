@@ -909,18 +909,22 @@ class App {
         + challenges.filter(item => item.specificationPointId === objective.id && item.purpose === 'application').length;
       const examTransferCount = transfers.filter(item => item.specificationPointId === objective.id).length
         + challenges.filter(item => item.specificationPointId === objective.id && item.purpose === 'exam-transfer').length;
-      const keyTermCount = terms.filter(item => item.specificationPointId === objective.id).length;
       const teachingItem = teaching.find(item => item.id === objective.id);
-      const explanationCount = teachingItem && teachingItem.explanation && teachingItem.workedExample ? 1 : 0;
+      const keyTermCount = teachingItem?.keyTerms?.length || terms.filter(item => item.specificationPointId === objective.id).length;
+      const explanationCount = teachingItem
+        && teachingItem.explanation
+        && teachingItem.workedExample
+        && teachingItem.supportedPractice
+        && teachingItem.assessmentModes?.length ? 1 : 0;
       const alternateCount = retrievalCount + diagnosticCount + applicationCount + examTransferCount;
       const missing = [];
       if (!explanationCount) missing.push('objective explanation');
       if (!keyTermCount) missing.push('key terms');
       if (!diagnosticCount) missing.push('diagnostic');
-      if (retrievalCount < 3) missing.push('retrieval alternatives');
-      if (applicationCount < 2) missing.push('application');
-      if (!examTransferCount) missing.push('exam transfer');
-      if (alternateCount < 8) missing.push('spaced alternatives');
+      if (objective.id !== '2.2.PY' && retrievalCount < 1) missing.push('retrieval');
+      if (applicationCount < 1) missing.push('application or review route');
+      if (!teachingItem?.assessmentModes?.length) missing.push('assessment-mode mapping');
+      if (!teachingItem?.requiredSkills?.length) missing.push('required-skill mapping');
       const completeEvidence = missing.length === 0;
       const evidenceTypes = [keyTermCount > 0, diagnosticCount > 0, retrievalCount > 0, applicationCount > 0, examTransferCount > 0].filter(Boolean).length;
       const status = completeEvidence ? 'Awaiting QA' : evidenceTypes >= 2 ? 'Developing' : 'Foundation';
@@ -1293,6 +1297,12 @@ class App {
               <strong>Worked example</strong>
               <p style="line-height: 1.6; margin: 6px 0 0;">${this.escapeHTML(item.workedExample)}</p>
             </div>
+            <div style="background: var(--bg-main); border-left: 4px solid var(--amber); padding: 14px; border-radius: 0 8px 8px 0; margin-top: 12px;">
+              <strong>Try it with support</strong>
+              <p style="line-height: 1.6; margin: 6px 0 0;">${this.escapeHTML(item.supportedPractice)}</p>
+            </div>
+            <p style="font-size: 13px; margin: 12px 0 0;"><strong>Core learning:</strong> about ${item.workload.coreLearningMinutes} minutes. <strong>Optional retrieval:</strong> up to ${item.workload.retrievalMinutes} minutes.</p>
+            <p style="font-size: 13px; margin: 6px 0;"><strong>How OCR may assess this:</strong> ${item.assessmentModes.map(mode => this.escapeHTML(mode)).join(', ')}.</p>
             <p style="margin: 14px 0 8px;"><strong>Common misconception:</strong> ${this.escapeHTML(item.misconception)}</p>
             <div style="display: flex; flex-wrap: wrap; gap: 6px;" aria-label="Key terms">
               ${item.keyTerms.map(term => `<span class="badge badge-secondary">${this.escapeHTML(term)}</span>`).join('')}
@@ -4004,7 +4014,7 @@ class App {
                 <div>
                   <h4 style="font-size: 15px; margin: 0 0 2px 0; font-weight: 600; color: var(--text-main);">Image File Calculations</h4>
                   <div style="font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px;">No verified class-level misconception count is available.</div>
-                  <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 12px 0;">Incorrect division by 1000 instead of 1024.</p>
+                  <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 12px 0;">Mixing decimal units (KB, divide by 1,000) with binary units (KiB, divide by 1,024) without stating the convention.</p>
                   <div style="display: flex; gap: 8px;">
                     <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-written')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">View</button>
                     <button class="btn btn-primary btn-sm" onclick="app.switchTab('teach-assign')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">Assign practice</button>
