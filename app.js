@@ -730,6 +730,7 @@ class App {
     const transfers = window.db.getExamTransferTasks();
     const terms = window.db.getKeyTerms();
     const challenges = window.db.getProgrammingChallenges();
+    const teaching = window.db.getCurriculumContent();
     return window.db.getUnits().flatMap(unit => unit.topics.flatMap(topic => topic.objectives.map(objective => {
       const retrievalCount = questions.filter(item => item.specificationPointId === objective.id && item.purpose === 'retrieval').length;
       const diagnosticCount = questions.filter(item => item.specificationPointId === objective.id && item.purpose === 'diagnostic').length;
@@ -738,7 +739,8 @@ class App {
       const examTransferCount = transfers.filter(item => item.specificationPointId === objective.id).length
         + challenges.filter(item => item.specificationPointId === objective.id && item.purpose === 'exam-transfer').length;
       const keyTermCount = terms.filter(item => item.specificationPointId === objective.id).length;
-      const explanationCount = 0;
+      const teachingItem = teaching.find(item => item.id === objective.id);
+      const explanationCount = teachingItem && teachingItem.explanation && teachingItem.workedExample ? 1 : 0;
       const alternateCount = retrievalCount + diagnosticCount + applicationCount + examTransferCount;
       const missing = [];
       if (!explanationCount) missing.push('objective explanation');
@@ -1095,8 +1097,46 @@ class App {
   // ==================== STUDENT LEARN THEORY HUB ====================
   renderStudentLearn(panel) {
     const theoryNotes = window.db.getTheoryNotes();
-    const activeNote = window.db.getTheoryNoteByTopic(this.activeTopicId) || theoryNotes[0];
+    const activeNote = window.db.getTheoryNoteByTopic(this.activeTopicId);
+    if (!activeNote) {
+      panel.innerHTML = `
+        <div class="card" role="status">
+          <h1>Learning content unavailable</h1>
+          <p>This strand does not currently have a valid learning view. Return to Home and choose another topic.</p>
+          <button class="btn btn-secondary" id="learn-empty-back-btn">Back to Home</button>
+        </div>
+      `;
+      const backButton = panel.querySelector('#learn-empty-back-btn');
+      if (backButton) backButton.onclick = () => this.switchTab('stud-dashboard');
+      return;
+    }
     const currentPaper = activeNote ? activeNote.paper : 'Paper 1';
+    const objectiveTeaching = window.db.getCurriculumContent().filter(item => {
+      const objective = window.db.getUnits()
+        .flatMap(unit => unit.topics)
+        .find(topic => topic.id === activeNote.topicId)
+        ?.objectives.find(candidate => candidate.id === item.id);
+      return Boolean(objective);
+    });
+    const objectiveTeachingHtml = objectiveTeaching.length
+      ? objectiveTeaching.map(item => `
+          <article class="card" style="padding: 22px; border: 1px solid var(--border-color);" aria-labelledby="objective-${this.escapeHTML(item.id)}">
+            <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+              <h3 id="objective-${this.escapeHTML(item.id)}" style="font-size: 18px; margin: 0;">${this.escapeHTML(item.id)} &middot; ${this.escapeHTML(item.scope)}</h3>
+              <span class="badge badge-secondary">OCR ${this.escapeHTML(item.officialSpecificationPointId)}</span>
+            </div>
+            <p style="line-height: 1.7; margin: 14px 0;">${this.escapeHTML(item.explanation)}</p>
+            <div style="background: rgba(45, 156, 145, 0.08); border-left: 4px solid var(--teal); padding: 14px; border-radius: 0 8px 8px 0;">
+              <strong>Worked example</strong>
+              <p style="line-height: 1.6; margin: 6px 0 0;">${this.escapeHTML(item.workedExample)}</p>
+            </div>
+            <p style="margin: 14px 0 8px;"><strong>Common misconception:</strong> ${this.escapeHTML(item.misconception)}</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;" aria-label="Key terms">
+              ${item.keyTerms.map(term => `<span class="badge badge-secondary">${this.escapeHTML(term)}</span>`).join('')}
+            </div>
+          </article>
+        `).join('')
+      : '<div class="card" role="status"><strong>Objective-level teaching is unavailable for this strand.</strong></div>';
 
     // Group notes by paper
     const paper1Notes = theoryNotes.filter(n => n.paper === 'Paper 1');
@@ -1161,7 +1201,14 @@ class App {
           </div>
         </div>
 
-        <!-- Section Cards -->
+        <!-- Objective-level teaching -->
+        <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;">
+          <h2 style="font-size: 21px; margin: 0;">Learn each specification requirement</h2>
+          ${objectiveTeachingHtml}
+        </div>
+
+        <!-- Extended topic notes -->
+        <h2 style="font-size: 21px; margin: 0 0 16px;">Extended topic notes</h2>
         <div style="display: flex; flex-direction: column; gap: 24px; margin-bottom: 32px;">
           ${activeNote.sections.map(section => `
             <div class="card" style="padding: 24px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
@@ -1361,603 +1408,6 @@ class App {
   }
 
   // ==================== LEARN ALONG ====================
-  renderStudentLearn(panel) {
-    const units = window.db.getUnits();
-    
-    let activeTopic = null;
-    let activeUnit = null;
-    units.forEach(u => {
-      const found = u.topics.find(t => t.id === this.activeTopicId);
-      if (found) {
-        activeTopic = found;
-        activeUnit = u;
-      }
-    });
-
-    const TOPIC_LESSONS = {
-      'topic_1_1': {
-        overview: 'Systems Architecture covers the core components that make up a computer system. You must understand the role of the CPU, CPU architecture, and how instructions are fetched and executed.',
-        keyPoints: [
-          'The CPU (Central Processing Unit) fetches, decodes, and executes instructions.',
-          'Key registers include: Program Counter (PC), Memory Address Register (MAR), Memory Data Register (MDR), and Accumulator (ACC).',
-          'The Fetch-Decode-Execute cycle coordinates memory fetches and arithmetic execution.',
-          'CPU performance is determined by clock speed (Hz), cache size, and the number of processor cores.'
-        ],
-        misconceptionTitle: 'Clock Speed vs Cores',
-        misconceptionIncorrect: 'Doubling the number of processor cores will always double the overall speed of all programs.',
-        misconceptionCorrect: 'Cores only increase performance if the software is written to use parallel processing. Single-threaded legacy applications will not run faster on multiple cores.',
-        checkpointQuestion: 'What CPU register holds the address of the next instruction to be fetched?',
-        checkpointHint: 'Hint: Enter the abbreviation, e.g. PC.',
-        checkpointAnswer: 'PC',
-        checkpointSuccess: '✅ Correct! The Program Counter (PC) stores the address of the next instruction.',
-        checkpointFailure: '❌ Incorrect. Hint: It points to the next instruction in sequence (PC). Try again!',
-        flashcards: [
-          { term: 'ALU', definition: 'Arithmetic Logic Unit. Performs arithmetic calculations and logical decisions.' },
-          { term: 'Control Unit', definition: 'Co-ordinates CPU activities, directs the flow of data, and manages the Fetch-Decode-Execute cycle.' },
-          { term: 'Cache', definition: 'Small, super-fast memory inside or next to the CPU. Stores frequently accessed data for rapid retrieval.' }
-        ],
-        modelExam: {
-          question: 'Explain the purpose of the Accumulator (ACC) register.',
-          marks: 2,
-          guidance: [
-            'State that it is a dedicated register inside the CPU\'s Arithmetic Logic Unit (ALU).',
-            'Explain that it temporarily stores the intermediate results of calculations and logical operations.'
-          ]
-        }
-      },
-      'topic_1_2': {
-        overview: 'Memory and Storage deals with volatile and non-volatile memory technologies. You must understand the differences between RAM, ROM, Virtual Memory, and various Secondary Storage media.',
-        keyPoints: [
-          'RAM (Random Access Memory) is volatile primary memory used for running programs and data.',
-          'ROM (Read Only Memory) is non-volatile and contains the boot strap instructions (BIOS).',
-          'Virtual memory uses part of the secondary storage (HDD/SSD) as temporary RAM when physical RAM is full.',
-          'Secondary storage is non-volatile storage categorized as Magnetic, Optical, or Solid State.'
-        ],
-        misconceptionTitle: 'RAM vs HDD/SSD Storage',
-        misconceptionIncorrect: 'Adding more RAM increases the maximum file storage capacity of your computer.',
-        misconceptionCorrect: 'RAM is temporary work memory. Files, images, and operating systems are stored in secondary storage (like SSD or HDD), which is non-volatile.',
-        checkpointQuestion: 'Which type of non-volatile secondary storage has no moving parts and uses flash memory?',
-        checkpointHint: 'Hint: Enter SOLID STATE.',
-        checkpointAnswer: 'SOLID STATE',
-        checkpointSuccess: '✅ Correct! Solid State storage has no moving parts, making it fast and durable.',
-        checkpointFailure: '❌ Incorrect. Hint: It uses electronic flash memory (SOLID STATE). Try again!',
-        flashcards: [
-          { term: 'Volatile Memory', definition: 'Temporary storage (like RAM) that loses its contents immediately when power is turned off.' },
-          { term: 'Non-Volatile', definition: 'Permanent storage (like ROM or SSD) that retains data even when the device has no power.' },
-          { term: 'BIOS', definition: 'Basic Input Output System. Bootstrap code stored in ROM that starts up the system hardware.' }
-        ],
-        modelExam: {
-          question: 'Explain why computers require virtual memory.',
-          marks: 3,
-          guidance: [
-            'Required when physical RAM is full / insufficient for running applications.',
-            'Uses a portion of the secondary storage (HDD/SSD) to simulate extra RAM.',
-            'Prevents applications or the system from crashing by swapping inactive memory pages.'
-          ]
-        }
-      },
-      'topic_1_3': {
-        overview: 'Data Representation explains how computers store all information as binary. You must master number conversions, sound, images, and characters representation.',
-        keyPoints: [
-          'Computers only understand binary (states 1 and 0).',
-          'Hexadecimal is base 16. It is used as a human-friendly representation of binary values.',
-          'An image is made of pixels. The colour depth determines the number of bits allocated per pixel.',
-          'Sound is sampled. Higher sample rates and bit depths yield higher fidelity but larger file sizes.'
-        ],
-        misconceptionTitle: 'Hex storage capacity',
-        misconceptionIncorrect: 'Computers store data in hexadecimal format to save storage space.',
-        misconceptionCorrect: 'Computers always store data in binary. Hexadecimal is used purely for readability by software developers.',
-        checkpointQuestion: 'Convert binary 10111100 into Hexadecimal.',
-        checkpointHint: 'Hint: Split the byte into two nibbles: 1011 (11) and 1100 (12).',
-        checkpointAnswer: 'BC',
-        checkpointSuccess: '✅ Correct! 1011 is B and 1100 is C. The hex value is BC.',
-        checkpointFailure: '❌ Incorrect. Hint: 1011 = 11 (B), 1100 = 12 (C). Try again!',
-        flashcards: [
-          { term: 'Pixel', definition: 'The smallest addressable picture element in a digital image.' },
-          { term: 'Sample Rate', definition: 'The number of audio samples recorded per second, measured in Hertz (Hz).' },
-          { term: 'Bit Depth', definition: 'The number of bits allocated to represent each sample or pixel (determines range of colours/amplitudes).' }
-        ],
-        modelExam: {
-          question: 'Calculate the size in bytes of a 4-second audio file sampled at 100Hz with a bit depth of 8 bits, in mono.',
-          marks: 3,
-          guidance: [
-            'Apply sound size formula: Sample Rate (100) * Bit Depth (8) * Length (4) * Channels (1) = 3200 bits.',
-            'Convert bits to bytes by dividing by 8: 3200 / 8 = 400 bytes.',
-            'Show full working and units to secure all marks.'
-          ]
-        }
-      },
-      'topic_1_4': {
-        overview: 'Computer Networks covers network topologies, protocols, packet switching, IP/MAC addressing, and the conceptual layers of the TCP/IP stack.',
-        keyPoints: [
-          'A LAN covers a single site, while a WAN connects geographically distant LANs.',
-          'IP addresses are routing metrics; MAC addresses are physical hardware identifiers.',
-          'The TCP/IP stack layers include: Application, Transport, Network, and Link.',
-          'Protocols are set rules for formatting data transfer, such as HTTP, HTTPS, FTP, SMTP, and IMAP.'
-        ],
-        misconceptionTitle: 'IP vs MAC addresses',
-        misconceptionIncorrect: 'A computer maintains the same IP address regardless of which network it connects to.',
-        misconceptionCorrect: 'IP addresses are dynamic and assigned by the local network gateway. MAC addresses are burned into the network card at the factory and never change.',
-        checkpointQuestion: 'Which protocol is responsible for securing web transmission via encryption?',
-        checkpointHint: 'Hint: Enter the protocol name, e.g. HTTPS.',
-        checkpointAnswer: 'HTTPS',
-        checkpointSuccess: '✅ Correct! HTTPS encrypts traffic between the browser and the web server.',
-        checkpointFailure: '❌ Incorrect. Hint: It is the secure version of HTTP (HTTPS). Try again!',
-        flashcards: [
-          { term: 'Protocol', definition: 'A standard set of rules governing how devices format and transmit data across a network.' },
-          { term: 'Packet Switching', definition: 'Splitting data into small packets, routing them dynamically, and reassembling them at the destination.' },
-          { term: 'MAC Address', definition: 'Media Access Control. A unique physical address assigned to a network card at manufacture.' }
-        ],
-        modelExam: {
-          question: 'Describe the role of a Router in a computer network.',
-          marks: 2,
-          guidance: [
-            'Connects different networks together (such as a Local Area Network to the Internet).',
-            'Inspects the destination IP address of packets and routes them efficiently to their next node.'
-          ]
-        }
-      },
-      'topic_1_5': {
-        overview: 'Network Security explores vulnerabilities, cyber-attacks, and defensive measures used to protect networks and digital assets.',
-        keyPoints: [
-          'Common security threats include Malware, Phishing, Social Engineering, and SQL Injection.',
-          'Brute force attacks attempt every password permutation; DDoS floods servers to disrupt uptime.',
-          'Firewalls monitor and filter incoming/outgoing traffic based on security rules.',
-          'Encryption, access rights, and network policies are critical layers of defense-in-depth.'
-        ],
-        misconceptionTitle: 'Anti-virus protection',
-        misconceptionIncorrect: 'Installing anti-virus software protects a network from all forms of security hacks.',
-        misconceptionCorrect: 'Anti-virus only stops known malware. It cannot block social engineering, SQL injection, or physical security breaches.',
-        checkpointQuestion: 'What type of attack floods a server with traffic to render it unavailable?',
-        checkpointHint: 'Hint: Enter DDoS.',
-        checkpointAnswer: 'DDOS',
-        checkpointSuccess: '✅ Correct! Distributed Denial of Service (DDoS) attempts to crash servers.',
-        checkpointFailure: '❌ Incorrect. Hint: It stands for Distributed Denial of Service (DDOS). Try again!',
-        flashcards: [
-          { term: 'Social Engineering', definition: 'Manipulating individuals into giving away confidential login details or private data (e.g. Phishing).' },
-          { term: 'SQL Injection', definition: 'Inserting malicious database command strings into web forms to trick web servers into dumping SQL data.' },
-          { term: 'Firewall', definition: 'Software or hardware that monitors and filters network traffic based on predefined security rules.' }
-        ],
-        modelExam: {
-          question: 'Explain how a brute force attack differs from a phishing attack.',
-          marks: 3,
-          guidance: [
-            'Brute force is a technical attack using automated software to crack passwords by trial-and-error.',
-            'Phishing is a social engineering attack that tricks humans into giving away details via fake emails.',
-            'Contrast: Brute force targets security credentials directly; phishing exploits human trust/vulnerability.'
-          ]
-        }
-      },
-      'topic_1_6': {
-        overview: 'Systems Software covers the purpose of operating systems (OS) and the utilities that optimize hardware performance.',
-        keyPoints: [
-          'The OS manages memory, processors, peripherals, users, and files.',
-          'Device drivers translate communications between the OS and external hardware.',
-          'Utility software performs maintenance, such as backup, compression, and defragmentation.',
-          'Defragmentation re-organizes fragmented files on HDDs to improve read/write latency.'
-        ],
-        misconceptionTitle: 'Defragmenting SSDs',
-        misconceptionIncorrect: 'Defragmentation should be run regularly on Solid State Drives (SSDs) to speed them up.',
-        misconceptionCorrect: 'SSDs have no moving read/write heads, so fragmenting files does not slow them down. Defragmenting an SSD writes data unnecessarily, shortens its lifespan, and should be avoided.',
-        checkpointQuestion: 'What utility reorganises split file blocks on a hard drive to speed up access?',
-        checkpointHint: 'Hint: Enter DEFRAGMENTATION.',
-        checkpointAnswer: 'DEFRAGMENTATION',
-        checkpointSuccess: '✅ Correct! Defragmentation merges scattered file fragments.',
-        checkpointFailure: '❌ Incorrect. Hint: Enter DEFRAGMENTATION. Try again!',
-        flashcards: [
-          { term: 'Operating System', definition: 'Systems software that manages computer hardware, memory, files, programs, and user interfaces.' },
-          { term: 'Device Driver', definition: 'Software that acts as a translator between the operating system and specific external hardware peripherals.' },
-          { term: 'Utility Software', definition: 'Systems software designed to analyze, configure, optimize, or maintain a computer system.' }
-        ],
-        modelExam: {
-          question: 'Explain how defragmentation software improves hard drive performance.',
-          marks: 3,
-          guidance: [
-            'Re-organises scattered blocks of data so that files are stored in contiguous segments.',
-            'Groups free space together to prevent new files from being fragmented.',
-            'Reduces physical disk read/write head movement, speeding up file access time.'
-          ]
-        }
-      },
-      'topic_1_7': {
-        overview: 'Ethical, Legal, Cultural and Environmental Impacts addresses how computer systems influence society, resources, laws, and individual privacy.',
-        keyPoints: [
-          'Key legislation includes: Data Protection Act, Computer Misuse Act, and Copyright Designs and Patents Act.',
-          'E-waste is a major environmental issue due to toxic chemicals leaking from discarded components.',
-          'Open-source software allows code access and editing; proprietary software protects source code.',
-          'Digital divide, algorithmic bias, and automated decision systems raise ethics concerns.'
-        ],
-        misconceptionTitle: 'Open Source Security',
-        misconceptionIncorrect: 'Open-source software is always less secure because anyone can see the source code.',
-        misconceptionCorrect: 'Exposing code allows global reviews, meaning bugs are often found and patched much faster than in proprietary software.',
-        checkpointQuestion: 'Which UK legislation protects individuals against personal data leakage from organisations?',
-        checkpointHint: 'Hint: Enter DATA PROTECTION ACT.',
-        checkpointAnswer: 'DATA PROTECTION ACT',
-        checkpointSuccess: '✅ Correct! The Data Protection Act regulates user data protection.',
-        checkpointFailure: '❌ Incorrect. Hint: It is the Data Protection Act. Try again!',
-        flashcards: [
-          { term: 'Digital Divide', definition: 'The social gap between demographics/regions that have access to modern technology and those that do not.' },
-          { term: 'Open Source', definition: 'Software whose source code is freely available to the public for use, inspection, modification, and sharing.' },
-          { term: 'Computer Misuse Act', definition: 'UK legislation that outlaws unauthorized access to computer systems, data theft, and hacking.' }
-        ],
-        modelExam: {
-          question: 'State two benefits of proprietary software over open-source software.',
-          marks: 2,
-          guidance: [
-            'Comes with professional customer support, guarantees, regular updates, and warranty protections.',
-            'Source code is compiled and secure, preventing copying or reverse engineering by competitors.'
-          ]
-        }
-      },
-      'topic_2_1': {
-        overview: 'Algorithms focuses on binary/linear search, bubble/merge sort, flowcharts, pseudocode, and algorithm efficiency.',
-        keyPoints: [
-          'Algorithms are precise step-by-step instructions to solve a problem.',
-          'Binary search divides the dataset, but linear search inspects each index sequentially.',
-          'Bubble sort works by swapping adjacent values; Merge sort uses divide-and-conquer.',
-          'Flowcharts represent logic visually using diamonds (decisions) and rectangles (processes).'
-        ],
-        misconceptionTitle: 'Binary Search sorted constraint',
-        misconceptionIncorrect: 'Binary search can be used to search for any value in any list.',
-        misconceptionCorrect: 'Binary search relies on dividing a sorted array. It cannot run on unsorted lists; a linear search must be used instead.',
-        checkpointQuestion: 'Which search algorithm requires the array to be sorted first?',
-        checkpointHint: 'Hint: Enter BINARY SEARCH.',
-        checkpointAnswer: 'BINARY SEARCH',
-        checkpointSuccess: '✅ Correct! Binary search requires sorted data.',
-        checkpointFailure: '❌ Incorrect. Hint: It divides elements in half (BINARY SEARCH). Try again!',
-        flashcards: [
-          { term: 'Pseudocode', definition: 'A text-based layout representation of algorithm steps written in structured plain English.' },
-          { term: 'Linear Search', definition: 'A search method that inspects every element in a list one-by-one from the beginning until a match is found.' },
-          { term: 'Bubble Sort', definition: 'A sorting algorithm that compares adjacent pairs and swaps them if they are in the wrong order, looping until sorted.' }
-        ],
-        modelExam: {
-          question: 'Describe one advantage of a binary search compared to a linear search.',
-          marks: 2,
-          guidance: [
-            'Binary search is far faster and more efficient on large datasets.',
-            'It has logarithmic time complexity (halving search space each step), while linear search takes proportional time.'
-          ]
-        }
-      },
-      'topic_2_2': {
-        overview: 'Programming Fundamentals deals with variable scopes, iteration constructs, string operations, and local arrays.',
-        keyPoints: [
-          'Variable values can change; constant values cannot be modified during program execution.',
-          'Basic data types: Integer, Real/Float, Boolean, Character, and String.',
-          'Selection structures (IF-ELSE) branch flow; Iteration structures (loops) repeat actions.',
-          'Arrays store multiple values of a single data type using indexes.'
-        ],
-        misconceptionTitle: 'Assignment operator',
-        misconceptionIncorrect: 'The assignment symbol (=) in programming acts as a mathematical equality check.',
-        misconceptionCorrect: 'In programming, = represents assignment (storing the value on the right in the variable on the left). Double equal == or comparisons check mathematical equality.',
-        checkpointQuestion: 'What is the construct for a pre-conditioned loop that repeats while a condition is True?',
-        checkpointHint: 'Hint: Enter either FOR or WHILE.',
-        checkpointAnswer: 'WHILE',
-        checkpointSuccess: '✅ Correct! A WHILE loop runs continuously while a condition remains True.',
-        checkpointFailure: '❌ Incorrect. Hint: Enter WHILE. Try again!',
-        flashcards: [
-          { term: 'Scope', definition: 'The region of a program code where a variable is visible and accessible (Local vs Global).' },
-          { term: 'Iteration', definition: 'A control construct that repeats a sequence of statements (loops like FOR or WHILE).' },
-          { term: 'Array', definition: 'A static data structure that stores multiple items of the same data type under a single identifier name.' }
-        ],
-        modelExam: {
-          question: 'Explain the difference between a variable and a constant.',
-          marks: 2,
-          guidance: [
-            'A variable\'s value can be changed / overwritten during the program\'s execution.',
-            'A constant\'s value is set at compile/creation time and cannot be altered during execution.'
-          ]
-        }
-      },
-      'topic_2_3': {
-        overview: 'Producing Robust Programs covers defensive design, syntax/logic errors, user input validation, and testing schedules.',
-        keyPoints: [
-          'Defensive design prevents programs from failing under unexpected user inputs.',
-          'Input validation checks data parameters (range, length, type) before processing.',
-          'Syntax errors break code translation rules; logic errors run but produce wrong outcomes.',
-          'Iterative testing occurs during development; final testing checks compiled versions.'
-        ],
-        misconceptionTitle: 'Validation vs Verification',
-        misconceptionIncorrect: 'Input validation checks if the user entered the correct password to login.',
-        misconceptionCorrect: 'Validation checks if the input is sensible (e.g. correct length or format). Verification checks if it is correct (e.g. matches the password database).',
-        checkpointQuestion: 'What error type does not crash the code but produces incorrect program results?',
-        checkpointHint: 'Hint: Enter LOGIC ERROR.',
-        checkpointAnswer: 'LOGIC ERROR',
-        checkpointSuccess: '✅ Correct! Logic errors run but yield incorrect results.',
-        checkpointFailure: '❌ Incorrect. Hint: It is a mistake in algorithm logic (LOGIC ERROR). Try again!',
-        flashcards: [
-          { term: 'Validation', definition: 'Automatic checks performed by a program on input data to ensure it is sensible and acceptable.' },
-          { term: 'Authentication', definition: 'A mechanism that verifies the identity of a user (such as checking usernames against passwords).' },
-          { term: 'Logic Error', definition: 'A bug in code design that allows compilation but produces incorrect or unexpected output calculations.' }
-        ],
-        modelExam: {
-          question: 'Describe two types of input validation checks.',
-          marks: 2,
-          guidance: [
-            'Range check: confirms numerical inputs fall within logical boundaries (e.g. exam score between 0 and 100).',
-            'Length check: checks if the string has a sensible number of characters (e.g. password of at least 8 characters).'
-          ]
-        }
-      },
-      'topic_2_4': {
-        overview: 'Boolean Logic covers logic gates, logic diagrams, and truth tables to model computer logic circuits.',
-        keyPoints: [
-          'Computers use logic gates to process electrical signals represented as binary.',
-          'NOT gate has one input and outputs the opposite state.',
-          'AND gate outputs True (1) only if both inputs are True (1).',
-          'OR gate outputs True (1) if at least one input is True (1).'
-        ],
-        misconceptionTitle: 'OR gate behaviour',
-        misconceptionIncorrect: 'An OR gate outputs True only when one input is True, but not both.',
-        misconceptionCorrect: 'A standard OR gate outputs True if either or both inputs are True. An exclusive OR (XOR) outputs True only if exactly one input is True.',
-        checkpointQuestion: 'Which logic gate outputs True only when both inputs are True?',
-        checkpointHint: 'Hint: Enter AND.',
-        checkpointAnswer: 'AND',
-        checkpointSuccess: '✅ Correct! The AND gate requires all inputs to be True.',
-        checkpointFailure: '❌ Incorrect. Hint: Enter AND. Try again!',
-        flashcards: [
-          { term: 'Truth Table', definition: 'A tabular layout representation mapping all input state permutations to the resulting output state of a logic circuit.' },
-          { term: 'AND Gate', definition: 'A Boolean logic gate outputting True (1) only when all of its input signals are True (1).' },
-          { term: 'NOT Gate', definition: 'A single-input logic gate that inverts the input signal (outputs the logical opposite).' }
-        ],
-        modelExam: {
-          question: 'State the output of an OR gate when Input A is 1 and Input B is 0.',
-          marks: 1,
-          guidance: [
-            'Output is 1 (True) because at least one of the inputs is 1.'
-          ]
-        }
-      },
-      'topic_2_5': {
-        overview: 'Programming Languages and IDEs covers language translation layers and the tools provided by integrated development environments.',
-        keyPoints: [
-          'High-level languages are human-readable; low-level languages (assembly/machine code) are CPU-native.',
-          'Compilers translate source code into machine code at once, generating an executable file.',
-          'Interpreters translate and execute source code line-by-line in real-time.',
-          'IDE tools include source code editors, error debugging consoles, runtime run commands, and auto-completes.'
-        ],
-        misconceptionTitle: 'Compiler vs Interpreter execution speed',
-        misconceptionIncorrect: 'Interpreters execute compiled programs faster than compilers.',
-        misconceptionCorrect: 'Compilers compile the entire code once. The compiled executable file runs much faster than code interpreted line-by-line.',
-        checkpointQuestion: 'Does a compiler or an interpreter translate the entire source code at once before execution?',
-        checkpointHint: 'Hint: Enter COMPILER.',
-        checkpointAnswer: 'COMPILER',
-        checkpointSuccess: '✅ Correct! A compiler translates the entire codebase upfront.',
-        checkpointFailure: '❌ Incorrect. Hint: It compiles the code into a standalone executable (COMPILER). Try again!',
-        flashcards: [
-          { term: 'High-Level Language', definition: 'A human-friendly programming language (like Python) that uses English keywords and must be translated.' },
-          { term: 'Machine Code', definition: 'A low-level binary code (ones and zeros) that the CPU logic circuits can execute directly.' },
-          { term: 'Debugger', definition: 'An IDE tool that detects, isolates, and lists syntax or logical bugs in a source program.' }
-        ],
-        modelExam: {
-          question: 'Describe the difference in how compilers and interpreters translate source code.',
-          marks: 2,
-          guidance: [
-            'A compiler translates the entire source code at once into an executable machine code file prior to run.',
-            'An interpreter translates and executes the source code line-by-line in real-time.'
-          ]
-        }
-      }
-    };
-
-    const activeLesson = TOPIC_LESSONS[this.activeTopicId] || {
-      overview: `In this section we cover the core principles of ${activeTopic ? activeTopic.name : 'this topic'}. Focus on the relationships between key elements.`,
-      keyPoints: [
-        `Understand the core terminology of ${activeTopic ? activeTopic.name : 'this unit'}.`,
-        'Prepare to apply these concepts to OCR exam specification points.',
-        'Review key terms and test your understanding using checkpoints.'
-      ],
-      misconceptionTitle: 'General Concept Application',
-      misconceptionIncorrect: 'Memorising definitions is enough to score full marks in long-answer questions.',
-      misconceptionCorrect: 'You must apply definitions to the scenario provided in the question. Use the PEEL structure (Point, Evidence, Explanation, Link) for 6-mark and 8-mark written responses.',
-      checkpointQuestion: `What is the first step of the Fetch-Decode-Execute cycle?`,
-      checkpointHint: 'Hint: Enter either FETCH, DECODE, or EXECUTE.',
-      checkpointAnswer: 'FETCH',
-      checkpointSuccess: '✅ Correct! The Fetch stage retrieves instructions from RAM.',
-      checkpointFailure: '❌ Incorrect. Hint: It is the first step (FETCH). Try again!',
-      flashcards: [
-        { term: 'Key Term 1', definition: 'Generic definition placeholder for this topic.' },
-        { term: 'Key Term 2', definition: 'Generic definition placeholder for this topic.' },
-        { term: 'Key Term 3', definition: 'Generic definition placeholder for this topic.' }
-      ],
-      modelExam: {
-        question: 'State one method of learning theory for GCSE exams.',
-        marks: 2,
-        guidance: [
-          'Identify retrieval practice as a method.',
-          'Explain that testing yourself helps build memory pathways.'
-        ]
-      }
-    };
-
-    panel.innerHTML = `
-      <div style="display: grid; grid-template-columns: 280px 1fr; gap: 32px;">
-        <div style="border-right: 1px solid var(--border-color); padding-right: 24px;">
-          <h2 style="font-size: 18px; margin-bottom: 16px;">Syllabus outline</h2>
-          ${units.map(u => `
-            <div style="margin-bottom: 24px;">
-              <strong style="font-size:12px; text-transform:uppercase; color: var(--text-muted);">${u.paper}: ${u.name}</strong>
-              <ul style="list-style:none; display:flex; flex-direction:column; gap:8px; margin-top:8px;">
-                ${u.topics.map(t => `
-                  <li>
-                    <a href="#" class="learn-topic-link" data-topic-id="${t.id}" style="font-size: 14px; text-decoration:none; color: ${t.id === this.activeTopicId ? 'var(--teal)' : 'var(--text-main)'}; font-weight: ${t.id === this.activeTopicId ? '600' : '400'}">
-                       ${t.name}
-                    </a>
-                  </li>
-                `).join('')}
-              </ul>
-            </div>
-          `).join('')}
-        </div>
-
-        <div>
-          <div style="margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
-            <span class="badge badge-primary">${activeUnit ? activeUnit.paper : ''}</span>
-            <h1 style="margin-top: 8px;">${activeTopic ? activeTopic.name : 'Choose a topic'}</h1>
-          </div>
-
-          <!-- Topic Progress & Actions Quick Dashboard -->
-          <div class="card" style="margin-bottom: 32px; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; border-left: 5px solid var(--teal); background-color: var(--bg-card);">
-            <div>
-              <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">Topic Practice Stats</div>
-              <div style="display: flex; gap: 12px; align-items: center;">
-                <span class="badge" style="background-color: var(--amber-alert); color: var(--amber-text); font-weight: 600;">Needs practice</span>
-                <span style="font-size: 14px; font-weight: 500; color: var(--text-main);">Accuracy: <strong>72%</strong></span>
-              </div>
-            </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button class="btn btn-secondary btn-sm" onclick="app.switchTab('stud-test-prep')" style="font-size: 13px; min-height: 38px; padding: 8px 16px;">
-                📝 Practice Exam Questions
-              </button>
-              ${this.activeTopicId === 'topic_2_2' || this.activeTopicId === 'topic_2_3' || this.activeTopicId === 'topic_2_5' ? `
-                <button class="btn btn-primary btn-sm" onclick="app.switchTab('stud-programme')" style="font-size: 13px; min-height: 38px; padding: 8px 16px;">
-                  💻 Run Python Sandbox
-                </button>
-              ` : ''}
-              ${this.activeTopicId === 'topic_1_3' || this.activeTopicId === 'topic_2_4' ? `
-                <button class="btn btn-primary btn-sm" onclick="app.switchTab('stud-practise')" style="font-size: 13px; min-height: 38px; padding: 8px 16px;">
-                  🔢 Try Number Calculations
-                </button>
-              ` : ''}
-              <button class="btn btn-secondary btn-sm" onclick="app.switchTab('stud-dashboard')" style="font-size: 13px; min-height: 38px; padding: 8px 16px; background-color: transparent; border: 1px solid var(--border-color); color: var(--text-main);">
-                ⚡ Go to Spaced Recall
-              </button>
-            </div>
-          </div>
-
-          <div style="max-width: 720px;">
-            ${(() => {
-              const coverage = this.getCurriculumCoverage().find(item => item.topicId === this.activeTopicId);
-              return coverage ? `<div class="card" style="padding:12px 14px; margin-bottom:18px; background:var(--bg-main);">${this.getCoverageBadge(coverage.status)} <span style="font-size:12px; color:var(--text-muted); margin-left:6px;">${coverage.gapCount} evidence gaps remain across ${coverage.objectiveCount} specification points. This label describes the StudySpice content bank, not your ability.</span></div>` : '';
-            })()}
-            <h3 style="margin-bottom: 8px;">1. Overview</h3>
-            <p>${activeLesson.overview}</p>
-
-            <h3 style="margin-top:24px; margin-bottom: 8px;">2. Key knowledge</h3>
-            <div class="card" style="background-color: var(--bg-card); margin-bottom: 24px;">
-              <h4 style="margin-bottom: 8px;">Crucial theory points</h4>
-              <ul style="padding-left: 20px; font-size:14px; color: var(--text-muted); display:flex; flex-direction:column; gap:8px;">
-                ${activeLesson.keyPoints.map(point => `<li>${point}</li>`).join('')}
-              </ul>
-            </div>
-
-            <h3 style="margin-top:24px; margin-bottom: 12px;">3. Interactive terminology flashcards</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-              ${activeLesson.flashcards.map((fc, index) => `
-                <div class="card flashcard-item" id="flashcard-${index}" style="padding: 20px; cursor: pointer; text-align: center; border-top: 4px solid var(--teal); min-height: 120px; display: flex; flex-direction: column; justify-content: center; transition: var(--transition);">
-                  <div class="flashcard-front" id="flashcard-front-${index}" style="font-weight: 700; font-size: 16px; color: var(--text-main);">${fc.term}</div>
-                  <div class="flashcard-back" id="flashcard-back-${index}" style="display: none; font-size: 13px; color: var(--text-muted); text-align: left; line-height: 1.4;">${fc.definition}</div>
-                  <div style="font-size: 11px; color: var(--teal); margin-top: 10px; font-weight: 500;" id="flashcard-prompt-${index}">Click to flip</div>
-                </div>
-              `).join('')}
-            </div>
-
-            <h3 style="margin-top:24px; margin-bottom: 8px;">4. Common misconceptions</h3>
-            <div class="card" style="border-left: 5px solid var(--coral); background-color: rgba(244,63,94,0.02); margin-bottom: 24px;">
-              <h4 style="color: var(--coral);">Misconception Alert: ${activeLesson.misconceptionTitle}</h4>
-              <p style="margin: 0; font-size: 14px;"><strong>Incorrect:</strong> "${activeLesson.misconceptionIncorrect}"<br>
-              <strong>Correct:</strong> ${activeLesson.misconceptionCorrect}</p>
-            </div>
-
-            <h3 style="margin-top:24px; margin-bottom: 12px;">5. Scaffolded model exam question</h3>
-            <div class="card" style="margin-bottom: 24px; background-color: var(--bg-card); border-left: 5px solid var(--amber);">
-              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-                <h4 style="margin: 0; color: var(--text-main); font-size: 15px;">Model Exam Practice</h4>
-                <span class="badge" style="background-color: var(--amber-alert); color: var(--amber-text);">${activeLesson.modelExam.marks} Marks</span>
-              </div>
-              <p style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-main);">${activeLesson.modelExam.question}</p>
-              
-              <button class="btn btn-secondary btn-sm" id="toggle-model-scaffold-btn" style="min-height: 36px; font-size: 12px;">
-                Show marking guidance & model answer
-              </button>
-              
-              <div id="model-scaffold-details" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border-color);">
-                <strong style="font-size: 13px; color: var(--text-main);">OCR Exam Marking Criteria:</strong>
-                <ul style="padding-left: 20px; font-size: 13px; color: var(--text-muted); margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
-                  ${activeLesson.modelExam.guidance.map(g => `<li>${g}</li>`).join('')}
-                </ul>
-              </div>
-            </div>
-
-            <h3 style="margin-top:24px; margin-bottom: 12px;">6. Quick checkpoint</h3>
-            <div class="card">
-              <h4 style="margin-bottom: 8px;">${activeLesson.checkpointQuestion}</h4>
-              <p style="font-size:13px;">${activeLesson.checkpointHint}</p>
-              
-              <div style="display: flex; gap: 8px; align-items: center; margin-top: 12px;">
-                <input type="text" id="checkpoint-answer" class="form-control" style="max-width: 120px;" placeholder="Answer...">
-                <button class="btn btn-primary" id="checkpoint-btn">Check</button>
-              </div>
-              <div id="checkpoint-feedback" style="margin-top:12px; font-size:14px; font-weight:600;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Checkpoint check logic
-    const chkBtn = document.getElementById('checkpoint-btn');
-    if (chkBtn) {
-      chkBtn.onclick = () => {
-        const val = document.getElementById('checkpoint-answer').value.trim().toUpperCase();
-        const fback = document.getElementById('checkpoint-feedback');
-        if (val === activeLesson.checkpointAnswer) {
-          fback.textContent = activeLesson.checkpointSuccess;
-          fback.style.color = 'var(--green)';
-        } else {
-          fback.textContent = activeLesson.checkpointFailure;
-          fback.style.color = 'var(--red)';
-        }
-      };
-    }
-
-    // Toggle model answer scaffold
-    const scaffoldBtn = document.getElementById('toggle-model-scaffold-btn');
-    if (scaffoldBtn) {
-      scaffoldBtn.onclick = () => {
-        const details = document.getElementById('model-scaffold-details');
-        if (details.style.display === 'none') {
-          details.style.display = 'block';
-          scaffoldBtn.textContent = 'Hide marking guidance & model answer';
-        } else {
-          details.style.display = 'none';
-          scaffoldBtn.textContent = 'Show marking guidance & model answer';
-        }
-      };
-    }
-
-    // Interactive terminology flashcards flipping
-    activeLesson.flashcards.forEach((fc, index) => {
-      const card = document.getElementById(`flashcard-${index}`);
-      if (card) {
-        card.onclick = () => {
-          const front = document.getElementById(`flashcard-front-${index}`);
-          const back = document.getElementById(`flashcard-back-${index}`);
-          const prompt = document.getElementById(`flashcard-prompt-${index}`);
-          if (front.style.display === 'none') {
-            front.style.display = 'block';
-            back.style.display = 'none';
-            prompt.textContent = 'Click to flip';
-            card.style.backgroundColor = 'var(--bg-card)';
-          } else {
-            front.style.display = 'none';
-            back.style.display = 'block';
-            prompt.textContent = 'Click to close';
-            card.style.backgroundColor = 'var(--soft-blue)';
-          }
-        };
-      }
-    });
-
-    // Programmatically bind syllabus links to comply with CSP
-    panel.querySelectorAll('.learn-topic-link').forEach(link => {
-      link.onclick = (e) => {
-        e.preventDefault();
-        this.activeTopicId = link.getAttribute('data-topic-id');
-        this.render();
-      };
-    });
-  }
 
   // ==================== WEEKLY NUMBER SKILLS ====================
   renderStudentPractise(panel) {
