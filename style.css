@@ -1,15 +1,15 @@
 /* 25Thirty Learning Design System Stylesheet */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
   /* Color System */
-  --navy: #18233F;
-  --teal: #F26B38;
-  --teal-hover: #D95625;
-  --warm-white: #FFF8F1;
+  --navy: #07111F;
+  --teal: #2D9C91;
+  --teal-hover: #248178;
+  --warm-white: #FAF8F2;
   --white: #FFFFFF;
-  --slate: #475569;
-  --soft-border: #E2E8F0;
+  --slate: #64748B;
+  --soft-border: #E3E8EE;
   
   /* Accents */
   --amber: #D97706;
@@ -18,8 +18,8 @@
   --green: #2FA66D;
   --coral: #F58A6A;
   --red: #D94C4C;
-  --soft-blue: #FFF8F1;
-  --dark-blue: #101726;
+  --soft-blue: #FAF8F2;
+  --dark-blue: #07111F;
 
   /* Theme mappings for 25Thirty Learning */
   --bg-main: var(--warm-white);
@@ -30,12 +30,12 @@
   
   /* Fonts */
   --font-family: 'Inter', Arial, Helvetica, sans-serif;
-  --font-headings: 'Manrope', 'Inter', Arial, Helvetica, sans-serif;
+  --font-headings: 'Inter', Arial, Helvetica, sans-serif;
   
   /* Shadows & Radius */
   --radius-card: 16px;
   --radius-button: 12px;
-  --shadow-subtle: 0 4px 12px rgba(24, 35, 63, 0.04);
+  --shadow-subtle: 0 4px 12px rgba(7, 17, 31, 0.04);
   --transition: all 0.2s ease-in-out;
 }
 
@@ -852,8 +852,11 @@ tr:hover td {
   .landing-nav {
     display: none;
   }
-  .top-actions button, .safeguarding-report-btn {
+  .top-actions button, .safeguarding-report-btn, .btn {
     min-height: 44px;
+  }
+  .form-control, input, select, textarea {
+    font-size: 16px !important;
   }
 }
 

@@ -1319,9 +1319,9 @@ class App {
                 <textarea id="try-input-${item.id}" class="form-control try-practice-textarea" data-obj-id="${item.id}" rows="3" placeholder="Type your response or step-by-step working here..." style="font-size: 13.5px; line-height: 1.5;">${this.escapeHTML(savedPractice)}</textarea>
               </div>
               <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
-                <button type="button" class="btn btn-secondary btn-sm save-try-btn" data-obj-id="${item.id}">💾 Save Response</button>
-                <button type="button" class="btn btn-secondary btn-sm toggle-guide-btn" data-obj-id="${item.id}">💡 Check Worked Solution</button>
-                <button type="button" class="btn btn-primary btn-sm goto-review-btn" data-spec-id="${item.id}">✍️ Practise in Written Answers &rarr;</button>
+                <button type="button" class="btn btn-secondary btn-sm save-try-btn" data-obj-id="${item.id}">💾 Save response</button>
+                <button type="button" class="btn btn-secondary btn-sm toggle-guide-btn" data-obj-id="${item.id}">💡 Check worked solution</button>
+                <button type="button" class="btn btn-primary btn-sm goto-review-btn" data-spec-id="${item.id}">✍️ Practise in written answers &rarr;</button>
               </div>
               <div id="try-guide-${item.id}" class="card" style="display: none; margin-top: 12px; padding: 14px; background: rgba(45, 156, 145, 0.08); border-left: 4px solid var(--teal);">
                 <strong style="color: var(--teal); font-size: 13px;">Guided Solution Reference:</strong>
@@ -1350,16 +1350,16 @@ class App {
         <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
           <div>
             <span class="badge badge-primary">GCSE Computer Science Specification &middot; 25Thirty Learning</span>
-            <h1 style="font-size: 28px; font-weight: 700; margin: 8px 0 4px 0;">Learn & Review Theory</h1>
+            <h1 style="font-size: 28px; font-weight: 700; margin: 8px 0 4px 0;">Learn and review theory</h1>
             <p style="font-size: 15px; color: var(--text-muted); margin: 0;">Comprehensive, specification-aligned revision guides, worked examples, and examiner tips.</p>
           </div>
           <!-- Quick Quiz & Copy Note CTAs -->
           <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
             <button class="btn btn-secondary copy-theory-summary-btn" style="min-height: 44px; padding: 0 16px; font-weight: 600;">
-              📋 Copy Notes & Terms
+              📋 Copy notes and terms
             </button>
             <button class="btn btn-primary start-topic-quiz-btn" data-topic-id="${activeNote.topicId}" style="min-height: 44px; padding: 0 20px; font-weight: 600;">
-              ⚡ Test this topic (5-min Quiz) &rarr;
+              ⚡ Test this topic (5-min quiz) &rarr;
             </button>
           </div>
         </div>
@@ -4647,7 +4647,7 @@ class App {
     panel.innerHTML = `
       <div style="margin-bottom: 24px;">
         <h1>🎛️ Lesson topic embedding controls</h1>
-        <p>See the real depth of the StudySpice content bank, then control which syllabus sections are active, hidden, or set as assessment priority.</p>
+        <p>See the real depth of the School Bridge content bank, then control which syllabus sections are active, hidden, or set as assessment priority.</p>
       </div>
 
       <div class="card" style="margin-bottom:24px; border-left:5px solid var(--amber);">
