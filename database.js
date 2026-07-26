@@ -309,11 +309,11 @@ const defaultDatabase = {
       code: '1.4',
       paper: 'Paper 1',
       title: 'Computer Networks, Connections & Protocols',
-      subtitle: 'Topologies, Hardware, Client-Server vs P2P, TCP/IP 4-Layer Model & DNS',
+      subtitle: 'Topologies, hardware, client-server vs peer-to-peer, protocol layering and DNS',
       summary: 'Explore network structures, hardware devices, wireless protocols, and how data travels across the internet.',
       specificationPoints: [
         '1.3.1 Networks and Topologies: LAN vs WAN, Star & Mesh topologies, Routers, Switches, NICs, Wireless Encryption',
-        '1.3.2 Protocols and Layers: HTTP/S, FTP, POP, IMAP, SMTP, TCP/IP 4-layer model, DNS lookup process'
+        '1.3.2 Protocols and Layers: HTTP/S, FTP, POP, IMAP, SMTP, benefits of protocol layers, DNS lookup process'
       ],
       sections: [
         {
@@ -339,7 +339,7 @@ const defaultDatabase = {
           </ul>
           <strong>Wireless Encryption (WPA2 / WPA3):</strong> Scrambles data transmitted over radio waves so it can only be decoded by devices holding the network security key.`,
           workedExample: `<strong>MAC Address vs IP Address:</strong><br>
-          • <em>MAC Address:</em> Hardcoded into NIC by manufacturer (48-bit hex e.g. <code>00:1A:2B:3C:4D:5E</code>). Unchanging physical identity on a LAN.<br>
+          • <em>MAC Address:</em> Assigned to a network interface and commonly represented as hexadecimal pairs (e.g. <code>00:1A:2B:3C:4D:5E</code>). Used to identify an interface within a network.<br>
           • <em>IP Address:</em> Assigned dynamically by network router (e.g. IPv4 <code>192.168.1.15</code>). Logical address used for routing across global WAN networks.`,
           examinerTip: 'Switches operate on MAC addresses inside a LAN; Routers operate on IP addresses across networks!'
         },
@@ -365,45 +365,14 @@ const defaultDatabase = {
           examinerTip: 'In 4-mark DNS questions, clearly separate domain names (human readable) from IP addresses (numerical machine routing).'
         },
         {
-          heading: '4. TCP/IP 4-Layer Model',
-          content: `Networking protocols are organized into 4 abstraction layers. Each layer has a specific job and communicates only with adjacent layers.<br><br>
-          <table class="table" style="width:100%; border-collapse:collapse; margin: 12px 0;">
-            <thead>
-              <tr style="border-bottom: 2px solid var(--border-color); text-align:left;">
-                <th style="padding: 8px;">Layer</th>
-                <th style="padding: 8px;">Name</th>
-                <th style="padding: 8px;">Function & Protocols</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style="border-bottom: 1px solid var(--border-color);">
-                <td style="padding: 8px;"><strong>Layer 4</strong></td>
-                <td style="padding: 8px;">Application Layer</td>
-                <td style="padding: 8px;">Encodes data into user-facing formats (HTTP, HTTPS, FTP, SMTP, IMAP)</td>
-              </tr>
-              <tr style="border-bottom: 1px solid var(--border-color);">
-                <td style="padding: 8px;"><strong>Layer 3</strong></td>
-                <td style="padding: 8px;">Transport Layer</td>
-                <td style="padding: 8px;">Splits data into packets, adds sequence numbers & port numbers (TCP, UDP)</td>
-              </tr>
-              <tr style="border-bottom: 1px solid var(--border-color);">
-                <td style="padding: 8px;"><strong>Layer 2</strong></td>
-                <td style="padding: 8px;">Internet / Network Layer</td>
-                <td style="padding: 8px;">Adds source & destination IP addresses; routes packets across networks (IP)</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px;"><strong>Layer 1</strong></td>
-                <td style="padding: 8px;">Link / Physical Layer</td>
-                <td style="padding: 8px;">Converts packets into electrical signals/radio waves; handles MAC addresses (Ethernet, Wi-Fi)</td>
-              </tr>
-            </tbody>
-          </table>`,
+          heading: '4. Why protocols use layers',
+          content: `Protocol layers divide a complex communication process into manageable responsibilities. Each layer provides a service to the layer above and uses a service from the layer below. This separation allows one part to be developed, tested or replaced without redesigning the whole system, encourages interoperability and makes faults easier to locate. OCR J277 does not require the names or functions of individual TCP/IP layers.`,
           workedExample: `<strong>Benefits of Layering:</strong><br>
           Layering separates complex networking into self-contained modules. Developers can change Layer 1 (e.g. upgrade Wi-Fi hardware) without needing to rewrite Layer 4 web browser software!`,
-          examinerTip: 'Memorize the order of the TCP/IP layers from top to bottom: Application $\\rightarrow$ Transport $\\rightarrow$ Internet $\\rightarrow$ Link.'
+          examinerTip: 'Explain the benefits of layering; do not spend revision time memorising individual TCP/IP layer names or functions.'
         }
       ],
-      keyTerms: ['LAN', 'WAN', 'Star Topology', 'Mesh Topology', 'Router', 'Switch', 'NIC', 'MAC Address', 'IP Address', 'DNS', 'HTTP', 'HTTPS', 'TCP/IP', 'Application Layer'],
+      keyTerms: ['LAN', 'WAN', 'Star Topology', 'Mesh Topology', 'Router', 'Switch', 'NIC', 'MAC Address', 'IP Address', 'DNS', 'HTTP', 'HTTPS', 'protocol', 'layer'],
       examTraps: [
         'Confusing POP3 and IMAP. POP3 deletes emails from server after downloading; IMAP syncs emails across devices.',
         'Confusing Routers and Switches. Switches operate on MAC addresses within a LAN; Routers operate on IP addresses between networks.'
@@ -1464,7 +1433,9 @@ def calculate_area(width, height):
       "id": "q_1_4_b",
       "topicId": "topic_1_4",
       "specificationPointId": "1.3.2",
-      "purpose": "retrieval",
+      "purpose": "historical",
+      "retired": true,
+      "assessmentStatus": "retired_out_of_scope",
       "type": "mcq",
       "question": "Which layer of the TCP/IP model handles web protocols such as HTTP, HTTPS, and FTP?",
       "options": [
@@ -1475,6 +1446,40 @@ def calculate_area(width, height):
       ],
       "answer": "Application Layer",
       "explanation": "The Application Layer (Layer 4) provides user-facing application protocols like HTTP, FTP, and SMTP."
+    },
+    {
+      "id": "q_1_4_layer_benefits",
+      "topicId": "topic_1_4",
+      "specificationPointId": "1.3.2",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "Why are communication protocols organised into layers?",
+      "options": [
+        "Each layer can be developed or changed without redesigning the entire protocol system",
+        "Every device must use a different protocol at each layer",
+        "Layering removes the need for standards between manufacturers",
+        "Each layer gives a network device a new MAC address"
+      ],
+      "answer": "Each layer can be developed or changed without redesigning the entire protocol system",
+      "explanation": "Layers separate responsibilities, supporting interoperability, independent development and easier troubleshooting.",
+      "retryHint": "Think about how separating a complex communication process into independent responsibilities helps developers replace one part and locate faults."
+    },
+    {
+      "id": "q_1_3_image_size_effect",
+      "topicId": "topic_1_3",
+      "specificationPointId": "1.2.4c",
+      "purpose": "retrieval",
+      "type": "mcq",
+      "question": "An uncompressed bitmap keeps the same resolution but changes from 4-bit to 8-bit colour depth. What happens to the pixel-data size?",
+      "options": [
+        "It doubles because twice as many bits are stored for every pixel",
+        "It halves because more colours can be represented",
+        "It stays unchanged because the resolution is unchanged",
+        "It becomes lossless because metadata is added"
+      ],
+      "answer": "It doubles because twice as many bits are stored for every pixel",
+      "explanation": "Pixel-data size is resolution multiplied by colour depth. With the same number of pixels, doubling bits per pixel doubles the uncompressed pixel data.",
+      "retryHint": "Hold the number of pixels constant and compare how many bits are stored for each individual pixel before and after the change."
     },
     {
       "id": "q_1_5_c",
@@ -1645,6 +1650,7 @@ def calculate_area(width, height):
     {
       "id": "q_2_2_a",
       "topicId": "topic_2_2",
+      "specificationPointId": "2.2.1",
       "type": "mcq",
       "question": "What is the main difference between a variable and a constant?",
       "options": [
@@ -2172,7 +2178,7 @@ def calculate_area(width, height):
       "id": "q_1_4_c",
       "topicId": "topic_1_4",
       "type": "mcq",
-      "question": "Which address is permanently embedded into a network interface card (NIC) at the factory?",
+      "question": "Which address identifies a network interface within a network and is normally written as hexadecimal pairs?",
       "options": [
             "MAC Address",
             "IP Address",
@@ -2180,7 +2186,8 @@ def calculate_area(width, height):
             "TCP Address"
       ],
       "answer": "MAC Address",
-      "explanation": "A Media Access Control (MAC) address is a unique hardware identifier assigned to a network interface card during manufacture. It cannot be changed."
+      "explanation": "A Media Access Control (MAC) address is assigned to a network interface and is normally represented as hexadecimal pairs. It is used for communication within a network.",
+      "retryHint": "Distinguish the address used to identify a network interface on the local network from the logical address used when routing between networks."
 },
     {
       "id": "q_1_4_d",
@@ -2770,7 +2777,7 @@ def calculate_area(width, height):
         { input: '', inputs: [], expected: '1\n2\n3\n4\n5' }
       ],
       explainQuestion: 'Explain why loops are a crucial programming construct in algorithm design.',
-      explainModelAnswer: 'Loops allow a block of instructions to be repeated multiple times without duplicating the code, reducing file sizes and error rates.'
+      explainModelAnswer: 'Loops repeat a block without duplicating instructions, making the program shorter, easier to maintain and less likely to contain inconsistent repeated code.'
     },
     {
       id: 'pc_4',
@@ -2812,7 +2819,7 @@ def calculate_area(width, height):
         { input: 'scores.txt: 50, 60, 40', inputs: [], fileContent: '50\n60\n40\n', expected: '150' }
       ],
       explainQuestion: 'Explain why we should close files or use "with open" in Python.',
-      explainModelAnswer: 'Using "with open" automatically closes the file after the block finishes, releasing lock files and saving system memory resources.'
+      explainModelAnswer: 'Using "with open" closes the file when the block finishes, flushes buffered writes and releases the operating-system file handle even if an error occurs.'
     },
     {
       id: 'pc_6', level: 6, concept: 'Validation & Selection', title: 'Complete Code: Valid Age Range',
@@ -2841,16 +2848,35 @@ def calculate_area(width, height):
       explainQuestion: 'Explain why `return -1` must be placed after the loop.', explainModelAnswer: 'The complete list must be checked before the program can conclude that the target is absent.'
     },
     {
-      id: 'pc_10', level: 10, concept: 'Grade 9 Extension: 2D Array Matrix Search', title: 'Grade 9 Drill: 2D Grid Search', instructions: 'Write `search_grid(grid, target)` to return the coordinate array [row, col] of the target in a 2D grid, or [-1, -1] if not found.', problem: 'Iterate through nested 2D array rows and columns.',
+      id: 'pc_10', level: 10, concept: 'Core: 2D Array Search', title: 'Core Practice: 2D Grid Search', instructions: 'Write `search_grid(grid, target)` to return the coordinate list [row, col] of the target in a 2D grid, or [-1, -1] if not found.', problem: 'Iterate through nested 2D array rows and columns.',
       code: 'def search_grid(grid, target):\n    # Return [row, col] or [-1, -1]\n    pass', expectedOutput: '[1, 0]', supportLadder: ['Use nested loops: `for r in range(len(grid)):` and `for c in range(len(grid[r])):`', 'Access elements using `grid[r][c]`.', 'Return `[r, c]` as soon as `grid[r][c] == target`.'],
       testCases: [{ input: 'grid=[[1,2],[5,6]], target=5', inputs: [], functionName: 'search_grid', functionArgs: [[[1,2],[5,6]], 5], expected: '[1, 0]' }, { input: 'grid=[[1,2],[5,6]], target=9', inputs: [], functionName: 'search_grid', functionArgs: [[[1,2],[5,6]], 9], expected: '[-1, -1]' }],
       explainQuestion: 'Explain how 2D array indexing differs from 1D array indexing.', explainModelAnswer: '1D arrays require a single index `arr[i]` to access a row element; 2D arrays require two indexes `grid[row][col]` to specify both the row and column coordinates.'
     },
     {
-      id: 'pc_11', level: 11, concept: 'Grade 9 Extension: Subprograms & File Input', title: 'Grade 9 Drill: Process Student Scores', instructions: 'Write `get_high_scorers(scores, threshold)` that returns a list of names scoring above the threshold.', problem: 'Filter names from parallel lists or dictionary structures.',
-      code: 'def get_high_scorers(scores, threshold):\n    # Return list of names scoring >= threshold\n    pass', expectedOutput: "['Harriet', 'Alex']", supportLadder: ['Loop through dictionary key-value pairs or index tuples.', 'Append matching names to a results list.', 'Return the list at the end.'],
-      testCases: [{ input: "{'Harriet':85, 'Dev':40, 'Alex':92}, 50", inputs: [], functionName: 'get_high_scorers', functionArgs: [{ 'Harriet': 85, 'Dev': 40, 'Alex': 92 }, 50], expected: "['Harriet', 'Alex']" }],
+      id: 'pc_11', level: 11, concept: 'Core: Subprograms and Records', title: 'Core Practice: Process Student Scores', instructions: 'Write `get_high_scorers(names, scores, threshold)` that returns a list of names whose corresponding score meets the threshold.', problem: 'Use corresponding positions in two fixed-length lists to model fields in a collection of records.',
+      code: 'def get_high_scorers(names, scores, threshold):\n    # Return names whose corresponding score meets the threshold\n    pass', expectedOutput: "['Harriet', 'Alex']", supportLadder: ['Use an index to visit the same position in both fixed-length lists.', 'Append names[index] when scores[index] meets the threshold.', 'Return the result list after every record has been considered.'],
+      testCases: [
+        { input: "['Harriet','Dev','Alex'], [85,40,92], 50", inputs: [], functionName: 'get_high_scorers', functionArgs: [['Harriet', 'Dev', 'Alex'], [85, 40, 92], 50], expected: "['Harriet', 'Alex']" },
+        { input: "['Sam','Lee'], [49,50], 50", inputs: [], functionName: 'get_high_scorers', functionArgs: [['Sam', 'Lee'], [49, 50], 50], expected: "['Lee']" }
+      ],
       explainQuestion: 'Explain why return values are preferable to global variable mutations in modular programming.', explainModelAnswer: 'Return values allow functions to pass data cleanly back to callers without creating side-effects or mutating global states.'
+    },
+    {
+      id: 'pc_12', level: 12, concept: 'Core: Random Number Generation', title: 'Core Practice: Reproducible Dice Roll', instructions: 'Write `roll_die(seed_value)` so it seeds Python’s random generator and returns an integer from 1 to 6 inclusive.', problem: 'Import random, seed the generator with the parameter and return a bounded random integer.',
+      code: 'def roll_die(seed_value):\n    # Seed the generator, then return an integer from 1 to 6\n    pass', expectedOutput: '4', supportLadder: ['Import the random module.', 'Call `random.seed(seed_value)` so tests are reproducible.', 'Use `random.randint(1, 6)` and return the result.'],
+      testCases: [{ input: 'seed 0', inputs: [], functionName: 'roll_die', functionArgs: [0], expected: '4' }, { input: 'seed 1', inputs: [], functionName: 'roll_die', functionArgs: [1], expected: '2' }],
+      explainQuestion: 'Why must both bounds be stated when generating a simulated die roll?', explainModelAnswer: 'The program must restrict generated integers to the six valid outcomes, 1 through 6 inclusive.'
+    },
+    {
+      id: 'pc_13', level: 13, concept: 'Core: Simple Authentication', title: 'Core Practice: Authenticate a User', instructions: 'Write `authenticate(usernames, passwords, entered_username, entered_password)` to return True only when both entered values match the same stored record.', problem: 'Use corresponding positions in two fixed-length lists and do not accept a password belonging to a different username.',
+      code: 'def authenticate(usernames, passwords, entered_username, entered_password):\n    # Return True only for a matching username/password record\n    pass', expectedOutput: 'True', supportLadder: ['Search each username by index.', 'When a username matches, compare the password at the same index.', 'Return False only after no matching record succeeds.'],
+      testCases: [
+        { input: 'known matching record', inputs: [], functionName: 'authenticate', functionArgs: [['sam', 'lee'], ['red7', 'blue9'], 'lee', 'blue9'], expected: 'True' },
+        { input: 'password belongs to another user', inputs: [], functionName: 'authenticate', functionArgs: [['sam', 'lee'], ['red7', 'blue9'], 'lee', 'red7'], expected: 'False' },
+        { input: 'unknown user', inputs: [], functionName: 'authenticate', functionArgs: [['sam', 'lee'], ['red7', 'blue9'], 'alex', 'blue9'], expected: 'False' }
+      ],
+      explainQuestion: 'Why is checking that a password appears anywhere in the password list insecure?', explainModelAnswer: 'Authentication must verify that the password belongs to the same record as the entered username; an unrelated user’s password must not grant access.'
     }
   ],
   attempts: [
@@ -2904,16 +2930,67 @@ def calculate_area(width, height):
   }
 };
 
+// Every official teaching strand needs an honest route from supported practice
+// to a reviewable application response. Existing authored application tasks take
+// precedence; this fills only strands that previously had no open-response or
+// executable application route.
+const objectiveLocations = new Map(defaultDatabase.units.flatMap(unit =>
+  unit.topics.flatMap(topic => topic.objectives.map(objective => [objective.id, topic.id]))
+));
+const preMappedWrittenStrands = {
+  wq_1: '1.6.1', wq_2: '1.4.2', wq_3: '1.1.2', wq_4: '1.2.1', wq_5: '1.3.1',
+  wq_6: '1.2.4d', wq_7: '2.1.3', wq_8: '2.3.1', wq_9: '2.5.1'
+};
+const applicationStrands = new Set([
+  ...defaultDatabase.writtenQuestions.map(item => item.specificationPointId || preMappedWrittenStrands[item.id]),
+  ...defaultDatabase.programmingChallenges
+    .filter(item => item.purpose === 'application')
+    .map(item => item.specificationPointId)
+]);
+const applicationCommandWord = modes => {
+  if (modes.includes('calculate') || modes.includes('calculation')) return 'Calculate';
+  if (modes.includes('compare') || modes.includes('comparison')) return 'Compare';
+  if (modes.includes('recommendation')) return 'Recommend';
+  if (modes.includes('discussion') || modes.includes('evaluation')) return 'Discuss';
+  if (modes.includes('design')) return 'Design';
+  if (modes.includes('trace')) return 'Trace';
+  return 'Explain';
+};
+curriculumContent.forEach(item => {
+  if (applicationStrands.has(item.id) || item.id === '2.2.PY') return;
+  defaultDatabase.writtenQuestions.push({
+    id: `curriculum_app_${item.id.replace(/\./g, '_')}`,
+    topicId: objectiveLocations.get(item.id),
+    specificationPointId: item.id,
+    purpose: 'application',
+    evidenceType: 'unassessed_submission',
+    contributesToMastery: false,
+    commandWord: applicationCommandWord(item.assessmentModes),
+    marks: item.assessmentModes.includes('extended response') ? 8 : 4,
+    question: item.supportedPractice,
+    scenario: `Supported-to-independent application for OCR ${item.officialSpecificationPointId}.`,
+    indicativeContent: [...item.requiredKnowledge, ...item.keyTerms],
+    rubric: [
+      'Accurate use of the named computing concepts.',
+      'A complete method, comparison or explanation appropriate to the command word.',
+      'Reasoning linked to the supplied values or scenario rather than unsupported statements.'
+    ],
+    modelAnswer: `Responses vary by the learner's chosen values or design. Teacher review should check the listed criteria and the worked example for OCR ${item.officialSpecificationPointId}; viewing this guidance does not award credit.`,
+    misconceptions: [{ phrase: item.misconception, feedback: item.misconception }],
+    completionStatus: 'awaiting_review'
+  });
+});
+
 const QUESTION_SPECIFICATION_MAP = {
   q_1_1_a: '1.1.1', q_1_1_b: '1.1.1', q_1_1_c: '1.1.2', q_1_1_d: '1.1.3', q_1_1_e: '1.1.1', q_1: '1.1.1',
   q_1_2_a: '1.2.1', q_1_2_b: '1.2.2', q_1_2_c: '1.2.2', q_1_2_d: '1.2.3', q_1_2_e: '1.2.2', q_2: '1.2.1', q_3: '1.2.2',
-  q_1_3_a: '1.2.4a', q_1_3_b: '1.2.4a', q_1_3_c: '1.2.4d', q_1_3_d: '1.2.5',
-  q_1_4_a: '1.3.1', q_1_4_b: '1.3.2', q_1_4_c: '1.3.2', q_1_4_d: '1.3.2', q_4: '1.3.2',
+  q_1_3_a: '1.2.4a', q_1_3_b: '1.2.4a', q_1_3_c: '1.2.4d', q_1_3_d: '1.2.5', q_1_3_image_size_effect: '1.2.4c',
+  q_1_4_a: '1.3.1', q_1_4_b: '1.3.2', q_1_4_layer_benefits: '1.3.2', q_1_4_c: '1.3.2', q_1_4_d: '1.3.2', q_4: '1.3.2',
   q_1_5_a: '1.4.1', q_1_5_b: '1.4.1', q_1_5_c: '1.4.2', q_1_5_d: '1.4.2',
   q_1_6_a: '1.5.1', q_1_6_b: '1.5.1', q_1_6_c: '1.5.2', q_1_6_d: '1.5.1',
   q_1_7_a: '1.6.2', q_1_7_b: '1.6.2', q_1_7_c: '1.6.1', q_1_7_d: '1.6.2',
   q_2_1_a: '2.1.1', q_2_1_b: '2.1.3', q_2_1_c: '2.1.3', q_2_1_d: '2.1.3', q_2_1_e: '2.1.2', q_5: '2.1.3',
-  q_2_2_a: '2.2.2', q_2_2_b: '2.2.1', q_2_2_c: '2.2.1', q_2_2_d: '2.2.1',
+  q_2_2_a: '2.2.1', q_2_2_b: '2.2.1', q_2_2_c: '2.2.1', q_2_2_d: '2.2.1',
   q_2_3_a: '2.3.1', q_2_3_b: '2.3.2', q_2_3_c: '2.3.2', q_2_3_d: '2.3.2',
   q_2_4_a: '2.4.1', q_2_4_b: '2.4.1', q_2_4_c: '2.4.1', q_2_4_d: '2.4.1',
   q_6: '1.2.1',
@@ -2934,6 +3011,22 @@ const KEY_TERM_SPECIFICATION_MAP = {
   term_iteration: '2.2.1', term_array: '2.2.3', term_syntax_error: '2.3.2', term_logic_error: '2.3.2',
   term_validation: '2.3.1', term_boolean: '2.4.1', term_compiler: '2.5.1', term_interpreter: '2.5.1',
   term_pseudocode: '2.2.ERL'
+};
+
+const PROGRAMMING_TECHNIQUE_MAP = {
+  pc_1: ['variables', 'output', 'strings', 'read'],
+  pc_2: ['selection', 'input', 'complete'],
+  pc_3: ['count-controlled iteration', 'debug'],
+  pc_4: ['function', 'selection', 'casting', 'write'],
+  pc_5: ['file handling', 'iteration', 'casting', 'write'],
+  pc_6: ['validation', 'selection', 'boundary testing', 'complete'],
+  pc_7: ['arrays', 'iteration', 'MOD', 'debug'],
+  pc_8: ['function', 'arrays', 'arithmetic', 'write', 'test'],
+  pc_9: ['linear search', 'function', 'arrays', 'exam transfer', 'write', 'test'],
+  pc_10: ['2D arrays', 'nested iteration', 'write', 'test'],
+  pc_11: ['records', 'arrays', 'function', 'local variables', 'write', 'test'],
+  pc_12: ['random numbers', 'function', 'write', 'test'],
+  pc_13: ['authentication', 'arrays', 'function', 'selection', 'write', 'test']
 };
 
 // Human-reviewed conceptual anchors support validation without claiming to automate pedagogical quality.
@@ -2999,6 +3092,8 @@ function applyContentMappings(data) {
   (data.programmingChallenges || []).forEach(challenge => {
     challenge.specificationPointId = '2.2.PY';
     challenge.purpose = challenge.id === 'pc_9' ? 'exam-transfer' : 'application';
+    challenge.programmingTechniques = PROGRAMMING_TECHNIQUE_MAP[challenge.id] || [];
+    challenge.assessmentRoute = 'deterministic-tests-plus-explanation';
   });
   return data;
 }
@@ -3049,7 +3144,7 @@ function validateQuestionBank(data) {
   };
   const reachableRecallQuestions = (data.units || []).flatMap(unit =>
     (unit.topics || []).flatMap(topic =>
-      (data.questions || []).filter(question => question.topicId === topic.id).slice(0, 3)
+      (data.questions || []).filter(question => question.topicId === topic.id && question.retired !== true).slice(0, 3)
     )
   );
   const seenHints = new Map();
@@ -3237,7 +3332,11 @@ class LocalDB {
   getCurriculumContent() { return this.cachedData.curriculumContent || []; }
   getExamTransferTasks() { return this.cachedData.examTransferTasks || []; }
   getKeyTerms() { return this.cachedData.keyTerms || []; }
-  getQuestions() { return this.cachedData.questions; }
+  getQuestions(options = {}) {
+    return options.includeRetired
+      ? this.cachedData.questions
+      : this.cachedData.questions.filter(question => question.retired !== true);
+  }
   getWrittenQuestions() { return this.cachedData.writtenQuestions; }
   getProgrammingChallenges() { return this.cachedData.programmingChallenges; }
   getAttempts() { return this.cachedData.attempts; }

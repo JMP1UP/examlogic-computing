@@ -80,24 +80,13 @@ Every exam-bridge activity should teach pupils to:
 5. Trace at least one normal or boundary value through the answer.
 6. Compare the response with mark-scheme principles and improve it.
 
-## Current question-bank risk
+## Current implementation status
 
-The broad topic bank is a useful prototype, but it is not yet sufficient evidence of full specification coverage. At the time of this audit:
+The July 2026 implementation maps all 32 selectable internal strands to the current OCR requirement and provides objective-level teaching, a diagnostic, retrieval where appropriate, and a supported application or review route. Practical Python and OCR Exam Reference Language remain separately visible.
 
-- Systems Architecture: 3 specification-point groups, 6 theory questions.
-- Memory and Storage: 2 groups, 7 questions.
-- Data Representation: 6 groups, 4 theory questions plus number-skills generation.
-- Networks: 2 groups, 5 questions.
-- Network Security: 2 groups, 4 questions.
-- Systems Software: 2 groups, 4 questions.
-- Impacts: 2 groups, 4 questions plus extended writing.
-- Algorithms: 3 groups, 6 questions.
-- Programming Fundamentals: 5 groups/strands, 4 theory questions plus programming pathways.
-- Robust Programs: 2 groups, 4 questions.
-- Boolean Logic: 1 group, 5 questions.
-- Languages and IDEs: 2 groups, 4 questions.
+The active corpus contains 122 live objective questions, 36 written application/review activities, 13 exam-transfer tasks and 13 programming challenges. One former TCP/IP layer-name question remains stored as a retired historical record so older attempts can still be interpreted, but it is not selectable.
 
-Before claiming complete test readiness, every selectable specification point needs diagnostic, retrieval, application and exam-transfer items, with Python and OCR-language evidence kept separate.
+This is not a course-readiness or quality-assurance claim. The remaining gate is a qualified-teacher review of accuracy, depth, markability and representative pupil workload. Application routes marked `awaiting_review` cannot create demonstrated mastery automatically.
 
 ## Workload rule
 

@@ -5,6 +5,9 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Fixed
+- Corrected out-of-scope TCP/IP layer-name assessment, misleading MAC permanence and storage-unit feedback, ERL terminator syntax, a variables/constants mapping, and inaccurate programming explanations.
+- Reclassified the old layer-name item as a preserved historical record and added an in-scope layers-benefit replacement.
+- Restored core status and executable practice for two-dimensional arrays, subprograms, reproducible randomness and authentication.
 - Isolated curriculum and assessment scripts behind the `StudySpiceContent` browser namespace so production-order script loading no longer creates top-level identifier collisions.
 - Replaced the schema 12-to-13 local-data reset with a versioned migration that preserves learner, teacher and school-generated records while merging current system content.
 - Assigned stable unique IDs to 13 duplicated retrieval questions, retaining each legacy ID on the renamed content for audit interpretation.
@@ -20,6 +23,7 @@ All notable changes to ExamLogic Computing are recorded here.
 - Improved code-display typography, keyboard focus coverage and responsive pseudocode layout.
 
 ### Tests
+- Added whole-specification traceability, workload, supported-practice, retired-content and application-route validation.
 - Added production-order browser startup and Student Demo smoke coverage.
 - Added realistic schema 12 migration fixtures and preservation assertions.
 - Added question-bank ID and specification-mapping validation.

@@ -12,8 +12,10 @@
 
 ## Deferred readiness findings
 - [ ] Define ownership/version rules for locally edited system-content records before changing `mergeSystemRecords` reconciliation behaviour.
-- [ ] Expand application, exam-transfer and spaced alternatives only after this blocker phase.
-- [ ] Review and correct remaining curriculum inaccuracies through teacher quality assurance.
+- [x] Give every selectable strand a supported application or review route without awarding automatic mastery.
+- [ ] Complete qualified-teacher line-by-line accuracy, depth and markability assurance against J277 v3.1.
+- [ ] Validate the 10-15 minute core workload with high-attaining, typical and struggling pupils.
+- [ ] Add exam-transfer and spaced alternatives only where teacher/pupil evidence shows a genuine gap.
 - [x] Replace self-reported/model-viewed completion with evidence-based progress rules.
 - [x] Reconcile the advertised five-minute quiz with broad-topic quiz workloads.
 - [x] Improve targeted retry and next-step feedback after incorrect answers.
@@ -31,6 +33,7 @@
 - None.
 
 ## Recently completed
+- Full J277 v3.1 traceability review, requirement-specific assessment metadata and core programming-technique coverage implemented.
 - Documentation and design system alignment to 25Thirty Learning mode.
 - Browser startup, local-data migration, question-ID integrity and canonical Learn-renderer blockers corrected.
 - New-learner demo made selectable without seeded attempts, submissions, progress or badges.

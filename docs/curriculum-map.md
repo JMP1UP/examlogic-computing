@@ -20,13 +20,13 @@ Coverage is recorded per internal strand. A strand is not complete because it ha
 1. an objective-level explanation and worked example;
 2. key terminology and a misconception;
 3. a diagnostic check;
-4. at least three retrieval alternatives;
-5. at least two application activities;
-6. at least one exam-transfer activity;
-7. at least eight assessment alternatives in total;
-8. teacher quality assurance.
+4. a suitable retrieval route, except for the separately assessed practical-programming pathway;
+5. a supported application or review route;
+6. explicit required-knowledge, required-skill and OCR assessment-mode metadata;
+7. a realistic core workload of no more than 15 minutes, with optional retrieval and retry work;
+8. qualified-teacher quality assurance.
 
-The status **Awaiting QA** means the quantitative evidence is present; it does not claim that teacher review has happened. **Developing** and **Foundation** identify remaining gaps.
+The evidence required depends on how OCR can validly assess the requirement. A uniform item-count threshold is not used as a proxy for depth. **Awaiting QA** means the implemented route is present and traceable; it does not claim that qualified-teacher review has happened. **Developing** and **Foundation** identify structural gaps.
 
 ## Current audited coverage
 
@@ -34,38 +34,38 @@ This table records the implemented evidence after the July 2026 integrity pass. 
 
 | App strand | Official OCR reference | Printed page(s) | Teach | Diagnostic | Retrieval | Application | Exam transfer |
 |---|---|---:|---:|---:|---:|---:|---:|
-| 1.1.1 Architecture of the CPU | 1.1.1 | 6 | 1 | 1 | 6 | 0 | 1 |
+| 1.1.1 Architecture of the CPU | 1.1.1 | 6 | 1 | 1 | 6 | 1 | 1 |
 | 1.1.2 CPU performance | 1.1.2 | 6 | 1 | 1 | 2 | 1 | 0 |
-| 1.1.3 Embedded systems | 1.1.3 | 6 | 1 | 1 | 1 | 0 | 0 |
+| 1.1.3 Embedded systems | 1.1.3 | 6 | 1 | 1 | 1 | 1 | 0 |
 | 1.2.1 Primary storage | 1.2.1 | 7 | 1 | 1 | 6 | 1 | 1 |
-| 1.2.2 Secondary storage | 1.2.2 | 7 | 1 | 1 | 3 | 0 | 0 |
-| 1.2.3 Units | 1.2.3 | 8 | 1 | 1 | 1 | 0 | 0 |
-| 1.2.4a Numbers | 1.2.4 | 8 | 1 | 1 | 2 | 0 | 0 |
-| 1.2.4b Characters | 1.2.4 | 9 | 1 | 1 | 2 | 0 | 0 |
-| 1.2.4c Images | 1.2.4 | 9 | 1 | 1 | 0 | 0 | 1 |
+| 1.2.2 Secondary storage | 1.2.2 | 7 | 1 | 1 | 4 | 1 | 0 |
+| 1.2.3 Units | 1.2.3 | 8 | 1 | 1 | 1 | 1 | 0 |
+| 1.2.4a Numbers | 1.2.4 | 8 | 1 | 1 | 3 | 1 | 0 |
+| 1.2.4b Characters | 1.2.4 | 9 | 1 | 1 | 1 | 1 | 0 |
+| 1.2.4c Images | 1.2.4 | 9 | 1 | 1 | 1 | 1 | 1 |
 | 1.2.4d Sound | 1.2.4 | 9 | 1 | 1 | 2 | 1 | 0 |
-| 1.2.5 Compression | 1.2.5 | 9 | 1 | 1 | 1 | 0 | 0 |
+| 1.2.5 Compression | 1.2.5 | 9 | 1 | 1 | 1 | 1 | 0 |
 | 1.3.1 Networks and topologies | 1.3.1 | 10 | 1 | 1 | 2 | 1 | 0 |
 | 1.3.2 Connections, protocols and layers | 1.3.2 | 11 | 1 | 1 | 5 | 0 | 1 |
-| 1.4.1 Threats | 1.4.1 | 12 | 1 | 1 | 2 | 0 | 0 |
+| 1.4.1 Threats | 1.4.1 | 12 | 1 | 1 | 2 | 1 | 0 |
 | 1.4.2 Preventing vulnerabilities | 1.4.2 | 12 | 1 | 1 | 3 | 1 | 0 |
-| 1.5.1 Operating systems | 1.5.1 | 13 | 1 | 1 | 4 | 0 | 0 |
-| 1.5.2 Utility software | 1.5.2 | 13 | 1 | 1 | 1 | 0 | 0 |
+| 1.5.1 Operating systems | 1.5.1 | 13 | 1 | 1 | 4 | 1 | 0 |
+| 1.5.2 Utility software | 1.5.2 | 13 | 1 | 1 | 1 | 1 | 0 |
 | 1.6.1 Impacts | 1.6.1 | 14 | 1 | 1 | 1 | 1 | 1 |
-| 1.6.2 Legislation and licensing | 1.6.1 | 14 | 1 | 1 | 4 | 0 | 0 |
-| 2.1.1 Computational thinking | 2.1.1 | 15 | 1 | 1 | 1 | 0 | 0 |
+| 1.6.2 Legislation and licensing | 1.6.1 | 14 | 1 | 1 | 4 | 1 | 0 |
+| 2.1.1 Computational thinking | 2.1.1 | 15 | 1 | 1 | 1 | 1 | 0 |
 | 2.1.2 Designing and refining algorithms | 2.1.2 | 15 | 1 | 1 | 4 | 2 | 1 |
 | 2.1.3 Searching and sorting | 2.1.3 | 16 | 1 | 1 | 4 | 1 | 1 |
-| 2.2.1 Programming fundamentals | 2.2.1 | 17 | 1 | 1 | 6 | 2 | 1 |
-| 2.2.2 Data types | 2.2.2 | 18 | 1 | 1 | 1 | 0 | 0 |
+| 2.2.1 Programming fundamentals | 2.2.1 | 17 | 1 | 1 | 7 | 2 | 1 |
+| 2.2.2 Data types | 2.2.2 | 18 | 1 | 1 | 0 | 1 | 0 |
 | 2.2.3 Additional techniques | 2.2.3 | 18 | 1 | 1 | 4 | 2 | 1 |
-| 2.2.PY Practical Python | 2d and 2.2 | 17-22 | 1 | 1 | 0 | 10 | 1 |
+| 2.2.PY Practical Python | 2d and 2.2 | 17-22 | 1 | 1 | 0 | 13 | 0 |
 | 2.2.ERL OCR reference language | 3c and 2.1-2.3 | 25-31 | 1 | 1 | 4 | 2 | 1 |
-| 2.3.1 Defensive design | 2.3.1 | 19 | 1 | 1 | 2 | 1 | 0 |
+| 2.3.1 Defensive design | 2.3.1 | 19 | 1 | 1 | 1 | 1 | 0 |
 | 2.3.2 Testing | 2.3.2 | 19 | 1 | 1 | 6 | 2 | 2 |
-| 2.4.1 Boolean logic | 2.4.1 | 20 | 1 | 1 | 5 | 0 | 0 |
+| 2.4.1 Boolean logic | 2.4.1 | 20 | 1 | 1 | 5 | 1 | 0 |
 | 2.5.1 Languages | 2.5.1 | 21 | 1 | 1 | 4 | 1 | 1 |
-| 2.5.2 IDE | 2.5.2 | 21 | 1 | 1 | 1 | 0 | 0 |
+| 2.5.2 IDE | 2.5.2 | 21 | 1 | 1 | 1 | 1 | 0 |
 
 ## Audit findings and implementation decisions
 
@@ -74,15 +74,18 @@ This table records the implemented evidence after the July 2026 integrity pass. 
 - The old assembler retrieval question was outside the required depth of 2.5.1 and has been replaced with a high-level versus low-level language question.
 - The IDE assessment now covers the OCR-listed translator facility rather than counting a debugger as required evidence.
 - Syntax and logic error items now map to testing (`2.3.2`), and open-source licensing maps to the internal legislation strand (`1.6.2` / official `1.6.1`).
-- The first priority assessment pass adds complete quantitative evidence banks for `2.1.2`, `2.2.1`, `2.2.3`, `2.2.ERL` and `2.3.2`. These contain original retrieval, application and exam-transfer activities with explanatory feedback.
-- Most strands still lack enough application, exam-transfer and alternate items. They remain honestly labelled as incomplete by the application.
+- Every strand now has a supported application or review route. Generated review prompts remain `awaiting_review` and cannot award mastery without assessed evidence.
+- The out-of-scope TCP/IP layer-name question is retained only for historical-attempt interpretation and excluded from live question selection. Its active replacement assesses the benefits of using layers.
+- MAC-address teaching now avoids the misleading claim that an address is necessarily permanent, and storage-unit feedback accepts OCR's decimal-unit convention.
+- Variables and constants now map to `2.2.1`; two-dimensional arrays and subprograms are taught as core requirements; programming practice now includes reproducible randomness and authentication.
+- The corpus is implemented against J277 v3.1 but remains explicitly awaiting qualified-teacher quality assurance.
 
 ## Next implementation priority
 
-1. Conduct teacher quality assurance on the five completed Paper 2 banks; “Awaiting QA” is not a completeness claim.
-2. Build equivalent application and exam-transfer banks for Paper 1, starting with `1.2.4a-c`, `1.3.1-2`, `1.4.1-2` and `1.5.1-2`.
-3. Fill remaining Paper 2 gaps in data types, defensive design, Boolean logic, languages and IDE facilities.
-4. Add spaced alternatives until every strand reaches the evidence thresholds, then conduct teacher QA before any readiness claim.
+1. Conduct a qualified-teacher line-by-line accuracy and depth review; “Awaiting QA” is not a readiness claim.
+2. Add reviewed, markable exam-transfer alternatives where assessment demand warrants them, without imposing uniform quotas.
+3. Validate the supported application rubrics and workload with representative high-attaining, typical and struggling pupils.
+4. Expand spaced alternatives only after evidence identifies repetition or weak transfer; do not use raw item quantity as a completeness measure.
 
 ## Maintenance rule
 
