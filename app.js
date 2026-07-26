@@ -57,6 +57,7 @@ class App {
     // Number skills state
     this.numberSkillsSet = [];
     this.numberSkillsAnswers = {};
+    this.numberSkillsEvidenceSet = null;
     this.numberSkillsDifficulty = 'Supported'; // Guided, Supported, Independent, Challenge
     this.numberSkillsCalculations = {};
 
@@ -64,6 +65,8 @@ class App {
     this.quizQuestions = [];
     this.quizAnswers = {};
     this.quizResults = null;
+    this.quizEvidenceSet = null;
+    this.evidenceIdSequence = 0;
 
     // Written answers scaffold state
     this.scaffoldPoints = { p1: '', exp1: '', p2: '', exp2: '', apply: '' };
@@ -133,19 +136,151 @@ class App {
 
   getAdaptiveSupportLevel(topic = 'binary conversions') {
     if (!this.currentUser) return 'Supported';
-    const attempts = window.db.getAttempts()
-      .filter(a => a.studentId === this.currentUser.id && String(a.topic).toLowerCase().includes(topic.toLowerCase()))
+    const attempts = this.getLatestDemonstratedAttempts(window.db.getAttempts()
+      .filter(a => a.studentId === this.currentUser.id && String(a.topic).toLowerCase().includes(topic.toLowerCase())))
+      .map(item => item.attempt)
       .slice(-3);
     if (attempts.length < 2) return 'Supported';
     const ratios = attempts.map(a => {
-      const parts = String(a.score).split('/').map(Number);
-      return parts.length === 2 && parts[1] ? parts[0] / parts[1] : 0;
+      const score = this.parseDemonstratedScore(a);
+      return score.earned / score.available;
     });
     const average = ratios.reduce((sum, value) => sum + value, 0) / ratios.length;
     const usedHelp = attempts.some(a => Number(a.supportStepsUsed || 0) > 1);
     if (average < 0.5) return 'Guided';
     if (average >= 0.85 && !usedHelp) return 'Independent';
     return 'Supported';
+  }
+
+  isMeaningfulLearnerResponse(value, minimumLength = 3) {
+    const normalised = String(value || '').trim().replace(/\s+/g, ' ');
+    if (normalised.length < minimumLength) return false;
+    const compact = normalised.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (compact.length < Math.max(2, minimumLength - 1)) return false;
+    return !/^(.)\1+$/.test(compact) && !['idk', 'dontknow', 'notsure', 'none', 'na', 'test'].includes(compact);
+  }
+
+  parseDemonstratedScore(attempt) {
+    if (!attempt || attempt.contributesToMastery === false) return null;
+    const demonstratedTypes = new Set(['number_skills', 'spaced_theory', 'pseudocode_assessed']);
+    if (attempt.evidenceType && attempt.evidenceType !== 'demonstrated') return null;
+    if (!attempt.evidenceType && !demonstratedTypes.has(attempt.type)) return null;
+    const match = String(attempt.score || '').match(/^(\d+)\/(\d+)$/);
+    if (!match || Number(match[2]) <= 0) return null;
+    return {
+      earned: Number(match[1]),
+      available: Number(match[2]),
+      precision: Number(attempt.evidenceVersion) >= 2 && attempt.activityId ? 'question-level' : 'legacy'
+    };
+  }
+
+  getDemonstratedMastery(attempts) {
+    const evidence = this.getLatestDemonstratedAttempts(attempts);
+    const earned = evidence.reduce((total, item) => total + item.score.earned, 0);
+    const available = evidence.reduce((total, item) => total + item.score.available, 0);
+    const ratio = available ? earned / available : null;
+    const label = ratio === null ? 'No demonstrated evidence'
+      : ratio >= 0.85 ? 'Secure'
+        : ratio >= 0.6 ? 'Developing'
+          : 'Needs practice';
+    const legacyEvidenceCount = evidence.filter(item => item.score.precision === 'legacy').length;
+    return { earned, available, ratio, label, evidenceCount: evidence.length, legacyEvidenceCount };
+  }
+
+  getLatestDemonstratedAttempts(attempts) {
+    const latestByActivity = new Map();
+    attempts.forEach((attempt, index) => {
+      const score = this.parseDemonstratedScore(attempt);
+      if (!score) return;
+      const activity = attempt.activityId || attempt.questionId || `legacy:${attempt.type || 'activity'}:${attempt.topic || 'unknown'}`;
+      const time = Date.parse(attempt.date || '') || index;
+      const previous = latestByActivity.get(activity);
+      if (!previous || time >= previous.time) latestByActivity.set(activity, { attempt, score, time });
+    });
+    return [...latestByActivity.values()].sort((left, right) => left.time - right.time);
+  }
+
+  getDisplayedEvidenceAttempts(attempts) {
+    const latestVersionedByActivity = new Map();
+    const retainedRecords = [];
+    attempts.forEach((attempt, index) => {
+      const time = Date.parse(attempt.date || '') || index;
+      const isVersionedActivity = Number(attempt.evidenceVersion) >= 2
+        && attempt.activityId
+        && this.parseDemonstratedScore(attempt);
+      if (!isVersionedActivity) {
+        retainedRecords.push({ attempt, time, index });
+        return;
+      }
+      const previous = latestVersionedByActivity.get(attempt.activityId);
+      if (!previous || time >= previous.time) {
+        latestVersionedByActivity.set(attempt.activityId, { attempt, time, index });
+      }
+    });
+    return [...retainedRecords, ...latestVersionedByActivity.values()]
+      .sort((left, right) => left.time - right.time || left.index - right.index)
+      .map(item => item.attempt);
+  }
+
+  createEvidenceSet(type, topic, questions) {
+    const unique = window.crypto && typeof window.crypto.randomUUID === 'function'
+      ? window.crypto.randomUUID()
+      : `${Date.now()}_${++this.evidenceIdSequence}`;
+    const attemptSetId = `${type}_set_${unique}`;
+    return {
+      activityId: `${type}_activity_${unique}`,
+      attemptSetId,
+      topic,
+      originalQuestionIds: questions.map(question => question.id),
+      originalDenominator: questions.length,
+      latestOutcomes: Object.fromEntries(questions.map(question => [question.id, false])),
+      hasOriginalAttempt: false
+    };
+  }
+
+  buildQuestionLevelAttempt(evidenceSet, attemptKind) {
+    const questionEvidence = evidenceSet.originalQuestionIds.map(questionId => ({
+      questionId,
+      correct: evidenceSet.latestOutcomes[questionId] === true
+    }));
+    const earned = questionEvidence.filter(item => item.correct).length;
+    return {
+      activityId: evidenceSet.activityId,
+      attemptSetId: evidenceSet.attemptSetId,
+      originalQuestionIds: [...evidenceSet.originalQuestionIds],
+      originalDenominator: evidenceSet.originalDenominator,
+      questionEvidence,
+      attemptKind,
+      score: `${earned}/${evidenceSet.originalDenominator}`,
+      evidenceVersion: 2,
+      evidenceType: 'demonstrated',
+      contributesToMastery: true
+    };
+  }
+
+  recordQuizConfidence(attempt, confidence) {
+    const allowed = new Set(['secure_before_feedback', 'partial_before_feedback', 'understood_after_feedback']);
+    if (!attempt || !allowed.has(confidence)) return false;
+    attempt.confidence = confidence;
+    attempt.confidenceRecordedAt = new Date().toISOString();
+    window.db.saveData();
+    return true;
+  }
+
+  assessPseudocodeResponse(response, expected) {
+    if (!this.isMeaningfulLearnerResponse(response, 3)) return false;
+    const normalise = value => String(value).toLowerCase().replace(/\s+/g, ' ').replace(/[^a-z0-9=<>+\-*/ ]/g, '').trim();
+    return normalise(response) === normalise(expected);
+  }
+
+  getRetryQuestions(questions, correctness) {
+    return questions.filter((_, index) => correctness[index] === false);
+  }
+
+  attemptMatchesTopic(attempt, topic) {
+    const recordedTopic = String(attempt?.topic || '').toLowerCase();
+    if (recordedTopic === String(topic.id).toLowerCase() || recordedTopic === String(topic.name || '').toLowerCase()) return true;
+    return topic.id === 'topic_1_3' && recordedTopic === 'binary conversions';
   }
 
   escapeHTML(str) {
@@ -730,6 +865,7 @@ class App {
     const transfers = window.db.getExamTransferTasks();
     const terms = window.db.getKeyTerms();
     const challenges = window.db.getProgrammingChallenges();
+    const teaching = window.db.getCurriculumContent();
     return window.db.getUnits().flatMap(unit => unit.topics.flatMap(topic => topic.objectives.map(objective => {
       const retrievalCount = questions.filter(item => item.specificationPointId === objective.id && item.purpose === 'retrieval').length;
       const diagnosticCount = questions.filter(item => item.specificationPointId === objective.id && item.purpose === 'diagnostic').length;
@@ -738,7 +874,8 @@ class App {
       const examTransferCount = transfers.filter(item => item.specificationPointId === objective.id).length
         + challenges.filter(item => item.specificationPointId === objective.id && item.purpose === 'exam-transfer').length;
       const keyTermCount = terms.filter(item => item.specificationPointId === objective.id).length;
-      const explanationCount = 0;
+      const teachingItem = teaching.find(item => item.id === objective.id);
+      const explanationCount = teachingItem && teachingItem.explanation && teachingItem.workedExample ? 1 : 0;
       const alternateCount = retrievalCount + diagnosticCount + applicationCount + examTransferCount;
       const missing = [];
       if (!explanationCount) missing.push('objective explanation');
@@ -801,6 +938,7 @@ class App {
   renderStudentDashboard(panel) {
     const student = window.db.getStudents().find(s => s.id === this.currentUser.id) || this.currentUser;
     const assignments = window.db.getAssignments().filter(item => this.isPublishedToStudent(item, student));
+    const demonstratedProgress = this.getDemonstratedMastery(window.db.getAttempts().filter(item => item.studentId === student.id));
     const activeTestPreps = window.db.getTestPreps().filter(p => p.status === 'Active' && this.isPublishedToStudent(p, student));
     const upcomingSessions = window.db.getSupportSessions().filter(item => item.published && this.isPublishedToStudent(item, student));
     const controls = window.db.getClassroomControls();
@@ -959,7 +1097,7 @@ class App {
                       <div style="display: flex; flex-direction: column; gap: 4px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">
                         <div style="font-size: 13px; font-weight: 500; color: var(--text-main);">${p}</div>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                          <span style="font-size: 11px; color: var(--text-muted);">Last score: 40%</span>
+                          <span style="font-size: 11px; color: var(--text-muted);">Suggested by your saved revision priorities</span>
                           <button class="btn btn-secondary btn-sm worth-revisiting-btn" data-topic-id="${topicId}" data-target-tab="${targetTab}" style="font-size: 10px; min-height: 24px; padding: 2px 8px;">${btnLabel}</button>
                         </div>
                       </div>
@@ -972,10 +1110,10 @@ class App {
               <div class="card card-progress" style="padding: 20px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
                 <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">Recent progress</h3>
                 <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin: 0;">
-                  Good progress: your CPU Registers score rose from 60% to 75% yesterday.
+                  ${demonstratedProgress.ratio === null ? 'Complete an assessed activity to establish a performance baseline.' : `Current demonstrated score: ${demonstratedProgress.earned}/${demonstratedProgress.available} across the latest assessed activities.`}
                 </p>
                 <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin: 8px 0 0 0; padding-top: 8px; border-top: 1px dashed var(--border-color);">
-                  Recent theory recall: 88%.
+                  Page visits, model views and self-assessment are not counted as mastery.
                 </p>
               </div>
             </div>
@@ -997,7 +1135,7 @@ class App {
             <h1 style="margin-bottom: 6px; font-weight: 700;">${greeting}, ${shortName}</h1>
             <p style="font-size:16px; color: var(--text-muted); margin: 0;">Ready for a quick Computing session?</p>
             <div style="margin-top: 8px; font-size: 14px; color: var(--text-muted); font-weight: 500;">
-              Course status: Paper 1: <strong style="color: var(--teal);">Getting there</strong> &middot; Paper 2: <strong style="color: var(--teal);">Needs practice</strong>
+              Demonstrated performance: <strong style="color: var(--teal);">${demonstratedProgress.label}</strong>
             </div>
           </div>
           <!-- Profile Control -->
@@ -1027,17 +1165,8 @@ class App {
           <div>
             <h2 style="font-size:18px; margin-bottom:12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">This week</h2>
             <div class="card card-progress" style="margin-bottom: 20px; padding: 20px;">
-              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Weekly Streak</h3>
-              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">3 of 4 activities completed</p>
-              <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 16px;">
-                <div style="height: 8px; flex: 1; background-color: var(--teal); border-radius: 4px;" title="Completed"></div>
-                <div style="height: 8px; flex: 1; background-color: var(--teal); border-radius: 4px;" title="Completed"></div>
-                <div style="height: 8px; flex: 1; background-color: var(--teal); border-radius: 4px;" title="Completed"></div>
-                <div style="height: 8px; flex: 1; background-color: var(--border-color); border-radius: 4px;" title="Remaining"></div>
-              </div>
-              <div style="border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 13px; font-weight: 600; color: var(--text-main);">
-                ${student.streak}-week consistency streak
-              </div>
+              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Assessed evidence</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 0;">${demonstratedProgress.evidenceCount} latest assessed ${demonstratedProgress.evidenceCount === 1 ? 'activity' : 'activities'} currently contribute to progress.</p>
             </div>
             <div class="card" style="margin-bottom:20px; padding:16px 20px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
               <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Computing workload</h3>
@@ -1095,8 +1224,46 @@ class App {
   // ==================== STUDENT LEARN THEORY HUB ====================
   renderStudentLearn(panel) {
     const theoryNotes = window.db.getTheoryNotes();
-    const activeNote = window.db.getTheoryNoteByTopic(this.activeTopicId) || theoryNotes[0];
+    const activeNote = window.db.getTheoryNoteByTopic(this.activeTopicId);
+    if (!activeNote) {
+      panel.innerHTML = `
+        <div class="card" role="status">
+          <h1>Learning content unavailable</h1>
+          <p>This strand does not currently have a valid learning view. Return to Home and choose another topic.</p>
+          <button class="btn btn-secondary" id="learn-empty-back-btn">Back to Home</button>
+        </div>
+      `;
+      const backButton = panel.querySelector('#learn-empty-back-btn');
+      if (backButton) backButton.onclick = () => this.switchTab('stud-dashboard');
+      return;
+    }
     const currentPaper = activeNote ? activeNote.paper : 'Paper 1';
+    const objectiveTeaching = window.db.getCurriculumContent().filter(item => {
+      const objective = window.db.getUnits()
+        .flatMap(unit => unit.topics)
+        .find(topic => topic.id === activeNote.topicId)
+        ?.objectives.find(candidate => candidate.id === item.id);
+      return Boolean(objective);
+    });
+    const objectiveTeachingHtml = objectiveTeaching.length
+      ? objectiveTeaching.map(item => `
+          <article class="card" style="padding: 22px; border: 1px solid var(--border-color);" aria-labelledby="objective-${this.escapeHTML(item.id)}">
+            <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+              <h3 id="objective-${this.escapeHTML(item.id)}" style="font-size: 18px; margin: 0;">${this.escapeHTML(item.id)} &middot; ${this.escapeHTML(item.scope)}</h3>
+              <span class="badge badge-secondary">OCR ${this.escapeHTML(item.officialSpecificationPointId)}</span>
+            </div>
+            <p style="line-height: 1.7; margin: 14px 0;">${this.escapeHTML(item.explanation)}</p>
+            <div style="background: rgba(45, 156, 145, 0.08); border-left: 4px solid var(--teal); padding: 14px; border-radius: 0 8px 8px 0;">
+              <strong>Worked example</strong>
+              <p style="line-height: 1.6; margin: 6px 0 0;">${this.escapeHTML(item.workedExample)}</p>
+            </div>
+            <p style="margin: 14px 0 8px;"><strong>Common misconception:</strong> ${this.escapeHTML(item.misconception)}</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;" aria-label="Key terms">
+              ${item.keyTerms.map(term => `<span class="badge badge-secondary">${this.escapeHTML(term)}</span>`).join('')}
+            </div>
+          </article>
+        `).join('')
+      : '<div class="card" role="status"><strong>Objective-level teaching is unavailable for this strand.</strong></div>';
 
     // Group notes by paper
     const paper1Notes = theoryNotes.filter(n => n.paper === 'Paper 1');
@@ -1161,7 +1328,14 @@ class App {
           </div>
         </div>
 
-        <!-- Section Cards -->
+        <!-- Objective-level teaching -->
+        <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;">
+          <h2 style="font-size: 21px; margin: 0;">Learn each specification requirement</h2>
+          ${objectiveTeachingHtml}
+        </div>
+
+        <!-- Extended topic notes -->
+        <h2 style="font-size: 21px; margin: 0 0 16px;">Extended topic notes</h2>
         <div style="display: flex; flex-direction: column; gap: 24px; margin-bottom: 32px;">
           ${activeNote.sections.map(section => `
             <div class="card" style="padding: 24px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
@@ -1243,7 +1417,7 @@ class App {
     panel.querySelectorAll('.start-topic-quiz-btn').forEach(btn => {
       btn.onclick = () => {
         this.activeTopicId = btn.getAttribute('data-topic-id');
-        this.switchTab('stud-practise');
+        this.switchTab('stud-recall');
       };
     });
 
@@ -1289,8 +1463,16 @@ class App {
           if (isSecure) secure++;
           return { item, response, matched, isSecure };
         });
-        window.db.addAttempt({ studentId: this.currentUser.id, type: 'definition_test', topic: 'mixed key terms', score: `${secure}/10` });
-        panel.innerHTML = `<div style="margin-bottom:24px;"><h1>Definition check feedback</h1><p><strong>${secure}/10 definitions included the essential meaning.</strong> Use the feedback to improve precision; this is formative, not a spelling test.</p></div>${results.map((result, index) => `<div class="card" style="margin-bottom:14px; border-left:5px solid ${result.isSecure ? 'var(--green)' : 'var(--amber)'};"><h3>${index + 1}. ${result.item.term}</h3><p style="font-size:13px;"><strong>Your definition:</strong> ${this.escapeHTML(result.response)}</p><p style="font-size:13px;"><strong>Student-friendly model:</strong> ${result.item.definition}</p><p style="font-size:12px; color:var(--text-muted);"><strong>Essential ideas:</strong> ${result.item.keywords.join(', ')}. You included: ${result.matched.join(', ') || 'none yet'}.</p></div>`).join('')}<button class="btn btn-primary" id="another-definition-test-btn">Try another random 10</button><button class="btn btn-secondary" id="dictionary-return-btn" style="margin-left:8px;">Back to dictionary</button>`;
+        window.db.addAttempt({
+          studentId: this.currentUser.id,
+          type: 'definition_test',
+          topic: 'mixed key terms',
+          score: `${secure}/10`,
+          evidenceType: 'formative',
+          contributesToMastery: false,
+          completionStatus: 'formative_only'
+        });
+        panel.innerHTML = `<div style="margin-bottom:24px;"><h1>Definition check feedback</h1><p><strong>Formative feedback only: ${secure}/10 responses included the configured important words.</strong> Keyword coverage does not award completion, attainment or mastery. Use the feedback to improve precision and resubmit.</p></div>${results.map((result, index) => `<div class="card" style="margin-bottom:14px; border-left:5px solid ${result.isSecure ? 'var(--green)' : 'var(--amber)'};"><h3>${index + 1}. ${result.item.term}</h3><p style="font-size:13px;"><strong>Your definition:</strong> ${this.escapeHTML(result.response)}</p><p style="font-size:13px;"><strong>Student-friendly model:</strong> ${result.item.definition}</p><p style="font-size:12px; color:var(--text-muted);"><strong>Important words:</strong> ${result.item.keywords.join(', ')}. You included: ${result.matched.join(', ') || 'none yet'}.</p></div>`).join('')}<button class="btn btn-primary" id="another-definition-test-btn">Improve and try another 10</button><button class="btn btn-secondary" id="dictionary-return-btn" style="margin-left:8px;">Back to dictionary</button>`;
         document.getElementById('another-definition-test-btn').onclick = () => { this.startDefinitionTest(); };
         document.getElementById('dictionary-return-btn').onclick = () => { this.definitionTestMode = false; this.definitionTestTerms = []; this.render(); };
       };
@@ -1361,603 +1543,6 @@ class App {
   }
 
   // ==================== LEARN ALONG ====================
-  renderStudentLearn(panel) {
-    const units = window.db.getUnits();
-    
-    let activeTopic = null;
-    let activeUnit = null;
-    units.forEach(u => {
-      const found = u.topics.find(t => t.id === this.activeTopicId);
-      if (found) {
-        activeTopic = found;
-        activeUnit = u;
-      }
-    });
-
-    const TOPIC_LESSONS = {
-      'topic_1_1': {
-        overview: 'Systems Architecture covers the core components that make up a computer system. You must understand the role of the CPU, CPU architecture, and how instructions are fetched and executed.',
-        keyPoints: [
-          'The CPU (Central Processing Unit) fetches, decodes, and executes instructions.',
-          'Key registers include: Program Counter (PC), Memory Address Register (MAR), Memory Data Register (MDR), and Accumulator (ACC).',
-          'The Fetch-Decode-Execute cycle coordinates memory fetches and arithmetic execution.',
-          'CPU performance is determined by clock speed (Hz), cache size, and the number of processor cores.'
-        ],
-        misconceptionTitle: 'Clock Speed vs Cores',
-        misconceptionIncorrect: 'Doubling the number of processor cores will always double the overall speed of all programs.',
-        misconceptionCorrect: 'Cores only increase performance if the software is written to use parallel processing. Single-threaded legacy applications will not run faster on multiple cores.',
-        checkpointQuestion: 'What CPU register holds the address of the next instruction to be fetched?',
-        checkpointHint: 'Hint: Enter the abbreviation, e.g. PC.',
-        checkpointAnswer: 'PC',
-        checkpointSuccess: '✅ Correct! The Program Counter (PC) stores the address of the next instruction.',
-        checkpointFailure: '❌ Incorrect. Hint: It points to the next instruction in sequence (PC). Try again!',
-        flashcards: [
-          { term: 'ALU', definition: 'Arithmetic Logic Unit. Performs arithmetic calculations and logical decisions.' },
-          { term: 'Control Unit', definition: 'Co-ordinates CPU activities, directs the flow of data, and manages the Fetch-Decode-Execute cycle.' },
-          { term: 'Cache', definition: 'Small, super-fast memory inside or next to the CPU. Stores frequently accessed data for rapid retrieval.' }
-        ],
-        modelExam: {
-          question: 'Explain the purpose of the Accumulator (ACC) register.',
-          marks: 2,
-          guidance: [
-            'State that it is a dedicated register inside the CPU\'s Arithmetic Logic Unit (ALU).',
-            'Explain that it temporarily stores the intermediate results of calculations and logical operations.'
-          ]
-        }
-      },
-      'topic_1_2': {
-        overview: 'Memory and Storage deals with volatile and non-volatile memory technologies. You must understand the differences between RAM, ROM, Virtual Memory, and various Secondary Storage media.',
-        keyPoints: [
-          'RAM (Random Access Memory) is volatile primary memory used for running programs and data.',
-          'ROM (Read Only Memory) is non-volatile and contains the boot strap instructions (BIOS).',
-          'Virtual memory uses part of the secondary storage (HDD/SSD) as temporary RAM when physical RAM is full.',
-          'Secondary storage is non-volatile storage categorized as Magnetic, Optical, or Solid State.'
-        ],
-        misconceptionTitle: 'RAM vs HDD/SSD Storage',
-        misconceptionIncorrect: 'Adding more RAM increases the maximum file storage capacity of your computer.',
-        misconceptionCorrect: 'RAM is temporary work memory. Files, images, and operating systems are stored in secondary storage (like SSD or HDD), which is non-volatile.',
-        checkpointQuestion: 'Which type of non-volatile secondary storage has no moving parts and uses flash memory?',
-        checkpointHint: 'Hint: Enter SOLID STATE.',
-        checkpointAnswer: 'SOLID STATE',
-        checkpointSuccess: '✅ Correct! Solid State storage has no moving parts, making it fast and durable.',
-        checkpointFailure: '❌ Incorrect. Hint: It uses electronic flash memory (SOLID STATE). Try again!',
-        flashcards: [
-          { term: 'Volatile Memory', definition: 'Temporary storage (like RAM) that loses its contents immediately when power is turned off.' },
-          { term: 'Non-Volatile', definition: 'Permanent storage (like ROM or SSD) that retains data even when the device has no power.' },
-          { term: 'BIOS', definition: 'Basic Input Output System. Bootstrap code stored in ROM that starts up the system hardware.' }
-        ],
-        modelExam: {
-          question: 'Explain why computers require virtual memory.',
-          marks: 3,
-          guidance: [
-            'Required when physical RAM is full / insufficient for running applications.',
-            'Uses a portion of the secondary storage (HDD/SSD) to simulate extra RAM.',
-            'Prevents applications or the system from crashing by swapping inactive memory pages.'
-          ]
-        }
-      },
-      'topic_1_3': {
-        overview: 'Data Representation explains how computers store all information as binary. You must master number conversions, sound, images, and characters representation.',
-        keyPoints: [
-          'Computers only understand binary (states 1 and 0).',
-          'Hexadecimal is base 16. It is used as a human-friendly representation of binary values.',
-          'An image is made of pixels. The colour depth determines the number of bits allocated per pixel.',
-          'Sound is sampled. Higher sample rates and bit depths yield higher fidelity but larger file sizes.'
-        ],
-        misconceptionTitle: 'Hex storage capacity',
-        misconceptionIncorrect: 'Computers store data in hexadecimal format to save storage space.',
-        misconceptionCorrect: 'Computers always store data in binary. Hexadecimal is used purely for readability by software developers.',
-        checkpointQuestion: 'Convert binary 10111100 into Hexadecimal.',
-        checkpointHint: 'Hint: Split the byte into two nibbles: 1011 (11) and 1100 (12).',
-        checkpointAnswer: 'BC',
-        checkpointSuccess: '✅ Correct! 1011 is B and 1100 is C. The hex value is BC.',
-        checkpointFailure: '❌ Incorrect. Hint: 1011 = 11 (B), 1100 = 12 (C). Try again!',
-        flashcards: [
-          { term: 'Pixel', definition: 'The smallest addressable picture element in a digital image.' },
-          { term: 'Sample Rate', definition: 'The number of audio samples recorded per second, measured in Hertz (Hz).' },
-          { term: 'Bit Depth', definition: 'The number of bits allocated to represent each sample or pixel (determines range of colours/amplitudes).' }
-        ],
-        modelExam: {
-          question: 'Calculate the size in bytes of a 4-second audio file sampled at 100Hz with a bit depth of 8 bits, in mono.',
-          marks: 3,
-          guidance: [
-            'Apply sound size formula: Sample Rate (100) * Bit Depth (8) * Length (4) * Channels (1) = 3200 bits.',
-            'Convert bits to bytes by dividing by 8: 3200 / 8 = 400 bytes.',
-            'Show full working and units to secure all marks.'
-          ]
-        }
-      },
-      'topic_1_4': {
-        overview: 'Computer Networks covers network topologies, protocols, packet switching, IP/MAC addressing, and the conceptual layers of the TCP/IP stack.',
-        keyPoints: [
-          'A LAN covers a single site, while a WAN connects geographically distant LANs.',
-          'IP addresses are routing metrics; MAC addresses are physical hardware identifiers.',
-          'The TCP/IP stack layers include: Application, Transport, Network, and Link.',
-          'Protocols are set rules for formatting data transfer, such as HTTP, HTTPS, FTP, SMTP, and IMAP.'
-        ],
-        misconceptionTitle: 'IP vs MAC addresses',
-        misconceptionIncorrect: 'A computer maintains the same IP address regardless of which network it connects to.',
-        misconceptionCorrect: 'IP addresses are dynamic and assigned by the local network gateway. MAC addresses are burned into the network card at the factory and never change.',
-        checkpointQuestion: 'Which protocol is responsible for securing web transmission via encryption?',
-        checkpointHint: 'Hint: Enter the protocol name, e.g. HTTPS.',
-        checkpointAnswer: 'HTTPS',
-        checkpointSuccess: '✅ Correct! HTTPS encrypts traffic between the browser and the web server.',
-        checkpointFailure: '❌ Incorrect. Hint: It is the secure version of HTTP (HTTPS). Try again!',
-        flashcards: [
-          { term: 'Protocol', definition: 'A standard set of rules governing how devices format and transmit data across a network.' },
-          { term: 'Packet Switching', definition: 'Splitting data into small packets, routing them dynamically, and reassembling them at the destination.' },
-          { term: 'MAC Address', definition: 'Media Access Control. A unique physical address assigned to a network card at manufacture.' }
-        ],
-        modelExam: {
-          question: 'Describe the role of a Router in a computer network.',
-          marks: 2,
-          guidance: [
-            'Connects different networks together (such as a Local Area Network to the Internet).',
-            'Inspects the destination IP address of packets and routes them efficiently to their next node.'
-          ]
-        }
-      },
-      'topic_1_5': {
-        overview: 'Network Security explores vulnerabilities, cyber-attacks, and defensive measures used to protect networks and digital assets.',
-        keyPoints: [
-          'Common security threats include Malware, Phishing, Social Engineering, and SQL Injection.',
-          'Brute force attacks attempt every password permutation; DDoS floods servers to disrupt uptime.',
-          'Firewalls monitor and filter incoming/outgoing traffic based on security rules.',
-          'Encryption, access rights, and network policies are critical layers of defense-in-depth.'
-        ],
-        misconceptionTitle: 'Anti-virus protection',
-        misconceptionIncorrect: 'Installing anti-virus software protects a network from all forms of security hacks.',
-        misconceptionCorrect: 'Anti-virus only stops known malware. It cannot block social engineering, SQL injection, or physical security breaches.',
-        checkpointQuestion: 'What type of attack floods a server with traffic to render it unavailable?',
-        checkpointHint: 'Hint: Enter DDoS.',
-        checkpointAnswer: 'DDOS',
-        checkpointSuccess: '✅ Correct! Distributed Denial of Service (DDoS) attempts to crash servers.',
-        checkpointFailure: '❌ Incorrect. Hint: It stands for Distributed Denial of Service (DDOS). Try again!',
-        flashcards: [
-          { term: 'Social Engineering', definition: 'Manipulating individuals into giving away confidential login details or private data (e.g. Phishing).' },
-          { term: 'SQL Injection', definition: 'Inserting malicious database command strings into web forms to trick web servers into dumping SQL data.' },
-          { term: 'Firewall', definition: 'Software or hardware that monitors and filters network traffic based on predefined security rules.' }
-        ],
-        modelExam: {
-          question: 'Explain how a brute force attack differs from a phishing attack.',
-          marks: 3,
-          guidance: [
-            'Brute force is a technical attack using automated software to crack passwords by trial-and-error.',
-            'Phishing is a social engineering attack that tricks humans into giving away details via fake emails.',
-            'Contrast: Brute force targets security credentials directly; phishing exploits human trust/vulnerability.'
-          ]
-        }
-      },
-      'topic_1_6': {
-        overview: 'Systems Software covers the purpose of operating systems (OS) and the utilities that optimize hardware performance.',
-        keyPoints: [
-          'The OS manages memory, processors, peripherals, users, and files.',
-          'Device drivers translate communications between the OS and external hardware.',
-          'Utility software performs maintenance, such as backup, compression, and defragmentation.',
-          'Defragmentation re-organizes fragmented files on HDDs to improve read/write latency.'
-        ],
-        misconceptionTitle: 'Defragmenting SSDs',
-        misconceptionIncorrect: 'Defragmentation should be run regularly on Solid State Drives (SSDs) to speed them up.',
-        misconceptionCorrect: 'SSDs have no moving read/write heads, so fragmenting files does not slow them down. Defragmenting an SSD writes data unnecessarily, shortens its lifespan, and should be avoided.',
-        checkpointQuestion: 'What utility reorganises split file blocks on a hard drive to speed up access?',
-        checkpointHint: 'Hint: Enter DEFRAGMENTATION.',
-        checkpointAnswer: 'DEFRAGMENTATION',
-        checkpointSuccess: '✅ Correct! Defragmentation merges scattered file fragments.',
-        checkpointFailure: '❌ Incorrect. Hint: Enter DEFRAGMENTATION. Try again!',
-        flashcards: [
-          { term: 'Operating System', definition: 'Systems software that manages computer hardware, memory, files, programs, and user interfaces.' },
-          { term: 'Device Driver', definition: 'Software that acts as a translator between the operating system and specific external hardware peripherals.' },
-          { term: 'Utility Software', definition: 'Systems software designed to analyze, configure, optimize, or maintain a computer system.' }
-        ],
-        modelExam: {
-          question: 'Explain how defragmentation software improves hard drive performance.',
-          marks: 3,
-          guidance: [
-            'Re-organises scattered blocks of data so that files are stored in contiguous segments.',
-            'Groups free space together to prevent new files from being fragmented.',
-            'Reduces physical disk read/write head movement, speeding up file access time.'
-          ]
-        }
-      },
-      'topic_1_7': {
-        overview: 'Ethical, Legal, Cultural and Environmental Impacts addresses how computer systems influence society, resources, laws, and individual privacy.',
-        keyPoints: [
-          'Key legislation includes: Data Protection Act, Computer Misuse Act, and Copyright Designs and Patents Act.',
-          'E-waste is a major environmental issue due to toxic chemicals leaking from discarded components.',
-          'Open-source software allows code access and editing; proprietary software protects source code.',
-          'Digital divide, algorithmic bias, and automated decision systems raise ethics concerns.'
-        ],
-        misconceptionTitle: 'Open Source Security',
-        misconceptionIncorrect: 'Open-source software is always less secure because anyone can see the source code.',
-        misconceptionCorrect: 'Exposing code allows global reviews, meaning bugs are often found and patched much faster than in proprietary software.',
-        checkpointQuestion: 'Which UK legislation protects individuals against personal data leakage from organisations?',
-        checkpointHint: 'Hint: Enter DATA PROTECTION ACT.',
-        checkpointAnswer: 'DATA PROTECTION ACT',
-        checkpointSuccess: '✅ Correct! The Data Protection Act regulates user data protection.',
-        checkpointFailure: '❌ Incorrect. Hint: It is the Data Protection Act. Try again!',
-        flashcards: [
-          { term: 'Digital Divide', definition: 'The social gap between demographics/regions that have access to modern technology and those that do not.' },
-          { term: 'Open Source', definition: 'Software whose source code is freely available to the public for use, inspection, modification, and sharing.' },
-          { term: 'Computer Misuse Act', definition: 'UK legislation that outlaws unauthorized access to computer systems, data theft, and hacking.' }
-        ],
-        modelExam: {
-          question: 'State two benefits of proprietary software over open-source software.',
-          marks: 2,
-          guidance: [
-            'Comes with professional customer support, guarantees, regular updates, and warranty protections.',
-            'Source code is compiled and secure, preventing copying or reverse engineering by competitors.'
-          ]
-        }
-      },
-      'topic_2_1': {
-        overview: 'Algorithms focuses on binary/linear search, bubble/merge sort, flowcharts, pseudocode, and algorithm efficiency.',
-        keyPoints: [
-          'Algorithms are precise step-by-step instructions to solve a problem.',
-          'Binary search divides the dataset, but linear search inspects each index sequentially.',
-          'Bubble sort works by swapping adjacent values; Merge sort uses divide-and-conquer.',
-          'Flowcharts represent logic visually using diamonds (decisions) and rectangles (processes).'
-        ],
-        misconceptionTitle: 'Binary Search sorted constraint',
-        misconceptionIncorrect: 'Binary search can be used to search for any value in any list.',
-        misconceptionCorrect: 'Binary search relies on dividing a sorted array. It cannot run on unsorted lists; a linear search must be used instead.',
-        checkpointQuestion: 'Which search algorithm requires the array to be sorted first?',
-        checkpointHint: 'Hint: Enter BINARY SEARCH.',
-        checkpointAnswer: 'BINARY SEARCH',
-        checkpointSuccess: '✅ Correct! Binary search requires sorted data.',
-        checkpointFailure: '❌ Incorrect. Hint: It divides elements in half (BINARY SEARCH). Try again!',
-        flashcards: [
-          { term: 'Pseudocode', definition: 'A text-based layout representation of algorithm steps written in structured plain English.' },
-          { term: 'Linear Search', definition: 'A search method that inspects every element in a list one-by-one from the beginning until a match is found.' },
-          { term: 'Bubble Sort', definition: 'A sorting algorithm that compares adjacent pairs and swaps them if they are in the wrong order, looping until sorted.' }
-        ],
-        modelExam: {
-          question: 'Describe one advantage of a binary search compared to a linear search.',
-          marks: 2,
-          guidance: [
-            'Binary search is far faster and more efficient on large datasets.',
-            'It has logarithmic time complexity (halving search space each step), while linear search takes proportional time.'
-          ]
-        }
-      },
-      'topic_2_2': {
-        overview: 'Programming Fundamentals deals with variable scopes, iteration constructs, string operations, and local arrays.',
-        keyPoints: [
-          'Variable values can change; constant values cannot be modified during program execution.',
-          'Basic data types: Integer, Real/Float, Boolean, Character, and String.',
-          'Selection structures (IF-ELSE) branch flow; Iteration structures (loops) repeat actions.',
-          'Arrays store multiple values of a single data type using indexes.'
-        ],
-        misconceptionTitle: 'Assignment operator',
-        misconceptionIncorrect: 'The assignment symbol (=) in programming acts as a mathematical equality check.',
-        misconceptionCorrect: 'In programming, = represents assignment (storing the value on the right in the variable on the left). Double equal == or comparisons check mathematical equality.',
-        checkpointQuestion: 'What is the construct for a pre-conditioned loop that repeats while a condition is True?',
-        checkpointHint: 'Hint: Enter either FOR or WHILE.',
-        checkpointAnswer: 'WHILE',
-        checkpointSuccess: '✅ Correct! A WHILE loop runs continuously while a condition remains True.',
-        checkpointFailure: '❌ Incorrect. Hint: Enter WHILE. Try again!',
-        flashcards: [
-          { term: 'Scope', definition: 'The region of a program code where a variable is visible and accessible (Local vs Global).' },
-          { term: 'Iteration', definition: 'A control construct that repeats a sequence of statements (loops like FOR or WHILE).' },
-          { term: 'Array', definition: 'A static data structure that stores multiple items of the same data type under a single identifier name.' }
-        ],
-        modelExam: {
-          question: 'Explain the difference between a variable and a constant.',
-          marks: 2,
-          guidance: [
-            'A variable\'s value can be changed / overwritten during the program\'s execution.',
-            'A constant\'s value is set at compile/creation time and cannot be altered during execution.'
-          ]
-        }
-      },
-      'topic_2_3': {
-        overview: 'Producing Robust Programs covers defensive design, syntax/logic errors, user input validation, and testing schedules.',
-        keyPoints: [
-          'Defensive design prevents programs from failing under unexpected user inputs.',
-          'Input validation checks data parameters (range, length, type) before processing.',
-          'Syntax errors break code translation rules; logic errors run but produce wrong outcomes.',
-          'Iterative testing occurs during development; final testing checks compiled versions.'
-        ],
-        misconceptionTitle: 'Validation vs Verification',
-        misconceptionIncorrect: 'Input validation checks if the user entered the correct password to login.',
-        misconceptionCorrect: 'Validation checks if the input is sensible (e.g. correct length or format). Verification checks if it is correct (e.g. matches the password database).',
-        checkpointQuestion: 'What error type does not crash the code but produces incorrect program results?',
-        checkpointHint: 'Hint: Enter LOGIC ERROR.',
-        checkpointAnswer: 'LOGIC ERROR',
-        checkpointSuccess: '✅ Correct! Logic errors run but yield incorrect results.',
-        checkpointFailure: '❌ Incorrect. Hint: It is a mistake in algorithm logic (LOGIC ERROR). Try again!',
-        flashcards: [
-          { term: 'Validation', definition: 'Automatic checks performed by a program on input data to ensure it is sensible and acceptable.' },
-          { term: 'Authentication', definition: 'A mechanism that verifies the identity of a user (such as checking usernames against passwords).' },
-          { term: 'Logic Error', definition: 'A bug in code design that allows compilation but produces incorrect or unexpected output calculations.' }
-        ],
-        modelExam: {
-          question: 'Describe two types of input validation checks.',
-          marks: 2,
-          guidance: [
-            'Range check: confirms numerical inputs fall within logical boundaries (e.g. exam score between 0 and 100).',
-            'Length check: checks if the string has a sensible number of characters (e.g. password of at least 8 characters).'
-          ]
-        }
-      },
-      'topic_2_4': {
-        overview: 'Boolean Logic covers logic gates, logic diagrams, and truth tables to model computer logic circuits.',
-        keyPoints: [
-          'Computers use logic gates to process electrical signals represented as binary.',
-          'NOT gate has one input and outputs the opposite state.',
-          'AND gate outputs True (1) only if both inputs are True (1).',
-          'OR gate outputs True (1) if at least one input is True (1).'
-        ],
-        misconceptionTitle: 'OR gate behaviour',
-        misconceptionIncorrect: 'An OR gate outputs True only when one input is True, but not both.',
-        misconceptionCorrect: 'A standard OR gate outputs True if either or both inputs are True. An exclusive OR (XOR) outputs True only if exactly one input is True.',
-        checkpointQuestion: 'Which logic gate outputs True only when both inputs are True?',
-        checkpointHint: 'Hint: Enter AND.',
-        checkpointAnswer: 'AND',
-        checkpointSuccess: '✅ Correct! The AND gate requires all inputs to be True.',
-        checkpointFailure: '❌ Incorrect. Hint: Enter AND. Try again!',
-        flashcards: [
-          { term: 'Truth Table', definition: 'A tabular layout representation mapping all input state permutations to the resulting output state of a logic circuit.' },
-          { term: 'AND Gate', definition: 'A Boolean logic gate outputting True (1) only when all of its input signals are True (1).' },
-          { term: 'NOT Gate', definition: 'A single-input logic gate that inverts the input signal (outputs the logical opposite).' }
-        ],
-        modelExam: {
-          question: 'State the output of an OR gate when Input A is 1 and Input B is 0.',
-          marks: 1,
-          guidance: [
-            'Output is 1 (True) because at least one of the inputs is 1.'
-          ]
-        }
-      },
-      'topic_2_5': {
-        overview: 'Programming Languages and IDEs covers language translation layers and the tools provided by integrated development environments.',
-        keyPoints: [
-          'High-level languages are human-readable; low-level languages (assembly/machine code) are CPU-native.',
-          'Compilers translate source code into machine code at once, generating an executable file.',
-          'Interpreters translate and execute source code line-by-line in real-time.',
-          'IDE tools include source code editors, error debugging consoles, runtime run commands, and auto-completes.'
-        ],
-        misconceptionTitle: 'Compiler vs Interpreter execution speed',
-        misconceptionIncorrect: 'Interpreters execute compiled programs faster than compilers.',
-        misconceptionCorrect: 'Compilers compile the entire code once. The compiled executable file runs much faster than code interpreted line-by-line.',
-        checkpointQuestion: 'Does a compiler or an interpreter translate the entire source code at once before execution?',
-        checkpointHint: 'Hint: Enter COMPILER.',
-        checkpointAnswer: 'COMPILER',
-        checkpointSuccess: '✅ Correct! A compiler translates the entire codebase upfront.',
-        checkpointFailure: '❌ Incorrect. Hint: It compiles the code into a standalone executable (COMPILER). Try again!',
-        flashcards: [
-          { term: 'High-Level Language', definition: 'A human-friendly programming language (like Python) that uses English keywords and must be translated.' },
-          { term: 'Machine Code', definition: 'A low-level binary code (ones and zeros) that the CPU logic circuits can execute directly.' },
-          { term: 'Debugger', definition: 'An IDE tool that detects, isolates, and lists syntax or logical bugs in a source program.' }
-        ],
-        modelExam: {
-          question: 'Describe the difference in how compilers and interpreters translate source code.',
-          marks: 2,
-          guidance: [
-            'A compiler translates the entire source code at once into an executable machine code file prior to run.',
-            'An interpreter translates and executes the source code line-by-line in real-time.'
-          ]
-        }
-      }
-    };
-
-    const activeLesson = TOPIC_LESSONS[this.activeTopicId] || {
-      overview: `In this section we cover the core principles of ${activeTopic ? activeTopic.name : 'this topic'}. Focus on the relationships between key elements.`,
-      keyPoints: [
-        `Understand the core terminology of ${activeTopic ? activeTopic.name : 'this unit'}.`,
-        'Prepare to apply these concepts to OCR exam specification points.',
-        'Review key terms and test your understanding using checkpoints.'
-      ],
-      misconceptionTitle: 'General Concept Application',
-      misconceptionIncorrect: 'Memorising definitions is enough to score full marks in long-answer questions.',
-      misconceptionCorrect: 'You must apply definitions to the scenario provided in the question. Use the PEEL structure (Point, Evidence, Explanation, Link) for 6-mark and 8-mark written responses.',
-      checkpointQuestion: `What is the first step of the Fetch-Decode-Execute cycle?`,
-      checkpointHint: 'Hint: Enter either FETCH, DECODE, or EXECUTE.',
-      checkpointAnswer: 'FETCH',
-      checkpointSuccess: '✅ Correct! The Fetch stage retrieves instructions from RAM.',
-      checkpointFailure: '❌ Incorrect. Hint: It is the first step (FETCH). Try again!',
-      flashcards: [
-        { term: 'Key Term 1', definition: 'Generic definition placeholder for this topic.' },
-        { term: 'Key Term 2', definition: 'Generic definition placeholder for this topic.' },
-        { term: 'Key Term 3', definition: 'Generic definition placeholder for this topic.' }
-      ],
-      modelExam: {
-        question: 'State one method of learning theory for GCSE exams.',
-        marks: 2,
-        guidance: [
-          'Identify retrieval practice as a method.',
-          'Explain that testing yourself helps build memory pathways.'
-        ]
-      }
-    };
-
-    panel.innerHTML = `
-      <div style="display: grid; grid-template-columns: 280px 1fr; gap: 32px;">
-        <div style="border-right: 1px solid var(--border-color); padding-right: 24px;">
-          <h2 style="font-size: 18px; margin-bottom: 16px;">Syllabus outline</h2>
-          ${units.map(u => `
-            <div style="margin-bottom: 24px;">
-              <strong style="font-size:12px; text-transform:uppercase; color: var(--text-muted);">${u.paper}: ${u.name}</strong>
-              <ul style="list-style:none; display:flex; flex-direction:column; gap:8px; margin-top:8px;">
-                ${u.topics.map(t => `
-                  <li>
-                    <a href="#" class="learn-topic-link" data-topic-id="${t.id}" style="font-size: 14px; text-decoration:none; color: ${t.id === this.activeTopicId ? 'var(--teal)' : 'var(--text-main)'}; font-weight: ${t.id === this.activeTopicId ? '600' : '400'}">
-                       ${t.name}
-                    </a>
-                  </li>
-                `).join('')}
-              </ul>
-            </div>
-          `).join('')}
-        </div>
-
-        <div>
-          <div style="margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
-            <span class="badge badge-primary">${activeUnit ? activeUnit.paper : ''}</span>
-            <h1 style="margin-top: 8px;">${activeTopic ? activeTopic.name : 'Choose a topic'}</h1>
-          </div>
-
-          <!-- Topic Progress & Actions Quick Dashboard -->
-          <div class="card" style="margin-bottom: 32px; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; border-left: 5px solid var(--teal); background-color: var(--bg-card);">
-            <div>
-              <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">Topic Practice Stats</div>
-              <div style="display: flex; gap: 12px; align-items: center;">
-                <span class="badge" style="background-color: var(--amber-alert); color: var(--amber-text); font-weight: 600;">Needs practice</span>
-                <span style="font-size: 14px; font-weight: 500; color: var(--text-main);">Accuracy: <strong>72%</strong></span>
-              </div>
-            </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button class="btn btn-secondary btn-sm" onclick="app.switchTab('stud-test-prep')" style="font-size: 13px; min-height: 38px; padding: 8px 16px;">
-                📝 Practice Exam Questions
-              </button>
-              ${this.activeTopicId === 'topic_2_2' || this.activeTopicId === 'topic_2_3' || this.activeTopicId === 'topic_2_5' ? `
-                <button class="btn btn-primary btn-sm" onclick="app.switchTab('stud-programme')" style="font-size: 13px; min-height: 38px; padding: 8px 16px;">
-                  💻 Run Python Sandbox
-                </button>
-              ` : ''}
-              ${this.activeTopicId === 'topic_1_3' || this.activeTopicId === 'topic_2_4' ? `
-                <button class="btn btn-primary btn-sm" onclick="app.switchTab('stud-practise')" style="font-size: 13px; min-height: 38px; padding: 8px 16px;">
-                  🔢 Try Number Calculations
-                </button>
-              ` : ''}
-              <button class="btn btn-secondary btn-sm" onclick="app.switchTab('stud-dashboard')" style="font-size: 13px; min-height: 38px; padding: 8px 16px; background-color: transparent; border: 1px solid var(--border-color); color: var(--text-main);">
-                ⚡ Go to Spaced Recall
-              </button>
-            </div>
-          </div>
-
-          <div style="max-width: 720px;">
-            ${(() => {
-              const coverage = this.getCurriculumCoverage().find(item => item.topicId === this.activeTopicId);
-              return coverage ? `<div class="card" style="padding:12px 14px; margin-bottom:18px; background:var(--bg-main);">${this.getCoverageBadge(coverage.status)} <span style="font-size:12px; color:var(--text-muted); margin-left:6px;">${coverage.gapCount} evidence gaps remain across ${coverage.objectiveCount} specification points. This label describes the StudySpice content bank, not your ability.</span></div>` : '';
-            })()}
-            <h3 style="margin-bottom: 8px;">1. Overview</h3>
-            <p>${activeLesson.overview}</p>
-
-            <h3 style="margin-top:24px; margin-bottom: 8px;">2. Key knowledge</h3>
-            <div class="card" style="background-color: var(--bg-card); margin-bottom: 24px;">
-              <h4 style="margin-bottom: 8px;">Crucial theory points</h4>
-              <ul style="padding-left: 20px; font-size:14px; color: var(--text-muted); display:flex; flex-direction:column; gap:8px;">
-                ${activeLesson.keyPoints.map(point => `<li>${point}</li>`).join('')}
-              </ul>
-            </div>
-
-            <h3 style="margin-top:24px; margin-bottom: 12px;">3. Interactive terminology flashcards</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-              ${activeLesson.flashcards.map((fc, index) => `
-                <div class="card flashcard-item" id="flashcard-${index}" style="padding: 20px; cursor: pointer; text-align: center; border-top: 4px solid var(--teal); min-height: 120px; display: flex; flex-direction: column; justify-content: center; transition: var(--transition);">
-                  <div class="flashcard-front" id="flashcard-front-${index}" style="font-weight: 700; font-size: 16px; color: var(--text-main);">${fc.term}</div>
-                  <div class="flashcard-back" id="flashcard-back-${index}" style="display: none; font-size: 13px; color: var(--text-muted); text-align: left; line-height: 1.4;">${fc.definition}</div>
-                  <div style="font-size: 11px; color: var(--teal); margin-top: 10px; font-weight: 500;" id="flashcard-prompt-${index}">Click to flip</div>
-                </div>
-              `).join('')}
-            </div>
-
-            <h3 style="margin-top:24px; margin-bottom: 8px;">4. Common misconceptions</h3>
-            <div class="card" style="border-left: 5px solid var(--coral); background-color: rgba(244,63,94,0.02); margin-bottom: 24px;">
-              <h4 style="color: var(--coral);">Misconception Alert: ${activeLesson.misconceptionTitle}</h4>
-              <p style="margin: 0; font-size: 14px;"><strong>Incorrect:</strong> "${activeLesson.misconceptionIncorrect}"<br>
-              <strong>Correct:</strong> ${activeLesson.misconceptionCorrect}</p>
-            </div>
-
-            <h3 style="margin-top:24px; margin-bottom: 12px;">5. Scaffolded model exam question</h3>
-            <div class="card" style="margin-bottom: 24px; background-color: var(--bg-card); border-left: 5px solid var(--amber);">
-              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-                <h4 style="margin: 0; color: var(--text-main); font-size: 15px;">Model Exam Practice</h4>
-                <span class="badge" style="background-color: var(--amber-alert); color: var(--amber-text);">${activeLesson.modelExam.marks} Marks</span>
-              </div>
-              <p style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-main);">${activeLesson.modelExam.question}</p>
-              
-              <button class="btn btn-secondary btn-sm" id="toggle-model-scaffold-btn" style="min-height: 36px; font-size: 12px;">
-                Show marking guidance & model answer
-              </button>
-              
-              <div id="model-scaffold-details" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border-color);">
-                <strong style="font-size: 13px; color: var(--text-main);">OCR Exam Marking Criteria:</strong>
-                <ul style="padding-left: 20px; font-size: 13px; color: var(--text-muted); margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
-                  ${activeLesson.modelExam.guidance.map(g => `<li>${g}</li>`).join('')}
-                </ul>
-              </div>
-            </div>
-
-            <h3 style="margin-top:24px; margin-bottom: 12px;">6. Quick checkpoint</h3>
-            <div class="card">
-              <h4 style="margin-bottom: 8px;">${activeLesson.checkpointQuestion}</h4>
-              <p style="font-size:13px;">${activeLesson.checkpointHint}</p>
-              
-              <div style="display: flex; gap: 8px; align-items: center; margin-top: 12px;">
-                <input type="text" id="checkpoint-answer" class="form-control" style="max-width: 120px;" placeholder="Answer...">
-                <button class="btn btn-primary" id="checkpoint-btn">Check</button>
-              </div>
-              <div id="checkpoint-feedback" style="margin-top:12px; font-size:14px; font-weight:600;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Checkpoint check logic
-    const chkBtn = document.getElementById('checkpoint-btn');
-    if (chkBtn) {
-      chkBtn.onclick = () => {
-        const val = document.getElementById('checkpoint-answer').value.trim().toUpperCase();
-        const fback = document.getElementById('checkpoint-feedback');
-        if (val === activeLesson.checkpointAnswer) {
-          fback.textContent = activeLesson.checkpointSuccess;
-          fback.style.color = 'var(--green)';
-        } else {
-          fback.textContent = activeLesson.checkpointFailure;
-          fback.style.color = 'var(--red)';
-        }
-      };
-    }
-
-    // Toggle model answer scaffold
-    const scaffoldBtn = document.getElementById('toggle-model-scaffold-btn');
-    if (scaffoldBtn) {
-      scaffoldBtn.onclick = () => {
-        const details = document.getElementById('model-scaffold-details');
-        if (details.style.display === 'none') {
-          details.style.display = 'block';
-          scaffoldBtn.textContent = 'Hide marking guidance & model answer';
-        } else {
-          details.style.display = 'none';
-          scaffoldBtn.textContent = 'Show marking guidance & model answer';
-        }
-      };
-    }
-
-    // Interactive terminology flashcards flipping
-    activeLesson.flashcards.forEach((fc, index) => {
-      const card = document.getElementById(`flashcard-${index}`);
-      if (card) {
-        card.onclick = () => {
-          const front = document.getElementById(`flashcard-front-${index}`);
-          const back = document.getElementById(`flashcard-back-${index}`);
-          const prompt = document.getElementById(`flashcard-prompt-${index}`);
-          if (front.style.display === 'none') {
-            front.style.display = 'block';
-            back.style.display = 'none';
-            prompt.textContent = 'Click to flip';
-            card.style.backgroundColor = 'var(--bg-card)';
-          } else {
-            front.style.display = 'none';
-            back.style.display = 'block';
-            prompt.textContent = 'Click to close';
-            card.style.backgroundColor = 'var(--soft-blue)';
-          }
-        };
-      }
-    });
-
-    // Programmatically bind syllabus links to comply with CSP
-    panel.querySelectorAll('.learn-topic-link').forEach(link => {
-      link.onclick = (e) => {
-        e.preventDefault();
-        this.activeTopicId = link.getAttribute('data-topic-id');
-        this.render();
-      };
-    });
-  }
 
   // ==================== WEEKLY NUMBER SKILLS ====================
   renderStudentPractise(panel) {
@@ -2263,16 +1848,24 @@ class App {
         { type: 'Audio File size (MB)', question: `An audio file is recorded with a sample rate of ${r4}Hz, ${d4} bits resolution, stereo (2 channels), for ${t4} seconds. Calculate size in Megabytes (MB), using 1,000,000 as the approximate divisor. Round to nearest tenth.`, answer: String(size4_mb), hint: 'Calculate total bits (Rate * Depth * Channels * Duration), divide by 8 for bytes, then divide by 1,000,000 for Megabytes.', supportGrid: false, inputType: 'standard' }
       ];
     }
+    this.numberSkillsSet = this.numberSkillsSet.map((question, index) => ({
+      ...question,
+      id: `number_skill_${this.numberSkillsDifficulty.toLowerCase()}_${index + 1}`
+    }));
+    this.numberSkillsEvidenceSet = this.createEvidenceSet('number_skills', 'binary conversions', this.numberSkillsSet);
   }
 
   gradeNumberSkillsSet() {
     let correct = 0;
     let feedbackHTML = '';
+    const incorrectQuestions = [];
 
     this.numberSkillsSet.forEach((q, idx) => {
       const studentAns = this.numberSkillsAnswers[idx] || '';
       const isCorrect = studentAns === q.answer;
+      this.numberSkillsEvidenceSet.latestOutcomes[q.id] = isCorrect;
       if (isCorrect) correct++;
+      else incorrectQuestions.push(q);
 
       feedbackHTML += `
         <div class="card" style="margin-bottom: 16px; border-left: 5px solid ${isCorrect ? 'var(--green)' : 'var(--red)'};">
@@ -2280,25 +1873,27 @@ class App {
           <p style="font-size:14px; font-weight:600; margin-bottom: 8px;">${q.question}</p>
           <div style="font-size: 13px;">
             <strong>Your answer:</strong> ${studentAns} ${isCorrect ? '✅' : '❌'}<br>
-            <strong>Correct answer:</strong> ${q.answer}<br>
-            <strong>Step-by-step resolution:</strong> ${q.hint}
+            ${isCorrect ? '<strong>Outcome:</strong> Correct' : `<strong>Next step:</strong> ${q.hint}<br><span>The answer is withheld so you can retry.</span>`}
           </div>
         </div>
       `;
     });
 
-    const masteryScore = `${correct}/${this.numberSkillsSet.length}`;
+    const attemptKind = this.numberSkillsEvidenceSet.hasOriginalAttempt ? 'retry' : 'original';
+    this.numberSkillsEvidenceSet.hasOriginalAttempt = true;
+    const evidenceAttempt = this.buildQuestionLevelAttempt(this.numberSkillsEvidenceSet, attemptKind);
+    const masteryScore = evidenceAttempt.score;
     window.db.addAttempt({
       studentId: this.currentUser.id,
       type: 'number_skills',
       topic: 'binary conversions',
-      score: masteryScore,
       supportLevel: this.numberSkillsDifficulty,
-      supportStepsUsed: this.numberSkillsDifficulty === 'Guided' ? 2 : 0
+      supportStepsUsed: this.numberSkillsDifficulty === 'Guided' ? 2 : 0,
+      ...evidenceAttempt
     });
 
     // Award achievement if perfect score
-    if (correct === this.numberSkillsSet.length) {
+    if (evidenceAttempt.questionEvidence.every(item => item.correct)) {
       const student = window.db.getStudents().find(s => s.id === this.currentUser.id);
       if (student && !student.achievements.includes('Binary Fluent')) {
         student.achievements.push('Binary Fluent');
@@ -2306,7 +1901,8 @@ class App {
       }
     }
 
-    this.numberSkillsSet = []; // Reset for next set
+    this.numberSkillsSet = [];
+    this.numberSkillsAnswers = {};
 
     this.mainContentHTML(`
       <div style="margin-bottom: 24px;">
@@ -2316,9 +1912,16 @@ class App {
       </div>
       <div>
         ${feedbackHTML}
+        ${incorrectQuestions.length ? '<button class="btn btn-primary" id="retry-number-skills-btn" style="margin-top:16px;">Retry incorrect questions</button>' : ''}
         <button class="btn btn-primary" onclick="app.switchTab('stud-dashboard')" style="margin-top: 16px;">Back to dashboard</button>
       </div>
     `);
+    const retryButton = document.getElementById('retry-number-skills-btn');
+    if (retryButton) retryButton.onclick = () => {
+      this.numberSkillsSet = incorrectQuestions;
+      this.numberSkillsAnswers = {};
+      this.renderStudentPractise(document.getElementById('main-panel'));
+    };
   }
 
   mainContentHTML(html) {
@@ -2327,7 +1930,13 @@ class App {
 
   // ==================== SPACED RETRIEVAL QUIZ ====================
   renderStudentRecall(panel) {
-    this.quizQuestions = window.db.getQuestions().filter(q => q.topicId === this.activeTopicId);
+    const topicQuestions = window.db.getQuestions().filter(q => q.topicId === this.activeTopicId);
+    const isRetry = Boolean(this.quizRetryQuestions);
+    this.quizQuestions = this.quizRetryQuestions || topicQuestions.slice(0, 3);
+    this.quizRetryQuestions = null;
+    if (!isRetry) {
+      this.quizEvidenceSet = this.createEvidenceSet('spaced_theory', this.activeTopicId, this.quizQuestions);
+    }
     const activeTopic = window.db.getUnits().flatMap(unit => unit.topics.map(topic => ({ ...topic, paper: unit.paper }))).find(topic => topic.id === this.activeTopicId);
     this.quizAnswers = {};
     
@@ -2351,7 +1960,7 @@ class App {
         <p style="font-size: 15px; color: var(--text-muted); margin: 0;">Assessment-focused mixed sets, mock preparation and timed quiz work.</p>
       </div>
 
-      <div class="card" style="margin-bottom:20px; padding:14px;"><strong>${this.escapeHTML(activeTopic?.paper || 'GCSE')} · ${this.escapeHTML(activeTopic?.name || this.activeTopicId)} · ${this.quizQuestions.length} questions · about ${Math.max(5, this.quizQuestions.length * 2)} minutes</strong><div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Complete this focused set, then return home for the next weakest or least-recently practised area.</div><button type="button" class="btn btn-secondary btn-sm" id="exam-transfer-start-btn" style="margin-top:10px;">Practise applying knowledge to an exam question</button></div>
+      <div class="card" style="margin-bottom:20px; padding:14px;"><strong>${this.escapeHTML(activeTopic?.paper || 'GCSE')} · ${this.escapeHTML(activeTopic?.name || this.activeTopicId)} · ${this.quizQuestions.length} questions · about 5 minutes</strong><div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Complete this focused set, then return home for the next weakest or least-recently practised area.</div><button type="button" class="btn btn-secondary btn-sm" id="exam-transfer-start-btn" style="margin-top:10px;">Practise applying knowledge to an exam question</button></div>
       <form id="quiz-form">
         ${this.quizQuestions.map((q, idx) => {
           let fieldsHTML = '';
@@ -2417,6 +2026,7 @@ class App {
   gradeQuiz() {
     let score = 0;
     let feedback = '';
+    const correctness = [];
 
     this.quizQuestions.forEach((q, idx) => {
       let isCorrect = true;
@@ -2447,6 +2057,8 @@ class App {
       }
 
       if (isCorrect) score++;
+      correctness.push(isCorrect);
+      this.quizEvidenceSet.latestOutcomes[q.id] = isCorrect;
 
       feedback += `
         <div class="card" style="margin-bottom: 16px; border-left: 5px solid ${isCorrect ? 'var(--green)' : 'var(--red)'}">
@@ -2454,18 +2066,22 @@ class App {
           <p style="font-size:14px; margin-bottom: 8px;">${q.question}</p>
           <div style="font-size:13px; color: var(--text-muted);">
             <strong>Outcome:</strong> ${isCorrect ? 'Correct ✅' : 'Incorrect ❌'}<br>
-            <strong>Feedback details:</strong> ${q.explanation}
+            <strong>Feedback details:</strong> ${isCorrect ? q.explanation : (q.retryHint || 'Review the question wording and try a different answer. The answer is withheld until you retry.')}
           </div>
         </div>
       `;
     });
 
-    const quizScore = `${score}/${this.quizQuestions.length}`;
-    window.db.addAttempt({
+    const incorrectQuestions = this.getRetryQuestions(this.quizQuestions, correctness);
+    const attemptKind = this.quizEvidenceSet.hasOriginalAttempt ? 'retry' : 'original';
+    this.quizEvidenceSet.hasOriginalAttempt = true;
+    const evidenceAttempt = this.buildQuestionLevelAttempt(this.quizEvidenceSet, attemptKind);
+    const quizScore = evidenceAttempt.score;
+    const quizAttempt = window.db.addAttempt({
       studentId: this.currentUser.id,
       type: 'spaced_theory',
       topic: this.activeTopicId,
-      score: quizScore
+      ...evidenceAttempt
     });
 
     this.mainContentHTML(`
@@ -2478,19 +2094,27 @@ class App {
         
         <div class="card" style="margin-top: 24px; padding: 24px; text-align: center;">
           <h3 style="margin-bottom: 8px;">Self-assessment feedback</h3>
-          <p style="font-size: 14px; margin-bottom: 16px;">This check will adjust scheduling intervals for future reviews. How did you feel about this test?</p>
+          <p style="font-size: 14px; margin-bottom: 16px;">Choose what best describes what you knew before feedback. This reflection is stored separately and does not change your score.</p>
           <div style="display: flex; gap: 8px; justify-content: center;">
-            <button class="btn btn-secondary btn-sm quiz-confidence-btn">I knew this securely</button>
-            <button class="btn btn-secondary btn-sm quiz-confidence-btn">I partly knew this</button>
-            <button class="btn btn-secondary btn-sm quiz-confidence-btn">I understood it after seeing answers</button>
+            <button class="btn btn-secondary btn-sm quiz-confidence-btn" data-confidence="secure_before_feedback">I knew this securely before feedback</button>
+            <button class="btn btn-secondary btn-sm quiz-confidence-btn" data-confidence="partial_before_feedback">I partly knew this before feedback</button>
+            <button class="btn btn-secondary btn-sm quiz-confidence-btn" data-confidence="understood_after_feedback">I understood it only after feedback</button>
           </div>
         </div>
+        ${incorrectQuestions.length ? '<button class="btn btn-primary" id="quiz-retry-btn">Retry incorrect questions</button>' : ''}
       </div>
     `);
 
     document.querySelectorAll('.quiz-confidence-btn').forEach(btn => {
-      btn.onclick = () => this.switchTab('stud-dashboard');
+      btn.onclick = () => {
+        if (this.recordQuizConfidence(quizAttempt, btn.getAttribute('data-confidence'))) this.switchTab('stud-dashboard');
+      };
     });
+    const retryButton = document.getElementById('quiz-retry-btn');
+    if (retryButton) retryButton.onclick = () => {
+      this.quizRetryQuestions = incorrectQuestions;
+      this.renderStudentRecall(document.getElementById('main-panel'));
+    };
   }
 
   // ==================== INTERACTIVE CS SIMULATORS WORKBENCH ====================
@@ -2969,15 +2593,53 @@ class App {
     bind('transfer-to-answer', () => { task.planningLabels.forEach((label, index) => { const el = document.getElementById(`transfer-plan-${index}`); if (el) this.examTransferPlan[index] = el.value.trim(); }); if (Object.values(this.examTransferPlan).filter(Boolean).length < 1) return this.alert('Add at least one planning note.'); this.examTransferStage = 'answer'; this.renderStudentExamTransfer(panel); });
     bind('transfer-back-plan', () => { const el = document.getElementById('transfer-answer-response'); if (el) this.examTransferResponse = el.value; this.examTransferStage = 'plan'; this.renderStudentExamTransfer(panel); });
     bind('transfer-to-check', () => { const el = document.getElementById('transfer-answer-response'); if (el) this.examTransferResponse = el.value.trim(); if (this.examTransferResponse.length < 15) return this.alert('Develop your answer before checking it.'); this.examTransferStage = 'check'; this.renderStudentExamTransfer(panel); });
-    bind('transfer-to-retry', () => { const evidenceCount = panel.querySelectorAll('.transfer-evidence-checkbox:checked').length; window.db.addAttempt({ studentId: this.currentUser.id, type: 'exam_transfer', topic: task.specificationPointId, score: `${evidenceCount}/${task.requiredElements.length}`, supportStepsUsed: 3, questionId: task.id }); this.examTransferStage = 'retry'; this.renderStudentExamTransfer(panel); });
-    bind('transfer-finish', () => { const retry = document.getElementById('transfer-retry-response').value.trim(); if (retry.length < 15) return this.alert('Attempt the retry before finishing.'); window.db.addAttempt({ studentId: this.currentUser.id, type: 'exam_transfer_retry', topic: task.specificationPointId, score: 'completed', supportStepsUsed: 0, questionId: task.id }); this.examTransferStage = 'decode'; this.examTransferPlan = {}; this.examTransferResponse = ''; this.alert('Exam-transfer practice recorded. The retry will inform future recommendations.'); this.switchTab('stud-dashboard'); });
+    bind('transfer-to-retry', () => {
+      const evidenceCount = panel.querySelectorAll('.transfer-evidence-checkbox:checked').length;
+      window.db.addAttempt({
+        studentId: this.currentUser.id,
+        type: 'exam_transfer_self_check',
+        topic: task.specificationPointId,
+        score: `self-check ${evidenceCount}/${task.requiredElements.length}`,
+        supportStepsUsed: 3,
+        questionId: task.id,
+        evidenceType: 'self_assessment',
+        contributesToMastery: false
+      });
+      this.examTransferStage = 'retry';
+      this.renderStudentExamTransfer(panel);
+    });
+    bind('transfer-finish', () => {
+      const retry = document.getElementById('transfer-retry-response').value.trim();
+      if (!this.isMeaningfulLearnerResponse(retry, 20)) return this.alert('Write a meaningful retry before submitting it for review.');
+      window.db.addAttempt({
+        studentId: this.currentUser.id,
+        type: 'exam_transfer_retry',
+        topic: task.specificationPointId,
+        score: 'awaiting review',
+        supportStepsUsed: 0,
+        questionId: task.id,
+        evidenceType: 'unassessed_submission',
+        completionStatus: 'awaiting_review',
+        contributesToMastery: false
+      });
+      this.examTransferStage = 'decode';
+      this.examTransferPlan = {};
+      this.examTransferResponse = '';
+      this.alert('Retry submitted for review. No mastery or completion credit has been awarded yet.');
+      this.switchTab('stud-dashboard');
+    });
   }
 
   renderStudentProgrammingHub(panel) {
     const challenges = window.db.getProgrammingChallenges();
     const submissions = window.db.getProgrammingSubmissions().filter(item => item.studentId === this.currentUser.id);
     const completedChallengeIds = new Set(submissions.filter(item => item.status === 'Passed' || item.status === 'Teacher Reviewed').map(item => item.challengeId));
-    const pseudocodeAttempts = window.db.getAttempts().filter(item => item.studentId === this.currentUser.id && item.type === 'pseudocode');
+    const pseudocodeAttempts = window.db.getAttempts().filter(item =>
+      item.studentId === this.currentUser.id
+      && item.type === 'pseudocode_assessed'
+      && item.contributesToMastery !== false
+      && this.parseDemonstratedScore(item)
+    );
     const completedPseudocodeIds = new Set(pseudocodeAttempts.map(item => item.questionId));
     const nextChallenge = challenges.find(item => !completedChallengeIds.has(item.id)) || challenges[challenges.length - 1];
     const pseudocodeSkills = ['Read', 'Trace', 'Complete', 'Write', 'Refine'];
@@ -3086,7 +2748,7 @@ class App {
           <p style="font-weight:600;">${task.prompt}</p>
           <div style="padding:10px 12px; background:var(--bg-main); border-radius:8px; font-size:13px; margin-bottom:12px;"><strong>Decode it first:</strong> command = ${task.skill.toLowerCase()} &middot; identify the expected output &middot; choose the control structure &middot; check boundaries and operators.</div>
           <textarea id="pseudocode-response" class="form-control" rows="7" placeholder="Write your answer here..."></textarea>
-          <div style="display:flex; gap:10px; margin-top:12px;"><button id="pseudocode-check-btn" class="btn btn-primary">Check with model</button><button id="pseudocode-help-btn" class="btn btn-secondary">Show a hint</button></div>
+          <div style="display:flex; gap:10px; margin-top:12px;"><button id="pseudocode-check-btn" class="btn btn-primary">Check answer</button><button id="pseudocode-help-btn" class="btn btn-secondary">Show a hint</button><button id="pseudocode-model-btn" class="btn btn-secondary">Show model (no progress credit)</button></div>
           <div id="pseudocode-feedback" class="card" style="display:none; margin-top:14px; background:var(--bg-main);"></div>
         </div>
       </div>
@@ -3107,17 +2769,29 @@ class App {
     document.getElementById('pseudocode-check-btn').onclick = () => {
       const feedback = document.getElementById('pseudocode-feedback');
       const response = document.getElementById('pseudocode-response').value.trim();
-      if (!response) return this.alert('Write an answer before checking the model.');
+      if (!this.isMeaningfulLearnerResponse(response, 3)) return this.alert('Write a meaningful answer before checking it.');
+      const isCorrect = this.assessPseudocodeResponse(response, task.answer);
       feedback.style.display = 'block';
-      feedback.innerHTML = `<strong>Model answer</strong><pre style="white-space:pre-wrap; margin-top:8px;"><code>${this.escapeHTML(task.answer)}</code></pre><p style="font-size:13px; margin:8px 0 0;">Compare the logic and precision, then improve your response. Minor syntax slips matter less than correct programming logic, but natural English is not accepted where the question requires OCR Exam Reference Language or a high-level language.</p>`;
+      if (!isCorrect) {
+        feedback.innerHTML = '<strong>Not secure yet.</strong><p>Check the required operator, boundary and control structure, then revise your answer and retry. The model remains hidden.</p>';
+        return;
+      }
+      feedback.innerHTML = '<strong>Completed from your submitted answer.</strong><p>The structure and logic match the required solution.</p>';
       window.db.addAttempt({
         studentId: this.currentUser.id,
-        type: 'pseudocode',
+        type: 'pseudocode_assessed',
         topic: '2.2.ERL',
-        score: 'model checked',
+        score: '1/1',
         questionId: `pseudocode_${this.activePseudocodeTask + 1}`,
-        supportStepsUsed: 0
+        supportStepsUsed: 0,
+        evidenceType: 'demonstrated',
+        contributesToMastery: true
       });
+    };
+    document.getElementById('pseudocode-model-btn').onclick = () => {
+      const feedback = document.getElementById('pseudocode-feedback');
+      feedback.style.display = 'block';
+      feedback.innerHTML = `<strong>Model answer — no progress credit</strong><pre style="white-space:pre-wrap; margin-top:8px;"><code>${this.escapeHTML(task.answer)}</code></pre><p>Use this to study, then attempt a different task independently.</p>`;
     };
   }
 
@@ -3128,7 +2802,9 @@ class App {
     const challenge = challenges.find(c => c.id === this.activeChallengeId);
 
     if (!challenge) {
-      panel.innerHTML = `<h2>Challenges not found</h2>`;
+      panel.innerHTML = `<div class="card" role="status"><h2>Challenge not found</h2><p>This programming activity is unavailable. Return to the Programming hub and choose another stage.</p><button class="btn btn-secondary" id="missing-challenge-back-btn">Back to Programming</button></div>`;
+      const backButton = document.getElementById('missing-challenge-back-btn');
+      if (backButton) backButton.onclick = () => this.switchTab('stud-programming');
       return;
     }
 
@@ -3968,8 +3644,17 @@ class App {
   renderStudentProgress(panel) {
     const student = window.db.getStudents().find(s => s.id === this.currentUser.id) || this.currentUser;
     const attempts = window.db.getAttempts().filter(a => a.studentId === this.currentUser.id);
+    const displayedAttempts = this.getDisplayedEvidenceAttempts(attempts);
     const submissions = window.db.getProgrammingSubmissions().filter(s => s.studentId === this.currentUser.id);
     const writtenSubmissions = window.db.getWrittenSubmissions().filter(s => s.studentId === this.currentUser.id);
+    const topicMasteryHtml = window.db.getUnits().flatMap(unit => unit.topics).map(topic => {
+      const topicAttempts = attempts.filter(attempt => this.attemptMatchesTopic(attempt, topic));
+      const mastery = this.getDemonstratedMastery(topicAttempts);
+      const badgeClass = mastery.ratio === null ? 'badge-secondary' : mastery.ratio >= 0.85 ? 'badge-success' : mastery.ratio >= 0.6 ? 'badge-warning' : 'badge-primary';
+      const legacyDetail = mastery.legacyEvidenceCount ? ` · ${mastery.legacyEvidenceCount} reduced-precision legacy ${mastery.legacyEvidenceCount === 1 ? 'record' : 'records'}` : '';
+      const detail = mastery.ratio === null ? 'No scored activity yet' : `${mastery.earned}/${mastery.available} from ${mastery.evidenceCount} latest assessed ${mastery.evidenceCount === 1 ? 'activity' : 'activities'}${legacyDetail}`;
+      return `<div style="display:flex; justify-content:space-between; gap:12px; font-size:14px;"><span>${this.escapeHTML(topic.name)}</span><span><span class="badge ${badgeClass}">${mastery.label}</span><span style="display:block; font-size:11px; color:var(--text-muted); text-align:right;">${detail}</span></span></div>`;
+    }).join('');
 
     panel.innerHTML = `
       <div style="margin-bottom: 24px;">
@@ -3983,27 +3668,12 @@ class App {
           
           <div class="card" style="margin-bottom:32px;">
             <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-weight:600;">
-              <span>Paper 1 Units</span>
-              <span>Nearly Secure</span>
+              <span>Demonstrated performance</span>
+              <span>Latest assessed evidence only</span>
             </div>
             
             <div style="display:flex; flex-direction:column; gap:12px;">
-              <div style="display:flex; justify-content:space-between; font-size:14px;">
-                <span>Systems Architecture</span>
-                <span class="badge badge-success">Secure</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; font-size:14px;">
-                <span>Memory and Storage</span>
-                <span class="badge badge-success">Secure</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; font-size:14px;">
-                <span>Data Representation</span>
-                <span class="badge badge-warning">Nearly secure</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; font-size:14px;">
-                <span>Networks and Protocols</span>
-                <span class="badge badge-primary">Developing</span>
-              </div>
+              ${topicMasteryHtml}
             </div>
           </div>
 
@@ -4015,15 +3685,19 @@ class App {
                   <th>Topic</th>
                   <th>Type</th>
                   <th>Score</th>
+                  <th>Evidence status</th>
                   <th>Date</th>
                 </tr>
               </thead>
               <tbody>
-                ${attempts.map(a => `
+                ${displayedAttempts.map(a => `
                   <tr>
                     <td>${a.topic}</td>
                     <td>${a.type}</td>
                     <td>${a.score}</td>
+                    <td>${this.parseDemonstratedScore(a)
+                      ? (Number(a.evidenceVersion) >= 2 ? 'Demonstrated' : 'Demonstrated · reduced-precision legacy')
+                      : a.completionStatus === 'awaiting_review' ? 'Awaiting review' : 'Formative or unassessed'}</td>
                     <td>${new Date(a.date).toLocaleDateString()}</td>
                   </tr>
                 `).join('')}
@@ -4035,18 +3709,18 @@ class App {
         <div>
           <!-- Consistency Badges -->
           <div class="card" style="margin-bottom:24px;">
-            <h3>Consistency Badges</h3>
-            <p style="font-size: 13px; margin-bottom: 16px;">Earned through resilience and regular homework submission:</p>
+          <h3>Earned badges</h3>
+            <p style="font-size: 13px; margin-bottom: 16px;">Shown only when the learner record contains the corresponding consistency or demonstrated-achievement award.</p>
             
             <div style="display:flex; flex-direction:column; gap:12px;">
-              <div class="card" style="padding:12px; background-color: var(--bg-main); display:flex; gap:12px; align-items:center;">
+              <div class="card" style="padding:12px; background-color: var(--bg-main); ${(student.achievements || []).includes('Binary Fluent') ? 'display:flex' : 'display:none'}; gap:12px; align-items:center;">
                 <span style="font-size:24px;">Habit</span>
                 <div>
-                  <h4 style="margin:0; font-size:14px;">Four-Week Habit</h4>
-                  <p style="margin:0; font-size:12px;">Completed 4 consecutive weekly homework sets.</p>
+                  <h4 style="margin:0; font-size:14px;">Binary Fluent</h4>
+                  <p style="margin:0; font-size:12px;">Earned after a perfect scored number-skills set.</p>
                 </div>
               </div>
-              <div class="card" style="padding:12px; background-color: var(--bg-main); display:flex; gap:12px; align-items:center;">
+              <div class="card" style="padding:12px; background-color: var(--bg-main); ${(student.achievements || []).includes('Debugging Detective') ? 'display:flex' : 'display:none'}; gap:12px; align-items:center;">
                 <span style="font-size:24px;">💻</span>
                 <div>
                   <h4 style="margin:0; font-size:14px;">Debugging Detective</h4>
@@ -4071,6 +3745,7 @@ class App {
     const totalAwaitingReview = writtenCount + programmingCount;
     const activeThisWeek = students.filter(student => Date.now() - new Date(student.lastActive).getTime() <= 7 * 24 * 3600 * 1000).length;
     const weeklyCompletion = students.length ? Math.round((activeThisWeek / students.length) * 100) : 0;
+    const savedPriorityCount = students.filter(student => (student.personalRevisionPriorities || []).length > 0).length;
 
     panel.innerHTML = `
       <div class="dashboard-container">
@@ -4107,7 +3782,7 @@ class App {
         <!-- Top Metrics Grid (Three cards only) -->
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px;">
           <div class="card" style="padding: 16px 20px;">
-            <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Weekly Completion</h4>
+              <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Weekly app activity</h4>
             <strong style="font-size:24px; font-weight: 700; color: var(--text-main);">${weeklyCompletion}%</strong>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${activeThisWeek} of ${students.length} pupils opened the app in the last 7 days</div>
           </div>
@@ -4117,9 +3792,9 @@ class App {
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${writtenCount} written, ${programmingCount} programming</div>
           </div>
           <div class="card card-action" id="metric-students-attention" style="padding: 16px 20px; cursor: pointer;">
-            <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Students Needing Attention</h4>
-            <strong style="font-size:24px; font-weight: 700; color: var(--text-main);">3</strong>
-            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Require immediate follow-up</div>
+            <h4 style="font-size:12px; color: var(--text-muted); text-transform:uppercase; margin-bottom: 4px; font-weight: 600;">Saved revision priorities</h4>
+            <strong style="font-size:24px; font-weight: 700; color: var(--text-main);">${savedPriorityCount}</strong>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Not a mastery or safeguarding judgement</div>
           </div>
         </div>
 
@@ -4188,14 +3863,14 @@ class App {
                     <div>
                       <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin: 0 0 4px 0;">Spaced Theory Check – Data Representation</h3>
                       <div style="font-size: 13px; color: var(--text-muted); font-weight: 500;">
-                        23 of 26 completed &middot; Average 68% &middot; <span style="color: var(--coral); font-weight: 600;">7 students below 50%</span>
+                        No verified completion or accuracy summary is available for this demo assignment.
                       </div>
                     </div>
                     <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-assign')" style="min-height: 36px;">View results</button>
                   </div>
                   <!-- Mini Progress Bar -->
                   <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-                    <div style="width: 88%; height: 100%; background-color: var(--teal);"></div>
+                    <div style="width: 0; height: 100%; background-color: var(--teal);"></div>
                   </div>
                 </div>
                 <div style="padding-top: 16px; border-top: 1px solid var(--border-color);">
@@ -4203,14 +3878,14 @@ class App {
                     <div>
                       <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin: 0 0 4px 0;">Loops and Selection Programming Challenge</h3>
                       <div style="font-size: 13px; color: var(--text-muted); font-weight: 500;">
-                        18 of 26 completed &middot; Average 74% &middot; <span style="color: var(--amber); font-weight: 600;">3 students stuck on test case 4</span>
+                        No verified completion or accuracy summary is available for this demo assignment.
                       </div>
                     </div>
                     <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-programming')" style="min-height: 36px;">View results</button>
                   </div>
                   <!-- Mini Progress Bar -->
                   <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-                    <div style="width: 69%; height: 100%; background-color: var(--teal);"></div>
+                    <div style="width: 0; height: 100%; background-color: var(--teal);"></div>
                   </div>
                 </div>
               </div>
@@ -4269,7 +3944,7 @@ class App {
               <div style="display: flex; flex-direction: column; gap: 20px;">
                 <div style="padding-bottom: 16px; border-bottom: 1px dashed var(--border-color);">
                   <h4 style="font-size: 15px; margin: 0 0 2px 0; font-weight: 600; color: var(--text-main);">Hexadecimal representation</h4>
-                  <div style="font-size: 13px; color: var(--coral); font-weight: 700; margin-bottom: 6px;">6 of 9 students answered incorrectly.</div>
+                  <div style="font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px;">No verified class-level misconception count is available.</div>
                   <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 12px 0;">Confusion between storage notation and hexadecimal values.</p>
                   <div style="display: flex; gap: 8px;">
                     <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-written')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">View</button>
@@ -4278,7 +3953,7 @@ class App {
                 </div>
                 <div>
                   <h4 style="font-size: 15px; margin: 0 0 2px 0; font-weight: 600; color: var(--text-main);">Image File Calculations</h4>
-                  <div style="font-size: 13px; color: var(--amber); font-weight: 700; margin-bottom: 6px;">3 of 9 students struggled with scaling bits.</div>
+                  <div style="font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px;">No verified class-level misconception count is available.</div>
                   <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 12px 0;">Incorrect division by 1000 instead of 1024.</p>
                   <div style="display: flex; gap: 8px;">
                     <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-written')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">View</button>
@@ -4310,28 +3985,28 @@ class App {
                 <div>
                   <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
                     <span style="color: var(--text-muted); font-weight: 500;">Systems Architecture</span>
-                    <strong style="color: var(--text-main);">82% secure</strong>
+                    <strong style="color: var(--text-muted);">No verified class score</strong>
                   </div>
                   <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-                    <div style="width: 82%; height: 100%; background-color: var(--teal);"></div>
+                    <div style="width: 0; height: 100%; background-color: var(--teal);"></div>
                   </div>
                 </div>
                 <div>
                   <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
                     <span style="color: var(--text-muted); font-weight: 500;">Data Representation</span>
-                    <strong style="color: var(--text-main);">68% secure</strong>
+                    <strong style="color: var(--text-muted);">No verified class score</strong>
                   </div>
                   <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-                    <div style="width: 68%; height: 100%; background-color: var(--teal);"></div>
+                    <div style="width: 0; height: 100%; background-color: var(--teal);"></div>
                   </div>
                 </div>
                 <div>
                   <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
                     <span style="color: var(--text-muted); font-weight: 500;">Programming Basics</span>
-                    <strong style="color: var(--text-main);">74% secure</strong>
+                    <strong style="color: var(--text-muted);">No verified class score</strong>
                   </div>
                   <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-                    <div style="width: 74%; height: 100%; background-color: var(--teal);"></div>
+                    <div style="width: 0; height: 100%; background-color: var(--teal);"></div>
                   </div>
                 </div>
               </div>
@@ -4530,7 +4205,7 @@ class App {
                   <h3 style="margin-bottom: 4px;">${a.title}</h3>
                   <div style="font-size: 12px; color: var(--text-muted);">Due: ${a.dueDate} · ${a.status} · ${a.estimatedMinutes || 10} mins</div>
                 </div>
-                <span class="badge badge-primary">${a.completedCount} / 3 Completed</span>
+                <span class="badge badge-primary">${a.completedCount} recorded completions</span>
               </div>
             `).join('')}
           </div>

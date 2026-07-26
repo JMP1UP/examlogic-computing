@@ -1,8 +1,46 @@
 // Database state layer for GCSE Computer Science Learning Platform (StudySpice)
+(function initialiseStudySpiceDatabase(root) {
+'use strict';
+
+const curriculumContent = typeof module !== 'undefined' && module.exports
+  ? require('./curriculum-content')
+  : root.StudySpiceContent?.curriculum;
+const priorityAssessments = typeof module !== 'undefined' && module.exports
+  ? require('./priority-assessments')
+  : root.StudySpiceContent?.priorityAssessments;
+
+if (!curriculumContent || !priorityAssessments) {
+  throw new Error('StudySpice curriculum content must load before the database.');
+}
+
+const curriculumDiagnosticQuestions = curriculumContent.map(item => {
+  const topicId = item.id.startsWith('1.1.') ? 'topic_1_1'
+    : item.id === '1.2.1' || item.id === '1.2.2' ? 'topic_1_2'
+      : item.id.startsWith('1.2.') ? 'topic_1_3'
+        : item.id.startsWith('1.3.') ? 'topic_1_4'
+          : item.id.startsWith('1.4.') ? 'topic_1_5'
+            : item.id.startsWith('1.5.') ? 'topic_1_6'
+              : item.id.startsWith('1.6.') ? 'topic_1_7'
+                : item.id.startsWith('2.1.') ? 'topic_2_1'
+                  : item.id.startsWith('2.2.') ? 'topic_2_2'
+                    : item.id.startsWith('2.3.') ? 'topic_2_3'
+                      : item.id.startsWith('2.4.') ? 'topic_2_4'
+                        : 'topic_2_5';
+  return {
+    id: `diagnostic_${item.id.replaceAll('.', '_')}`,
+    topicId,
+    specificationPointId: item.id,
+    purpose: 'diagnostic',
+    type: 'mcq',
+    ...item.diagnostic
+  };
+});
+
 const DB_KEY = 'studyspice_db';
 
 const defaultDatabase = {
-  schemaVersion: 11,
+  schemaVersion: 13,
+  curriculumContent,
   theoryNotes: [
     {
       id: 'tn_1_1',
@@ -888,10 +926,10 @@ def calculate_area(width, height):
       paper: 'Paper 2',
       title: 'Programming Languages & IDEs',
       subtitle: 'High-Level vs Low-Level Languages, Translators & IDE Development Tools',
-      summary: 'Compare high-level code with assembly and machine code, understand Compilers vs Interpreters, and explore IDE tools.',
+      summary: 'Compare high-level and low-level languages, understand compilers and interpreters, and explore IDE tools.',
       specificationPoints: [
         '2.5.1 Languages & Translators: High-level vs Low-level languages, Compilers vs Interpreters',
-        '2.5.2 IDE Tools: Editors, Error Diagnostics, Debuggers, Run-time Environment'
+        '2.5.2 IDE Tools: Editors, Error Diagnostics, Run-time Environment, Translators'
       ],
       sections: [
         {
@@ -1167,6 +1205,7 @@ def calculate_area(width, height):
     }
   ],
   examTransferTasks: [
+    ...priorityAssessments.examTransferTasks,
     {
       id: 'transfer_1', specificationPointId: '1.2.4c', topicId: 'topic_1_3', paper: 'Paper 1', commandWord: 'Calculate', marks: 4, minutes: 6,
       question: 'A bitmap image is 800 pixels wide and 600 pixels high. Its colour depth is 16 bits. Calculate the uncompressed file size in bytes. Show your working.',
@@ -1273,6 +1312,8 @@ def calculate_area(width, height):
     { id: 'term_pseudocode', term: 'Pseudocode', topicId: 'topic_2_1', definition: 'A structured, language-independent way to describe the steps of an algorithm.', keywords: ['structured', 'language-independent', 'algorithm'] }
   ],
   questions: [
+    ...curriculumDiagnosticQuestions,
+    ...priorityAssessments.questions,
     {
       "id": "q_1_1_a",
       "topicId": "topic_1_1",
@@ -1335,7 +1376,8 @@ def calculate_area(width, height):
         "RAM is secondary storage; ROM is primary memory"
       ],
       "answer": "RAM is volatile and read/write; ROM is non-volatile and read-only",
-      "explanation": "RAM loses its data when power is lost (volatile). ROM retains data permanently (non-volatile) and stores bootloader instructions."
+      "explanation": "RAM loses its data when power is lost (volatile). ROM retains data permanently (non-volatile) and stores bootloader instructions.",
+      "retryHint": "Compare what happens to each memory type when power is removed and whether the processor can normally change the stored contents."
     },
     {
       "id": "q_1_2_b",
@@ -1415,7 +1457,8 @@ def calculate_area(width, height):
         "To store website files for local network caching"
       ],
       "answer": "To forward data packets between different networks using IP addresses",
-      "explanation": "Routers connect distinct networks (e.g. LAN to internet WAN) by inspecting IP packet headers."
+      "explanation": "Routers connect distinct networks (e.g. LAN to internet WAN) by inspecting IP packet headers.",
+      "retryHint": "Focus on the device that reads destination addressing information and chooses the next network path for each packet."
     },
     {
       "id": "q_1_4_b",
@@ -1447,7 +1490,8 @@ def calculate_area(width, height):
         "By preventing physical theft of server hardware"
       ],
       "answer": "By monitoring network traffic and blocking packets that do not meet security rules",
-      "explanation": "A firewall acts as a filter on network ports to block unauthorized packet transmissions."
+      "explanation": "A firewall acts as a filter on network ports to block unauthorized packet transmissions.",
+      "retryHint": "Think about a boundary control that compares incoming and outgoing traffic with configured rules before allowing it to pass."
     },
     {
       "id": "q_1_6_a",
@@ -1463,7 +1507,8 @@ def calculate_area(width, height):
         "To manage user logins and access privileges"
       ],
       "answer": "To act as a translator allowing the OS to communicate with hardware peripherals",
-      "explanation": "Device drivers translate generic OS hardware commands into specific peripheral control signals."
+      "explanation": "Device drivers translate generic OS hardware commands into specific peripheral control signals.",
+      "retryHint": "Consider why an operating system needs device-specific software between its general commands and the instructions understood by a peripheral."
     },
     {
       "id": "q_1_7_a",
@@ -1479,7 +1524,8 @@ def calculate_area(width, height):
         "Freedom of Information Act 2000"
       ],
       "answer": "Computer Misuse Act 1990",
-      "explanation": "The Computer Misuse Act 1990 criminalises unauthorized access, hacking, and malware creation."
+      "explanation": "The Computer Misuse Act 1990 criminalises unauthorized access, hacking, and malware creation.",
+      "retryHint": "Match the offence to legislation concerned with entering or changing computer systems without permission, not personal-data handling or copyright."
     },
     {
       "id": "q_2_4_e",
@@ -1495,7 +1541,8 @@ def calculate_area(width, height):
         "-1"
       ],
       "answer": "1",
-      "explanation": "An OR gate outputs 1 if at least one input is 1."
+      "explanation": "An OR gate outputs 1 if at least one input is 1.",
+      "retryHint": "Apply the gate rule by checking whether either input is active; do not require both inputs to have the same state."
     },
     {
       "id": "q_2_5_e",
@@ -1511,6 +1558,7 @@ def calculate_area(width, height):
         "A compiler runs code slower than an interpreter during runtime"
       ],
       "answer": "A compiler translates entire source code into an executable file at once; an interpreter translates and runs code line-by-line",
+      "retryHint": "Compare when translation occurs and whether a separate executable is produced before considering how each translated program is run.",
       "explanation": "Compilers produce standalone executable files; interpreters translate and execute source code line-by-line."
     },
     {
@@ -1736,7 +1784,8 @@ def calculate_area(width, height):
             "The inputs must be different values"
       ],
       "answer": "Both inputs must be 1",
-      "explanation": "An AND gate output is only true (1) if all of its input lines are true (1)."
+      "explanation": "An AND gate output is only true (1) if all of its input lines are true (1).",
+      "retryHint": "Use the gate rule that every input condition must be satisfied together, then test each option against that requirement."
 },
     {
       "id": "q_2_4_b",
@@ -1819,15 +1868,15 @@ def calculate_area(width, height):
       "id": "q_2_5_c",
       "topicId": "topic_2_5",
       "type": "mcq",
-      "question": "What is the purpose of an Assembler?",
+      "question": "Why is a high-level language generally easier for a programmer to use than a low-level language?",
       "options": [
-            "To translate low-level assembly language instructions into machine code",
-            "To coordinate multiple CPU cores during compilation tasks",
-            "To connect external device drivers to operating system memory",
-            "To format source code indentation automatically"
+            "It uses more human-readable instructions and abstracts hardware details",
+            "It is executed directly by the CPU without translation",
+            "It can only run on one processor architecture",
+            "It is written entirely as binary digits"
       ],
-      "answer": "To translate low-level assembly language instructions into machine code",
-      "explanation": "Assembly language uses mnemonics (like ADD, SUB, LDR) which correspond 1-to-1 with machine instructions. An assembler translates these into binary."
+      "answer": "It uses more human-readable instructions and abstracts hardware details",
+      "explanation": "High-level languages provide readable constructs and hide many hardware-specific details, making programs faster to develop and easier to maintain."
 },
     {
       "id": "q_2_5_d",
@@ -1844,19 +1893,21 @@ def calculate_area(width, height):
                   "match": "Highlights syntax errors and points out where bugs exist before execution"
             },
             {
-                  "label": "Debugger",
-                  "match": "Allows stepping through code line-by-line and viewing variable states in real-time"
+                  "label": "Translator",
+                  "match": "Converts or executes source instructions so the processor can run the program"
             },
             {
                   "label": "Runtime Environment",
                   "match": "Enables the user to run the program within a controlled test area"
             }
       ],
-      "explanation": "Editor supports typing; Diagnostics highlights compile-time errors; Debugger checks values in real-time; Runtime environment executes the code."
+        "explanation": "The editor supports writing code; diagnostics identify errors; the translator converts or executes source instructions; the run-time environment runs the program."
 },
     {
-      "id": "q_1_1_a",
+      "id": "q_1_1_cpu_purpose",
+      "legacyQuestionId": "q_1_1_a",
       "topicId": "topic_1_1",
+      "specificationPointId": "1.1.1",
       "type": "mcq",
       "question": "What is the primary purpose of the Central Processing Unit (CPU)?",
       "options": [
@@ -1869,8 +1920,10 @@ def calculate_area(width, height):
       "explanation": "The CPU's primary role is to process data by fetching, decoding, and executing instructions stored in memory."
 },
     {
-      "id": "q_1_1_b",
+      "id": "q_1_1_cache_performance",
+      "legacyQuestionId": "q_1_1_b",
       "topicId": "topic_1_1",
+      "specificationPointId": "1.1.2",
       "type": "mcq",
       "question": "How does increasing cache size affect CPU performance?",
       "options": [
@@ -1883,8 +1936,10 @@ def calculate_area(width, height):
       "explanation": "Cache is extremely fast memory inside the CPU. A larger cache means more instructions can be accessed without having to wait to fetch them from slower RAM."
 },
     {
-      "id": "q_1_1_c",
+      "id": "q_1_1_mdr",
+      "legacyQuestionId": "q_1_1_c",
       "topicId": "topic_1_1",
+      "specificationPointId": "1.1.1",
       "type": "mcq",
       "question": "Which CPU register holds the actual data or instruction currently being read from or written to memory?",
       "options": [
@@ -1936,8 +1991,10 @@ def calculate_area(width, height):
       "explanation": "The CU manages flow; the ALU performs math/logic; the ACC holds ALU results; the PC keeps track of the next instruction address."
 },
     {
-      "id": "q_1_2_a",
+      "id": "q_1_2_ram_rom_difference_alt",
+      "legacyQuestionId": "q_1_2_a",
       "topicId": "topic_1_2",
+      "specificationPointId": "1.2.1",
       "type": "mcq",
       "question": "What is the key difference between RAM and ROM?",
       "options": [
@@ -1950,8 +2007,10 @@ def calculate_area(width, height):
       "explanation": "RAM requires continuous electrical power to retain its data, making it volatile. ROM holds permanent startup instructions (BIOS) and is non-volatile."
 },
     {
-      "id": "q_1_2_b",
+      "id": "q_1_2_virtual_memory",
+      "legacyQuestionId": "q_1_2_b",
       "topicId": "topic_1_2",
+      "specificationPointId": "1.2.1",
       "type": "mcq",
       "question": "When does a computer system use Virtual Memory?",
       "options": [
@@ -2013,8 +2072,10 @@ def calculate_area(width, height):
       "explanation": "Magnetic uses platters (cheap, high capacity); Solid State uses microchips (fast, durable); Optical uses laser reflections (portable, cheap, low capacity)."
 },
     {
-      "id": "q_1_3_a",
+      "id": "q_1_3_binary_overflow",
+      "legacyQuestionId": "q_1_3_a",
       "topicId": "topic_1_3",
+      "specificationPointId": "1.2.4a",
       "type": "mcq",
       "question": "What is an overflow error in binary addition?",
       "options": [
@@ -2027,8 +2088,10 @@ def calculate_area(width, height):
       "explanation": "In an 8-bit register, the maximum value is 255. If the sum of two numbers is 256 or higher, it requires a 9th bit, causing an overflow error."
 },
     {
-      "id": "q_1_3_b",
+      "id": "q_1_3_unicode",
+      "legacyQuestionId": "q_1_3_b",
       "topicId": "topic_1_3",
+      "specificationPointId": "1.2.4b",
       "type": "mcq",
       "question": "Why is Unicode preferred over ASCII in modern systems?",
       "options": [
@@ -2041,8 +2104,10 @@ def calculate_area(width, height):
       "explanation": "ASCII is limited to 7 or 8 bits (128-256 characters), which only covers English and some European letters. Unicode can represent thousands of characters, including foreign scripts and emojis."
 },
     {
-      "id": "q_1_3_c",
+      "id": "q_1_3_sampling_rate",
+      "legacyQuestionId": "q_1_3_c",
       "topicId": "topic_1_3",
+      "specificationPointId": "1.2.4d",
       "type": "mcq",
       "question": "How does increasing the sound sampling rate affect a digital recording?",
       "options": [
@@ -2072,8 +2137,10 @@ def calculate_area(width, height):
       "explanation": "Lossy removes data (lower quality, very small size); Lossless reorganizes data (same quality, moderate size reduction)."
 },
     {
-      "id": "q_1_4_a",
+      "id": "q_1_4_lan_wan",
+      "legacyQuestionId": "q_1_4_a",
       "topicId": "topic_1_4",
+      "specificationPointId": "1.3.1",
       "type": "mcq",
       "question": "What is the primary difference between a LAN and a WAN?",
       "options": [
@@ -2086,8 +2153,10 @@ def calculate_area(width, height):
       "explanation": "A Local Area Network (LAN) covers a single site like a home or school. A Wide Area Network (WAN) connects LANs across cities or countries, often using external infrastructure (like the Internet)."
 },
     {
-      "id": "q_1_4_b",
+      "id": "q_1_4_router_role_alt",
+      "legacyQuestionId": "q_1_4_b",
       "topicId": "topic_1_4",
+      "specificationPointId": "1.3.2",
       "type": "mcq",
       "question": "What is the role of a Router on a network?",
       "options": [
@@ -2167,8 +2236,10 @@ def calculate_area(width, height):
       "explanation": "SQL Injection occurs when poorly validated input fields allow hackers to input SQL queries that bypass authentication and directly query or destroy the underlying SQL database."
 },
     {
-      "id": "q_1_5_c",
+      "id": "q_1_5_firewall_alt",
+      "legacyQuestionId": "q_1_5_c",
       "topicId": "topic_1_5",
+      "specificationPointId": "1.4.2",
       "type": "mcq",
       "question": "How does a firewall protect a network?",
       "options": [
@@ -2202,8 +2273,10 @@ def calculate_area(width, height):
       "explanation": "Pen testing finds weak spots; Encryption scrambles data; User Access Levels restrict access to prevent data leaks."
 },
     {
-      "id": "q_1_6_a",
+      "id": "q_1_6_multitasking",
+      "legacyQuestionId": "q_1_6_a",
       "topicId": "topic_1_6",
+      "specificationPointId": "1.5.1",
       "type": "mcq",
       "question": "How does an operating system manage multitasking?",
       "options": [
@@ -2265,8 +2338,10 @@ def calculate_area(width, height):
       "explanation": "Memory management oversees RAM; Peripheral management communicates with devices; User management controls logins and permissions."
 },
     {
-      "id": "q_1_7_a",
+      "id": "q_1_7_data_protection_act",
+      "legacyQuestionId": "q_1_7_a",
       "topicId": "topic_1_7",
+      "specificationPointId": "1.6.2",
       "type": "mcq",
       "question": "Which Act of Parliament governs the rights of individuals regarding their personal data stored by organisations?",
       "options": [
@@ -2409,6 +2484,7 @@ def calculate_area(width, height):
     }
   ],
   writtenQuestions: [
+    ...priorityAssessments.writtenQuestions,
     {
       "id": "wq_7",
       "topicId": "topic_2_1",
@@ -2829,16 +2905,16 @@ def calculate_area(width, height):
 };
 
 const QUESTION_SPECIFICATION_MAP = {
-  q_1_1_a: '1.1.1', q_1_1_b: '1.1.2', q_1_1_c: '1.1.1', q_1_1_d: '1.1.3', q_1_1_e: '1.1.1', q_1: '1.1.1',
-  q_1_2_a: '1.2.1', q_1_2_b: '1.2.1', q_1_2_c: '1.2.2', q_1_2_d: '1.2.3', q_1_2_e: '1.2.2', q_2: '1.2.1', q_3: '1.2.2',
-  q_1_3_a: '1.2.4a', q_1_3_b: '1.2.4b', q_1_3_c: '1.2.4d', q_1_3_d: '1.2.5',
+  q_1_1_a: '1.1.1', q_1_1_b: '1.1.1', q_1_1_c: '1.1.2', q_1_1_d: '1.1.3', q_1_1_e: '1.1.1', q_1: '1.1.1',
+  q_1_2_a: '1.2.1', q_1_2_b: '1.2.2', q_1_2_c: '1.2.2', q_1_2_d: '1.2.3', q_1_2_e: '1.2.2', q_2: '1.2.1', q_3: '1.2.2',
+  q_1_3_a: '1.2.4a', q_1_3_b: '1.2.4a', q_1_3_c: '1.2.4d', q_1_3_d: '1.2.5',
   q_1_4_a: '1.3.1', q_1_4_b: '1.3.2', q_1_4_c: '1.3.2', q_1_4_d: '1.3.2', q_4: '1.3.2',
   q_1_5_a: '1.4.1', q_1_5_b: '1.4.1', q_1_5_c: '1.4.2', q_1_5_d: '1.4.2',
   q_1_6_a: '1.5.1', q_1_6_b: '1.5.1', q_1_6_c: '1.5.2', q_1_6_d: '1.5.1',
   q_1_7_a: '1.6.2', q_1_7_b: '1.6.2', q_1_7_c: '1.6.1', q_1_7_d: '1.6.2',
   q_2_1_a: '2.1.1', q_2_1_b: '2.1.3', q_2_1_c: '2.1.3', q_2_1_d: '2.1.3', q_2_1_e: '2.1.2', q_5: '2.1.3',
   q_2_2_a: '2.2.2', q_2_2_b: '2.2.1', q_2_2_c: '2.2.1', q_2_2_d: '2.2.1',
-  q_2_3_a: '2.3.1', q_2_3_b: '2.3.1', q_2_3_c: '2.3.2', q_2_3_d: '2.3.2',
+  q_2_3_a: '2.3.1', q_2_3_b: '2.3.2', q_2_3_c: '2.3.2', q_2_3_d: '2.3.2',
   q_2_4_a: '2.4.1', q_2_4_b: '2.4.1', q_2_4_c: '2.4.1', q_2_4_d: '2.4.1',
   q_6: '1.2.1',
   q_2_5_a: '2.5.1', q_2_5_b: '2.5.1', q_2_5_c: '2.5.1', q_2_5_d: '2.5.2'
@@ -2853,16 +2929,59 @@ const KEY_TERM_SPECIFICATION_MAP = {
   term_cpu: '1.1.1', term_alu: '1.1.1', term_cache: '1.1.2', term_ram: '1.2.1', term_rom: '1.2.1',
   term_virtual_memory: '1.2.1', term_bit: '1.2.3', term_overflow: '1.2.4a', term_metadata: '1.2.4c',
   term_lossy: '1.2.5', term_lan: '1.3.1', term_protocol: '1.3.2', term_phishing: '1.4.1',
-  term_encryption: '1.4.2', term_os: '1.5.1', term_open_source: '1.6.1', term_abstraction: '2.1.1',
+  term_encryption: '1.4.2', term_os: '1.5.1', term_open_source: '1.6.2', term_abstraction: '2.1.1',
   term_decomposition: '2.1.1', term_algorithm: '2.1.2', term_variable: '2.2.1', term_selection: '2.2.1',
-  term_iteration: '2.2.1', term_array: '2.2.3', term_syntax_error: '2.3.1', term_logic_error: '2.3.1',
+  term_iteration: '2.2.1', term_array: '2.2.3', term_syntax_error: '2.3.2', term_logic_error: '2.3.2',
   term_validation: '2.3.1', term_boolean: '2.4.1', term_compiler: '2.5.1', term_interpreter: '2.5.1',
   term_pseudocode: '2.2.ERL'
 };
 
+// Human-reviewed conceptual anchors support validation without claiming to automate pedagogical quality.
+const RECALL_HINT_REVIEW = {
+  diagnostic_1_1_1: /fetch|memory location|register/i,
+  diagnostic_1_1_2: /same time|wait|parallel/i,
+  diagnostic_1_1_3: /larger product|dedicated job|many user-chosen tasks/i,
+  diagnostic_1_2_1: /main memory|less-used program data|slower/i,
+  diagnostic_1_2_2: /vibration|impacts|moving/i,
+  q_1_2_a: /power is removed|change the stored contents/i,
+  diagnostic_1_2_3: /bits make one byte|multiplication or division/i,
+  diagnostic_1_2_4a: /binary place values|position containing a one/i,
+  diagnostic_1_2_4b: /doubles|pattern count/i,
+  diagnostic_1_3_1: /addressing information|packet|local network/i,
+  diagnostic_1_3_2: /outgoing mail|retrieve|synchronise/i,
+  q_1_4_a: /destination addressing|network path|packet/i,
+  diagnostic_1_4_1: /automated guessing|credentials/i,
+  diagnostic_1_4_2: /authorised security activity|attack techniques|weaknesses/i,
+  q_1_5_c: /traffic|configured rules|boundary control/i,
+  diagnostic_1_5_1: /tracks free space|active processes|resource/i,
+  diagnostic_1_5_2: /scattered|mechanical head travel|access time/i,
+  q_1_6_a: /device-specific software|peripheral|general commands/i,
+  diagnostic_1_6_1: /physical resources|pollution|disposal/i,
+  diagnostic_1_6_2: /without permission|personal information|creative ownership/i,
+  q_1_7_a: /without permission|personal-data handling|copyright/i,
+  diagnostic_2_1_1: /removes details|splitting the problem|checking input/i,
+  diagnostic_2_1_2: /program state|instruction|loop pass/i,
+  diagnostic_2_1_3: /half|already ordered|search method/i,
+  diagnostic_2_2_1: /whole groups|left over|complete groups/i,
+  diagnostic_2_2_2: /two logical states|whole number|single symbol/i,
+  diagnostic_2_2_3: /filters rows|condition|output fields/i,
+  diagnostic_2_3_1: /login check|person requesting access|entered data/i,
+  diagnostic_2_3_2: /allowed edge values|inside or outside|inclusive range/i,
+  priority_232_1: /cycle|changes a module|before the product is finished/i,
+  diagnostic_2_4_1: /gate active|pair of inputs|at least once/i,
+  q_2_4_e: /either input|gate rule|same state/i,
+  q_2_4_a: /every input condition|satisfied together/i,
+  diagnostic_2_5_1: /human-readable|processor hardware|instruction format/i,
+  diagnostic_2_5_2: /source code|points the programmer|location/i,
+  q_2_5_e: /when translation occurs|separate executable|program is run/i
+};
+const RECALL_HINT_FORBIDDEN = {
+  diagnostic_1_5_2: /reorganis(?:e|ing)|file blocks?|contiguous/i
+};
+
 function applyContentMappings(data) {
   (data.questions || []).forEach(question => {
-    question.specificationPointId = QUESTION_SPECIFICATION_MAP[question.id] || question.specificationPointId || null;
+    question.specificationPointId = question.specificationPointId || QUESTION_SPECIFICATION_MAP[question.id] || null;
     question.purpose = question.purpose || 'retrieval';
     if (question.id === 'q_1_2_d') question.topicId = 'topic_1_3';
     if (question.id === 'q_6') question.topicId = 'topic_1_2';
@@ -2886,6 +3005,185 @@ function applyContentMappings(data) {
 
 applyContentMappings(defaultDatabase);
 
+function validateQuestionBank(data) {
+  const objectivesByTopic = new Map();
+  const validSpecificationIds = new Set();
+
+  (data.units || []).forEach(unit => {
+    (unit.topics || []).forEach(topic => {
+      const ids = new Set((topic.objectives || []).map(objective => objective.id));
+      objectivesByTopic.set(topic.id, ids);
+      ids.forEach(id => validSpecificationIds.add(id));
+    });
+  });
+
+  const seenIds = new Set();
+  (data.questions || []).forEach(question => {
+    if (!question.id || typeof question.id !== 'string') {
+      throw new Error('Every StudySpice question must have a stable ID.');
+    }
+    if (seenIds.has(question.id)) {
+      throw new Error(`Duplicate StudySpice question ID: ${question.id}`);
+    }
+    seenIds.add(question.id);
+
+    if (!validSpecificationIds.has(question.specificationPointId)) {
+      throw new Error(`Question ${question.id} has unknown specification reference ${question.specificationPointId}.`);
+    }
+    const topicObjectives = objectivesByTopic.get(question.topicId);
+    if (!topicObjectives || !topicObjectives.has(question.specificationPointId)) {
+      throw new Error(`Question ${question.id} conflicts with topic ${question.topicId} and specification ${question.specificationPointId}.`);
+    }
+    const mappedSpecification = QUESTION_SPECIFICATION_MAP[question.id];
+    if (mappedSpecification && mappedSpecification !== question.specificationPointId) {
+      throw new Error(`Question ${question.id} has conflicting semantic specification mappings.`);
+    }
+  });
+
+  const normaliseGuidanceText = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const guidanceWords = value => String(value || '').toLowerCase().match(/[a-z0-9]+/g) || [];
+  const meaningfulAnswerPhrases = answer => {
+    const stopWords = new Set(['a', 'an', 'and', 'as', 'at', 'be', 'between', 'by', 'for', 'from', 'in', 'into', 'is', 'it', 'of', 'on', 'or', 'the', 'to', 'using', 'with']);
+    const words = guidanceWords(answer).filter(word => !stopWords.has(word));
+    return words.slice(0, -1).map((word, index) => `${word} ${words[index + 1]}`);
+  };
+  const reachableRecallQuestions = (data.units || []).flatMap(unit =>
+    (unit.topics || []).flatMap(topic =>
+      (data.questions || []).filter(question => question.topicId === topic.id).slice(0, 3)
+    )
+  );
+  const seenHints = new Map();
+  reachableRecallQuestions.forEach(question => {
+    const hint = String(question.retryHint || '').trim();
+    if (hint.length < 50 || /reread|read the question|try again|review the question wording|review this topic|check your notes|think carefully/i.test(hint)) {
+      throw new Error(`Question ${question.id} requires actionable conceptual retry guidance.`);
+    }
+    if (!Object.prototype.hasOwnProperty.call(question, 'retryHint')) {
+      throw new Error(`Question ${question.id} must own its retry guidance.`);
+    }
+    const normalisedAnswer = normaliseGuidanceText(question.answer);
+    const normalisedHint = normaliseGuidanceText(hint);
+    const normalisedQuestion = normaliseGuidanceText(question.question);
+    if (normalisedQuestion.length >= 12 && normalisedHint.includes(normalisedQuestion)) {
+      throw new Error(`Question ${question.id} retry guidance copies the question.`);
+    }
+    if (normalisedAnswer.length >= 3 && normalisedHint.includes(normalisedAnswer)) {
+      throw new Error(`Question ${question.id} retry guidance reveals its answer.`);
+    }
+    const hintWords = ` ${guidanceWords(hint).join(' ')} `;
+    if (meaningfulAnswerPhrases(question.answer).some(phrase => hintWords.includes(` ${phrase} `))) {
+      throw new Error(`Question ${question.id} retry guidance closely paraphrases its answer.`);
+    }
+    const copiedDistractor = (question.options || [])
+      .filter(option => option !== question.answer)
+      .some(option => {
+        const optionWords = guidanceWords(option);
+        if (!optionWords.length || (optionWords.length === 1 && ['a', 'an', 'and', 'at', 'from', 'in', 'of', 'on', 'or', 'the', 'to'].includes(optionWords[0]))) return false;
+        return optionWords.join(' ').length >= 4 && hintWords.includes(` ${optionWords.join(' ')} `);
+      });
+    if (copiedDistractor) {
+      throw new Error(`Question ${question.id} retry guidance repeats a distractor.`);
+    }
+    const conceptualAnchor = RECALL_HINT_REVIEW[question.id];
+    if (!conceptualAnchor || !conceptualAnchor.test(hint)) {
+      throw new Error(`Question ${question.id} retry guidance does not match its reviewed conceptual focus.`);
+    }
+    const forbiddenParaphrase = RECALL_HINT_FORBIDDEN[question.id];
+    if (forbiddenParaphrase && forbiddenParaphrase.test(hint)) {
+      throw new Error(`Question ${question.id} retry guidance closely paraphrases its answer.`);
+    }
+    if (seenHints.has(normalisedHint)) {
+      throw new Error(`Questions ${seenHints.get(normalisedHint)} and ${question.id} reuse identical retry guidance.`);
+    }
+    seenHints.set(normalisedHint, question.id);
+  });
+
+  return true;
+}
+
+validateQuestionBank(defaultDatabase);
+
+const SYSTEM_CONTENT_COLLECTIONS = [
+  'curriculumContent',
+  'theoryNotes',
+  'units',
+  'examTransferTasks',
+  'keyTerms',
+  'questions',
+  'writtenQuestions',
+  'programmingChallenges'
+];
+
+function cloneData(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function mergeSystemRecords(existingRecords, defaultRecords) {
+  const existing = Array.isArray(existingRecords) ? existingRecords : [];
+  const defaults = Array.isArray(defaultRecords) ? defaultRecords : [];
+  const defaultsById = new Map(defaults.filter(item => item?.id).map(item => [item.id, item]));
+  const merged = defaults.map(item => cloneData(item));
+
+  existing.forEach(item => {
+    if (!item?.id || defaultsById.has(item.id)) return;
+    merged.push(cloneData(item));
+  });
+
+  return merged;
+}
+
+function migrateSchema12To13(storedData) {
+  const migrated = cloneData(storedData);
+
+  SYSTEM_CONTENT_COLLECTIONS.forEach(key => {
+    migrated[key] = mergeSystemRecords(migrated[key], defaultDatabase[key]);
+  });
+
+  Object.keys(defaultDatabase).forEach(key => {
+    if (!Object.prototype.hasOwnProperty.call(migrated, key)) {
+      migrated[key] = cloneData(defaultDatabase[key]);
+    }
+  });
+
+  migrated.schemaVersion = 13;
+  return applyContentMappings(migrated);
+}
+
+const DATA_MIGRATIONS = {
+  12: migrateSchema12To13
+};
+
+function migrateStoredData(storedData) {
+  let migrated = cloneData(storedData);
+  let version = Number(migrated.schemaVersion);
+
+  if (!Number.isInteger(version) || version < 12) {
+    throw new Error('Stored StudySpice data predates the supported migration path.');
+  }
+  if (version > defaultDatabase.schemaVersion) {
+    throw new Error('Stored StudySpice data is newer than this application.');
+  }
+
+  while (version < defaultDatabase.schemaVersion) {
+    const migration = DATA_MIGRATIONS[version];
+    if (!migration) throw new Error(`No StudySpice data migration exists for schema ${version}.`);
+    migrated = migration(migrated);
+    version = Number(migrated.schemaVersion);
+  }
+
+  SYSTEM_CONTENT_COLLECTIONS.forEach(key => {
+    migrated[key] = mergeSystemRecords(migrated[key], defaultDatabase[key]);
+  });
+
+  Object.keys(defaultDatabase).forEach(key => {
+    if (!Object.prototype.hasOwnProperty.call(migrated, key)) {
+      migrated[key] = cloneData(defaultDatabase[key]);
+    }
+  });
+
+  return applyContentMappings(migrated);
+}
+
 class LocalDB {
   constructor() {
     this.cachedData = null;
@@ -2894,25 +3192,17 @@ class LocalDB {
   }
 
   loadData() {
+    let parsedRaw = null;
     try {
       const raw = localStorage.getItem(DB_KEY);
-      const parsedRaw = raw ? JSON.parse(raw) : null;
-      if (!raw || !parsedRaw.schemaVersion || parsedRaw.schemaVersion < defaultDatabase.schemaVersion) {
-        this.cachedData = JSON.parse(JSON.stringify(defaultDatabase));
-        localStorage.setItem(DB_KEY, JSON.stringify(this.cachedData));
-      } else {
-        this.cachedData = parsedRaw;
-        // Merge missing keys if schema was updated
-        Object.keys(defaultDatabase).forEach(key => {
-          if (!this.cachedData.hasOwnProperty(key)) {
-            this.cachedData[key] = JSON.parse(JSON.stringify(defaultDatabase[key]));
-          }
-        });
-        applyContentMappings(this.cachedData);
-      }
+      parsedRaw = raw ? JSON.parse(raw) : null;
+      this.cachedData = parsedRaw ? migrateStoredData(parsedRaw) : cloneData(defaultDatabase);
+      localStorage.setItem(DB_KEY, JSON.stringify(this.cachedData));
     } catch (e) {
-      console.error('Error loading LocalDB, using defaults:', e);
-      this.cachedData = JSON.parse(JSON.stringify(defaultDatabase));
+      console.error('Error loading LocalDB; stored data has not been overwritten:', e);
+      this.cachedData = parsedRaw && typeof parsedRaw === 'object'
+        ? parsedRaw
+        : cloneData(defaultDatabase);
     }
   }
 
@@ -2944,6 +3234,7 @@ class LocalDB {
   getAssignments() { return this.cachedData.assignments; }
   getTestPreps() { return this.cachedData.testPreps || []; }
   getSupportSessions() { return this.cachedData.supportSessions || []; }
+  getCurriculumContent() { return this.cachedData.curriculumContent || []; }
   getExamTransferTasks() { return this.cachedData.examTransferTasks || []; }
   getKeyTerms() { return this.cachedData.keyTerms || []; }
   getQuestions() { return this.cachedData.questions; }
@@ -3141,4 +3432,16 @@ class LocalDB {
   }
 }
 
-window.db = new LocalDB();
+root.db = new LocalDB();
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    LocalDB,
+    defaultDatabase,
+    applyContentMappings,
+    validateQuestionBank,
+    migrateSchema12To13,
+    migrateStoredData
+  };
+}
+})(typeof window !== 'undefined' ? window : globalThis);
