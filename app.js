@@ -2350,7 +2350,7 @@ class App {
 
     // Tool 1 Calculations
     const denaryVal = this.binaryBits.reduce((acc, bit, idx) => acc + bit * Math.pow(2, 7 - idx), 0);
-    const hexVal = '0x' + denaryVal.toString(16).toUpperCase().padStart(2, '0');
+    const hexVal = denaryVal.toString(16).toUpperCase().padStart(2, '0');
 
     // Tool 3 Calculations
     let gateResult = 0;
@@ -2407,11 +2407,11 @@ class App {
 
           <!-- Shift Controls -->
           <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
-            <button id="shift-left-1" class="btn btn-secondary">&laquo; Left Shift (&lt;&lt; 1) [x2]</button>
-            <button id="shift-left-2" class="btn btn-secondary">&laquo;&laquo; Left Shift (&lt;&lt; 2) [x4]</button>
-            <button id="shift-reset" class="btn btn-secondary">Reset Bits</button>
-            <button id="shift-right-1" class="btn btn-secondary">Right Shift (&gt;&gt; 1) [/2] &raquo;</button>
-            <button id="shift-right-2" class="btn btn-secondary">Right Shift (&gt;&gt; 2) [/4] &raquo;&raquo;</button>
+            <button id="shift-left-1" class="btn btn-secondary">&laquo; Left shift (1 place) [x2]</button>
+            <button id="shift-left-2" class="btn btn-secondary">&laquo;&laquo; Left shift (2 places) [x4]</button>
+            <button id="shift-reset" class="btn btn-secondary">Reset bits</button>
+            <button id="shift-right-1" class="btn btn-secondary">Right shift (1 place) [/2] &raquo;</button>
+            <button id="shift-right-2" class="btn btn-secondary">Right shift (2 places) [/4] &raquo;&raquo;</button>
           </div>
         </div>
       ` : ''}

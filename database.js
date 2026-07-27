@@ -249,12 +249,12 @@ const defaultDatabase = {
           <strong>Overflow Error:</strong> Occurs when the sum of two 8-bit numbers requires 9 bits (exceeds 255). The CPU drops or flags the 9th bit, causing incorrect mathematical results.<br><br>
           <strong>Logical Binary Shifts:</strong>
           <ul>
-            <li><strong>Left Shift ($<< n$):</strong> Moves bits left by $n$ places, filling empty right slots with 0s. Multiplies the number by $2^n$.</li>
-            <li><strong>Right Shift ($>> n$):</strong> Moves bits right by $n$ places. Divides the number by $2^n$ (truncates fractional digits).</li>
+            <li><strong>Left shift by $n$ places:</strong> Moves bits left by $n$ places, filling empty right positions with 0s. Multiplies the unsigned value by $2^n$.</li>
+            <li><strong>Right shift by $n$ places:</strong> Moves bits right by $n$ places. Divides the unsigned value by $2^n$ (truncating remainder).</li>
           </ul>`,
           workedExample: `<strong>Left Shift Example:</strong><br>
           Binary <code>0000 0110</code> (Denary 6).<br>
-          Left shift by 2 places ($<< 2$): <code>0001 1000</code>.<br>
+          Left shift by 2 places: <code>0001 1000</code>.<br>
           New denary value: $16 + 8 = 24$ ($6 \\times 2^2 = 24$).`,
           examinerTip: 'Make sure to explicitly write down carry bits above columns during binary addition in exam papers!'
         },
