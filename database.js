@@ -2958,14 +2958,14 @@ const applicationCommandWord = modes => {
 };
 const concreteApplicationDetails = {
   '1.1.1': {
-    question: 'A CPU fetches an instruction from memory location 0x04. Trace the fetch cycle by describing the specific contents of the PC, MAR, MDR, and Control Unit during this step, and explain which register stores an address versus actual data.',
-    scenario: 'Tracing the CPU fetch-execute cycle for address 0x04.',
+    question: 'A CPU fetches an instruction from memory location 4. Trace the fetch cycle by describing the specific contents of the PC, MAR, MDR, and Control Unit during this step, and explain which register stores an address versus actual data.',
+    scenario: 'Tracing the CPU fetch-execute cycle for address 4.',
     rubric: [
-      'States that PC contains address 0x04 initially.',
-      'Explains that address 0x04 is copied to MAR while the instruction at 0x04 is loaded into MDR.',
+      'States that PC contains address 4 initially.',
+      'Explains that address 4 is copied to MAR while the instruction at address 4 is loaded into MDR.',
       'Identifies PC and MAR as address registers, whereas MDR holds data/instructions.'
     ],
-    modelAnswer: 'The PC starts holding address 0x04. To fetch the instruction, address 0x04 is copied into the MAR. The CPU reads memory address 0x04 and copies the instruction content into the MDR. The PC is then incremented to 0x05. MAR and PC store memory addresses, while MDR stores the data or instruction fetched.'
+    modelAnswer: 'The PC starts holding address 4. To fetch the instruction, address 4 is copied into the MAR. The CPU reads memory address 4 and copies the instruction content into the MDR. The PC is then incremented to 5. MAR and PC store memory addresses, while MDR stores the data or instruction fetched.'
   },
   '1.1.3': {
     question: 'Compare a washing machine controller, a PlayStation 5, and an office desktop PC. Identify which device contains an embedded system and justify your choice based on hardware flexibility, purpose, and operating system requirements.',

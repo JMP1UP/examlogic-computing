@@ -100,8 +100,8 @@ describe('Blocking Issues Fixes Verification', () => {
 
   test('Issue 6: Interactive Try it with support persists student responses in localStorage', () => {
     const objId = '1.1.1';
-    global.localStorage.setItem(`try_practice_${objId}`, 'PC stores 0x04 initially');
+    global.localStorage.setItem(`try_practice_${objId}`, 'PC stores 4 initially');
     const restored = global.localStorage.getItem(`try_practice_${objId}`);
-    expect(restored).toBe('PC stores 0x04 initially');
+    expect(restored).toBe('PC stores 4 initially');
   });
 });
