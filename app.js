@@ -4647,7 +4647,7 @@ class App {
     panel.innerHTML = `
       <div style="margin-bottom: 24px;">
         <h1>🎛️ Lesson topic embedding controls</h1>
-        <p>See the real depth of the School Bridge content bank, then control which syllabus sections are active, hidden, or set as assessment priority.</p>
+        <p>See the real depth of the StudySpice content bank, then control which syllabus sections are active, hidden, or set as assessment priority.</p>
       </div>
 
       <div class="card" style="margin-bottom:24px; border-left:5px solid var(--amber);">
