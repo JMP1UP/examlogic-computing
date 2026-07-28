@@ -1607,8 +1607,8 @@ class App {
               ` : ''}
 
               ${section.examinerTip ? `
-                <div style="background: rgba(217, 119, 6, 0.08); border-left: 4px solid var(--amber-alert, #D97706); padding: 14px 16px; border-radius: 0 8px 8px 0;">
-                  <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--amber-alert, #D97706); margin-bottom: 4px; letter-spacing: 0.5px;">⚠️ Examiner Tip & Strategy</div>
+                <div style="background: rgba(217, 119, 6, 0.08); border-left: 4px solid var(--amber); padding: 14px 16px; border-radius: 0 8px 8px 0;">
+                  <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--amber-text); margin-bottom: 4px; letter-spacing: 0.5px;">⚠️ Examiner Tip & Strategy</div>
                   <div style="font-size: 13.5px; line-height: 1.5; color: var(--text-main);">${section.examinerTip}</div>
                 </div>
               ` : ''}
@@ -1627,8 +1627,8 @@ class App {
           </div>
 
           <!-- Exam Traps -->
-          <div class="card" style="padding: 20px; background-color: var(--bg-card); border: 1.5px solid var(--amber-alert, #D97706);">
-            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--amber-alert, #D97706);">🚫 Common Examiner Pitfalls</h3>
+          <div class="card" style="padding: 20px; background-color: var(--bg-card); border: 1.5px solid var(--amber);">
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--amber-text);">🚫 Common Examiner Pitfalls</h3>
             <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: var(--text-main); line-height: 1.6;">
               ${activeNote.examTraps.map(trap => `<li>${trap}</li>`).join('')}
             </ul>

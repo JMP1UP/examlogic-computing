@@ -11,6 +11,7 @@ All notable changes to ExamLogic Computing are recorded here.
 - Excluded two under-assessed sections from the achievable checkpoint denominator while keeping them visibly labelled, and routed new learners to guided teaching rather than unsupported recall.
 
 ### Fixed
+- Replaced low-contrast yellow and reused accent foregrounds with WCAG AA text tokens, and raised small interface labels to a readable minimum across student, teacher, public and dark-mode views.
 - Corrected out-of-scope TCP/IP layer-name assessment, misleading MAC permanence and storage-unit feedback, ERL terminator syntax, a variables/constants mapping, and inaccurate programming explanations.
 - Reclassified the old layer-name item as a preserved historical record and added an in-scope layers-benefit replacement.
 - Restored core status and executable practice for two-dimensional arrays, subprograms, reproducible randomness and authentication.
