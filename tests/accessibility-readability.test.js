@@ -1,0 +1,63 @@
+const fs = require('fs');
+const path = require('path');
+
+const css = fs.readFileSync(path.join(__dirname, '..', 'style.css'), 'utf8');
+const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+
+const relativeLuminance = hex => {
+  const channels = hex.slice(1).match(/../g).map(value => parseInt(value, 16) / 255);
+  const linear = channels.map(value => value <= 0.04045
+    ? value / 12.92
+    : ((value + 0.055) / 1.055) ** 2.4);
+  return (0.2126 * linear[0]) + (0.7152 * linear[1]) + (0.0722 * linear[2]);
+};
+
+const contrastRatio = (foreground, background) => {
+  const first = relativeLuminance(foreground);
+  const second = relativeLuminance(background);
+  return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
+};
+
+describe('cross-page text readability', () => {
+  test.each([
+    ['light teal text', '#1B6E66', '#FFFFFF'],
+    ['primary button text', '#FFFFFF', '#1B6E66'],
+    ['light amber text', '#78350F', '#FFFFFF'],
+    ['light green text', '#047857', '#FFFFFF'],
+    ['light coral text', '#9A3412', '#FFFFFF'],
+    ['light red text', '#B91C1C', '#FFFFFF'],
+    ['muted text on warm white', '#5F6F86', '#FAF8F2'],
+    ['dark teal text', '#6EE7D8', '#18233F'],
+    ['dark amber text', '#FCD34D', '#18233F'],
+    ['dark green text', '#6EE7B7', '#18233F'],
+    ['dark coral text', '#FDBA74', '#18233F'],
+    ['dark red text', '#FCA5A5', '#18233F']
+  ])('%s meets WCAG AA for normal text', (_label, foreground, background) => {
+    expect(contrastRatio(foreground, background)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  test('the examiner warning uses a foreground token rather than the pale fill token', () => {
+    expect(app).toContain('color: var(--amber-text)');
+    expect(app).not.toContain('color: var(--amber-alert');
+  });
+
+  test('all application surfaces receive the small-text readability guard', () => {
+    ['8', '9', '10', '11', '12'].forEach(size => {
+      expect(css).toContain(`[style*="font-size: ${size}px"]`);
+      expect(css).toContain(`[style*="font-size:${size}px"]`);
+    });
+    expect(css).toMatch(/\[style\*="font-size:12px"\][\s\S]*?font-size: 13px !important;/);
+    expect(css).toContain('.btn-sm');
+    expect(css).toMatch(/\.btn-sm\s*\{[\s\S]*?font-size: 14px;/);
+    expect(css).toMatch(/\.badge\s*\{[\s\S]*?font-size: 13px;/);
+    expect(css).toContain('.sidebar .btn-destructive');
+    expect(css).toContain('color: #6EE7D8 !important');
+  });
+
+  test('the global readability stylesheet is loaded by public and authenticated views', () => {
+    expect(html).toMatch(/href="style\.css\?v=[^"]+"/);
+    expect(html).toContain('id="login-screen"');
+    expect(html).toContain('id="app-shell"');
+  });
+});

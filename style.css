@@ -4,18 +4,22 @@
 :root {
   /* Color System */
   --navy: #07111F;
-  --teal: #2D9C91;
-  --teal-hover: #248178;
+  --teal: #1B6E66;
+  --teal-hover: #155B55;
   --warm-white: #FAF8F2;
   --white: #FFFFFF;
-  --slate: #64748B;
+  --slate: #5F6F86;
   --soft-border: #E3E8EE;
   
   /* Accents */
   --amber: #D97706;
   --amber-alert: #FEF9C3;
   --amber-text: #78350F;
-  --green: #2FA66D;
+  --teal-text: #1B6E66;
+  --green-text: #047857;
+  --coral-text: #9A3412;
+  --red-text: #B91C1C;
+  --green: #047857;
   --coral: #F58A6A;
   --red: #D94C4C;
   --soft-blue: #FAF8F2;
@@ -45,6 +49,11 @@ body.dark-mode {
   --text-main: #FFF8F1;
   --text-muted: #A0AEC0;
   --border-color: #2D3748;
+  --teal-text: #6EE7D8;
+  --amber-text: #FCD34D;
+  --green-text: #6EE7B7;
+  --coral-text: #FDBA74;
+  --red-text: #FCA5A5;
 }
 
 .skip-link {
@@ -84,6 +93,7 @@ body.dark-mode {
 
 body {
   font-family: var(--font-family);
+  font-size: 16px;
   background-color: var(--bg-main);
   color: var(--text-main);
   line-height: 1.6;
@@ -133,7 +143,7 @@ h3 {
 }
 
 p {
-  font-size: 15px;
+  font-size: 16px;
   color: var(--text-muted);
   margin-bottom: 1rem;
 }
@@ -170,7 +180,7 @@ p {
 }
 
 .sidebar .brand-endorsement {
-  font-size: 12px;
+  font-size: 13px;
   color: #94A3B8;
   font-weight: 500;
   letter-spacing: 0.5px;
@@ -211,7 +221,7 @@ p {
   margin-top: auto;
   padding-top: 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 12px;
+  font-size: 13px;
   color: #94A3B8;
   display: flex;
   flex-direction: column;
@@ -336,7 +346,7 @@ p {
   padding: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-family: monospace;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--teal);
 }
 
@@ -451,7 +461,7 @@ p {
 
 .btn-tertiary {
   background-color: transparent;
-  color: var(--teal);
+  color: var(--teal-text);
   padding: 6px 12px;
   min-height: auto;
 }
@@ -463,7 +473,7 @@ p {
 .btn-destructive {
   background-color: transparent;
   border-color: var(--red);
-  color: var(--red);
+  color: var(--red-text);
 }
 
 .btn-destructive:hover {
@@ -479,7 +489,7 @@ p {
 .btn-sm {
   padding: 6px 12px;
   min-height: 32px;
-  font-size: 13px;
+  font-size: 14px;
   border-radius: 8px;
 }
 
@@ -490,7 +500,7 @@ p {
 
 .form-group label {
   display: block;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   margin-bottom: 6px;
   color: var(--text-main);
@@ -547,7 +557,7 @@ textarea.form-control {
 }
 
 .tab-btn.active {
-  color: var(--teal);
+  color: var(--teal-text);
   border-bottom-color: var(--teal);
   font-weight: 600;
 }
@@ -578,7 +588,7 @@ table {
 th {
   background-color: rgba(7, 17, 31, 0.02);
   padding: 16px 24px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-muted);
   border-bottom: 1px solid var(--border-color);
@@ -651,7 +661,7 @@ tr:hover td {
   align-items: center;
   padding: 4px 8px;
   border-radius: 9999px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   text-transform: sentence;
 }
@@ -674,6 +684,85 @@ tr:hover td {
 .badge-primary {
   background-color: rgba(45, 156, 145, 0.1);
   color: #1B6E66; /* Darker teal for WCAG AA compliance */
+}
+
+/*
+ * Readability guardrails
+ *
+ * Dynamic views historically used very small inline labels. Keep secondary
+ * information visually subordinate without allowing essential interface text
+ * to fall below 13px. Foreground accent tokens are separate from fills and
+ * borders so normal-sized text meets WCAG AA in both themes.
+ */
+[style*="font-size: 8px"],
+[style*="font-size:8px"],
+[style*="font-size: 9px"],
+[style*="font-size:9px"],
+[style*="font-size: 10px"],
+[style*="font-size:10px"],
+[style*="font-size: 11px"],
+[style*="font-size:11px"],
+[style*="font-size: 12px"],
+[style*="font-size:12px"] {
+  font-size: 13px !important;
+}
+
+[style*="color: var(--teal)"],
+[style*="color:var(--teal)"] {
+  color: var(--teal-text) !important;
+}
+
+[style*="color: var(--amber)"],
+[style*="color:var(--amber)"],
+[style*="color: var(--amber-alert)"],
+[style*="color:var(--amber-alert)"] {
+  color: var(--amber-text) !important;
+}
+
+[style*="color: var(--green)"],
+[style*="color:var(--green)"] {
+  color: var(--green-text) !important;
+}
+
+[style*="color: var(--coral)"],
+[style*="color:var(--coral)"] {
+  color: var(--coral-text) !important;
+}
+
+[style*="color: var(--red)"],
+[style*="color:var(--red)"] {
+  color: var(--red-text) !important;
+}
+
+/* Accent text placed on the permanent navy surfaces needs the light variant. */
+.landing-header [style*="color: var(--teal)"],
+.landing-header [style*="color:var(--teal)"],
+.hero-section [style*="color: var(--teal)"],
+.hero-section [style*="color:var(--teal)"],
+.sidebar [style*="color: var(--teal)"],
+.sidebar [style*="color:var(--teal)"] {
+  color: #6EE7D8 !important;
+}
+
+.sidebar .btn-destructive {
+  color: #FCA5A5 !important;
+  border-color: #FCA5A5;
+}
+
+body.dark-mode .badge-success {
+  color: var(--green-text);
+}
+
+body.dark-mode .badge-warning {
+  color: var(--amber-text);
+}
+
+body.dark-mode .badge-danger {
+  color: var(--red-text);
+}
+
+body.dark-mode .badge-primary {
+  color: var(--teal-text);
 }
 
 /* Programming Sandbox styling */
