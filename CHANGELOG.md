@@ -5,6 +5,9 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Added a restrained Progress badge collection with earned, previously earned and `Not earned yet` states, exact evidence requirements and direct activity routes.
+- Added stable internal achievement identifiers while preserving existing schema-13 learner records and stored badge names.
+- Bound programming awards to the exact tested code snapshot so editing after a successful test run requires the learner to run the tests again.
 - Extended Cut Through across student routes with compact orientation, a recommended Learn start, an explicit Read → Try → Check sequence and bounded simulator tasks.
 - Added direct Learn actions from incomplete Progress sections without changing evidence or milestone calculations.
 - Rebuilt the student dashboard with the bolder Signal / Paste — Cut Through

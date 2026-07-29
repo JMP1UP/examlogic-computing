@@ -468,7 +468,7 @@ describe('production browser startup', () => {
     context.app.currentUser.achievements = ['Binary Fluent'];
     context.app.renderStudentDashboard(panel);
     expect(panel.innerHTML).toContain('Earned through checked work');
-    expect(panel.innerHTML).toContain('Binary Fluent');
+    expect(panel.innerHTML).toContain('Binary Check Complete');
     context.app.switchTab = jest.fn();
     achievementsButton.onclick();
     expect(context.app.switchTab).toHaveBeenCalledWith('stud-progress');

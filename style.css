@@ -1593,6 +1593,127 @@ body.dark-mode .app-container[data-user-role="student"] {
   font: 700 12px/1 var(--student-font-meta);
 }
 
+.student-achievement-panel {
+  margin-bottom: 24px;
+  padding: 0;
+  overflow: hidden;
+  border-top: 4px solid var(--student-cyan);
+}
+
+.student-progress-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 32px;
+}
+
+.student-achievement-panel > header {
+  padding: 20px 20px 18px;
+  border-bottom: 1px solid var(--student-rule);
+  background: var(--student-sheet);
+  background: color-mix(in srgb, var(--student-sheet) 88%, var(--student-cyan));
+}
+
+.student-achievement-panel > header h3 {
+  margin: 4px 0 7px;
+}
+
+.student-achievement-panel > header p,
+.student-achievement-card p,
+.student-achievement-empty,
+.student-achievement-complete {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.student-achievement-group {
+  padding: 18px 20px;
+}
+
+.student-achievement-group + .student-achievement-group {
+  border-top: 1px solid var(--student-rule);
+}
+
+.student-achievement-group > h4 {
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+
+.student-achievement-list {
+  display: grid;
+  gap: 12px;
+}
+
+.student-achievement-card {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid var(--student-rule);
+  background: var(--student-sheet);
+}
+
+.student-achievement-card--earned {
+  border-color: var(--student-teal);
+  box-shadow: 4px 4px 0 var(--student-acid);
+}
+
+.student-achievement-card--next {
+  border-style: dashed;
+}
+
+.student-achievement-card__symbol {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  border: 2px solid currentColor;
+  font: 700 13px/1 var(--student-font-meta);
+}
+
+.student-achievement-card--earned .student-achievement-card__symbol {
+  background: var(--student-earned-bg);
+  color: #FFFFFF;
+}
+
+.student-achievement-card--next .student-achievement-card__symbol {
+  color: var(--text-muted);
+  background: var(--bg-main);
+}
+
+.student-achievement-state {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--student-cyan);
+  font: 700 11px/1.2 var(--student-font-meta);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.student-achievement-card--next .student-achievement-state {
+  color: var(--text-muted);
+}
+
+.student-achievement-card h4 {
+  margin: 0 0 5px;
+}
+
+.student-achievement-card p {
+  color: var(--text-main);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.student-achievement-action {
+  margin-top: 8px;
+  min-height: 44px;
+}
+
+.student-achievement-complete {
+  padding: 18px 20px;
+  border-top: 1px solid var(--student-rule);
+}
+
 .student-plan-drawer {
   margin-top: 64px;
 }
@@ -1926,6 +2047,20 @@ body.dark-mode .app-container[data-user-role="student"] {
   }
 }
 
+@media (max-width: 900px) {
+  .student-progress-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .student-progress-layout > div:last-child {
+    order: -1;
+  }
+
+  .student-achievement-card {
+    grid-template-columns: 44px 1fr;
+  }
+}
+
 @media (forced-colors: active) {
   .app-container[data-user-role="student"] .main-content {
     background: Canvas;
@@ -1941,7 +2076,10 @@ body.dark-mode .app-container[data-user-role="student"] {
   .student-signal-strip,
   .student-connected-checkpoint,
   .student-checkpoint-note,
-  .student-earned-mark {
+  .student-earned-mark,
+  .student-achievement-panel,
+  .student-achievement-card,
+  .student-achievement-card__symbol {
     border: 2px solid CanvasText;
     background: Canvas;
     color: CanvasText;

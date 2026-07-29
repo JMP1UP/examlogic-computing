@@ -48,6 +48,7 @@ class App {
     this.examTransferResponse = '';
     this.supportLevelUsed = 0; // support ladder level
     this.lastProgrammingEvidence = [];
+    this.lastProgrammingTestRun = null;
     this.aiTutorHintLevel = 1;
     this.editorCode = '';
     this.pythonWorker = null;
@@ -259,6 +260,175 @@ class App {
           : 'More practice needed';
     const legacyEvidenceCount = evidence.filter(item => item.score.precision === 'legacy').length;
     return { earned, available, ratio, label, evidenceCount: evidence.length, legacyEvidenceCount };
+  }
+
+  getAchievementCatalogue() {
+    return [
+      {
+        id: 'binary-fluent',
+        storedName: 'Binary Fluent',
+        title: 'Binary Check Complete',
+        symbol: '01',
+        criterion: 'Complete the Number skills activity, then retry anything you miss until the full set is correct.',
+        earnedDescription: 'Earned by completing every question correctly in this Number skills activity.',
+        actionLabel: 'Practise number skills',
+        route: 'stud-practise'
+      },
+      {
+        id: 'debugging-detective',
+        storedName: 'Debugging Detective',
+        title: 'Debugging Detective',
+        symbol: '</>',
+        criterion: 'Fix the counting loop so it prints 1 to 5, then pass every test.',
+        earnedDescription: 'Earned by fixing and testing the counting-loop program.',
+        actionLabel: 'Try the debugging challenge',
+        route: 'stud-programme',
+        challengeId: 'pc_3'
+      }
+    ];
+  }
+
+  getStoredAchievementName(achievement) {
+    if (typeof achievement === 'string') return achievement.trim();
+    return String(achievement?.name || achievement?.title || '').trim();
+  }
+
+  resolveStudentAchievements(student) {
+    const catalogue = this.getAchievementCatalogue();
+    const catalogueByName = new Map(catalogue.map(item => [item.storedName.toLowerCase(), item]));
+    const earnedIds = new Set();
+    const legacyNames = new Set();
+    const legacy = [];
+
+    (Array.isArray(student?.achievements) ? student.achievements : []).forEach(achievement => {
+      const name = this.getStoredAchievementName(achievement);
+      if (!name) return;
+      const known = catalogueByName.get(name.toLowerCase());
+      if (known) {
+        earnedIds.add(known.id);
+        return;
+      }
+      const key = name.toLowerCase();
+      if (legacyNames.has(key)) return;
+      legacyNames.add(key);
+      legacy.push({
+        id: `legacy-${legacy.length + 1}`,
+        title: name,
+        symbol: '✓',
+        status: 'previously-earned',
+        earnedDescription: 'Earned previously. It remains part of your learning record.'
+      });
+    });
+
+    return {
+      earned: catalogue
+        .filter(item => earnedIds.has(item.id))
+        .map(item => ({ ...item, status: 'earned' }))
+        .concat(legacy),
+      next: catalogue
+        .filter(item => !earnedIds.has(item.id))
+        .map(item => ({ ...item, status: 'not-earned' }))
+    };
+  }
+
+  grantAchievement(student, achievementId) {
+    const achievement = this.getAchievementCatalogue().find(item => item.id === achievementId);
+    if (!student || !achievement) return false;
+    if (!Array.isArray(student.achievements)) student.achievements = [];
+    const alreadyEarned = student.achievements.some(item =>
+      this.getStoredAchievementName(item).toLowerCase() === achievement.storedName.toLowerCase()
+    );
+    if (alreadyEarned) return false;
+    student.achievements.push(achievement.storedName);
+    window.db.saveData();
+    return true;
+  }
+
+  openAchievementRoute(achievementId, panel) {
+    const achievement = this.getAchievementCatalogue().find(item => item.id === achievementId);
+    if (!achievement) {
+      if (panel) {
+        panel.innerHTML = '<div class="card" role="status"><h1>Activity unavailable</h1><p>This achievement does not currently have a valid activity.</p><button type="button" class="btn btn-secondary" id="achievement-progress-back">Back to Progress</button></div>';
+        panel.querySelector?.('#achievement-progress-back')?.addEventListener('click', () => this.renderStudentProgress(panel));
+      }
+      return false;
+    }
+    if (achievement.challengeId) {
+      const challengeAvailable = window.db.getProgrammingChallenges().some(item => item.id === achievement.challengeId);
+      if (!challengeAvailable) {
+        if (panel) panel.innerHTML = '<div class="card" role="status"><h1>Activity unavailable</h1><p>The linked programming challenge could not be found. Choose another activity from Progress.</p><button type="button" class="btn btn-secondary" id="achievement-progress-back">Back to Progress</button></div>';
+        panel?.querySelector?.('#achievement-progress-back')?.addEventListener('click', () => this.renderStudentProgress(panel));
+        this.focusMainContent();
+        return false;
+      }
+      this.activateProgrammingChallenge(achievement.challengeId);
+    }
+    this.switchTab(achievement.route);
+    return true;
+  }
+
+  activateProgrammingChallenge(challengeId) {
+    const challenge = window.db.getProgrammingChallenges().find(item => item.id === challengeId);
+    if (!challenge) return false;
+    this.activeChallengeId = challenge.id;
+    this.editorCode = challenge.code || '';
+    this.supportLevelUsed = 0;
+    this.lastProgrammingEvidence = [];
+    this.lastProgrammingTestRun = null;
+    this.aiTutorHintLevel = 1;
+    this.programmingStage = 'predict';
+    this.revealedSupportStep = 1;
+    this.activeSupportFeedback = {};
+    this.predictInputValue = '';
+    this.codingExplanationValue = '';
+    return true;
+  }
+
+  renderStudentAchievementPanel(student) {
+    const achievements = this.resolveStudentAchievements(student);
+    const earnedHtml = achievements.earned.length
+      ? achievements.earned.map(item => `
+          <article class="student-achievement-card student-achievement-card--earned">
+            <span class="student-achievement-card__symbol" aria-hidden="true">${this.escapeHTML(item.symbol)}</span>
+            <div>
+              <span class="student-achievement-state">${item.status === 'earned' ? 'Earned' : 'Previously earned'}</span>
+              <h4>${this.escapeHTML(item.title)}</h4>
+              <p>${this.escapeHTML(item.earnedDescription)}</p>
+            </div>
+          </article>
+        `).join('')
+      : '<p class="student-achievement-empty">Your first badges are ready to work towards. Earn them by showing what you can do in checked activities.</p>';
+    const nextHtml = achievements.next.slice(0, 2).map(item => `
+      <article class="student-achievement-card student-achievement-card--next">
+        <span class="student-achievement-card__symbol" aria-hidden="true">${this.escapeHTML(item.symbol)}</span>
+        <div>
+          <span class="student-achievement-state">Not earned yet</span>
+          <h4>${this.escapeHTML(item.title)}</h4>
+          <p>${this.escapeHTML(item.criterion)}</p>
+          <button type="button" class="btn-link student-achievement-action" data-achievement-id="${this.escapeHTML(item.id)}">${this.escapeHTML(item.actionLabel)}</button>
+        </div>
+      </article>
+    `).join('');
+
+    return `
+      <section class="card student-achievement-panel" aria-labelledby="student-achievements-heading">
+        <header>
+          <span class="student-kicker">Goals earned through checked work</span>
+          <h3 id="student-achievements-heading">Your badges</h3>
+          <p>Badges show specific skills you have demonstrated in checked work. There is no time pressure.</p>
+        </header>
+        <div class="student-achievement-group">
+          <h4>Achievements earned</h4>
+          <div class="student-achievement-list">${earnedHtml}</div>
+        </div>
+        ${nextHtml ? `
+          <div class="student-achievement-group">
+            <h4>Badges you can earn next</h4>
+            <div class="student-achievement-list">${nextHtml}</div>
+          </div>
+        ` : '<p class="student-achievement-complete">Both current badges earned. Your next task remains the most useful place to focus.</p>'}
+      </section>
+    `;
   }
 
   getLatestDemonstratedAttempts(attempts) {
@@ -1324,7 +1494,8 @@ class App {
     const student = window.db.getStudents().find(s => s.id === this.currentUser.id) || this.currentUser;
     const assignments = window.db.getAssignments().filter(item => this.isPublishedToStudent(item, student));
     const demonstratedProgress = this.getDemonstratedMastery(window.db.getAttempts().filter(item => item.studentId === student.id));
-    const earnedAchievementCount = (student.achievements || []).length;
+    const earnedAchievements = this.resolveStudentAchievements(student).earned;
+    const earnedAchievementCount = earnedAchievements.length;
     const milestones = this.getSectionMilestones(student.id);
     const availableMilestones = milestones.filter(item => item.available);
     const securedMilestones = availableMilestones.filter(item => item.state === 'checkpoint_secured');
@@ -1637,21 +1808,17 @@ class App {
     const latestLevel = demonstratedProgress.ratio === null
       ? 'No checked work yet'
       : demonstratedProgress.label.replace(' latest evidence', '').replace(' evidence', '');
-    const achievementNames = (student.achievements || []).map((achievement, index) => {
-      if (typeof achievement === 'string') return achievement;
-      return achievement?.name || achievement?.title || `Achievement ${index + 1}`;
-    });
-    const earnedMarksHtml = achievementNames.length ? `
+    const earnedMarksHtml = earnedAchievements.length ? `
       <section class="student-earned-marks" aria-labelledby="earned-marks-heading">
         <div class="student-earned-marks__title">
           <span class="student-kicker">Earned through checked work</span>
           <h2 id="earned-marks-heading">Achievements</h2>
         </div>
         <div class="student-earned-marks__list">
-          ${achievementNames.map((name, index) => `
+          ${earnedAchievements.map(achievement => `
             <div class="student-earned-mark">
-              <span aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>
-              <strong>${this.escapeHTML(name)}</strong>
+              <span aria-hidden="true">${this.escapeHTML(achievement.symbol)}</span>
+              <strong>${this.escapeHTML(achievement.title)}</strong>
             </div>
           `).join('')}
         </div>
@@ -2686,12 +2853,11 @@ class App {
     const newlySecuredMilestones = this.getNewlySecuredMilestones(milestoneStatesBefore);
 
     // Award achievement if perfect score
-    if (evidenceAttempt.questionEvidence.every(item => item.correct)) {
+    const completedFullSet = evidenceAttempt.questionEvidence.length === this.numberSkillsEvidenceSet.originalQuestionIds.length
+      && evidenceAttempt.questionEvidence.length > 0;
+    if (completedFullSet && evidenceAttempt.questionEvidence.every(item => item.correct)) {
       const student = window.db.getStudents().find(s => s.id === this.currentUser.id);
-      if (student && !student.achievements.includes('Binary Fluent')) {
-        student.achievements.push('Binary Fluent');
-        window.db.saveData();
-      }
+      this.grantAchievement(student, 'binary-fluent');
     }
 
     this.numberSkillsSet = [];
@@ -3530,7 +3696,7 @@ class App {
     `;
 
     document.getElementById('programming-continue-python').onclick = () => {
-      this.activeChallengeId = nextChallenge.id;
+      this.activateProgrammingChallenge(nextChallenge.id);
       this.switchTab('stud-programme');
     };
     panel.querySelectorAll('.programming-open-strand').forEach(button => {
@@ -3874,6 +4040,12 @@ class App {
     if (editorEl) {
       editorEl.oninput = (e) => {
         this.editorCode = e.target.value;
+        this.lastProgrammingEvidence = [];
+        this.lastProgrammingTestRun = null;
+        const proceedButton = document.getElementById('proceed-to-explain-btn');
+        if (proceedButton) proceedButton.remove();
+        const runtimeStatus = document.getElementById('python-runtime-status');
+        if (runtimeStatus) runtimeStatus.textContent = 'Python runtime: code changed — run the tests again';
       };
     }
 
@@ -3881,17 +4053,7 @@ class App {
     panel.querySelectorAll('.prog-challenge-link').forEach(link => {
       link.onclick = (e) => {
         e.preventDefault();
-        this.activeChallengeId = link.getAttribute('data-cid');
-        const nextChallenge = challenges.find(item => item.id === this.activeChallengeId);
-        this.editorCode = nextChallenge?.code || '';
-        this.supportLevelUsed = 0;
-        this.lastProgrammingEvidence = [];
-        this.aiTutorHintLevel = 1;
-        this.programmingStage = 'predict';
-        this.revealedSupportStep = 1;
-        this.activeSupportFeedback = {};
-        this.predictInputValue = '';
-        this.codingExplanationValue = '';
+        this.activateProgrammingChallenge(link.getAttribute('data-cid'));
         this.render();
       };
     });
@@ -4033,7 +4195,7 @@ class App {
     this.pythonWorkerReadyPromise = null;
   }
 
-  async executePythonTests(challenge) {
+  async executePythonTests(challenge, testedCode = this.editorCode) {
     const worker = await this.getPythonWorker();
     const id = ++this.pythonWorkerRequestId;
     return new Promise((resolve, reject) => {
@@ -4048,7 +4210,7 @@ class App {
         resolve(event.data.results);
       };
       worker.addEventListener('message', onMessage);
-      worker.postMessage({ id, code: this.editorCode, challengeId: challenge.id, tests: challenge.testCases });
+      worker.postMessage({ id, code: testedCode, challengeId: challenge.id, tests: challenge.testCases });
     });
   }
 
@@ -4061,13 +4223,17 @@ class App {
     const status = document.getElementById('python-runtime-status');
     const consoleOutput = document.getElementById('python-console-output');
     const submitBtn = document.getElementById('submit-program-btn');
+    const editor = document.getElementById('python-editor');
     if (!this.editorCode.trim()) return this.alert('Write or review the Python code before running it.');
+    const testedCode = this.editorCode;
     if (runBtn) { runBtn.disabled = true; runBtn.textContent = 'Loading Python…'; }
+    if (editor) editor.disabled = true;
     if (status) status.textContent = 'Python runtime: loading securely in your browser…';
     if (submitBtn) submitBtn.disabled = true;
     this.lastProgrammingEvidence = [];
+    this.lastProgrammingTestRun = null;
     try {
-      const results = await this.executePythonTests(challenge);
+      const results = await this.executePythonTests(challenge, testedCode);
       let allPassed = true;
       results.forEach((result, idx) => {
         const tc = challenge.testCases[idx];
@@ -4085,6 +4251,12 @@ class App {
         if (card) card.style.borderColor = passed ? 'var(--green)' : 'var(--red)';
         this.lastProgrammingEvidence.push({ passed, error: errorDetail });
       });
+      this.lastProgrammingTestRun = {
+        challengeId: challenge.id,
+        code: testedCode,
+        testCount: challenge.testCases.length,
+        allPassed
+      };
       if (status) status.textContent = 'Python runtime: run complete';
       if (consoleOutput) consoleOutput.textContent = results.map((result, idx) => `Test ${idx + 1}:\n${result.output || result.error || '(no output)'}`).join('\n\n');
       if (submitBtn) submitBtn.disabled = !allPassed;
@@ -4093,9 +4265,11 @@ class App {
       if (status) status.textContent = 'Python runtime: could not complete the run';
       if (consoleOutput) consoleOutput.textContent = error.message;
       this.lastProgrammingEvidence = [{ passed: false, error: error.message }];
+      this.lastProgrammingTestRun = null;
       this.alert(error.message);
     } finally {
       if (runBtn) { runBtn.disabled = false; runBtn.textContent = '▶ Run code'; }
+      if (editor) editor.disabled = false;
       const tutorBtn = document.getElementById('ai-programming-tutor-btn');
       if (tutorBtn) tutorBtn.disabled = false;
     }
@@ -4140,6 +4314,19 @@ class App {
     else if (this.supportLevelUsed >= 2) supportText = 'Medium';
     else if (this.supportLevelUsed >= 1) supportText = 'Low';
 
+    const testCases = Array.isArray(challenge.testCases) ? challenge.testCases : [];
+    const completePassingEvidence = testCases.length > 0
+      && this.lastProgrammingTestRun?.challengeId === challenge.id
+      && this.lastProgrammingTestRun.code === this.editorCode
+      && this.lastProgrammingTestRun.testCount === testCases.length
+      && this.lastProgrammingTestRun.allPassed === true
+      && this.lastProgrammingEvidence.length === testCases.length
+      && this.lastProgrammingEvidence.every(item => item.passed === true);
+    if (!completePassingEvidence) {
+      this.alert('Run this exact code and pass every test before submitting.');
+      return false;
+    }
+
     window.db.addProgrammingSubmission({
       studentId: this.currentUser.id,
       challengeId: challenge.id,
@@ -4149,17 +4336,16 @@ class App {
       explanationResponse: explanation
     });
 
-    // Award badges
+    // Award a badge only when the complete challenge has demonstrated passing evidence.
     const student = window.db.getStudents().find(s => s.id === this.currentUser.id);
     if (student) {
-      if (challenge.id === 'pc_3' && !student.achievements.includes('Debugging Detective')) {
-        student.achievements.push('Debugging Detective');
-      }
+      if (challenge.id === 'pc_3' && completePassingEvidence) this.grantAchievement(student, 'debugging-detective');
       window.db.saveData();
     }
 
     this.alert('Your programming submission has been saved. You can view its status in Progress.');
     this.switchTab('stud-dashboard');
+    return true;
   }
 
   // ==================== WRITTEN ANSWERS ====================
@@ -4617,7 +4803,7 @@ class App {
         </details>
       </section>
 
-      <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px;">
+      <div class="student-progress-layout">
         <div>
           <h2 style="font-size:20px; margin-bottom:16px;">Latest checked results by topic</h2>
           
@@ -4661,30 +4847,7 @@ class App {
           </div>
         </div>
 
-        <div>
-          <!-- Consistency Badges -->
-          <div class="card" style="margin-bottom:24px;">
-          <h3>Earned badges</h3>
-            <p style="font-size: 13px; margin-bottom: 16px;">Only achievements you have earned are shown.</p>
-            
-            <div style="display:flex; flex-direction:column; gap:12px;">
-              <div class="card" style="padding:12px; background-color: var(--bg-main); ${(student.achievements || []).includes('Binary Fluent') ? 'display:flex' : 'display:none'}; gap:12px; align-items:center;">
-                <span style="font-size:24px;">Habit</span>
-                <div>
-                  <h4 style="margin:0; font-size:14px;">Binary Fluent</h4>
-                  <p style="margin:0; font-size:12px;">Earned after a perfect scored number-skills set.</p>
-                </div>
-              </div>
-              <div class="card" style="padding:12px; background-color: var(--bg-main); ${(student.achievements || []).includes('Debugging Detective') ? 'display:flex' : 'display:none'}; gap:12px; align-items:center;">
-                <span style="font-size:24px;">💻</span>
-                <div>
-                  <h4 style="margin:0; font-size:14px;">Debugging Detective</h4>
-                  <p style="margin:0; font-size:12px;">Successfully resolved a loop boundary bug.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div>${this.renderStudentAchievementPanel(student)}</div>
       </div>
     `;
     (panel.querySelectorAll ? panel.querySelectorAll('.progress-learn-section') : []).forEach(button => {
@@ -4702,6 +4865,12 @@ class App {
         this.activeObjectiveId = objectiveId;
         this.switchTab('stud-learn');
       };
+    });
+    (panel.querySelectorAll ? panel.querySelectorAll('.student-achievement-action') : []).forEach(button => {
+      const achievementId = button.getAttribute('data-achievement-id');
+      if (this.getAchievementCatalogue().some(item => item.id === achievementId)) {
+        button.onclick = () => this.openAchievementRoute(achievementId, panel);
+      }
     });
   }
 

@@ -20,6 +20,7 @@
 - **Recall Result Route**: An incorrect recall response offers retry before optional confidence reflection. Confidence saves in place and explicitly leaves the score unchanged; the learner chooses whether to continue home or try the exam-style transfer activity.
 - **Workload Summary**: The dashboard combines required assignment minutes with active test-preparation minutes. A learner without assessed evidence is offered one suggested ten-minute guided session rather than an inaccurately short optional task.
 - **Progress Interpretation**: Topic summaries describe the latest assessed evidence rather than declaring mastery. Each section row shows the number and date of contributing assessed activities, the assessment focuses demonstrated and those still remaining. Sections without a representative checkpoint rule explain that they are excluded from the achievable total.
+- **Achievement Route**: Progress shows badges already present in the learner record, including preserved historical awards, followed by at most two current goals. `Binary Fluent` requires a perfect complete Number skills activity, including permitted retries against the original question set. `Debugging Detective` requires the current loop-boundary solution to pass every automated test without being edited afterwards. Each unearned goal links directly to its activity. Dashboard remains earned-only so rewards do not compete with the required task.
 
 ## 2. Interactive Logic Challenge
 - **User**: Computer Science Student

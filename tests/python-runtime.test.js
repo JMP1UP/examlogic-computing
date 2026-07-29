@@ -16,7 +16,8 @@ describe('real browser Python runtime', () => {
     expect(worker).toContain('fileContent');
     expect(worker).toContain('functionName');
     expect(worker).toContain('functionArgs');
-    expect(app).toContain('worker.postMessage({ id, code: this.editorCode');
+    expect(app).toContain('worker.postMessage({ id, code: testedCode');
+    expect(app).toContain('const testedCode = this.editorCode');
   });
 
   test('does not award marks by searching the source text', () => {
