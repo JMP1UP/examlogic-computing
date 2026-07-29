@@ -1231,6 +1231,7 @@ class App {
     const student = window.db.getStudents().find(s => s.id === this.currentUser.id) || this.currentUser;
     const assignments = window.db.getAssignments().filter(item => this.isPublishedToStudent(item, student));
     const demonstratedProgress = this.getDemonstratedMastery(window.db.getAttempts().filter(item => item.studentId === student.id));
+    const earnedAchievementCount = (student.achievements || []).length;
     const milestones = this.getSectionMilestones(student.id);
     const availableMilestones = milestones.filter(item => item.available);
     const securedMilestones = availableMilestones.filter(item => item.state === 'checkpoint_secured');
@@ -1327,9 +1328,9 @@ class App {
     if (this.dashboardSeeMoreExpanded) {
       seeMoreHtml = `
         <div style="margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 24px;">
-          <button id="toggle-see-more-btn" class="btn btn-secondary btn-sm" style="margin-bottom: 24px; width: 100%; min-height: 40px; font-weight: 600;">📖 Collapse dashboard details ▲</button>
+          <button id="toggle-see-more-btn" class="btn btn-secondary btn-sm" aria-expanded="true" aria-controls="dashboard-more-details" style="margin-bottom: 24px; width: 100%; min-height: 40px; font-weight: 600;">Hide additional dashboard details ▲</button>
           
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
+          <div id="dashboard-more-details" style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
             <!-- Left Side inside See More -->
             <div>
               ${remainingAssignments.length > 0 ? `
@@ -1425,7 +1426,7 @@ class App {
     } else {
       seeMoreHtml = `
         <div style="margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-          <button id="toggle-see-more-btn" class="btn btn-secondary btn-sm" style="width: 100%; min-height: 40px; font-weight: 600;">📖 See more dashboard details (Other assignments, Learning now, Worth revisiting, Recent progress) ▼</button>
+          <button id="toggle-see-more-btn" class="btn btn-secondary btn-sm" aria-expanded="false" aria-controls="dashboard-more-details" style="width: 100%; min-height: 40px; font-weight: 600;">Show more assignments and progress ▼</button>
         </div>
       `;
     }
@@ -1482,6 +1483,12 @@ class App {
                   ? 'Continue assessed practice when it is your main task.'
                   : 'Use Learn when you are ready to work towards this checkpoint.'}</p>
               ` : '<p style="font-size:13px; margin:0;">All available section checkpoints are secured.</p>'}
+              ${earnedAchievementCount > 0 ? `
+                <p style="font-size:13px; color:var(--text-muted); margin:12px 0 0;">
+                  <strong>${earnedAchievementCount} ${earnedAchievementCount === 1 ? 'achievement' : 'achievements'} earned</strong>
+                  · <button type="button" id="dashboard-achievements-btn" class="btn-link">View in Progress</button>
+                </p>
+              ` : ''}
             </div>
             <div class="card" style="margin-bottom:20px; padding:16px 20px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
               <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Computing workload</h3>
@@ -1516,6 +1523,18 @@ class App {
         this.switchTab('stud-recall');
       };
     });
+
+    const seeMoreButton = panel.querySelector('#toggle-see-more-btn');
+    if (seeMoreButton) {
+      seeMoreButton.onclick = () => {
+        this.dashboardSeeMoreExpanded = !this.dashboardSeeMoreExpanded;
+        this.renderStudentDashboard(panel);
+        panel.querySelector('#toggle-see-more-btn')?.focus();
+      };
+    }
+
+    const achievementsButton = panel.querySelector('#dashboard-achievements-btn');
+    if (achievementsButton) achievementsButton.onclick = () => this.switchTab('stud-progress');
 
     const trigger = document.getElementById('student-profile-trigger');
     const dropdown = document.getElementById('student-profile-dropdown');
@@ -1814,6 +1833,7 @@ class App {
         this.renderStudentLearn(panel);
       };
     });
+
     const viewFullTopicButton = panel.querySelector('#view-full-topic-btn');
     if (viewFullTopicButton) {
       viewFullTopicButton.onclick = () => {

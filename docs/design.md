@@ -34,6 +34,7 @@ ExamLogic Computing strictly adheres to the **25Thirty Learning** design mode.
 7. **Focused learning state**: An objective-level Learn route leads with the selected section, its core teaching and one primary checkpoint action. Extended topic material remains available through a secondary `View full topic` action instead of competing with the immediate task.
 8. **Honest workload and reflection**: Dashboard workload combines every required assignment and active test-preparation plan. Confidence is an optional reflection after retry or continuation choices and never changes a score, checkpoint or route automatically.
 9. **Explainable evidence**: Progress uses `Strong latest evidence`, `Developing latest evidence` and `More practice needed` rather than claiming topic mastery. Section rows expose their evidence source count, latest date, demonstrated assessment focuses and remaining focuses; unavailable checkpoints state why they are excluded.
+10. **Restrained motivation**: The dashboard keeps the current task dominant and shows section progress as secondary evidence. A quiet achievement link appears only when the learner record contains an earned award; empty learners are not shown a zero count. Additional assignments and progress remain in an accessible disclosure to reduce distraction.
 
 ## 5. Copy Style & Voice
 - Direct, encouraging, clear language.

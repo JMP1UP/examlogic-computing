@@ -1094,6 +1094,19 @@ body.dark-mode .badge-primary {
   width: 100%;
 }
 
+.btn-link {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--teal-text);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
 /* Accessibility Focus States */
 :focus-visible {
   outline: 2px solid var(--teal) !important;

@@ -330,6 +330,42 @@ describe('production browser startup', () => {
     expect(panel.innerHTML).not.toContain('3 of 5 test cases passed');
   });
 
+  test('dashboard details expand and collapse while earned achievements remain evidence-backed', async () => {
+    const context = loadProductionScripts();
+    context.app.render = jest.fn();
+    await context.app.quickLogin('clean-student');
+    const toggleButton = { focus: jest.fn() };
+    const achievementsButton = {};
+    const panel = {
+      innerHTML: '',
+      querySelector: selector => selector === '#toggle-see-more-btn'
+        ? toggleButton
+        : selector === '#dashboard-achievements-btn' ? achievementsButton : null,
+      querySelectorAll: () => []
+    };
+
+    context.app.renderStudentDashboard(panel);
+    expect(panel.innerHTML).toContain('aria-expanded="false"');
+    expect(panel.innerHTML).not.toContain('achievement earned');
+
+    toggleButton.onclick();
+    expect(context.app.dashboardSeeMoreExpanded).toBe(true);
+    expect(panel.innerHTML).toContain('aria-expanded="true"');
+    expect(panel.innerHTML).toContain('id="dashboard-more-details"');
+    expect(toggleButton.focus).toHaveBeenCalled();
+
+    toggleButton.onclick();
+    expect(context.app.dashboardSeeMoreExpanded).toBe(false);
+    expect(panel.innerHTML).toContain('Show more assignments and progress');
+
+    context.app.currentUser.achievements = ['Binary Fluent'];
+    context.app.renderStudentDashboard(panel);
+    expect(panel.innerHTML).toContain('1 achievement earned');
+    context.app.switchTab = jest.fn();
+    achievementsButton.onclick();
+    expect(context.app.switchTab).toHaveBeenCalledWith('stud-progress');
+  });
+
   test('renders every selectable topic and controls a missing-strand state', () => {
     const context = loadProductionScripts();
     const topicIds = context.db.getUnits()

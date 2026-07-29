@@ -34,6 +34,7 @@ All notable changes to ExamLogic Computing are recorded here.
 - Focused objective-level Learn journeys on one selected section and one primary checkpoint action while retaining an explicit route to the full topic.
 - Corrected dashboard workload wording to combine required assignments and test preparation, and separated retry, optional confidence reflection and onward navigation after recall.
 - Replaced broad mastery labels with latest-evidence wording and exposed each section checkpoint's contributing activity count, latest date, demonstrated focuses and remaining focuses.
+- Restored the dashboard's expandable secondary details with accessible state and focus handling, and surfaced genuinely earned achievements quietly beside section checkpoints.
 
 ### Tests
 - Added whole-specification traceability, workload, supported-practice, retired-content and application-route validation.
