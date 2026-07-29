@@ -32,8 +32,9 @@ describe('User experience regression checks', () => {
   });
 
   test('updated interface assets use the current cache-busting release', () => {
-    expect(html).toContain('style.css?v=1.6.6');
-    expect(html).toContain('app.js?v=1.6.7');
+    expect(html).toContain('style.css?v=1.6.10');
+    expect(html).toContain('database.js?v=1.6.10');
+    expect(html).toContain('app.js?v=1.6.10');
   });
 
   test('mobile navigation is collapsible and keyboard dismissible', () => {
@@ -96,5 +97,16 @@ describe('User experience regression checks', () => {
     expect(css).toContain('.pseudocode-workspace');
     expect(css).toMatch(/@media \(max-width: 768px\)[\s\S]*?\.pseudocode-workspace\s*\{[\s\S]*?grid-template-columns: 1fr;/);
     expect(css).toContain(':focus-visible');
+  });
+
+  test('uses accessible foreground accents and guards against unreadably small interface text', () => {
+    expect(css).toContain('--teal-text: #1B6E66');
+    expect(css).toContain('--amber-text: #78350F');
+    expect(css).toContain('--red-text: #B91C1C');
+    expect(css).toContain('[style*="font-size: 9px"]');
+    expect(css).toMatch(/\[style\*="font-size:12px"\][\s\S]*?font-size: 13px !important;/);
+    expect(css).toMatch(/body\.dark-mode[\s\S]*?--amber-text: #FCD34D/);
+    expect(app).not.toContain('color: var(--amber-alert');
+    expect(app).toContain('color: var(--amber-text)');
   });
 });

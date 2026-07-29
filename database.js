@@ -38,6 +38,114 @@ const curriculumDiagnosticQuestions = curriculumContent.map(item => {
 
 const DB_KEY = 'studyspice_db';
 
+const CHECKPOINT_RULES = {
+  '1.1.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['cpu-component-roles', 'register-and-fetch-roles', 'control-unit-coordination'] },
+  '1.1.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['multicore-limitations', 'cache-performance'] },
+  '1.1.3': { version: 1, minimumRatio: 0.8, requiredFocuses: ['embedded-context', 'embedded-characteristics'] },
+  '1.2.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['virtual-memory-use', 'ram-rom-properties'] },
+  '1.2.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['storage-context-choice', 'storage-technology-characteristics'] },
+  '1.2.3': { version: 1, minimumRatio: 0.8, requiredFocuses: ['bit-byte-conversion', 'storage-unit-order'] },
+  '1.2.4a': { version: 1, minimumRatio: 0.8, requiredFocuses: ['binary-conversion', 'binary-manipulation', 'binary-overflow'] },
+  '1.2.4b': { version: 1, minimumRatio: 0.8, requiredFocuses: ['character-set-capacity', 'character-encoding-range'] },
+  '1.2.4d': { version: 1, minimumRatio: 0.8, requiredFocuses: ['sampling-frequency', 'sound-file-size'] },
+  '1.2.5': { version: 1, minimumRatio: 0.8, requiredFocuses: ['lossless-context', 'compression-type'] },
+  '1.3.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['router-role', 'lan-wan-scope'] },
+  '1.3.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['protocol-purpose', 'layered-model', 'network-addressing'] },
+  '1.4.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['password-attack', 'social-engineering', 'injection-attack'] },
+  '1.4.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['vulnerability-testing', 'network-filtering'] },
+  '1.5.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['resource-management', 'device-management'] },
+  '1.6.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['electronic-waste', 'resource-extraction'] },
+  '1.6.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['computer-misuse-law', 'data-protection-law'] },
+  '2.1.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['trace-table-use', 'input-process-output', 'flowchart-representation'] },
+  '2.1.3': { version: 1, minimumRatio: 0.8, requiredFocuses: ['binary-search', 'bubble-sort', 'merge-sort'] },
+  '2.2.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['variables-and-constants', 'operators', 'control-structures'] },
+  '2.2.3': { version: 1, minimumRatio: 0.8, requiredFocuses: ['string-operations', 'sql-querying', 'subprograms', 'two-dimensional-arrays'] },
+  '2.2.ERL': { version: 1, minimumRatio: 0.8, requiredFocuses: ['language-separation', 'erl-control-structures', 'erl-string-operations'] },
+  '2.3.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['authentication', 'input-validation'] },
+  '2.3.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['test-data-selection', 'testing-process', 'error-types'] },
+  '2.4.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['logic-gate-behaviour', 'boolean-expression-evaluation'] },
+  '2.5.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['translator-purpose', 'compiler-interpreter', 'language-level'] },
+  '2.5.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['error-diagnostics', 'ide-facilities'] }
+};
+
+const QUESTION_FOCUS_GROUPS = [
+  ['register-and-fetch-roles', ['diagnostic_1_1_1', 'q_1_1_b', 'q_1', 'q_1_1_mdr']],
+  ['control-unit-coordination', ['q_1_1_a']],
+  ['cpu-component-roles', ['q_1_1_cpu_purpose', 'q_1_1_e']],
+  ['multicore-limitations', ['diagnostic_1_1_2']],
+  ['cache-performance', ['q_1_1_c', 'q_1_1_cache_performance']],
+  ['embedded-context', ['diagnostic_1_1_3']],
+  ['embedded-characteristics', ['q_1_1_d']],
+  ['virtual-memory-use', ['diagnostic_1_2_1', 'q_1_2_virtual_memory']],
+  ['ram-rom-properties', ['q_1_2_a', 'q_1_2_ram_rom_difference_alt', 'q_2', 'q_6']],
+  ['storage-context-choice', ['diagnostic_1_2_2', 'q_1_2_b']],
+  ['storage-technology-characteristics', ['q_1_2_c', 'q_1_2_e', 'q_3']],
+  ['bit-byte-conversion', ['diagnostic_1_2_3']],
+  ['storage-unit-order', ['q_1_2_d']],
+  ['binary-conversion', ['diagnostic_1_2_4a', 'q_1_3_a']],
+  ['binary-manipulation', ['q_1_3_b']],
+  ['binary-overflow', ['q_1_3_binary_overflow']],
+  ['character-set-capacity', ['diagnostic_1_2_4b']],
+  ['character-encoding-range', ['q_1_3_unicode']],
+  ['image-colour-depth', ['diagnostic_1_2_4c', 'q_1_3_image_size_effect']],
+  ['sampling-frequency', ['diagnostic_1_2_4d', 'q_1_3_sampling_rate']],
+  ['sound-file-size', ['q_1_3_c']],
+  ['lossless-context', ['diagnostic_1_2_5']],
+  ['compression-type', ['q_1_3_d']],
+  ['router-role', ['diagnostic_1_3_1', 'q_1_4_a', 'q_1_4_router_role_alt']],
+  ['lan-wan-scope', ['q_1_4_lan_wan']],
+  ['protocol-purpose', ['diagnostic_1_3_2', 'q_1_4_d']],
+  ['layered-model', ['q_1_4_b', 'q_1_4_layer_benefits']],
+  ['network-addressing', ['q_1_4_c', 'q_4']],
+  ['password-attack', ['diagnostic_1_4_1']],
+  ['social-engineering', ['q_1_5_a']],
+  ['injection-attack', ['q_1_5_b']],
+  ['vulnerability-testing', ['diagnostic_1_4_2']],
+  ['network-filtering', ['q_1_5_c', 'q_1_5_firewall_alt', 'q_1_5_d']],
+  ['resource-management', ['diagnostic_1_5_1', 'q_1_6_multitasking', 'q_1_6_d']],
+  ['device-management', ['q_1_6_a', 'q_1_6_b']],
+  ['disk-defragmentation', ['diagnostic_1_5_2', 'q_1_6_c']],
+  ['electronic-waste', ['diagnostic_1_6_1']],
+  ['resource-extraction', ['q_1_7_c']],
+  ['computer-misuse-law', ['diagnostic_1_6_2', 'q_1_7_a', 'q_1_7_b']],
+  ['data-protection-law', ['q_1_7_data_protection_act', 'q_1_7_d']],
+  ['abstraction', ['diagnostic_2_1_1', 'q_2_1_a']],
+  ['trace-table-use', ['diagnostic_2_1_2', 'priority_212_2']],
+  ['input-process-output', ['priority_212_1']],
+  ['flowchart-representation', ['priority_212_3', 'q_2_1_e']],
+  ['binary-search', ['diagnostic_2_1_3', 'q_2_1_b', 'q_5']],
+  ['bubble-sort', ['q_2_1_c']],
+  ['merge-sort', ['q_2_1_d']],
+  ['operators', ['diagnostic_2_2_1', 'priority_221_2', 'q_2_2_c', 'q_2_2_d']],
+  ['control-structures', ['priority_221_1', 'priority_221_3', 'q_2_2_b']],
+  ['variables-and-constants', ['q_2_2_a']],
+  ['data-types', ['diagnostic_2_2_2']],
+  ['sql-querying', ['diagnostic_2_2_3', 'priority_223_2']],
+  ['string-operations', ['priority_223_1']],
+  ['subprograms', ['priority_223_3']],
+  ['two-dimensional-arrays', ['priority_223_4']],
+  ['practical-programming', ['diagnostic_2_2_PY']],
+  ['language-separation', ['diagnostic_2_2_ERL']],
+  ['erl-control-structures', ['priority_erl_1', 'priority_erl_2', 'priority_erl_3']],
+  ['erl-string-operations', ['priority_erl_4']],
+  ['authentication', ['diagnostic_2_3_1']],
+  ['input-validation', ['q_2_3_a']],
+  ['test-data-selection', ['diagnostic_2_3_2', 'q_2_3_c', 'q_2_3_d']],
+  ['testing-process', ['priority_232_1', 'priority_232_3']],
+  ['error-types', ['priority_232_2', 'q_2_3_b']],
+  ['logic-gate-behaviour', ['diagnostic_2_4_1', 'q_2_4_e', 'q_2_4_a', 'q_2_4_b', 'q_2_4_d']],
+  ['boolean-expression-evaluation', ['q_2_4_c']],
+  ['translator-purpose', ['diagnostic_2_5_1']],
+  ['compiler-interpreter', ['q_2_5_e', 'q_2_5_a', 'q_2_5_b']],
+  ['language-level', ['q_2_5_c']],
+  ['error-diagnostics', ['diagnostic_2_5_2']],
+  ['ide-facilities', ['q_2_5_d']]
+];
+
+const QUESTION_ASSESSMENT_FOCUS = Object.fromEntries(
+  QUESTION_FOCUS_GROUPS.flatMap(([focus, questionIds]) => questionIds.map(questionId => [questionId, focus]))
+);
+
 const defaultDatabase = {
   schemaVersion: 13,
   curriculumContent,
@@ -1297,7 +1405,8 @@ def calculate_area(width, height):
         "To store frequently used instructions close to the processor die"
       ],
       "answer": "To manage the execution of instructions and control the flow of data through the CPU",
-      "explanation": "The Control Unit (CU) decodes instructions, sends timing signals, and coordinates the FDE cycle."
+      "explanation": "The Control Unit (CU) decodes instructions, sends timing signals, and coordinates the FDE cycle.",
+      "retryHint": "Separate coordination from calculation: look for the component that decodes each instruction and signals other CPU parts to act in the required sequence."
     },
     {
       "id": "q_1_1_b",
@@ -1313,7 +1422,8 @@ def calculate_area(width, height):
         "Accumulator (ACC)"
       ],
       "answer": "Program Counter (PC)",
-      "explanation": "The Program Counter (PC) holds the memory address of the next instruction to fetch, and increments during each fetch phase."
+      "explanation": "The Program Counter (PC) holds the memory address of the next instruction to fetch, and increments during each fetch phase.",
+      "retryHint": "Track the fetch cycle before data moves: identify the register whose value advances to point towards the following instruction, not one carrying the current memory transfer."
     },
     {
       "id": "q_1_1_c",
@@ -1479,7 +1589,7 @@ def calculate_area(width, height):
       ],
       "answer": "It doubles because twice as many bits are stored for every pixel",
       "explanation": "Pixel-data size is resolution multiplied by colour depth. With the same number of pixels, doubling bits per pixel doubles the uncompressed pixel data.",
-      "retryHint": "Hold the number of pixels constant and compare how many bits are stored for each individual pixel before and after the change."
+      "retryHint": "Keep the dimensions fixed. Work out the per-pixel storage under each setting, then compare those two quantities to find the scale factor."
     },
     {
       "id": "q_1_5_c",
@@ -3203,6 +3313,55 @@ const PROGRAMMING_TECHNIQUE_MAP = {
 
 // Human-reviewed conceptual anchors support validation without claiming to automate pedagogical quality.
 const RECALL_HINT_REVIEW = {
+  q_1_1_a: /decodes|signals other CPU parts|required sequence/i,
+  q_1_1_b: /value advances|following instruction|current memory transfer/i,
+  q_1_1_cpu_purpose: /processor|instruction cycle|performs operations/i,
+  q_1_1_c: /access delay|main memory|reduces waiting/i,
+  q_1_1_cache_performance: /access time|close to the processor|likely-needed/i,
+  q_1_1_d: /fixed purpose|inside another product|limited resources/i,
+  q_1_2_ram_rom_difference_alt: /power is removed|currently in use|startup instructions/i,
+  q_1_2_c: /spinning|lasers|movement and impact/i,
+  q_1_2_b: /movement|mechanical drive|shaken or dropped/i,
+  q_1_2_d: /storage prefix ladder|larger prefix|above bytes/i,
+  q_1_3_b: /two positions|vacated positions|eight bits/i,
+  q_1_3_binary_overflow: /largest pattern|fixed number of bits|represented/i,
+  q_1_3_unicode: /writing systems|limited character repertoire|code space/i,
+  q_1_3_image_size_effect: /dimensions fixed|per-pixel storage|scale factor/i,
+  diagnostic_1_2_4c: /image dimensions|binary digits|picture element/i,
+  diagnostic_1_2_4d: /measurements are taken|measurements per second|precisely/i,
+  q_1_3_c: /measurements each second|binary digits|recording time/i,
+  q_1_3_sampling_rate: /measurements of the wave|closely|how much data/i,
+  diagnostic_1_2_5: /one character|program behaves|original symbol/i,
+  q_1_3_d: /discarded permanently|complete original|recovered/i,
+  q_1_4_lan_wan: /physical area|controls the infrastructure|wired/i,
+  q_1_4_layer_benefits: /independent responsibilities|replace one part|locate faults/i,
+  q_1_4_c: /network interface|local network|routing between networks/i,
+  q_1_5_a: /social-engineering|message or website|disclose credentials/i,
+  q_1_5_b: /unchecked text|instruction|stored records/i,
+  q_1_5_firewall_alt: /network boundary|configured policies|permit/i,
+  q_1_6_multitasking: /switches rapidly|schedules short turns|active programs/i,
+  q_1_6_c: /distant disk locations|closer together|drive mechanism/i,
+  q_1_7_c: /extraction sites|polluted water|cannot be replaced/i,
+  q_1_7_data_protection_act: /collect, store and use|identifiable people|access and correction rights/i,
+  q_2_1_a: /simplifying a model|details that affect|dividing the task/i,
+  priority_212_1: /known before|operation performed|produced afterwards/i,
+  priority_212_3: /yes-or-no condition|different paths|branching point/i,
+  q_2_1_c: /repeated passes|neighbouring items|exchange/i,
+  q_2_1_d: /dividing|smaller halves|rebuild larger ordered groups/i,
+  q_2_2_a: /named storage location|different value|retain its declared value/i,
+  priority_221_1: /stopping point|true-or-false test|predetermined number/i,
+  priority_223_1: /second argument|number of characters|final index/i,
+  priority_223_3: /subprogram|within an expression|sends a result back/i,
+  priority_223_4: /each dimension|square brackets|rows.*columns/i,
+  diagnostic_2_2_PY: /executable solution|test data|recalling terminology/i,
+  diagnostic_2_2_ERL: /practical programs|examination paper|syntax is not identical/i,
+  priority_erl_1: /inclusive upper bound|loop terminator|counter/i,
+  priority_erl_4: /backwards from the end|three characters|left-to-right order/i,
+  q_2_3_a: /type, range or length|who supplied|program contains errors/i,
+  priority_232_2: /program can run|grammar|consistently wrong result/i,
+  q_2_4_c: /brackets first|invert|intermediate truth value/i,
+  q_2_5_c: /mathematical or English|registers|processor operations/i,
+  q_2_5_d: /entering source text|locating faults|converting instructions|test setting/i,
   diagnostic_1_1_1: /fetch|memory location|register/i,
   diagnostic_1_1_2: /same time|wait|parallel/i,
   diagnostic_1_1_3: /larger product|dedicated job|many user-chosen tasks/i,
@@ -3244,10 +3403,60 @@ const RECALL_HINT_FORBIDDEN = {
   diagnostic_1_5_2: /reorganis(?:e|ing)|file blocks?|contiguous/i
 };
 
+const REVIEWED_RECALL_HINTS = {
+  q_1_1_cpu_purpose: 'Distinguish the processor from storage and display devices: follow the component that coordinates the instruction cycle and performs operations on data.',
+  q_1_1_c: 'Compare the access delay of memory beside the processor with main memory, then consider why keeping likely-needed items nearby reduces waiting.',
+  q_1_1_cache_performance: 'Focus on access time rather than clock rate or core count: consider the benefit of keeping likely-needed items in memory close to the processor.',
+  q_1_1_d: 'Look for computing hardware designed around one fixed purpose inside another product, where limited resources and energy use are often priorities.',
+  q_1_2_ram_rom_difference_alt: 'Compare what each memory keeps after power is removed; one holds the programs currently in use, while the other retains startup instructions.',
+  q_1_2_c: 'Eliminate technologies that depend on spinning media or lasers, then choose the electronic storage designed to tolerate movement and impact.',
+  q_1_2_b: "Use the camera's movement as the deciding context: compare a mechanical drive with electronic storage when the device is shaken or dropped.",
+  q_1_2_d: 'Use the storage prefix ladder: begin with the first named unit above bytes, then move through each larger prefix in order.',
+  q_1_3_b: 'Move every bit two positions towards the most-significant end, fill the vacated positions with zeroes, and discard anything beyond eight bits.',
+  q_1_3_binary_overflow: 'First identify the largest pattern available in the fixed number of bits, then ask whether the calculated result can be represented within that limit.',
+  q_1_3_unicode: 'Compare the range of writing systems needed worldwide with the limited character repertoire of the older standard; consider how a larger code space helps.',
+  diagnostic_1_2_4c: 'Keep the image dimensions unchanged and consider how many binary digits must be recorded for each individual picture element after the change.',
+  diagnostic_1_2_4d: 'Separate how often measurements are taken from how precisely each measurement is stored; the question asks about measurements per second.',
+  q_1_3_c: 'For mono audio, identify the number of measurements each second, the binary digits in each measurement and the recording time, then combine all three.',
+  q_1_3_sampling_rate: 'More measurements of the wave are captured each second; consider both how closely the digital signal follows the original and how much data is stored.',
+  diagnostic_1_2_5: 'Ask whether losing or changing even one character could alter how the program behaves; choose the method that can restore every original symbol.',
+  q_1_3_d: 'For each method, ask whether any information is discarded permanently or whether the complete original can be recovered after decompression.',
+  q_1_4_lan_wan: 'Classify the networks by the physical area they span and who usually controls the infrastructure, rather than by whether their links are wired.',
+  q_1_5_a: 'Look for a social-engineering attack in which a convincing message or website pressures a person to disclose credentials or other private information.',
+  q_1_5_b: 'Focus on unchecked text being joined into an instruction sent to stored records; ask how crafted text could change what that instruction does.',
+  q_1_5_firewall_alt: 'Think of the control at a network boundary that examines communication against configured policies before deciding whether to permit it through.',
+  q_1_6_multitasking: 'A single processor switches rapidly between active programs; consider how the operating system schedules short turns so each can continue making progress.',
+  q_1_6_c: 'Picture one file split across distant disk locations: consider how arranging its pieces closer together changes the movement required from the drive mechanism.',
+  q_1_7_c: 'Trace the materials before manufacture: consider damage at extraction sites, polluted water and the fact that metal ores cannot be replaced once exhausted.',
+  q_1_7_data_protection_act: 'Choose the legislation concerned with how organisations collect, store and use information about identifiable people, including their access and correction rights.',
+  q_2_1_a: 'Imagine simplifying a model by keeping only details that affect its purpose; distinguish this from dividing the task into smaller parts.',
+  priority_212_1: 'Name the values known before the calculation, the operation performed on them, and the value produced afterwards; keep those three roles in order.',
+  priority_212_3: 'Follow the branch where a yes-or-no condition sends control along different paths; choose the shape reserved for that branching point.',
+  q_2_1_c: 'Look for the method that makes repeated passes, checks neighbouring items and may exchange their positions; do not confuse it with divide-and-combine methods.',
+  q_2_1_d: 'Think recursively: keep dividing the data into smaller halves, then rebuild larger ordered groups by repeatedly choosing the next item.',
+  q_2_2_a: 'Compare whether a named storage location may be assigned a different value while the program runs or must retain its declared value throughout.',
+  priority_221_1: 'Look for repetition whose stopping point depends on a true-or-false test evaluated during execution, rather than a predetermined number of turns.',
+  priority_223_1: 'In this notation, the second argument is the number of characters to take, not the final index; count the required characters from the stated start.',
+  priority_223_3: 'Ask which type of named subprogram can be used within an expression because it sends a result back to the calling code.',
+  priority_223_4: 'Represent each dimension inside one pair of square brackets, with one size for the rows and another for the columns.',
+  diagnostic_2_2_PY: 'Choose the activity that requires constructing an executable solution, running it with test data and improving it, rather than merely recalling terminology.',
+  diagnostic_2_2_ERL: 'Separate the language used to build practical programs from the notation expected when writing algorithms on an examination paper; their syntax is not identical.',
+  priority_erl_1: "Check this notation's inclusive upper bound and its matching loop terminator; the counter should begin at the first required value and finish at the last.",
+  priority_erl_4: 'Count three characters backwards from the end of the string while preserving their original left-to-right order.',
+  q_2_3_a: 'Distinguish checking whether supplied data obeys rules such as type, range or length from checking who supplied it or whether the program contains errors.',
+  priority_232_2: 'Because the program can run, its grammar has already been accepted; trace the calculation or condition that produces the consistently wrong result.',
+  q_2_4_c: 'Evaluate the brackets first, then invert the final input before applying the outer gate; work with one intermediate truth value at each step.',
+  q_2_5_c: 'Compare notation resembling everyday mathematical or English expressions with instructions tied closely to registers and processor operations.',
+  q_2_5_d: 'Match each tool to a stage of development: entering source text, locating faults, converting instructions, and running the work in a test setting.'
+};
+
 function applyContentMappings(data) {
   (data.questions || []).forEach(question => {
     question.specificationPointId = question.specificationPointId || QUESTION_SPECIFICATION_MAP[question.id] || null;
     question.purpose = question.purpose || 'retrieval';
+    if (!question.retryHint && REVIEWED_RECALL_HINTS[question.id]) {
+      question.retryHint = REVIEWED_RECALL_HINTS[question.id];
+    }
     if (question.id === 'q_1_2_d') question.topicId = 'topic_1_3';
     if (question.id === 'q_6') question.topicId = 'topic_1_2';
   });
@@ -3270,9 +3479,86 @@ function applyContentMappings(data) {
   return data;
 }
 
+defaultDatabase.questions.forEach(question => {
+  question.assessmentFocus = QUESTION_ASSESSMENT_FOCUS[question.id] || null;
+});
+
 applyContentMappings(defaultDatabase);
 
-function validateQuestionBank(data) {
+function selectObjectiveRecallQuestions(questions, objectiveId, checkpointRules = CHECKPOINT_RULES, demonstratedFocuses = []) {
+  const objectiveQuestions = (questions || []).filter(question =>
+    question.retired !== true && question.specificationPointId === objectiveId
+  );
+  const rule = checkpointRules[objectiveId];
+  if (!rule) return objectiveQuestions.slice(0, 3);
+  const demonstrated = new Set(demonstratedFocuses);
+  const orderedFocuses = [
+    ...rule.requiredFocuses.filter(focus => !demonstrated.has(focus)),
+    ...rule.requiredFocuses.filter(focus => demonstrated.has(focus))
+  ];
+  const selected = [];
+  orderedFocuses.forEach(focus => {
+    if (selected.length >= 3) return;
+    const question = objectiveQuestions.find(candidate =>
+      candidate.assessmentFocus === focus && !selected.includes(candidate)
+    );
+    if (question) selected.push(question);
+  });
+  objectiveQuestions.forEach(question => {
+    if (selected.length < 3 && !selected.includes(question)) selected.push(question);
+  });
+  return selected.slice(0, 3);
+}
+
+function selectTopicRecallQuestions(questions) {
+  const liveQuestions = (questions || []).filter(question => question.retired !== true);
+  const specificationPoints = [...new Set(liveQuestions.map(question => question.specificationPointId).filter(Boolean))];
+  if (specificationPoints.length <= 1) return liveQuestions.slice(0, 3);
+  const selected = [];
+  specificationPoints.forEach(specificationPointId => {
+    const question = liveQuestions.find(candidate =>
+      candidate.specificationPointId === specificationPointId && !selected.includes(candidate)
+    );
+    if (question && selected.length < 3) selected.push(question);
+  });
+  liveQuestions.forEach(question => {
+    if (selected.length < 3 && !selected.includes(question)) selected.push(question);
+  });
+  return selected.slice(0, 3);
+}
+
+function enumerateReachableRecallQuestions(data, checkpointRules = CHECKPOINT_RULES) {
+  const reachable = new Map();
+  (data.units || []).forEach(unit => {
+    (unit.topics || []).forEach(topic => {
+      const topicQuestions = (data.questions || []).filter(question =>
+        question.topicId === topic.id && question.retired !== true
+      );
+      selectTopicRecallQuestions(topicQuestions).forEach(question => reachable.set(question.id, question));
+      (topic.objectives || []).forEach(objective => {
+        const requiredFocuses = checkpointRules[objective.id]?.requiredFocuses || [];
+        const focusStates = requiredFocuses.length
+          ? Array.from({ length: 2 ** requiredFocuses.length }, (_, mask) =>
+            requiredFocuses.filter((focus, index) => mask & (1 << index))
+          )
+          : [[]];
+        focusStates.forEach(demonstratedFocuses => {
+          const matching = selectObjectiveRecallQuestions(
+            topicQuestions,
+            objective.id,
+            checkpointRules,
+            demonstratedFocuses
+          );
+          const other = topicQuestions.filter(question => question.specificationPointId !== objective.id);
+          [...matching, ...other].slice(0, 3).forEach(question => reachable.set(question.id, question));
+        });
+      });
+    });
+  });
+  return [...reachable.values()];
+}
+
+function validateQuestionBank(data, checkpointRules = CHECKPOINT_RULES) {
   const objectivesByTopic = new Map();
   const validSpecificationIds = new Set();
 
@@ -3305,6 +3591,32 @@ function validateQuestionBank(data) {
     if (mappedSpecification && mappedSpecification !== question.specificationPointId) {
       throw new Error(`Question ${question.id} has conflicting semantic specification mappings.`);
     }
+    if (question.retired !== true && (!question.assessmentFocus || typeof question.assessmentFocus !== 'string')) {
+      throw new Error(`Question ${question.id} requires a stable assessment focus.`);
+    }
+  });
+
+  Object.entries(checkpointRules).forEach(([sectionId, rule]) => {
+    if (!validSpecificationIds.has(sectionId)) {
+      throw new Error(`Checkpoint rule references unknown specification section ${sectionId}.`);
+    }
+    if (!Number.isInteger(rule.version) || rule.version < 1) {
+      throw new Error(`Checkpoint rule ${sectionId} requires a positive integer version.`);
+    }
+    if (typeof rule.minimumRatio !== 'number' || rule.minimumRatio <= 0 || rule.minimumRatio > 1) {
+      throw new Error(`Checkpoint rule ${sectionId} requires a minimum ratio above 0 and no greater than 1.`);
+    }
+    if (!Array.isArray(rule.requiredFocuses) || new Set(rule.requiredFocuses).size !== rule.requiredFocuses.length || rule.requiredFocuses.length < 2) {
+      throw new Error(`Checkpoint rule ${sectionId} requires distinct assessment focuses.`);
+    }
+    const liveFocuses = new Set((data.questions || [])
+      .filter(question => question.retired !== true && question.specificationPointId === sectionId)
+      .map(question => question.assessmentFocus));
+    rule.requiredFocuses.forEach(focus => {
+      if (!liveFocuses.has(focus)) {
+        throw new Error(`Checkpoint rule ${sectionId} requires unreachable focus ${focus}.`);
+      }
+    });
   });
 
   const normaliseGuidanceText = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -3314,11 +3626,27 @@ function validateQuestionBank(data) {
     const words = guidanceWords(answer).filter(word => !stopWords.has(word));
     return words.slice(0, -1).map((word, index) => `${word} ${words[index + 1]}`);
   };
-  const reachableRecallQuestions = (data.units || []).flatMap(unit =>
-    (unit.topics || []).flatMap(topic =>
-      (data.questions || []).filter(question => question.topicId === topic.id && question.retired !== true).slice(0, 3)
-    )
-  );
+  const correctAnswerMaterial = question => {
+    if (question.answer !== undefined && question.answer !== null) return [String(question.answer)];
+    if (question.type === 'matching') {
+      return (question.items || []).flatMap(item => [
+        String(item.match || ''),
+        `${String(item.label || '')} ${String(item.match || '')}`.trim()
+      ]);
+    }
+    if (question.blanks && typeof question.blanks === 'object') {
+      const blanks = Array.isArray(question.blanks) ? question.blanks : Object.values(question.blanks);
+      return blanks.map(blank => typeof blank === 'object'
+        ? String(blank.answer ?? blank.value ?? blank.word ?? '')
+        : String(blank)
+      );
+    }
+    if (Array.isArray(question.sequence)) {
+      return [question.sequence.map(item => typeof item === 'string' ? item : item.value || item.label || '').join(' ')];
+    }
+    return [];
+  };
+  const reachableRecallQuestions = enumerateReachableRecallQuestions(data, checkpointRules);
   const seenHints = new Map();
   reachableRecallQuestions.forEach(question => {
     const hint = String(question.retryHint || '').trim();
@@ -3328,17 +3656,26 @@ function validateQuestionBank(data) {
     if (!Object.prototype.hasOwnProperty.call(question, 'retryHint')) {
       throw new Error(`Question ${question.id} must own its retry guidance.`);
     }
-    const normalisedAnswer = normaliseGuidanceText(question.answer);
     const normalisedHint = normaliseGuidanceText(hint);
     const normalisedQuestion = normaliseGuidanceText(question.question);
     if (normalisedQuestion.length >= 12 && normalisedHint.includes(normalisedQuestion)) {
       throw new Error(`Question ${question.id} retry guidance copies the question.`);
     }
-    if (normalisedAnswer.length >= 3 && normalisedHint.includes(normalisedAnswer)) {
+    const hintWordList = guidanceWords(hint);
+    const answerMaterials = correctAnswerMaterial(question).filter(Boolean);
+    const repeatsAnswer = answerMaterials.some(answerMaterial => {
+      const answerWords = guidanceWords(answerMaterial);
+      return answerWords.length === 1
+        ? hintWordList.includes(answerWords[0])
+        : hintWordList.join(' ').includes(answerWords.join(' '));
+    });
+    if (repeatsAnswer) {
       throw new Error(`Question ${question.id} retry guidance reveals its answer.`);
     }
-    const hintWords = ` ${guidanceWords(hint).join(' ')} `;
-    if (meaningfulAnswerPhrases(question.answer).some(phrase => hintWords.includes(` ${phrase} `))) {
+    const hintWords = ` ${hintWordList.join(' ')} `;
+    if (answerMaterials.some(answerMaterial =>
+      meaningfulAnswerPhrases(answerMaterial).some(phrase => hintWords.includes(` ${phrase} `))
+    )) {
       throw new Error(`Question ${question.id} retry guidance closely paraphrases its answer.`);
     }
     const copiedDistractor = (question.options || [])
@@ -3420,12 +3757,47 @@ const DATA_MIGRATIONS = {
   12: migrateSchema12To13
 };
 
+function prepareLegacyDataForSchema12(storedData) {
+  const migrated = cloneData(storedData);
+  migrated.schemaVersion = 12;
+  return migrated;
+}
+
+function isRecognisableLegacyData(storedData) {
+  if (!storedData || typeof storedData !== 'object' || Array.isArray(storedData)) return false;
+  const knownCollections = [
+    'schools',
+    'students',
+    'classes',
+    'attempts',
+    'assignments',
+    'questions',
+    'units',
+    'writtenSubmissions',
+    'programmingSubmissions',
+    'studentProgress'
+  ];
+  const presentCollections = knownCollections.filter(key =>
+    Object.prototype.hasOwnProperty.call(storedData, key) && Array.isArray(storedData[key])
+  );
+  const hasCoreStudySpiceCollection = ['students', 'attempts', 'questions', 'units']
+    .some(key => presentCollections.includes(key));
+  return hasCoreStudySpiceCollection && presentCollections.length >= 3;
+}
+
 function migrateStoredData(storedData) {
   let migrated = cloneData(storedData);
   let version = Number(migrated.schemaVersion);
 
-  if (!Number.isInteger(version) || version < 12) {
-    throw new Error('Stored StudySpice data predates the supported migration path.');
+  if (!Number.isInteger(version) || version === 11) {
+    if (!isRecognisableLegacyData(migrated)) {
+      throw new Error('Stored browser data is not a recognisable StudySpice dataset.');
+    }
+    migrated = prepareLegacyDataForSchema12(migrated);
+    version = migrated.schemaVersion;
+  }
+  if (version < 11) {
+    throw new Error(`Stored StudySpice schema ${version} predates the safe migration path.`);
   }
   if (version > defaultDatabase.schemaVersion) {
     throw new Error('Stored StudySpice data is newer than this application.');
@@ -3455,30 +3827,49 @@ class LocalDB {
   constructor() {
     this.cachedData = null;
     this.sessionToken = null;
+    this.readOnly = false;
+    this.recoveryState = null;
     this.loadData();
   }
 
   loadData() {
     let parsedRaw = null;
+    let migratedData = null;
     try {
       const raw = localStorage.getItem(DB_KEY);
       parsedRaw = raw ? JSON.parse(raw) : null;
-      this.cachedData = parsedRaw ? migrateStoredData(parsedRaw) : cloneData(defaultDatabase);
+      migratedData = parsedRaw ? migrateStoredData(parsedRaw) : cloneData(defaultDatabase);
+      this.cachedData = migratedData;
       localStorage.setItem(DB_KEY, JSON.stringify(this.cachedData));
     } catch (e) {
       console.error('Error loading LocalDB; stored data has not been overwritten:', e);
-      this.cachedData = parsedRaw && typeof parsedRaw === 'object'
-        ? parsedRaw
-        : cloneData(defaultDatabase);
+      this.cachedData = migratedData || cloneData(defaultDatabase);
+      this.readOnly = true;
+      this.recoveryState = {
+        active: true,
+        reason: migratedData ? 'storage_write' : 'migration'
+      };
     }
   }
 
   saveData() {
+    if (this.readOnly) {
+      console.warn('StudySpice is in read-only recovery mode; browser data was not changed.');
+      return false;
+    }
     try {
       localStorage.setItem(DB_KEY, JSON.stringify(this.cachedData));
+      return true;
     } catch (e) {
       console.error('Error saving LocalDB:', e);
+      this.readOnly = true;
+      this.recoveryState = { active: true, reason: 'storage_write' };
+      return false;
     }
+  }
+
+  getRecoveryState() {
+    return this.recoveryState ? { ...this.recoveryState } : null;
   }
 
   // Auth helper
@@ -3509,6 +3900,11 @@ class LocalDB {
       ? this.cachedData.questions
       : this.cachedData.questions.filter(question => question.retired !== true);
   }
+  getCheckpointRules() { return CHECKPOINT_RULES; }
+  selectTopicRecallQuestions(questions) { return selectTopicRecallQuestions(questions); }
+  selectObjectiveRecallQuestions(questions, objectiveId, demonstratedFocuses = []) {
+    return selectObjectiveRecallQuestions(questions, objectiveId, CHECKPOINT_RULES, demonstratedFocuses);
+  }
   getWrittenQuestions() { return this.cachedData.writtenQuestions; }
   getProgrammingChallenges() { return this.cachedData.programmingChallenges; }
   getAttempts() { return this.cachedData.attempts; }
@@ -3517,6 +3913,17 @@ class LocalDB {
   getMessages() { return this.cachedData.messages; }
   getAuditLogs() { return this.cachedData.auditLogs; }
   getSettings() { return this.cachedData.settings; }
+
+  resetCleanDemoLearnerData(studentId) {
+    if (studentId !== 'student_release_fixture') {
+      throw new Error('Clean-demo reset is restricted to the dedicated fixture learner.');
+    }
+    this.cachedData.attempts = this.cachedData.attempts.filter(item => item.studentId !== studentId);
+    this.cachedData.programmingSubmissions = this.cachedData.programmingSubmissions.filter(item => item.studentId !== studentId);
+    this.cachedData.writtenSubmissions = this.cachedData.writtenSubmissions.filter(item => item.studentId !== studentId);
+    this.cachedData.students = this.cachedData.students.filter(item => item.id !== studentId);
+    this.saveData();
+  }
 
   // Modifiers
   updateStudent(studentId, updates) {
@@ -3709,6 +4116,10 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     LocalDB,
     defaultDatabase,
+    CHECKPOINT_RULES,
+    selectTopicRecallQuestions,
+    selectObjectiveRecallQuestions,
+    enumerateReachableRecallQuestions,
     applyContentMappings,
     validateQuestionBank,
     migrateSchema12To13,

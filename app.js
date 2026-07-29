@@ -174,15 +174,28 @@ class App {
     };
   }
 
+  hasCheckpointPrecision(attempt) {
+    const evidence = Array.isArray(attempt?.questionEvidence) ? attempt.questionEvidence : [];
+    const ruleVersions = attempt?.checkpointRuleVersions;
+    const representedSections = [...new Set(evidence.map(item => item.specificationPointId).filter(Boolean))];
+    return Number(attempt?.evidenceVersion) >= 2
+      && Boolean(attempt?.activityId)
+      && evidence.length > 0
+      && evidence.every(item => item.questionId && item.specificationPointId && item.assessmentFocus)
+      && ruleVersions
+      && representedSections.length > 0
+      && representedSections.every(sectionId => Number.isInteger(ruleVersions[sectionId]) && ruleVersions[sectionId] > 0);
+  }
+
   getDemonstratedMastery(attempts) {
     const evidence = this.getLatestDemonstratedAttempts(attempts);
     const earned = evidence.reduce((total, item) => total + item.score.earned, 0);
     const available = evidence.reduce((total, item) => total + item.score.available, 0);
     const ratio = available ? earned / available : null;
     const label = ratio === null ? 'No demonstrated evidence'
-      : ratio >= 0.85 ? 'Secure'
-        : ratio >= 0.6 ? 'Developing'
-          : 'Needs practice';
+      : ratio >= 0.85 ? 'Strong latest evidence'
+        : ratio >= 0.6 ? 'Developing latest evidence'
+          : 'More practice needed';
     const legacyEvidenceCount = evidence.filter(item => item.score.precision === 'legacy').length;
     return { earned, available, ratio, label, evidenceCount: evidence.length, legacyEvidenceCount };
   }
@@ -222,6 +235,160 @@ class App {
       .map(item => item.attempt);
   }
 
+  getSectionMilestones(studentId = this.currentUser?.id) {
+    const questions = window.db.getQuestions();
+    const questionToSection = new Map(questions.map(question => [question.id, question.specificationPointId]));
+    const checkpointRules = window.db.getCheckpointRules?.() || {};
+    const sections = window.db.getUnits().flatMap(unit => (unit.topics || []).flatMap(topic =>
+      (topic.objectives || []).map(objective => ({
+        id: objective.id,
+        name: objective.name,
+        topicId: topic.id,
+        topicName: topic.name,
+        paper: unit.paper,
+        available: Boolean(checkpointRules[objective.id]),
+        checkpointRule: checkpointRules[objective.id] || null
+      }))
+    ));
+    const numberSkillSections = {
+      1: '1.2.4a',
+      2: '1.2.4a',
+      3: '1.2.4c',
+      4: '1.2.4d'
+    };
+    const milestoneById = new Map(sections.map(section => [section.id, {
+      ...section,
+      state: section.available ? 'not_started' : 'not_available',
+      label: section.available ? 'Not started' : 'Checkpoint unavailable',
+      latestDate: null,
+      evidenceSources: new Set(),
+      questionOutcomes: new Map(),
+      focusOutcomes: new Map()
+    }]));
+    const sectionForQuestion = questionId => {
+      if (questionToSection.has(questionId)) return questionToSection.get(questionId);
+      const numberSkillMatch = String(questionId || '').match(/^number_skill_[a-z]+_(\d)$/);
+      if (numberSkillMatch) return numberSkillSections[Number(numberSkillMatch[1])] || null;
+      if (/^pseudocode_\d+$/.test(String(questionId || ''))) return '2.2.ERL';
+      return null;
+    };
+    const latestAttempts = this.getLatestDemonstratedAttempts(
+      window.db.getAttempts().filter(attempt => attempt.studentId === studentId)
+    ).sort((left, right) => new Date(left.attempt.date || 0) - new Date(right.attempt.date || 0));
+
+    latestAttempts.forEach(({ attempt, score }) => {
+      const completeQuestionSet = Array.isArray(attempt.originalQuestionIds)
+        && attempt.originalQuestionIds.length === Number(attempt.originalDenominator)
+        && score.available === Number(attempt.originalDenominator);
+      const singleAssessedResponse = score.available === 1
+        && attempt.questionId
+        && (attempt.type === 'pseudocode_assessed' || Number(attempt.evidenceVersion) >= 2);
+      if (!completeQuestionSet && !singleAssessedResponse) return;
+
+      const outcomes = Array.isArray(attempt.questionEvidence)
+        ? attempt.questionEvidence
+        : [{ questionId: attempt.questionId, correct: score.earned === score.available }];
+      const groupedBySection = new Map();
+      outcomes.forEach(outcome => {
+        const sectionId = sectionForQuestion(outcome.questionId);
+        if (!sectionId || !milestoneById.has(sectionId)) return;
+        if (!milestoneById.get(sectionId).available) return;
+        if (!groupedBySection.has(sectionId)) groupedBySection.set(sectionId, []);
+        groupedBySection.get(sectionId).push(outcome);
+      });
+
+      groupedBySection.forEach((sectionOutcomes, sectionId) => {
+        const milestone = milestoneById.get(sectionId);
+        const activityId = attempt.activityId || attempt.questionId;
+        milestone.state = 'practice_completed';
+        milestone.label = 'Practice completed';
+        milestone.evidenceSources.add(activityId);
+        sectionOutcomes.forEach(outcome => milestone.questionOutcomes.set(outcome.questionId, outcome.correct === true));
+        const ruleVersion = attempt.checkpointRuleVersions?.[sectionId];
+        if (ruleVersion === milestone.checkpointRule.version) {
+          const byFocus = new Map();
+          sectionOutcomes.forEach(outcome => {
+            if (!outcome.assessmentFocus || outcome.specificationPointId !== sectionId) return;
+            if (!byFocus.has(outcome.assessmentFocus)) byFocus.set(outcome.assessmentFocus, []);
+            byFocus.get(outcome.assessmentFocus).push(outcome.correct === true);
+          });
+          byFocus.forEach((focusResults, focus) => {
+            milestone.focusOutcomes.set(focus, focusResults.every(Boolean));
+          });
+        }
+        if (!milestone.latestDate || new Date(attempt.date) >= new Date(milestone.latestDate)) {
+          milestone.latestDate = attempt.date;
+        }
+      });
+    });
+
+    milestoneById.forEach(milestone => {
+      if (!milestone.available) return;
+      const requiredFocuses = milestone.checkpointRule.requiredFocuses;
+      const passedFocuses = requiredFocuses.filter(focus => milestone.focusOutcomes.get(focus) === true);
+      const ratio = requiredFocuses.length ? passedFocuses.length / requiredFocuses.length : 0;
+      if (passedFocuses.length === requiredFocuses.length && ratio >= milestone.checkpointRule.minimumRatio) {
+        milestone.state = 'checkpoint_secured';
+        milestone.label = 'Checkpoint secured';
+      }
+    });
+
+    return [...milestoneById.values()].map(milestone => ({
+      ...milestone,
+      evidenceSourceCount: milestone.evidenceSources.size,
+      correctQuestionCount: [...milestone.questionOutcomes.values()].filter(Boolean).length,
+      attemptedQuestionCount: milestone.questionOutcomes.size,
+      checkpointRuleVersion: milestone.checkpointRule?.version || null,
+      demonstratedFocuses: [...milestone.focusOutcomes.entries()].filter(([, passed]) => passed).map(([focus]) => focus),
+      remainingFocuses: milestone.checkpointRule
+        ? milestone.checkpointRule.requiredFocuses.filter(focus => milestone.focusOutcomes.get(focus) !== true)
+        : [],
+      evidenceSources: undefined,
+      questionOutcomes: undefined,
+      focusOutcomes: undefined,
+      checkpointRule: undefined
+    }));
+  }
+
+  getMilestoneBadge(milestone) {
+    const badgeClass = milestone.state === 'checkpoint_secured'
+      ? 'milestone-secured'
+      : milestone.state === 'practice_completed'
+        ? 'milestone-practised'
+        : milestone.state === 'not_available' ? 'milestone-unavailable' : 'milestone-not-started';
+    const symbol = milestone.state === 'checkpoint_secured'
+      ? '&#10003;'
+      : milestone.state === 'practice_completed' ? '&#9679;' : milestone.state === 'not_available' ? '&mdash;' : '&#9675;';
+    return `<span class="section-milestone ${badgeClass}" data-milestone-state="${milestone.state}"><span aria-hidden="true">${symbol}</span> ${milestone.label}</span>`;
+  }
+
+  formatAssessmentFocus(focus) {
+    const acronyms = new Set(['cpu', 'ram', 'rom', 'lan', 'wan', 'sql', 'ide', 'erl']);
+    return String(focus || '')
+      .split('-')
+      .map(word => acronyms.has(word.toLowerCase())
+        ? word.toUpperCase()
+        : word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
+  getNewlySecuredMilestones(previousStates, studentId = this.currentUser?.id) {
+    return this.getSectionMilestones(studentId).filter(milestone =>
+      milestone.state === 'checkpoint_secured'
+      && previousStates.get(milestone.id) !== 'checkpoint_secured'
+    );
+  }
+
+  renderMilestoneAcknowledgement(milestones) {
+    if (!milestones.length) return '';
+    return milestones.map(milestone => `
+      <div class="milestone-acknowledgement" role="status" aria-live="polite">
+        <strong>Section checkpoint secured: ${this.escapeHTML(milestone.id)}</strong>
+        <span>${this.escapeHTML(milestone.name)} is now supported by demonstrated evidence.</span>
+      </div>
+    `).join('');
+  }
+
   getPendingPseudocodeReviews(attempts) {
     const latestByLearnerTask = new Map();
     attempts.forEach((attempt, index) => {
@@ -241,22 +408,37 @@ class App {
       ? window.crypto.randomUUID()
       : `${Date.now()}_${++this.evidenceIdSequence}`;
     const attemptSetId = `${type}_set_${unique}`;
+    const checkpointRules = window.db.getCheckpointRules?.() || {};
     return {
       activityId: `${type}_activity_${unique}`,
       attemptSetId,
       topic,
       originalQuestionIds: questions.map(question => question.id),
       originalDenominator: questions.length,
+      questionMetadata: Object.fromEntries(questions.map(question => [question.id, {
+        specificationPointId: question.specificationPointId || null,
+        assessmentFocus: question.assessmentFocus || null
+      }])),
+      checkpointRuleVersions: Object.fromEntries([...new Set(questions.map(question => question.specificationPointId).filter(Boolean))]
+        .filter(sectionId => checkpointRules[sectionId])
+        .map(sectionId => [sectionId, checkpointRules[sectionId].version])),
       latestOutcomes: Object.fromEntries(questions.map(question => [question.id, false])),
       hasOriginalAttempt: false
     };
   }
 
   buildQuestionLevelAttempt(evidenceSet, attemptKind) {
-    const questionEvidence = evidenceSet.originalQuestionIds.map(questionId => ({
-      questionId,
-      correct: evidenceSet.latestOutcomes[questionId] === true
-    }));
+    const questionEvidence = evidenceSet.originalQuestionIds.map(questionId => {
+      const metadata = evidenceSet.questionMetadata?.[questionId];
+      return {
+        questionId,
+        ...(metadata?.specificationPointId && metadata?.assessmentFocus ? {
+          specificationPointId: metadata.specificationPointId,
+          assessmentFocus: metadata.assessmentFocus
+        } : {}),
+        correct: evidenceSet.latestOutcomes[questionId] === true
+      };
+    });
     const earned = questionEvidence.filter(item => item.correct).length;
     return {
       activityId: evidenceSet.activityId,
@@ -264,6 +446,7 @@ class App {
       originalQuestionIds: [...evidenceSet.originalQuestionIds],
       originalDenominator: evidenceSet.originalDenominator,
       questionEvidence,
+      checkpointRuleVersions: { ...(evidenceSet.checkpointRuleVersions || {}) },
       attemptKind,
       score: `${earned}/${evidenceSet.originalDenominator}`,
       evidenceVersion: 2,
@@ -413,6 +596,7 @@ class App {
   }
 
   clearSession() {
+    this.resetLearnerSessionState();
     this.currentUser = null;
     localStorage.removeItem('studyspice_session');
     this.activeTab = 'stud-dashboard';
@@ -562,8 +746,12 @@ class App {
           this.saveSession(this.currentUser);
         }
       } else if (role === 'clean-student') {
+        const cleanDemoStudentId = 'student_release_fixture';
+        window.db.resetCleanDemoLearnerData(cleanDemoStudentId);
+        this.clearPracticeDrafts(cleanDemoStudentId);
+        this.resetLearnerSessionState();
         this.currentUser = {
-          id: 'student_release_fixture',
+          id: cleanDemoStudentId,
           name: 'New Learner',
           email: 'new-learner@example.invalid',
           role: 'student',
@@ -586,6 +774,44 @@ class App {
     } catch (err) {
       alert("Quick Login Error: " + err.message + "\nStack: " + err.stack);
     }
+  }
+
+  getPracticeDraftKey(objectiveId, studentId = this.currentUser?.id) {
+    if (!studentId || !objectiveId) return null;
+    return `try_practice_${studentId}_${objectiveId}`;
+  }
+
+  clearPracticeDrafts(studentId) {
+    if (studentId !== 'student_release_fixture' || typeof localStorage === 'undefined') return;
+    const prefix = `try_practice_${studentId}_`;
+    const keys = Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index))
+      .filter(key => key?.startsWith(prefix));
+    keys.forEach(key => localStorage.removeItem(key));
+  }
+
+  resetLearnerSessionState() {
+    this.activeTab = 'stud-dashboard';
+    this.activeObjectiveId = null;
+    this.quizQuestions = [];
+    this.quizRetryQuestions = null;
+    this.quizAnswers = {};
+    this.quizResults = null;
+    this.quizEvidenceSet = null;
+    this.numberSkillsSet = [];
+    this.numberSkillsAnswers = {};
+    this.numberSkillsCalculations = {};
+    this.numberSkillsEvidenceSet = null;
+    this.writtenAttempted = false;
+    this.writtenStage = 'plan';
+    this.scaffoldPoints = { p1: '', exp1: '', p2: '', exp2: '', apply: '' };
+    this.writtenResponseText = '';
+    this.examTransferStage = 'decode';
+    this.examTransferPlan = {};
+    this.examTransferResponse = '';
+    this.editorCode = '';
+    this.messageDraft = '';
+    this.selectedChatStudentId = null;
+    this.teacherMessageDraft = '';
   }
 
   async handleMicrosoftLogin(email, password) {
@@ -729,6 +955,16 @@ class App {
   switchTab(tabId) {
     this.activeTab = tabId;
     this.render();
+    this.focusMainContent();
+  }
+
+  focusMainContent(selector = 'h1, h2') {
+    const mainPanel = document.getElementById('main-panel');
+    if (!mainPanel) return;
+    const target = mainPanel.querySelector?.(selector) || mainPanel;
+    if (!target?.focus) return;
+    if (target !== mainPanel && target.setAttribute) target.setAttribute('tabindex', '-1');
+    target.focus();
   }
 
   render() {
@@ -737,6 +973,33 @@ class App {
     const mainPanel = document.getElementById('main-panel');
     const navList = document.getElementById('nav-links-list');
     const skipLink = document.getElementById('skip-link');
+    const storageRecovery = window.db.getRecoveryState?.();
+
+    if (storageRecovery?.active) {
+      loginScreen.style.display = 'none';
+      appShell.style.display = 'flex';
+      if (skipLink) skipLink.setAttribute('href', '#storage-recovery');
+      if (navList) navList.innerHTML = '';
+      const userName = document.getElementById('user-display-name');
+      const userRole = document.getElementById('user-display-role');
+      if (userName) userName.textContent = 'Saved data recovery';
+      if (userRole) userRole.textContent = 'Read-only mode';
+      mainPanel.innerHTML = `
+        <section id="storage-recovery" class="card" role="alert" aria-live="assertive" aria-atomic="true" tabindex="-1" style="max-width:720px; margin:40px auto; padding:28px;">
+          <h1>StudySpice could not update this browser’s saved data</h1>
+          <p>Your saved work has not been deleted or replaced. StudySpice is in read-only mode so no further changes will be written over it.</p>
+          <p>${storageRecovery.reason === 'storage_write'
+            ? 'This browser could not save the safely updated data. Check that browser storage is available, then try again.'
+            : 'The saved data could not be recognised safely enough to update automatically.'}</p>
+          <button type="button" class="btn btn-primary" id="storage-recovery-reload-btn" style="min-height:44px;">Reload StudySpice</button>
+        </section>
+      `;
+      const recoveryPanel = mainPanel.querySelector('#storage-recovery');
+      if (recoveryPanel?.focus) recoveryPanel.focus();
+      const reloadButton = mainPanel.querySelector('#storage-recovery-reload-btn');
+      if (reloadButton) reloadButton.onclick = () => window.location.reload();
+      return;
+    }
 
     if (!this.currentUser) {
       if (skipLink) skipLink.setAttribute('href', '#login-screen');
@@ -779,7 +1042,7 @@ class App {
       ];
       links.forEach(link => {
         const li = document.createElement('li');
-        li.innerHTML = `<a class="nav-link ${this.activeTab === link.id ? 'active' : ''}" href="#" data-tab="${link.id}">
+        li.innerHTML = `<a class="nav-link ${this.activeTab === link.id ? 'active' : ''}" href="#" data-tab="${link.id}" ${this.activeTab === link.id ? 'aria-current="page"' : ''}>
           <span style="display: inline-flex; align-items: center; margin-right: 12px; opacity: 0.85;">${link.icon}</span> ${link.label}
         </a>`;
         li.querySelector('a').onclick = (e) => { e.preventDefault(); this.closeMobileNav(); this.switchTab(link.id); };
@@ -801,7 +1064,7 @@ class App {
       ];
       links.forEach(link => {
         const li = document.createElement('li');
-        li.innerHTML = `<a class="nav-link ${this.activeTab === link.id ? 'active' : ''}" href="#" data-tab="${link.id}">
+        li.innerHTML = `<a class="nav-link ${this.activeTab === link.id ? 'active' : ''}" href="#" data-tab="${link.id}" ${this.activeTab === link.id ? 'aria-current="page"' : ''}>
           <span style="display: inline-flex; align-items: center; margin-right: 12px; opacity: 0.85;">${link.icon}</span> ${link.label}
         </a>`;
         li.querySelector('a').onclick = (e) => { e.preventDefault(); this.closeMobileNav(); this.switchTab(link.id); };
@@ -891,8 +1154,24 @@ class App {
         break;
 
       default:
-        mainPanel.innerHTML = `<h2>Screen not found</h2>`;
+        mainPanel.innerHTML = `<div class="card" role="status"><h1>Screen not found</h1><p>This route is unavailable. Return to the appropriate home screen and choose another task.</p><button class="btn btn-secondary" id="unknown-route-back-btn">Back to Home</button></div>`;
+        const unknownRouteBackButton = document.getElementById('unknown-route-back-btn');
+        if (unknownRouteBackButton) {
+          unknownRouteBackButton.onclick = () =>
+            this.switchTab(this.currentUser.role === 'student' ? 'stud-dashboard' : 'teach-overview');
+        }
     }
+    this.enhanceScrollableRegions(mainPanel);
+  }
+
+  enhanceScrollableRegions(panel) {
+    panel?.querySelectorAll?.('.table-container').forEach((container, index) => {
+      container.setAttribute('tabindex', '0');
+      container.setAttribute('role', 'region');
+      if (!container.getAttribute('aria-label') && !container.getAttribute('aria-labelledby')) {
+        container.setAttribute('aria-label', `Scrollable data table ${index + 1}`);
+      }
+    });
   }
 
   getObjectiveCoverage() {
@@ -979,6 +1258,12 @@ class App {
     const student = window.db.getStudents().find(s => s.id === this.currentUser.id) || this.currentUser;
     const assignments = window.db.getAssignments().filter(item => this.isPublishedToStudent(item, student));
     const demonstratedProgress = this.getDemonstratedMastery(window.db.getAttempts().filter(item => item.studentId === student.id));
+    const earnedAchievementCount = (student.achievements || []).length;
+    const milestones = this.getSectionMilestones(student.id);
+    const availableMilestones = milestones.filter(item => item.available);
+    const securedMilestones = availableMilestones.filter(item => item.state === 'checkpoint_secured');
+    const nextMilestone = availableMilestones.find(item => item.state === 'practice_completed')
+      || availableMilestones.find(item => item.state === 'not_started');
     const activeTestPreps = window.db.getTestPreps().filter(p => p.status === 'Active' && this.isPublishedToStudent(p, student));
     const upcomingSessions = window.db.getSupportSessions().filter(item => item.published && this.isPublishedToStudent(item, student));
     const controls = window.db.getClassroomControls();
@@ -998,15 +1283,18 @@ class App {
       .filter(a => a.status === 'Required' || a.status === 'Overdue')
       .reduce((total, a) => total + Number(a.estimatedMinutes || 10), 0);
     const testPrepMinutes = activeTestPreps.reduce((total, p) => total + Number(p.weeklyMinutes || 0), 0);
-    const requiredCount = activeTestPreps.length ? activeTestPreps.length : assignmentRequiredCount;
-    const requiredMinutes = activeTestPreps.length ? testPrepMinutes : assignmentRequiredMinutes;
+    const requiredCount = activeTestPreps.length + assignmentRequiredCount;
+    const requiredMinutes = testPrepMinutes + assignmentRequiredMinutes;
     
     const numberWords = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
     const requiredCountWord = numberWords[requiredCount] || requiredCount;
-    const greetingText = `You have ${requiredCountWord} required ${requiredCount === 1 ? 'task' : 'tasks'} (${requiredMinutes} mins) and one optional 5-minute activity.`;
-
     const greeting = this.getTimeBasedGreeting();
     const shortName = student.name.split(' ')[0];
+    const hasDemonstratedBaseline = demonstratedProgress.ratio !== null;
+    const suggestedSession = hasDemonstratedBaseline
+      ? 'one optional 5-minute recall activity'
+      : 'one suggested 10-minute guided learning session';
+    const greetingText = `You have ${requiredCountWord} required ${requiredCount === 1 ? 'task' : 'tasks'} (${requiredMinutes} mins) and ${suggestedSession}.`;
 
     // Compute dominant task for "Do this now"
     let dominantTaskHtml = '';
@@ -1035,7 +1323,7 @@ class App {
         let naturalDate = this.formatDueDate(a.dueDate);
         let borderStyle = isOverdue ? 'border: 1.5px solid var(--coral); border-left: 5px solid var(--coral);' : 'border-left: 5px solid var(--teal);';
         let btnText = isProgramming ? 'Start programming' : 'Start check';
-        let progressStateText = isProgramming ? 'In progress — 3 of 5 test cases passed' : 'Not started';
+        let progressStateText = 'Not started';
         
         dominantTaskHtml = `
           <div class="card card-action" style="margin-bottom:24px; ${borderStyle} padding: 24px;">
@@ -1049,11 +1337,13 @@ class App {
         dominantTaskHtml = `
           <div class="card card-action" style="padding: 24px; border-left: 5px solid var(--teal); margin-bottom: 24px;">
             <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
-              <span class="badge badge-primary">Spaced recall · 5 mins</span>
+              <span class="badge badge-primary">${hasDemonstratedBaseline ? 'Spaced recall · 5 mins' : 'Start here · 10 mins'}</span>
             </div>
-            <h3 style="font-size: 22px; margin-bottom: 8px; font-weight: 700; color: var(--text-main);">🔢 Binary shifts & conversions</h3>
-            <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 24px; max-width: 90%;">You last practised conversions three weeks ago. Let's strengthen it today.</p>
-            <button class="btn btn-primary btn-lg" id="today-rec-btn" style="min-width: 180px; align-self: flex-start; min-height: 40px;">Continue practice</button>
+            <h3 style="font-size: 22px; margin-bottom: 8px; font-weight: 700; color: var(--text-main);">${hasDemonstratedBaseline ? '🔢 Binary shifts & conversions' : 'Architecture of the CPU'}</h3>
+            <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 24px; max-width: 90%;">${hasDemonstratedBaseline
+              ? 'Your existing evidence suggests this short retrieval activity is worth revisiting.'
+              : 'Build confidence with a guided explanation and worked example before attempting assessed questions.'}</p>
+            <button class="btn btn-primary btn-lg" id="today-rec-btn" style="min-width: 180px; align-self: flex-start; min-height: 40px;">${hasDemonstratedBaseline ? 'Continue practice' : 'Start guided learning'}</button>
           </div>
         `;
       }
@@ -1065,9 +1355,9 @@ class App {
     if (this.dashboardSeeMoreExpanded) {
       seeMoreHtml = `
         <div style="margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 24px;">
-          <button id="toggle-see-more-btn" class="btn btn-secondary btn-sm" style="margin-bottom: 24px; width: 100%; min-height: 40px; font-weight: 600;">📖 Collapse dashboard details ▲</button>
+          <button id="toggle-see-more-btn" class="btn btn-secondary btn-sm" aria-expanded="true" aria-controls="dashboard-more-details" style="margin-bottom: 24px; width: 100%; min-height: 40px; font-weight: 600;">Hide additional dashboard details ▲</button>
           
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
+          <div id="dashboard-more-details" style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
             <!-- Left Side inside See More -->
             <div>
               ${remainingAssignments.length > 0 ? `
@@ -1153,7 +1443,7 @@ class App {
                   ${demonstratedProgress.ratio === null ? 'Complete an assessed activity to establish a performance baseline.' : `Current demonstrated score: ${demonstratedProgress.earned}/${demonstratedProgress.available} across the latest assessed activities.`}
                 </p>
                 <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin: 8px 0 0 0; padding-top: 8px; border-top: 1px dashed var(--border-color);">
-                  Page visits, model views and self-assessment are not counted as mastery.
+                  Page visits, model views and self-assessment are not counted as demonstrated progress.
                 </p>
               </div>
             </div>
@@ -1163,7 +1453,7 @@ class App {
     } else {
       seeMoreHtml = `
         <div style="margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-          <button id="toggle-see-more-btn" class="btn btn-secondary btn-sm" style="width: 100%; min-height: 40px; font-weight: 600;">📖 See more dashboard details (Other assignments, Learning now, Worth revisiting, Recent progress) ▼</button>
+          <button id="toggle-see-more-btn" class="btn btn-secondary btn-sm" aria-expanded="false" aria-controls="dashboard-more-details" style="width: 100%; min-height: 40px; font-weight: 600;">Show more assignments and progress ▼</button>
         </div>
       `;
     }
@@ -1173,7 +1463,7 @@ class App {
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
           <div>
             <h1 style="margin-bottom: 6px; font-weight: 700;">${greeting}, ${shortName}</h1>
-            <p style="font-size:16px; color: var(--text-muted); margin: 0;">Ready for a quick Computing session?</p>
+            <p style="font-size:16px; color: var(--text-muted); margin: 0;">${greetingText}</p>
             <div style="margin-top: 8px; font-size: 14px; color: var(--text-muted); font-weight: 500;">
               Demonstrated performance: <strong style="color: var(--teal);">${demonstratedProgress.label}</strong>
             </div>
@@ -1206,12 +1496,33 @@ class App {
             <h2 style="font-size:18px; margin-bottom:12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">This week</h2>
             <div class="card card-progress" style="margin-bottom: 20px; padding: 20px;">
               <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Assessed evidence</h3>
-              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 0;">${demonstratedProgress.evidenceCount} latest assessed ${demonstratedProgress.evidenceCount === 1 ? 'activity' : 'activities'} currently contribute to progress.</p>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 0;">${demonstratedProgress.evidenceCount} latest assessed ${demonstratedProgress.evidenceCount === 1 ? 'activity contributes' : 'activities contribute'} to progress.</p>
+              ${demonstratedProgress.legacyEvidenceCount ? '<p style="font-size:12px; color:var(--text-muted); margin:8px 0 0;">Older reduced-precision evidence remains visible in Progress but cannot create a section checkpoint.</p>' : ''}
+            </div>
+            <div class="card milestone-dashboard-card" style="margin-bottom: 20px; padding: 20px;">
+              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Section checkpoints</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 10px;">${securedMilestones.length} of ${availableMilestones.length} available checkpoints secured through assessed work.</p>
+              ${nextMilestone ? `
+                <div style="font-size:13px; margin-bottom:10px;">
+                  <strong>Next:</strong> ${this.escapeHTML(nextMilestone.id)} · ${this.escapeHTML(nextMilestone.name)}
+                </div>
+                <p style="font-size:12px; color:var(--text-muted); margin:0;">${nextMilestone.state === 'practice_completed'
+                  ? 'Continue assessed practice when it is your main task.'
+                  : 'Use Learn when you are ready to work towards this checkpoint.'}</p>
+              ` : '<p style="font-size:13px; margin:0;">All available section checkpoints are secured.</p>'}
+              ${earnedAchievementCount > 0 ? `
+                <p style="font-size:13px; color:var(--text-muted); margin:12px 0 0;">
+                  <strong>${earnedAchievementCount} ${earnedAchievementCount === 1 ? 'achievement' : 'achievements'} earned</strong>
+                  · <button type="button" id="dashboard-achievements-btn" class="btn-link">View in Progress</button>
+                </p>
+              ` : ''}
             </div>
             <div class="card" style="margin-bottom:20px; padding:16px 20px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
               <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Computing workload</h3>
               <div style="font-weight: 700; font-size: 18px; color: var(--teal);">${requiredMinutes} minutes required</div>
-              <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">Optional retrieval: up to 5 minutes.</div>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">${hasDemonstratedBaseline
+                ? 'Optional retrieval: up to 5 minutes.'
+                : 'Suggested guided learning: 10 minutes.'}</div>
             </div>
           </div>
         </div>
@@ -1240,6 +1551,18 @@ class App {
       };
     });
 
+    const seeMoreButton = panel.querySelector('#toggle-see-more-btn');
+    if (seeMoreButton) {
+      seeMoreButton.onclick = () => {
+        this.dashboardSeeMoreExpanded = !this.dashboardSeeMoreExpanded;
+        this.renderStudentDashboard(panel);
+        panel.querySelector('#toggle-see-more-btn')?.focus();
+      };
+    }
+
+    const achievementsButton = panel.querySelector('#dashboard-achievements-btn');
+    if (achievementsButton) achievementsButton.onclick = () => this.switchTab('stud-progress');
+
     const trigger = document.getElementById('student-profile-trigger');
     const dropdown = document.getElementById('student-profile-dropdown');
     if (trigger && dropdown) {
@@ -1257,7 +1580,15 @@ class App {
 
     const todayRecBtn = document.getElementById('today-rec-btn');
     if (todayRecBtn) {
-      todayRecBtn.onclick = () => { this.switchTab('stud-practise'); };
+      todayRecBtn.onclick = () => {
+        if (!hasDemonstratedBaseline) {
+          this.activeTopicId = nextMilestone?.topicId || 'topic_1_1';
+          this.activeObjectiveId = nextMilestone?.id || '1.1.1';
+          this.switchTab('stud-learn');
+          return;
+        }
+        this.switchTab('stud-practise');
+      };
     }
   }
 
@@ -1275,6 +1606,7 @@ class App {
       `;
       const backButton = panel.querySelector('#learn-empty-back-btn');
       if (backButton) backButton.onclick = () => this.switchTab('stud-dashboard');
+      this.focusMainContent();
       return;
     }
     const currentPaper = activeNote ? activeNote.paper : 'Paper 1';
@@ -1290,17 +1622,24 @@ class App {
     const objectiveTeaching = isFilteredObjective
       ? allObjectiveTeaching.filter(o => o.id === this.activeObjectiveId)
       : allObjectiveTeaching;
+    const focusedObjectiveTeaching = isFilteredObjective ? objectiveTeaching[0] : null;
 
     const totalCoreMins = allObjectiveTeaching.reduce((acc, item) => acc + (item.workload?.coreLearningMinutes || 10), 0);
+    const milestoneBySection = new Map(this.getSectionMilestones().map(milestone => [milestone.id, milestone]));
 
     const objectiveTeachingHtml = objectiveTeaching.length
       ? objectiveTeaching.map(item => {
-          const savedPractice = typeof localStorage !== 'undefined' ? (localStorage.getItem(`try_practice_${item.id}`) || '') : '';
+          const draftKey = this.getPracticeDraftKey(item.id);
+          const savedPractice = typeof localStorage !== 'undefined' && draftKey ? (localStorage.getItem(draftKey) || '') : '';
+          const milestone = milestoneBySection.get(item.id);
           return `
           <article class="card" style="padding: 22px; border: 1px solid var(--border-color);" aria-labelledby="objective-${this.escapeHTML(item.id)}">
             <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
               <h3 id="objective-${this.escapeHTML(item.id)}" style="font-size: 18px; margin: 0;">${this.escapeHTML(item.id)} &middot; ${this.escapeHTML(item.scope)}</h3>
-              <span class="badge badge-secondary">OCR ${this.escapeHTML(item.officialSpecificationPointId)}</span>
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                ${milestone ? this.getMilestoneBadge(milestone) : ''}
+                <span class="badge badge-secondary">OCR ${this.escapeHTML(item.officialSpecificationPointId)}</span>
+              </div>
             </div>
             <p style="line-height: 1.7; margin: 14px 0;">${this.escapeHTML(item.explanation)}</p>
             <div style="background: rgba(45, 156, 145, 0.08); border-left: 4px solid var(--teal); padding: 14px; border-radius: 0 8px 8px 0;">
@@ -1315,13 +1654,13 @@ class App {
               </div>
               <p style="line-height: 1.6; margin: 0 0 12px; font-weight: 500;">${this.escapeHTML(item.supportedPractice)}</p>
               <div class="form-group" style="margin-bottom: 12px;">
-                <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">Your Practice Response / Solution Draft:</label>
+                <label for="try-input-${item.id}" style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">Your Practice Response / Solution Draft:</label>
                 <textarea id="try-input-${item.id}" class="form-control try-practice-textarea" data-obj-id="${item.id}" rows="3" placeholder="Type your response or step-by-step working here..." style="font-size: 13.5px; line-height: 1.5;">${this.escapeHTML(savedPractice)}</textarea>
               </div>
               <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
                 <button type="button" class="btn btn-secondary btn-sm save-try-btn" data-obj-id="${item.id}">💾 Save response</button>
                 <button type="button" class="btn btn-secondary btn-sm toggle-guide-btn" data-obj-id="${item.id}">💡 Check worked solution</button>
-                <button type="button" class="btn btn-primary btn-sm goto-review-btn" data-spec-id="${item.id}">✍️ Practise in written answers &rarr;</button>
+                <button type="button" class="btn ${isFilteredObjective ? 'btn-secondary' : 'btn-primary'} btn-sm goto-review-btn" data-spec-id="${item.id}">✍️ ${isFilteredObjective ? 'Optional: practise a written answer' : 'Practise in written answers &rarr;'}</button>
               </div>
               <div id="try-guide-${item.id}" class="card" style="display: none; margin-top: 12px; padding: 14px; background: rgba(45, 156, 145, 0.08); border-left: 4px solid var(--teal);">
                 <strong style="color: var(--teal); font-size: 13px;">Guided Solution Reference:</strong>
@@ -1338,7 +1677,7 @@ class App {
           </article>
           `;
         }).join('')
-      : '<div class="card" role="status"><strong>Objective-level teaching is unavailable for this strand.</strong></div>';
+      : '<div class="card" role="status"><h2>Objective teaching unavailable</h2><p>This strand has no objective-level teaching to display. Return to the full Learn view and choose another section.</p><button class="btn btn-secondary" id="objective-empty-back-btn">Back to Learn</button></div>';
 
     // Group notes by paper
     const paper1Notes = theoryNotes.filter(n => n.paper === 'Paper 1');
@@ -1350,11 +1689,13 @@ class App {
         <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
           <div>
             <span class="badge badge-primary">GCSE Computer Science Specification &middot; 25Thirty Learning</span>
-            <h1 style="font-size: 28px; font-weight: 700; margin: 8px 0 4px 0;">Learn and review theory</h1>
-            <p style="font-size: 15px; color: var(--text-muted); margin: 0;">Comprehensive, specification-aligned revision guides, worked examples, and examiner tips.</p>
+            <h1 style="font-size: 28px; font-weight: 700; margin: 8px 0 4px 0;">${isFilteredObjective ? 'Today’s section' : 'Learn and review theory'}</h1>
+            <p style="font-size: 15px; color: var(--text-muted); margin: 0;">${isFilteredObjective
+              ? `${this.escapeHTML(focusedObjectiveTeaching?.scope || '')} · about ${focusedObjectiveTeaching?.workload?.coreLearningMinutes || 10} minutes`
+              : 'Comprehensive, specification-aligned revision guides, worked examples, and examiner tips.'}</p>
           </div>
           <!-- Quick Quiz & Copy Note CTAs -->
-          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <div style="${isFilteredObjective ? 'display:none;' : 'display:flex;'} gap: 10px; align-items: center; flex-wrap: wrap;">
             <button class="btn btn-secondary copy-theory-summary-btn" style="min-height: 44px; padding: 0 16px; font-weight: 600;">
               📋 Copy notes and terms
             </button>
@@ -1365,7 +1706,7 @@ class App {
         </div>
 
         <!-- Paper Selector Tabs -->
-        <div style="display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 12px;">
+        <div style="${isFilteredObjective ? 'display:none;' : 'display:flex;'} gap: 12px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 12px;">
           <button class="btn ${currentPaper === 'Paper 1' ? 'btn-primary' : 'btn-secondary'} paper-tab-btn" data-paper="Paper 1" style="border-radius: 8px; font-weight: 600;">
             💻 Paper 1: Computer Systems
           </button>
@@ -1375,7 +1716,7 @@ class App {
         </div>
 
         <!-- Topic Pills Navigation -->
-        <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 16px; margin-bottom: 24px;">
+        <div style="${isFilteredObjective ? 'display:none;' : 'display:flex;'} gap: 8px; overflow-x: auto; padding-bottom: 16px; margin-bottom: 24px;">
           ${(currentPaper === 'Paper 1' ? paper1Notes : paper2Notes).map(note => `
             <button class="btn ${note.topicId === activeNote.topicId ? 'btn-primary' : 'btn-secondary'} topic-pill-btn" data-topic-id="${note.topicId}" style="white-space: nowrap; font-size: 13px; padding: 6px 14px; border-radius: 20px; font-weight: 600;">
               ${note.code} ${note.title}
@@ -1384,7 +1725,7 @@ class App {
         </div>
 
         <!-- Active Topic Details Header -->
-        <div class="card" style="padding: 24px; margin-bottom: 24px; border-left: 5px solid var(--teal); background-color: var(--bg-card);">
+        <div class="card" style="${isFilteredObjective ? 'display:none;' : ''} padding: 24px; margin-bottom: 24px; border-left: 5px solid var(--teal); background-color: var(--bg-card);">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <span class="badge badge-primary" style="font-size: 13px;">${activeNote.code} &middot; ${activeNote.paper}</span>
@@ -1410,7 +1751,7 @@ class App {
         <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
             <h2 style="font-size: 21px; margin: 0;">Learn each specification requirement</h2>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+            <div style="${isFilteredObjective ? 'display:none;' : 'display:flex;'} gap: 6px; flex-wrap: wrap; align-items: center;">
               <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">View:</span>
               <button class="btn ${(!this.activeObjectiveId || this.activeObjectiveId === 'all') ? 'btn-primary' : 'btn-secondary'} objective-filter-btn" data-obj-id="all" style="padding: 4px 12px; font-size: 12px; border-radius: 14px;">
                 All (${allObjectiveTeaching.length})
@@ -1423,11 +1764,17 @@ class App {
             </div>
           </div>
           ${objectiveTeachingHtml}
+          ${isFilteredObjective ? `
+            <div style="display:flex; flex-wrap:wrap; gap:10px;">
+              <button class="btn btn-primary focused-objective-quiz-btn" data-topic-id="${activeNote.topicId}">Check this section (up to 3 questions)</button>
+              <button class="btn btn-secondary" id="view-full-topic-btn">View full topic</button>
+            </div>
+          ` : ''}
         </div>
 
         <!-- Extended topic notes -->
-        <h2 style="font-size: 21px; margin: 0 0 16px;">Extended topic notes</h2>
-        <div style="display: flex; flex-direction: column; gap: 24px; margin-bottom: 32px;">
+        <h2 style="${isFilteredObjective ? 'display:none;' : ''} font-size: 21px; margin: 0 0 16px;">Extended topic notes</h2>
+        <div style="${isFilteredObjective ? 'display:none;' : 'display:flex;'} flex-direction: column; gap: 24px; margin-bottom: 32px;">
           ${activeNote.sections.map(section => `
             <div class="card" style="padding: 24px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
               <h3 style="font-size: 19px; font-weight: 700; margin-bottom: 14px; color: var(--text-main); border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">
@@ -1445,8 +1792,8 @@ class App {
               ` : ''}
 
               ${section.examinerTip ? `
-                <div style="background: rgba(217, 119, 6, 0.08); border-left: 4px solid var(--amber-alert, #D97706); padding: 14px 16px; border-radius: 0 8px 8px 0;">
-                  <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--amber-alert, #D97706); margin-bottom: 4px; letter-spacing: 0.5px;">⚠️ Examiner Tip & Strategy</div>
+                <div style="background: rgba(217, 119, 6, 0.08); border-left: 4px solid var(--amber); padding: 14px 16px; border-radius: 0 8px 8px 0;">
+                  <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--amber-text); margin-bottom: 4px; letter-spacing: 0.5px;">⚠️ Examiner Tip & Strategy</div>
                   <div style="font-size: 13.5px; line-height: 1.5; color: var(--text-main);">${section.examinerTip}</div>
                 </div>
               ` : ''}
@@ -1455,7 +1802,7 @@ class App {
         </div>
 
         <!-- Key Terms & Exam Traps Bottom Cards -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+        <div style="${isFilteredObjective ? 'display:none;' : 'display:grid;'} grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
           <!-- Key Terms -->
           <div class="card" style="padding: 20px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
             <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--text-main);">🔑 Essential Topic Vocabulary</h3>
@@ -1465,8 +1812,8 @@ class App {
           </div>
 
           <!-- Exam Traps -->
-          <div class="card" style="padding: 20px; background-color: var(--bg-card); border: 1.5px solid var(--amber-alert, #D97706);">
-            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--amber-alert, #D97706);">🚫 Common Examiner Pitfalls</h3>
+          <div class="card" style="padding: 20px; background-color: var(--bg-card); border: 1.5px solid var(--amber);">
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--amber-text);">🚫 Common Examiner Pitfalls</h3>
             <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: var(--text-main); line-height: 1.6;">
               ${activeNote.examTraps.map(trap => `<li>${trap}</li>`).join('')}
             </ul>
@@ -1474,7 +1821,7 @@ class App {
         </div>
 
         <!-- Bottom Call to Action -->
-        <div class="card" style="padding: 28px; text-align: center; background: linear-gradient(135deg, rgba(45, 156, 145, 0.12), rgba(7, 17, 31, 0.05)); border: 2px solid var(--teal);">
+        <div class="card" style="${isFilteredObjective ? 'display:none;' : ''} padding: 28px; text-align: center; background: linear-gradient(135deg, rgba(45, 156, 145, 0.12), rgba(7, 17, 31, 0.05)); border: 2px solid var(--teal);">
           <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Done reading? Test your knowledge now!</h3>
           <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px; max-width: 500px; margin-left: auto; margin-right: auto;">
             Reinforce what you just learned with a quick 5-minute retrieval check on <strong>${activeNote.title}</strong>.
@@ -1514,6 +1861,23 @@ class App {
       };
     });
 
+    const viewFullTopicButton = panel.querySelector('#view-full-topic-btn');
+    if (viewFullTopicButton) {
+      viewFullTopicButton.onclick = () => {
+        this.activeObjectiveId = 'all';
+        this.renderStudentLearn(panel);
+        this.focusMainContent();
+      };
+    }
+    const objectiveEmptyBackButton = panel.querySelector('#objective-empty-back-btn');
+    if (objectiveEmptyBackButton) {
+      objectiveEmptyBackButton.onclick = () => {
+        this.activeObjectiveId = 'all';
+        this.renderStudentLearn(panel);
+        this.focusMainContent();
+      };
+    }
+
     panel.querySelectorAll('.save-try-btn').forEach(btn => {
       btn.onclick = () => {
         const objId = btn.getAttribute('data-obj-id');
@@ -1522,7 +1886,8 @@ class App {
         if (textarea) {
           const val = textarea.value;
           if (typeof localStorage !== 'undefined') {
-            localStorage.setItem(`try_practice_${objId}`, val);
+            const draftKey = this.getPracticeDraftKey(objId);
+            if (draftKey) localStorage.setItem(draftKey, val);
           }
           if (statusDiv) {
             statusDiv.textContent = '✓ Response saved locally';
@@ -1555,7 +1920,7 @@ class App {
       };
     });
 
-    panel.querySelectorAll('.start-topic-quiz-btn').forEach(btn => {
+    panel.querySelectorAll('.start-topic-quiz-btn, .focused-objective-quiz-btn').forEach(btn => {
       btn.onclick = () => {
         this.activeTopicId = btn.getAttribute('data-topic-id');
         this.switchTab('stud-recall');
@@ -1767,12 +2132,12 @@ class App {
                 <p style="font-size:15px; color: var(--text-main); font-weight:600; margin-bottom: 12px;">${q.question}</p>
                 
                 ${q.supportGrid ? `
-                  <div style="display: grid; grid-template-columns: repeat(4, 40px) 12px repeat(4, 40px); gap: 6px; margin-bottom: 8px; text-align: center; font-size:12px; align-items: center;">
+                  <div class="binary-bit-grid" style="display: grid; grid-template-columns: repeat(4, 40px) 12px repeat(4, 40px); gap: 6px; margin-bottom: 8px; text-align: center; font-size:12px; align-items: center;">
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">128</div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">64</div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">32</div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">16</div>
-                    <div></div>
+                    <div class="binary-separator" aria-hidden="true"></div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">8</div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">4</div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">2</div>
@@ -1783,12 +2148,12 @@ class App {
                 <div class="form-group" style="margin: 0;">
                   ${q.inputType === 'binary' ? `
                     <div style="display: flex; gap: 8px; align-items: center;">
-                      <div style="display: grid; grid-template-columns: repeat(4, 40px) 12px repeat(4, 40px); gap: 6px; align-items: center;">
+                      <div class="binary-bit-grid" style="display: grid; grid-template-columns: repeat(4, 40px) 12px repeat(4, 40px); gap: 6px; align-items: center;">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="0" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="128 column" value="${(this.numberSkillsAnswers[idx] || '')[0] || ''}">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="1" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="64 column" value="${(this.numberSkillsAnswers[idx] || '')[1] || ''}">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="2" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="32 column" value="${(this.numberSkillsAnswers[idx] || '')[2] || ''}">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="3" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px; margin-right: 2px;" placeholder="0" aria-label="16 column" value="${(this.numberSkillsAnswers[idx] || '')[3] || ''}">
-                        <div style="text-align: center; color: var(--text-muted); font-weight: 700; font-size: 16px;">&middot;</div>
+                        <div class="binary-separator" aria-hidden="true" style="text-align: center; color: var(--text-muted); font-weight: 700; font-size: 16px;">&middot;</div>
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="4" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="8 column" value="${(this.numberSkillsAnswers[idx] || '')[4] || ''}">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="5" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="4 column" value="${(this.numberSkillsAnswers[idx] || '')[5] || ''}">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="6" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="2 column" value="${(this.numberSkillsAnswers[idx] || '')[6] || ''}">
@@ -1804,12 +2169,12 @@ class App {
                     </div>
                   ` : q.inputType === 'binary-overflow' ? `
                     <div style="display: flex; flex-direction: column; gap: 12px;">
-                      <div style="display: grid; grid-template-columns: repeat(4, 40px) 12px repeat(4, 40px); gap: 6px; align-items: center;">
+                      <div class="binary-bit-grid" style="display: grid; grid-template-columns: repeat(4, 40px) 12px repeat(4, 40px); gap: 6px; align-items: center;">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="0" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="128 column" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[0] || ''}">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="1" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="64 column" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[1] || ''}">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="2" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="32 column" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[2] || ''}">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="3" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px; margin-right: 2px;" placeholder="0" aria-label="16 column" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[3] || ''}">
-                        <div style="text-align: center; color: var(--text-muted); font-weight: 700; font-size: 16px;">&middot;</div>
+                        <div class="binary-separator" aria-hidden="true" style="text-align: center; color: var(--text-muted); font-weight: 700; font-size: 16px;">&middot;</div>
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="4" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="8 column" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[4] || ''}">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="5" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="4 column" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[5] || ''}">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="6" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="2 column" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[6] || ''}">
@@ -2080,7 +2445,8 @@ class App {
     const attemptKind = this.numberSkillsEvidenceSet.hasOriginalAttempt ? 'retry' : 'original';
     this.numberSkillsEvidenceSet.hasOriginalAttempt = true;
     const evidenceAttempt = this.buildQuestionLevelAttempt(this.numberSkillsEvidenceSet, attemptKind);
-    const masteryScore = evidenceAttempt.score;
+    const assessedScore = evidenceAttempt.score;
+    const milestoneStatesBefore = new Map(this.getSectionMilestones().map(item => [item.id, item.state]));
     window.db.addAttempt({
       studentId: this.currentUser.id,
       type: 'number_skills',
@@ -2089,6 +2455,7 @@ class App {
       supportStepsUsed: this.numberSkillsDifficulty === 'Guided' ? 2 : 0,
       ...evidenceAttempt
     });
+    const newlySecuredMilestones = this.getNewlySecuredMilestones(milestoneStatesBefore);
 
     // Award achievement if perfect score
     if (evidenceAttempt.questionEvidence.every(item => item.correct)) {
@@ -2105,9 +2472,10 @@ class App {
     this.mainContentHTML(`
       <div style="margin-bottom: 24px;">
         <h1>Your practice results</h1>
-        <p>Mastery score: <strong style="color: var(--teal); font-size:20px;">${masteryScore}</strong></p>
+        <p>Assessed result: <strong style="color: var(--teal); font-size:20px;">${assessedScore}</strong></p>
         <p style="font-size: 14px;">Your results have been logged for adaptive spaced practice scaffolding.</p>
       </div>
+      ${this.renderMilestoneAcknowledgement(newlySecuredMilestones)}
       <div>
         ${feedbackHTML}
         ${incorrectQuestions.length ? '<button class="btn btn-primary" id="retry-number-skills-btn" style="margin-top:16px;">Retry incorrect questions</button>' : ''}
@@ -2119,11 +2487,13 @@ class App {
       this.numberSkillsSet = incorrectQuestions;
       this.numberSkillsAnswers = {};
       this.renderStudentPractise(document.getElementById('main-panel'));
+      this.focusMainContent();
     };
   }
 
   mainContentHTML(html) {
     document.getElementById('main-panel').innerHTML = html;
+    this.focusMainContent();
   }
 
   // ==================== SPACED RETRIEVAL QUIZ ====================
@@ -2134,24 +2504,16 @@ class App {
     if (this.quizRetryQuestions) {
       selectedQuestions = this.quizRetryQuestions;
     } else if (this.activeObjectiveId && this.activeObjectiveId !== 'all') {
-      const matchingObjQuestions = topicQuestions.filter(q => q.specificationPointId === this.activeObjectiveId);
+      const milestone = this.getSectionMilestones().find(item => item.id === this.activeObjectiveId);
+      const matchingObjQuestions = window.db.selectObjectiveRecallQuestions(
+        topicQuestions,
+        this.activeObjectiveId,
+        milestone?.demonstratedFocuses || []
+      );
       const otherQuestions = topicQuestions.filter(q => q.specificationPointId !== this.activeObjectiveId);
       selectedQuestions = [...matchingObjQuestions, ...otherQuestions].slice(0, 3);
     } else {
-      const specPoints = [...new Set(topicQuestions.map(q => q.specificationPointId).filter(Boolean))];
-      if (specPoints.length > 1) {
-        const picked = [];
-        specPoints.forEach(sp => {
-          const q = topicQuestions.find(candidate => candidate.specificationPointId === sp && !picked.includes(candidate));
-          if (q && picked.length < 3) picked.push(q);
-        });
-        topicQuestions.forEach(q => {
-          if (picked.length < 3 && !picked.includes(q)) picked.push(q);
-        });
-        selectedQuestions = picked.slice(0, 3);
-      } else {
-        selectedQuestions = topicQuestions.slice(0, 3);
-      }
+      selectedQuestions = window.db.selectTopicRecallQuestions(topicQuestions);
     }
     this.quizQuestions = selectedQuestions;
     this.quizRetryQuestions = null;
@@ -2163,14 +2525,17 @@ class App {
     
     if (this.quizQuestions.length === 0) {
       panel.innerHTML = `
-        <h2>Quiz Recall</h2>
-        <p>No questions found in this topic yet.</p>
-        <button class="btn btn-secondary" id="empty-quiz-back-btn">Back</button>
+        <div class="card" role="status">
+          <h1>Recall questions unavailable</h1>
+          <p>This topic has no recall questions to display. Return Home and choose a different learning task.</p>
+          <button class="btn btn-secondary" id="empty-quiz-back-btn">Back to Home</button>
+        </div>
       `;
-      const backBtn = document.getElementById('empty-quiz-back-btn');
+      const backBtn = panel.querySelector?.('#empty-quiz-back-btn') || document.getElementById('empty-quiz-back-btn');
       if (backBtn) {
         backBtn.onclick = () => this.switchTab('stud-dashboard');
       }
+      this.focusMainContent();
       return;
     }
 
@@ -2181,21 +2546,21 @@ class App {
         <p style="font-size: 15px; color: var(--text-muted); margin: 0;">Assessment-focused mixed sets, mock preparation and timed quiz work.</p>
       </div>
 
-      <div class="card" style="margin-bottom:20px; padding:14px;"><strong>${this.escapeHTML(activeTopic?.paper || 'GCSE')} · ${this.escapeHTML(activeTopic?.name || this.activeTopicId)} · ${this.quizQuestions.length} questions · about 5 minutes</strong><div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Complete this focused set, then return home for the next weakest or least-recently practised area.</div><button type="button" class="btn btn-secondary btn-sm" id="exam-transfer-start-btn" style="margin-top:10px;">Practise applying knowledge to an exam question</button></div>
+      <div class="card" style="margin-bottom:20px; padding:14px;"><strong>${this.escapeHTML(activeTopic?.paper || 'GCSE')} · ${this.escapeHTML(activeTopic?.name || this.activeTopicId)} · ${this.quizQuestions.length} questions · about 5 minutes</strong><div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Complete this focused set, then choose a clear next step from your results.</div></div>
       <form id="quiz-form">
         ${this.quizQuestions.map((q, idx) => {
           let fieldsHTML = '';
           if (q.type === 'mcq') {
-            fieldsHTML = q.options.map(opt => `
-              <label style="display: block; margin-bottom: 8px; font-size: 14px;">
-                <input type="radio" name="q_${idx}" value="${opt}" required> ${opt}
+            fieldsHTML = q.options.map((opt, optionIndex) => `
+              <label for="q-${idx}-option-${optionIndex}" style="display: block; margin-bottom: 8px; font-size: 14px;">
+                <input id="q-${idx}-option-${optionIndex}" type="radio" name="q_${idx}" value="${opt}" required> ${opt}
               </label>
             `).join('');
           } else if (q.type === 'matching') {
             fieldsHTML = q.items.map((item, iIndex) => `
               <div style="margin-bottom: 8px; font-size: 14px;">
-                <strong>${item.label}</strong> matches to:
-                <select name="q_${idx}_${iIndex}" class="form-control" style="max-width:300px; display:inline-block; margin-left:8px;" required>
+                <label for="q-${idx}-match-${iIndex}"><strong>${item.label}</strong> matches to:</label>
+                <select id="q-${idx}-match-${iIndex}" name="q_${idx}_${iIndex}" class="form-control" style="max-width:300px; display:inline-block; margin-left:8px;" required>
                   <option value="" disabled selected>Select...</option>
                   ${q.items.map(it => `<option value="${it.match}">${it.match}</option>`).join('')}
                 </select>
@@ -2204,15 +2569,15 @@ class App {
           } else if (q.type === 'missing_words') {
             fieldsHTML = Object.keys(q.blanks).map(key => `
               <div class="form-group" style="max-width:300px;">
-                <label>${key.toUpperCase()}:</label>
-                <input type="text" name="q_${idx}_${key}" class="form-control" required placeholder="Write term">
+                <label for="q-${idx}-blank-${key}">${key.toUpperCase()}:</label>
+                <input id="q-${idx}-blank-${key}" type="text" name="q_${idx}_${key}" class="form-control" required placeholder="Write term">
               </div>
             `).join('');
           } else if (q.type === 'sequencing') {
             fieldsHTML = q.sequence.map((step, sIdx) => `
               <div style="margin-bottom: 8px; font-size: 14px;">
-                Step ${sIdx + 1}:
-                <select name="q_${idx}_${sIdx}" class="form-control" style="max-width: 400px; display:inline-block; margin-left:8px;" required>
+                <label for="q-${idx}-step-${sIdx}">Step ${sIdx + 1}:</label>
+                <select id="q-${idx}-step-${sIdx}" name="q_${idx}_${sIdx}" class="form-control" style="max-width: 400px; display:inline-block; margin-left:8px;" required>
                   <option value="" disabled selected>Choose step...</option>
                   ${q.sequence.map(s => `<option value="${s}">${s}</option>`).join('')}
                 </select>
@@ -2221,11 +2586,10 @@ class App {
           }
 
           return `
-            <div class="card" style="margin-bottom: 24px;">
-              <h3 style="margin-bottom: 12px;">Question ${idx + 1}</h3>
-              <p style="font-size:15px; color: var(--text-main); font-weight:600; margin-bottom:16px;">${q.question}</p>
+            <fieldset class="card" style="margin-bottom: 24px;">
+              <legend style="font-size:15px; color: var(--text-main); font-weight:600; margin-bottom:16px;">Question ${idx + 1}: ${q.question}</legend>
               <div>${fieldsHTML}</div>
-            </div>
+            </fieldset>
           `;
         }).join('')}
         
@@ -2233,8 +2597,6 @@ class App {
       </form>
     `;
 
-    const transferButton = document.getElementById('exam-transfer-start-btn');
-    if (transferButton) transferButton.onclick = () => this.switchTab('stud-exam-transfer');
     const qForm = document.getElementById('quiz-form');
     if (qForm) {
       qForm.onsubmit = (e) => {
@@ -2242,6 +2604,7 @@ class App {
         this.gradeQuiz();
       };
     }
+    this.focusMainContent();
   }
 
   gradeQuiz() {
@@ -2298,43 +2661,60 @@ class App {
     this.quizEvidenceSet.hasOriginalAttempt = true;
     const evidenceAttempt = this.buildQuestionLevelAttempt(this.quizEvidenceSet, attemptKind);
     const quizScore = evidenceAttempt.score;
+    const milestoneStatesBefore = new Map(this.getSectionMilestones().map(item => [item.id, item.state]));
     const quizAttempt = window.db.addAttempt({
       studentId: this.currentUser.id,
       type: 'spaced_theory',
       topic: this.activeTopicId,
       ...evidenceAttempt
     });
+    const newlySecuredMilestones = this.getNewlySecuredMilestones(milestoneStatesBefore);
 
     this.mainContentHTML(`
-      <div style="margin-bottom: 24px;">
+      <div id="quiz-result-summary" role="status" aria-live="polite" aria-atomic="true" style="margin-bottom: 24px;">
         <h1>Spaced quiz completed</h1>
         <p>Score: <strong style="color: var(--teal); font-size:20px;">${quizScore}</strong></p>
+        <p>${incorrectQuestions.length ? `${incorrectQuestions.length} question${incorrectQuestions.length === 1 ? '' : 's'} can now be retried with guidance.` : 'All questions were correct; no retry is needed.'}</p>
       </div>
+      ${this.renderMilestoneAcknowledgement(newlySecuredMilestones)}
       <div>
         ${feedback}
+        <div class="quiz-result-actions" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:24px;">
+          ${incorrectQuestions.length ? '<button class="btn btn-primary" id="quiz-retry-btn">Retry incorrect questions</button>' : '<button class="btn btn-primary" id="quiz-continue-home-btn">Continue to Home</button>'}
+          ${incorrectQuestions.length ? '<button class="btn btn-secondary" id="quiz-continue-home-btn">Continue to Home</button>' : ''}
+          <button class="btn btn-secondary" id="quiz-exam-transfer-btn">Try an exam-style question</button>
+        </div>
         
         <div class="card" style="margin-top: 24px; padding: 24px; text-align: center;">
-          <h3 style="margin-bottom: 8px;">Self-assessment feedback</h3>
+          <h3 style="margin-bottom: 8px;">Optional confidence reflection</h3>
           <p style="font-size: 14px; margin-bottom: 16px;">Choose what best describes what you knew before feedback. This reflection is stored separately and does not change your score.</p>
-          <div style="display: flex; gap: 8px; justify-content: center;">
+          <div class="quiz-confidence-options" style="display: flex; gap: 8px; justify-content: center;">
             <button class="btn btn-secondary btn-sm quiz-confidence-btn" data-confidence="secure_before_feedback">I knew this securely before feedback</button>
             <button class="btn btn-secondary btn-sm quiz-confidence-btn" data-confidence="partial_before_feedback">I partly knew this before feedback</button>
             <button class="btn btn-secondary btn-sm quiz-confidence-btn" data-confidence="understood_after_feedback">I understood it only after feedback</button>
           </div>
+          <p id="quiz-confidence-status" role="status" aria-live="polite" style="margin:12px 0 0;"></p>
         </div>
-        ${incorrectQuestions.length ? '<button class="btn btn-primary" id="quiz-retry-btn">Retry incorrect questions</button>' : ''}
       </div>
     `);
 
     document.querySelectorAll('.quiz-confidence-btn').forEach(btn => {
       btn.onclick = () => {
-        if (this.recordQuizConfidence(quizAttempt, btn.getAttribute('data-confidence'))) this.switchTab('stud-dashboard');
+        if (this.recordQuizConfidence(quizAttempt, btn.getAttribute('data-confidence'))) {
+          const status = document.getElementById('quiz-confidence-status');
+          if (status) status.textContent = 'Confidence saved; your score is unchanged.';
+        }
       };
     });
+    const continueHomeButton = document.getElementById('quiz-continue-home-btn');
+    if (continueHomeButton) continueHomeButton.onclick = () => this.switchTab('stud-dashboard');
+    const examTransferButton = document.getElementById('quiz-exam-transfer-btn');
+    if (examTransferButton) examTransferButton.onclick = () => this.switchTab('stud-exam-transfer');
     const retryButton = document.getElementById('quiz-retry-btn');
     if (retryButton) retryButton.onclick = () => {
       this.quizRetryQuestions = incorrectQuestions;
       this.renderStudentRecall(document.getElementById('main-panel'));
+      this.focusMainContent();
     };
   }
 
@@ -2505,9 +2885,9 @@ class App {
             <table style="width:100%; border-collapse:collapse; text-align:center; font-size:14px;">
               <thead>
                 <tr style="background:rgba(45,156,145,0.1); border-bottom:2px solid var(--border-color);">
-                  <th style="padding:8px;">Input A</th>
-                  ${this.logicGateType !== 'NOT' ? `<th style="padding:8px;">Input B</th>` : ''}
-                  <th style="padding:8px;">Output Q</th>
+                  <th scope="col" style="padding:8px;">Input A</th>
+                  ${this.logicGateType !== 'NOT' ? `<th scope="col" style="padding:8px;">Input B</th>` : ''}
+                  <th scope="col" style="padding:8px;">Output Q</th>
                 </tr>
               </thead>
               <tbody>
@@ -3877,6 +4257,43 @@ class App {
     const displayedAttempts = this.getDisplayedEvidenceAttempts(attempts);
     const submissions = window.db.getProgrammingSubmissions().filter(s => s.studentId === this.currentUser.id);
     const writtenSubmissions = window.db.getWrittenSubmissions().filter(s => s.studentId === this.currentUser.id);
+    const milestones = this.getSectionMilestones(student.id);
+    const availableMilestones = milestones.filter(item => item.available);
+    const unavailableCount = milestones.length - availableMilestones.length;
+    const securedCount = availableMilestones.filter(item => item.state === 'checkpoint_secured').length;
+    const practicedCount = availableMilestones.filter(item => item.state === 'practice_completed').length;
+    const milestonePercent = availableMilestones.length ? Math.round((securedCount / availableMilestones.length) * 100) : 0;
+    const milestoneGroups = ['Paper 1', 'Paper 2'].map(paper => {
+      const paperMilestones = milestones.filter(item => item.paper === paper);
+      return `
+        <details class="milestone-paper-group">
+          <summary id="milestone-${paper.replace(' ', '-')}"><strong>${paper}</strong></summary>
+          ${paperMilestones.map(item => {
+            const demonstrated = item.demonstratedFocuses.map(focus => this.formatAssessmentFocus(focus));
+            const remaining = item.remainingFocuses.map(focus => this.formatAssessmentFocus(focus));
+            const evidenceSummary = item.available
+              ? [
+                item.evidenceSourceCount
+                  ? `${item.evidenceSourceCount} assessed ${item.evidenceSourceCount === 1 ? 'activity' : 'activities'}`
+                  : 'No assessed activity yet',
+                item.latestDate ? `Latest ${new Date(item.latestDate).toLocaleDateString()}` : null,
+                demonstrated.length ? `Demonstrated: ${demonstrated.join(', ')}` : null,
+                remaining.length ? `Still to demonstrate: ${remaining.join(', ')}` : null
+              ].filter(Boolean).join(' · ')
+              : 'There are not yet enough suitable assessed questions for this section, so it is excluded from the checkpoint total.';
+            return `
+            <div class="milestone-list-row">
+              <div class="milestone-list-heading">
+              <span><strong>${this.escapeHTML(item.id)}</strong> · ${this.escapeHTML(item.name)}</span>
+              ${this.getMilestoneBadge(item)}
+              </div>
+              <span class="milestone-evidence-detail">${this.escapeHTML(evidenceSummary)}</span>
+            </div>
+          `;
+          }).join('')}
+        </details>
+      `;
+    }).join('');
     const topicMasteryHtml = window.db.getUnits().flatMap(unit => unit.topics).map(topic => {
       const topicAttempts = attempts.filter(attempt => this.attemptMatchesTopic(attempt, topic));
       const mastery = this.getDemonstratedMastery(topicAttempts);
@@ -3889,12 +4306,32 @@ class App {
     panel.innerHTML = `
       <div style="margin-bottom: 24px;">
         <h1>📈 Your progress and achievements</h1>
-        <p>Review your mastery path and earned consistency badges.</p>
+        <p>Review demonstrated evidence, section checkpoints and earned badges.</p>
       </div>
+
+      <section class="card milestone-summary-card" aria-labelledby="section-milestone-heading">
+        <div class="milestone-summary-heading">
+          <div>
+            <h2 id="section-milestone-heading">Section milestones</h2>
+            <p>${securedCount} of ${availableMilestones.length} available section checkpoints secured · ${practicedCount} with assessed practice in progress</p>
+          </div>
+          <strong>${securedCount}/${availableMilestones.length}</strong>
+        </div>
+        <div class="milestone-progress" role="progressbar" aria-label="Available section checkpoints secured" aria-valuemin="0" aria-valuemax="${availableMilestones.length}" aria-valuenow="${securedCount}">
+          <span style="width:${milestonePercent}%"></span>
+        </div>
+        <p class="milestone-empty-state">Assessed practice means you have completed marked work in a section. A checkpoint is secured only when that work covers every required assessment focus. Topic evidence describes your latest assessed work; it is not a claim of permanent mastery.</p>
+        ${securedCount === 0 && practicedCount === 0 ? '<p class="milestone-empty-state">No section checkpoints yet. Complete an assessed activity to begin.</p>' : ''}
+        ${unavailableCount ? `<p class="milestone-empty-state">${unavailableCount} curriculum ${unavailableCount === 1 ? 'section is' : 'sections are'} shown below but excluded from this total until enough mapped assessment is available.</p>` : ''}
+        <details class="milestone-details">
+          <summary>View all section milestones</summary>
+          ${milestoneGroups}
+        </details>
+      </section>
 
       <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px;">
         <div>
-          <h2 style="font-size:20px; margin-bottom:16px;">Syllabus Mastery Map</h2>
+          <h2 style="font-size:20px; margin-bottom:16px;">Topic evidence summary</h2>
           
           <div class="card" style="margin-bottom:32px;">
             <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-weight:600;">
@@ -3912,11 +4349,11 @@ class App {
             <table>
               <thead>
                 <tr>
-                  <th>Topic</th>
-                  <th>Type</th>
-                  <th>Score</th>
-                  <th>Evidence status</th>
-                  <th>Date</th>
+                  <th scope="col">Topic</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Score</th>
+                  <th scope="col">Evidence status</th>
+                  <th scope="col">Date</th>
                 </tr>
               </thead>
               <tbody>
@@ -3926,7 +4363,7 @@ class App {
                     <td>${a.type}</td>
                     <td>${a.score}</td>
                     <td>${this.parseDemonstratedScore(a)
-                      ? (Number(a.evidenceVersion) >= 2 ? 'Demonstrated' : 'Demonstrated · reduced-precision legacy')
+                      ? (this.hasCheckpointPrecision(a) ? 'Demonstrated' : 'Demonstrated · reduced-precision legacy')
                       : a.completionStatus === 'awaiting_review' ? 'Awaiting review' : 'Formative or unassessed'}</td>
                     <td>${new Date(a.date).toLocaleDateString()}</td>
                   </tr>
@@ -4131,10 +4568,10 @@ class App {
                 <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
                   <thead>
                     <tr style="background-color: var(--bg-main); border-bottom: 1px solid var(--border-color);">
-                      <th style="padding: 12px 16px; font-weight: 600; color: var(--text-muted);">Student</th>
-                      <th style="padding: 12px 16px; font-weight: 600; color: var(--text-muted);">Reason</th>
-                      <th style="padding: 12px 16px; font-weight: 600; color: var(--text-muted);">Last activity</th>
-                      <th style="padding: 12px 16px; font-weight: 600; color: var(--text-muted); text-align: right;">Action</th>
+                      <th scope="col" style="padding: 12px 16px; font-weight: 600; color: var(--text-muted);">Student</th>
+                      <th scope="col" style="padding: 12px 16px; font-weight: 600; color: var(--text-muted);">Reason</th>
+                      <th scope="col" style="padding: 12px 16px; font-weight: 600; color: var(--text-muted);">Last activity</th>
+                      <th scope="col" style="padding: 12px 16px; font-weight: 600; color: var(--text-muted); text-align: right;">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -4323,13 +4760,13 @@ class App {
         <table>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Year Group</th>
-              <th>Homework Streak</th>
-              <th>Revision Priority</th>
-              <th>Exam transfer</th>
-              <th>Status</th>
+              <th scope="col">Name</th>
+              <th scope="col">Email</th>
+              <th scope="col">Year Group</th>
+              <th scope="col">Homework Streak</th>
+              <th scope="col">Revision Priority</th>
+              <th scope="col">Exam transfer</th>
+              <th scope="col">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -4683,7 +5120,7 @@ class App {
                       </div>
                     </div>
                     <details style="margin-top:10px;"><summary style="cursor:pointer; font-size:12px; font-weight:700;">View specification-point evidence</summary>
-                      <div class="table-container" style="margin-top:10px;"><table><thead><tr><th>Point</th><th>Terms</th><th>Diagnostic</th><th>Retrieval</th><th>Application</th><th>Exam transfer</th><th>Priority gaps</th></tr></thead><tbody>
+                      <div class="table-container" style="margin-top:10px;"><table><thead><tr><th scope="col">Point</th><th scope="col">Terms</th><th scope="col">Diagnostic</th><th scope="col">Retrieval</th><th scope="col">Application</th><th scope="col">Exam transfer</th><th scope="col">Priority gaps</th></tr></thead><tbody>
                         ${objectiveRows.map(item => `<tr><td><strong>${item.specificationPointId}</strong><div style="font-size:11px;">${this.escapeHTML(item.specificationPointName)}</div></td><td>${item.keyTermCount}</td><td>${item.diagnosticCount}</td><td>${item.retrievalCount}</td><td>${item.applicationCount}</td><td>${item.examTransferCount}</td><td style="font-size:11px;">${item.missing.slice(0, 3).join(', ')}${item.missing.length > 3 ? ` +${item.missing.length - 3}` : ''}</td></tr>`).join('')}
                       </tbody></table></div>
                     </details>
@@ -4726,12 +5163,12 @@ class App {
         <table>
           <thead>
             <tr>
-              <th>Student</th>
-              <th>Challenge</th>
-              <th>Status</th>
-              <th>Support Used</th>
-              <th>Reflective Response</th>
-              <th>Code Submitted</th>
+              <th scope="col">Student</th>
+              <th scope="col">Challenge</th>
+              <th scope="col">Status</th>
+              <th scope="col">Support Used</th>
+              <th scope="col">Reflective Response</th>
+              <th scope="col">Code Submitted</th>
             </tr>
           </thead>
           <tbody>
@@ -5173,13 +5610,13 @@ class App {
           OCR Paper 2 Section B questions require exact Exam Reference Language (ERL) or clear pseudocode. Do not confuse Python keywords with ERL syntax!
         </p>
 
-        <div style="overflow-x: auto;">
+        <div class="table-container" tabindex="0" role="region" aria-label="Exam Reference Language syntax table" style="overflow-x: auto;">
           <table style="width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left;">
             <thead>
               <tr style="background: rgba(45, 156, 145, 0.12); border-bottom: 2px solid var(--border-color);">
-                <th style="padding: 10px;">Construct</th>
-                <th style="padding: 10px;">Python 3 Syntax</th>
-                <th style="padding: 10px;">OCR Reference Language (ERL)</th>
+                <th scope="col" style="padding: 10px;">Construct</th>
+                <th scope="col" style="padding: 10px;">Python 3 Syntax</th>
+                <th scope="col" style="padding: 10px;">OCR Reference Language (ERL)</th>
               </tr>
             </thead>
             <tbody>

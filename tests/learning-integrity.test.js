@@ -10,6 +10,10 @@ function loadApp() {
     saveData,
     addAttempt,
     getQuestions: jest.fn(() => []),
+    selectTopicRecallQuestions: jest.fn(questions => questions.slice(0, 3)),
+    selectObjectiveRecallQuestions: jest.fn((questions, objectiveId) =>
+      questions.filter(question => question.specificationPointId === objectiveId).slice(0, 3)
+    ),
     getUnits: jest.fn(() => []),
     getAttempts: jest.fn(() => []),
     getStudents: jest.fn(() => []),
@@ -67,6 +71,20 @@ describe('learning-record integrity', () => {
       evidenceCount: 0,
       legacyEvidenceCount: 0
     });
+  });
+
+  test('describes calculated topic evidence without claiming mastery', () => {
+    const { app } = loadApp();
+
+    expect(app.getDemonstratedMastery([
+      { evidenceVersion: 2, activityId: 'strong', type: 'spaced_theory', score: '3/3', contributesToMastery: true }
+    ]).label).toBe('Strong latest evidence');
+    expect(app.getDemonstratedMastery([
+      { evidenceVersion: 2, activityId: 'developing', type: 'spaced_theory', score: '2/3', contributesToMastery: true }
+    ]).label).toBe('Developing latest evidence');
+    expect(app.getDemonstratedMastery([
+      { evidenceVersion: 2, activityId: 'practice', type: 'spaced_theory', score: '1/3', contributesToMastery: true }
+    ]).label).toBe('More practice needed');
   });
 
   test('keeps meaningful non-matching pseudocode available for review without awarding credit', () => {
@@ -254,6 +272,75 @@ describe('learning-record integrity', () => {
     expect(panel.innerHTML).toContain('Awaiting review');
   });
 
+  test('Progress labels pre-checkpoint version 2 evidence as reduced precision without rewriting it', () => {
+    const { app, database } = loadApp();
+    const attempt = {
+      id: 'pre_checkpoint_v2',
+      studentId: 'student_fixture',
+      type: 'spaced_theory',
+      topic: 'CPU architecture',
+      score: '2/3',
+      evidenceType: 'demonstrated',
+      evidenceVersion: 2,
+      activityId: 'activity_pre_checkpoint',
+      questionEvidence: [
+        { questionId: 'q_1_1_a', correct: true },
+        { questionId: 'q_1_1_b', correct: true },
+        { questionId: 'q_1_1_c', correct: false }
+      ],
+      date: '2026-07-01T12:00:00.000Z'
+    };
+    const original = JSON.parse(JSON.stringify(attempt));
+    app.currentUser = { id: 'student_fixture', role: 'student', achievements: [] };
+    database.getAttempts.mockReturnValue([attempt]);
+    database.getStudents.mockReturnValue([app.currentUser]);
+    database.getUnits.mockReturnValue([{ topics: [{ id: 'topic_1_1', name: 'Systems Architecture' }] }]);
+    const panel = { innerHTML: '' };
+
+    app.renderStudentProgress(panel);
+
+    expect(app.parseDemonstratedScore(attempt)).toMatchObject({
+      earned: 2,
+      available: 3,
+      precision: 'question-level'
+    });
+    expect(panel.innerHTML).toContain('Demonstrated · reduced-precision legacy');
+    expect(attempt).toEqual(original);
+  });
+
+  test('checkpoint precision requires a positive rule version for every represented section', () => {
+    const { app, database } = loadApp();
+    const mixedSectionAttempt = {
+      studentId: 'student_fixture',
+      type: 'spaced_theory',
+      topic: 'Mixed systems recall',
+      score: '2/2',
+      evidenceType: 'demonstrated',
+      date: '2026-07-02T12:00:00.000Z',
+      evidenceVersion: 2,
+      activityId: 'mixed_activity',
+      questionEvidence: [
+        { questionId: 'q1', specificationPointId: '1.1.1', assessmentFocus: 'cpu-component-roles', correct: true },
+        { questionId: 'q2', specificationPointId: '1.1.2', assessmentFocus: 'cache-performance', correct: true }
+      ],
+      checkpointRuleVersions: { '1.1.1': 1 }
+    };
+
+    expect(app.hasCheckpointPrecision(mixedSectionAttempt)).toBe(false);
+    app.currentUser = { id: 'student_fixture', role: 'student', achievements: [] };
+    database.getAttempts.mockReturnValue([mixedSectionAttempt]);
+    database.getStudents.mockReturnValue([app.currentUser]);
+    database.getUnits.mockReturnValue([{ topics: [{ id: 'topic_1_1', name: 'Systems Architecture' }] }]);
+    const panel = { innerHTML: '' };
+    app.renderStudentProgress(panel);
+    expect(panel.innerHTML).toContain('Demonstrated · reduced-precision legacy');
+
+    mixedSectionAttempt.checkpointRuleVersions['1.1.2'] = 1;
+    expect(app.hasCheckpointPrecision(mixedSectionAttempt)).toBe(true);
+    mixedSectionAttempt.checkpointRuleVersions['1.1.2'] = 0;
+    expect(app.hasCheckpointPrecision(mixedSectionAttempt)).toBe(false);
+  });
+
   test('rejects empty, placeholder and meaningless learner decisions', () => {
     const { app, database } = loadApp();
     const attempt = { id: 'attempt_fixture' };
@@ -352,7 +439,78 @@ describe('learning-record integrity', () => {
 
     expect(app.quizQuestions).toHaveLength(3);
     expect(panel.innerHTML).toContain('about 5 minutes');
+    expect((panel.innerHTML.match(/<fieldset/g) || [])).toHaveLength(3);
+    expect((panel.innerHTML.match(/<legend/g) || [])).toHaveLength(3);
+    expect(panel.innerHTML).toContain('for="q-0-option-0"');
+    expect(panel.innerHTML).toContain('id="q-0-option-0"');
     expect(database.addAttempt).not.toHaveBeenCalled();
+  });
+
+  test('structured recall controls have explicit labels without changing grading names', () => {
+    const { app, database } = loadApp();
+    database.getQuestions.mockReturnValue([
+      {
+        id: 'matching',
+        topicId: 'topic_fixture',
+        type: 'matching',
+        question: 'Match each item',
+        items: [{ label: 'A', match: 'B' }]
+      },
+      {
+        id: 'missing',
+        topicId: 'topic_fixture',
+        type: 'missing_words',
+        question: 'Complete each blank',
+        blanks: { word1: 'CPU' }
+      },
+      {
+        id: 'sequence',
+        topicId: 'topic_fixture',
+        type: 'sequencing',
+        question: 'Order each step',
+        sequence: ['Fetch', 'Decode']
+      }
+    ]);
+    database.getUnits.mockReturnValue([{
+      paper: 'Paper fixture',
+      topics: [{ id: 'topic_fixture', name: 'Synthetic topic' }]
+    }]);
+    app.activeTopicId = 'topic_fixture';
+    const panel = { innerHTML: '' };
+
+    app.renderStudentRecall(panel);
+
+    expect(panel.innerHTML).toContain('for="q-0-match-0"');
+    expect(panel.innerHTML).toContain('name="q_0_0"');
+    expect(panel.innerHTML).toContain('for="q-1-blank-word1"');
+    expect(panel.innerHTML).toContain('name="q_1_word1"');
+    expect(panel.innerHTML).toContain('for="q-2-step-0"');
+    expect(panel.innerHTML).toContain('name="q_2_0"');
+  });
+
+  test('focus management targets the new route heading', () => {
+    const { app, document } = loadApp();
+    const heading = { focus: jest.fn(), setAttribute: jest.fn() };
+    const mainPanel = { focus: jest.fn(), querySelector: jest.fn(() => heading) };
+    document.getElementById.mockImplementation(id => id === 'main-panel' ? mainPanel : null);
+
+    app.focusMainContent();
+
+    expect(heading.setAttribute).toHaveBeenCalledWith('tabindex', '-1');
+    expect(heading.focus).toHaveBeenCalled();
+    expect(mainPanel.focus).not.toHaveBeenCalled();
+  });
+
+  test('quiz results prioritise retry and keep confidence separate from navigation', () => {
+    const source = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+    const retryIndex = source.indexOf('id="quiz-retry-btn"');
+    const confidenceIndex = source.indexOf('Optional confidence reflection');
+
+    expect(retryIndex).toBeGreaterThan(-1);
+    expect(confidenceIndex).toBeGreaterThan(retryIndex);
+    expect(source).toContain('Confidence saved; your score is unchanged.');
+    expect(source).toContain('id="quiz-continue-home-btn"');
+    expect(source).not.toContain('id="exam-transfer-start-btn"');
   });
 
   test('incorrect responses always retain a retry route', () => {
