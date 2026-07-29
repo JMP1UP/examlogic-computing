@@ -4,6 +4,12 @@ All notable changes to ExamLogic Computing are recorded here.
 
 ## [Unreleased] - 2026-07-26
 
+### Added
+- Added restrained, evidence-backed section milestones across Learn, Dashboard and Progress.
+- Added quiet checkpoint acknowledgement after qualifying assessed activities, without points, streaks, leaderboards or page-view rewards.
+- Added validation that formative work, awaiting-review work, legacy reduced-precision records and repeated retries cannot inflate section checkpoints.
+- Excluded two under-assessed sections from the achievable checkpoint denominator while keeping them visibly labelled, and routed new learners to guided teaching rather than unsupported recall.
+
 ### Fixed
 - Corrected out-of-scope TCP/IP layer-name assessment, misleading MAC permanence and storage-unit feedback, ERL terminator syntax, a variables/constants mapping, and inaccurate programming explanations.
 - Reclassified the old layer-name item as a preserved historical record and added an in-scope layers-benefit replacement.

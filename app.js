@@ -222,6 +222,134 @@ class App {
       .map(item => item.attempt);
   }
 
+  getSectionMilestones(studentId = this.currentUser?.id) {
+    const questions = window.db.getQuestions();
+    const questionToSection = new Map(questions.map(question => [question.id, question.specificationPointId]));
+    const questionCountsBySection = new Map();
+    questions.forEach(question => {
+      questionCountsBySection.set(
+        question.specificationPointId,
+        (questionCountsBySection.get(question.specificationPointId) || 0) + 1
+      );
+    });
+    const sections = window.db.getUnits().flatMap(unit => (unit.topics || []).flatMap(topic =>
+      (topic.objectives || []).map(objective => ({
+        id: objective.id,
+        name: objective.name,
+        topicId: topic.id,
+        topicName: topic.name,
+        paper: unit.paper,
+        available: (questionCountsBySection.get(objective.id) || 0) >= 2
+      }))
+    ));
+    const numberSkillSections = {
+      1: '1.2.4a',
+      2: '1.2.4a',
+      3: '1.2.4c',
+      4: '1.2.4d'
+    };
+    const milestoneById = new Map(sections.map(section => [section.id, {
+      ...section,
+      state: section.available ? 'not_started' : 'not_available',
+      label: section.available ? 'Not started' : 'Checkpoint unavailable',
+      latestDate: null,
+      evidenceSources: new Set(),
+      questionOutcomes: new Map()
+    }]));
+    const sectionForQuestion = questionId => {
+      if (questionToSection.has(questionId)) return questionToSection.get(questionId);
+      const numberSkillMatch = String(questionId || '').match(/^number_skill_[a-z]+_(\d)$/);
+      if (numberSkillMatch) return numberSkillSections[Number(numberSkillMatch[1])] || null;
+      if (/^pseudocode_\d+$/.test(String(questionId || ''))) return '2.2.ERL';
+      return null;
+    };
+    const latestAttempts = this.getLatestDemonstratedAttempts(
+      window.db.getAttempts().filter(attempt => attempt.studentId === studentId)
+    ).sort((left, right) => new Date(left.attempt.date || 0) - new Date(right.attempt.date || 0));
+
+    latestAttempts.forEach(({ attempt, score }) => {
+      const completeQuestionSet = Array.isArray(attempt.originalQuestionIds)
+        && attempt.originalQuestionIds.length === Number(attempt.originalDenominator)
+        && score.available === Number(attempt.originalDenominator);
+      const singleAssessedResponse = score.available === 1
+        && attempt.questionId
+        && (attempt.type === 'pseudocode_assessed' || Number(attempt.evidenceVersion) >= 2);
+      if (!completeQuestionSet && !singleAssessedResponse) return;
+
+      const outcomes = Array.isArray(attempt.questionEvidence)
+        ? attempt.questionEvidence
+        : [{ questionId: attempt.questionId, correct: score.earned === score.available }];
+      const groupedBySection = new Map();
+      outcomes.forEach(outcome => {
+        const sectionId = sectionForQuestion(outcome.questionId);
+        if (!sectionId || !milestoneById.has(sectionId)) return;
+        if (!milestoneById.get(sectionId).available) return;
+        if (!groupedBySection.has(sectionId)) groupedBySection.set(sectionId, []);
+        groupedBySection.get(sectionId).push(outcome);
+      });
+
+      groupedBySection.forEach((sectionOutcomes, sectionId) => {
+        const milestone = milestoneById.get(sectionId);
+        const activityId = attempt.activityId || attempt.questionId;
+        milestone.state = 'practice_completed';
+        milestone.label = 'Practice completed';
+        milestone.evidenceSources.add(activityId);
+        sectionOutcomes.forEach(outcome => milestone.questionOutcomes.set(outcome.questionId, outcome.correct === true));
+        if (!milestone.latestDate || new Date(attempt.date) >= new Date(milestone.latestDate)) {
+          milestone.latestDate = attempt.date;
+        }
+      });
+    });
+
+    milestoneById.forEach(milestone => {
+      const outcomes = [...milestone.questionOutcomes.values()];
+      const correctCount = outcomes.filter(Boolean).length;
+      const ratio = outcomes.length ? correctCount / outcomes.length : 0;
+      if (correctCount >= 2 && ratio >= 0.8) {
+        milestone.state = 'checkpoint_secured';
+        milestone.label = 'Checkpoint secured';
+      }
+    });
+
+    return [...milestoneById.values()].map(milestone => ({
+      ...milestone,
+      evidenceSourceCount: milestone.evidenceSources.size,
+      correctQuestionCount: [...milestone.questionOutcomes.values()].filter(Boolean).length,
+      attemptedQuestionCount: milestone.questionOutcomes.size,
+      evidenceSources: undefined,
+      questionOutcomes: undefined
+    }));
+  }
+
+  getMilestoneBadge(milestone) {
+    const badgeClass = milestone.state === 'checkpoint_secured'
+      ? 'milestone-secured'
+      : milestone.state === 'practice_completed'
+        ? 'milestone-practised'
+        : milestone.state === 'not_available' ? 'milestone-unavailable' : 'milestone-not-started';
+    const symbol = milestone.state === 'checkpoint_secured'
+      ? '&#10003;'
+      : milestone.state === 'practice_completed' ? '&#9679;' : milestone.state === 'not_available' ? '&mdash;' : '&#9675;';
+    return `<span class="section-milestone ${badgeClass}" data-milestone-state="${milestone.state}"><span aria-hidden="true">${symbol}</span> ${milestone.label}</span>`;
+  }
+
+  getNewlySecuredMilestones(previousStates, studentId = this.currentUser?.id) {
+    return this.getSectionMilestones(studentId).filter(milestone =>
+      milestone.state === 'checkpoint_secured'
+      && previousStates.get(milestone.id) !== 'checkpoint_secured'
+    );
+  }
+
+  renderMilestoneAcknowledgement(milestones) {
+    if (!milestones.length) return '';
+    return milestones.map(milestone => `
+      <div class="milestone-acknowledgement" role="status" aria-live="polite">
+        <strong>Section checkpoint secured: ${this.escapeHTML(milestone.id)}</strong>
+        <span>${this.escapeHTML(milestone.name)} is now supported by demonstrated evidence.</span>
+      </div>
+    `).join('');
+  }
+
   getPendingPseudocodeReviews(attempts) {
     const latestByLearnerTask = new Map();
     attempts.forEach((attempt, index) => {
@@ -979,6 +1107,11 @@ class App {
     const student = window.db.getStudents().find(s => s.id === this.currentUser.id) || this.currentUser;
     const assignments = window.db.getAssignments().filter(item => this.isPublishedToStudent(item, student));
     const demonstratedProgress = this.getDemonstratedMastery(window.db.getAttempts().filter(item => item.studentId === student.id));
+    const milestones = this.getSectionMilestones(student.id);
+    const availableMilestones = milestones.filter(item => item.available);
+    const securedMilestones = availableMilestones.filter(item => item.state === 'checkpoint_secured');
+    const nextMilestone = availableMilestones.find(item => item.state === 'practice_completed')
+      || availableMilestones.find(item => item.state === 'not_started');
     const activeTestPreps = window.db.getTestPreps().filter(p => p.status === 'Active' && this.isPublishedToStudent(p, student));
     const upcomingSessions = window.db.getSupportSessions().filter(item => item.published && this.isPublishedToStudent(item, student));
     const controls = window.db.getClassroomControls();
@@ -1007,6 +1140,7 @@ class App {
 
     const greeting = this.getTimeBasedGreeting();
     const shortName = student.name.split(' ')[0];
+    const hasDemonstratedBaseline = demonstratedProgress.ratio !== null;
 
     // Compute dominant task for "Do this now"
     let dominantTaskHtml = '';
@@ -1049,11 +1183,13 @@ class App {
         dominantTaskHtml = `
           <div class="card card-action" style="padding: 24px; border-left: 5px solid var(--teal); margin-bottom: 24px;">
             <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
-              <span class="badge badge-primary">Spaced recall · 5 mins</span>
+              <span class="badge badge-primary">${hasDemonstratedBaseline ? 'Spaced recall · 5 mins' : 'Start here · 10 mins'}</span>
             </div>
-            <h3 style="font-size: 22px; margin-bottom: 8px; font-weight: 700; color: var(--text-main);">🔢 Binary shifts & conversions</h3>
-            <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 24px; max-width: 90%;">You last practised conversions three weeks ago. Let's strengthen it today.</p>
-            <button class="btn btn-primary btn-lg" id="today-rec-btn" style="min-width: 180px; align-self: flex-start; min-height: 40px;">Continue practice</button>
+            <h3 style="font-size: 22px; margin-bottom: 8px; font-weight: 700; color: var(--text-main);">${hasDemonstratedBaseline ? '🔢 Binary shifts & conversions' : 'Architecture of the CPU'}</h3>
+            <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 24px; max-width: 90%;">${hasDemonstratedBaseline
+              ? 'Your existing evidence suggests this short retrieval activity is worth revisiting.'
+              : 'Build confidence with a guided explanation and worked example before attempting assessed questions.'}</p>
+            <button class="btn btn-primary btn-lg" id="today-rec-btn" style="min-width: 180px; align-self: flex-start; min-height: 40px;">${hasDemonstratedBaseline ? 'Continue practice' : 'Start guided learning'}</button>
           </div>
         `;
       }
@@ -1206,7 +1342,20 @@ class App {
             <h2 style="font-size:18px; margin-bottom:12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">This week</h2>
             <div class="card card-progress" style="margin-bottom: 20px; padding: 20px;">
               <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Assessed evidence</h3>
-              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 0;">${demonstratedProgress.evidenceCount} latest assessed ${demonstratedProgress.evidenceCount === 1 ? 'activity' : 'activities'} currently contribute to progress.</p>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 0;">${demonstratedProgress.evidenceCount} latest assessed ${demonstratedProgress.evidenceCount === 1 ? 'activity contributes' : 'activities contribute'} to progress.</p>
+              ${demonstratedProgress.legacyEvidenceCount ? '<p style="font-size:12px; color:var(--text-muted); margin:8px 0 0;">Older reduced-precision evidence remains visible in Progress but cannot create a section checkpoint.</p>' : ''}
+            </div>
+            <div class="card milestone-dashboard-card" style="margin-bottom: 20px; padding: 20px;">
+              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Section checkpoints</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 10px;">${securedMilestones.length} of ${availableMilestones.length} available checkpoints secured through assessed work.</p>
+              ${nextMilestone ? `
+                <div style="font-size:13px; margin-bottom:10px;">
+                  <strong>Next:</strong> ${this.escapeHTML(nextMilestone.id)} · ${this.escapeHTML(nextMilestone.name)}
+                </div>
+                <p style="font-size:12px; color:var(--text-muted); margin:0;">${nextMilestone.state === 'practice_completed'
+                  ? 'Continue assessed practice when it is your main task.'
+                  : 'Use Learn when you are ready to work towards this checkpoint.'}</p>
+              ` : '<p style="font-size:13px; margin:0;">All available section checkpoints are secured.</p>'}
             </div>
             <div class="card" style="margin-bottom:20px; padding:16px 20px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
               <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Computing workload</h3>
@@ -1257,7 +1406,15 @@ class App {
 
     const todayRecBtn = document.getElementById('today-rec-btn');
     if (todayRecBtn) {
-      todayRecBtn.onclick = () => { this.switchTab('stud-practise'); };
+      todayRecBtn.onclick = () => {
+        if (!hasDemonstratedBaseline) {
+          this.activeTopicId = nextMilestone?.topicId || 'topic_1_1';
+          this.activeObjectiveId = nextMilestone?.id || '1.1.1';
+          this.switchTab('stud-learn');
+          return;
+        }
+        this.switchTab('stud-practise');
+      };
     }
   }
 
@@ -1292,15 +1449,20 @@ class App {
       : allObjectiveTeaching;
 
     const totalCoreMins = allObjectiveTeaching.reduce((acc, item) => acc + (item.workload?.coreLearningMinutes || 10), 0);
+    const milestoneBySection = new Map(this.getSectionMilestones().map(milestone => [milestone.id, milestone]));
 
     const objectiveTeachingHtml = objectiveTeaching.length
       ? objectiveTeaching.map(item => {
           const savedPractice = typeof localStorage !== 'undefined' ? (localStorage.getItem(`try_practice_${item.id}`) || '') : '';
+          const milestone = milestoneBySection.get(item.id);
           return `
           <article class="card" style="padding: 22px; border: 1px solid var(--border-color);" aria-labelledby="objective-${this.escapeHTML(item.id)}">
             <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
               <h3 id="objective-${this.escapeHTML(item.id)}" style="font-size: 18px; margin: 0;">${this.escapeHTML(item.id)} &middot; ${this.escapeHTML(item.scope)}</h3>
-              <span class="badge badge-secondary">OCR ${this.escapeHTML(item.officialSpecificationPointId)}</span>
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                ${milestone ? this.getMilestoneBadge(milestone) : ''}
+                <span class="badge badge-secondary">OCR ${this.escapeHTML(item.officialSpecificationPointId)}</span>
+              </div>
             </div>
             <p style="line-height: 1.7; margin: 14px 0;">${this.escapeHTML(item.explanation)}</p>
             <div style="background: rgba(45, 156, 145, 0.08); border-left: 4px solid var(--teal); padding: 14px; border-radius: 0 8px 8px 0;">
@@ -2081,6 +2243,7 @@ class App {
     this.numberSkillsEvidenceSet.hasOriginalAttempt = true;
     const evidenceAttempt = this.buildQuestionLevelAttempt(this.numberSkillsEvidenceSet, attemptKind);
     const masteryScore = evidenceAttempt.score;
+    const milestoneStatesBefore = new Map(this.getSectionMilestones().map(item => [item.id, item.state]));
     window.db.addAttempt({
       studentId: this.currentUser.id,
       type: 'number_skills',
@@ -2089,6 +2252,7 @@ class App {
       supportStepsUsed: this.numberSkillsDifficulty === 'Guided' ? 2 : 0,
       ...evidenceAttempt
     });
+    const newlySecuredMilestones = this.getNewlySecuredMilestones(milestoneStatesBefore);
 
     // Award achievement if perfect score
     if (evidenceAttempt.questionEvidence.every(item => item.correct)) {
@@ -2108,6 +2272,7 @@ class App {
         <p>Mastery score: <strong style="color: var(--teal); font-size:20px;">${masteryScore}</strong></p>
         <p style="font-size: 14px;">Your results have been logged for adaptive spaced practice scaffolding.</p>
       </div>
+      ${this.renderMilestoneAcknowledgement(newlySecuredMilestones)}
       <div>
         ${feedbackHTML}
         ${incorrectQuestions.length ? '<button class="btn btn-primary" id="retry-number-skills-btn" style="margin-top:16px;">Retry incorrect questions</button>' : ''}
@@ -2298,18 +2463,21 @@ class App {
     this.quizEvidenceSet.hasOriginalAttempt = true;
     const evidenceAttempt = this.buildQuestionLevelAttempt(this.quizEvidenceSet, attemptKind);
     const quizScore = evidenceAttempt.score;
+    const milestoneStatesBefore = new Map(this.getSectionMilestones().map(item => [item.id, item.state]));
     const quizAttempt = window.db.addAttempt({
       studentId: this.currentUser.id,
       type: 'spaced_theory',
       topic: this.activeTopicId,
       ...evidenceAttempt
     });
+    const newlySecuredMilestones = this.getNewlySecuredMilestones(milestoneStatesBefore);
 
     this.mainContentHTML(`
       <div style="margin-bottom: 24px;">
         <h1>Spaced quiz completed</h1>
         <p>Score: <strong style="color: var(--teal); font-size:20px;">${quizScore}</strong></p>
       </div>
+      ${this.renderMilestoneAcknowledgement(newlySecuredMilestones)}
       <div>
         ${feedback}
         
@@ -3877,6 +4045,26 @@ class App {
     const displayedAttempts = this.getDisplayedEvidenceAttempts(attempts);
     const submissions = window.db.getProgrammingSubmissions().filter(s => s.studentId === this.currentUser.id);
     const writtenSubmissions = window.db.getWrittenSubmissions().filter(s => s.studentId === this.currentUser.id);
+    const milestones = this.getSectionMilestones(student.id);
+    const availableMilestones = milestones.filter(item => item.available);
+    const unavailableCount = milestones.length - availableMilestones.length;
+    const securedCount = availableMilestones.filter(item => item.state === 'checkpoint_secured').length;
+    const practicedCount = availableMilestones.filter(item => item.state === 'practice_completed').length;
+    const milestonePercent = availableMilestones.length ? Math.round((securedCount / availableMilestones.length) * 100) : 0;
+    const milestoneGroups = ['Paper 1', 'Paper 2'].map(paper => {
+      const paperMilestones = milestones.filter(item => item.paper === paper);
+      return `
+        <section class="milestone-paper-group" aria-labelledby="milestone-${paper.replace(' ', '-')}">
+          <h4 id="milestone-${paper.replace(' ', '-')}">${paper}</h4>
+          ${paperMilestones.map(item => `
+            <div class="milestone-list-row">
+              <span><strong>${this.escapeHTML(item.id)}</strong> · ${this.escapeHTML(item.name)}</span>
+              ${this.getMilestoneBadge(item)}
+            </div>
+          `).join('')}
+        </section>
+      `;
+    }).join('');
     const topicMasteryHtml = window.db.getUnits().flatMap(unit => unit.topics).map(topic => {
       const topicAttempts = attempts.filter(attempt => this.attemptMatchesTopic(attempt, topic));
       const mastery = this.getDemonstratedMastery(topicAttempts);
@@ -3889,8 +4077,27 @@ class App {
     panel.innerHTML = `
       <div style="margin-bottom: 24px;">
         <h1>📈 Your progress and achievements</h1>
-        <p>Review your mastery path and earned consistency badges.</p>
+        <p>Review demonstrated evidence, section checkpoints and earned badges.</p>
       </div>
+
+      <section class="card milestone-summary-card" aria-labelledby="section-milestone-heading">
+        <div class="milestone-summary-heading">
+          <div>
+            <h2 id="section-milestone-heading">Section milestones</h2>
+            <p>${securedCount} of ${availableMilestones.length} available section checkpoints secured · ${practicedCount} with assessed practice in progress</p>
+          </div>
+          <strong>${securedCount}/${availableMilestones.length}</strong>
+        </div>
+        <div class="milestone-progress" role="progressbar" aria-label="Available section checkpoints secured" aria-valuemin="0" aria-valuemax="${availableMilestones.length}" aria-valuenow="${securedCount}">
+          <span style="width:${milestonePercent}%"></span>
+        </div>
+        ${securedCount === 0 && practicedCount === 0 ? '<p class="milestone-empty-state">No section checkpoints yet. Complete an assessed activity to begin.</p>' : ''}
+        ${unavailableCount ? `<p class="milestone-empty-state">${unavailableCount} curriculum ${unavailableCount === 1 ? 'section is' : 'sections are'} shown below but excluded from this total until enough mapped assessment is available.</p>` : ''}
+        <details class="milestone-details">
+          <summary>View all section milestones</summary>
+          ${milestoneGroups}
+        </details>
+      </section>
 
       <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px;">
         <div>

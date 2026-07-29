@@ -1,6 +1,8 @@
 # Current priorities — ExamLogic Computing
 
 ## Now
+- [x] Add restrained section milestones derived only from demonstrated evidence.
+- [ ] Add sufficient specification-mapped assessment for `2.2.2` and `2.2.PY` before enabling their section checkpoints.
 - [x] Establish 25Thirty Learning design standards in `docs/design.md`.
 - [x] Document practice question and logic challenge user flows in `docs/user-flows.md`.
 - [x] Audit code display components for high contrast and monospaced font standards.

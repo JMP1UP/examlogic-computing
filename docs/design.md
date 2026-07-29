@@ -29,6 +29,7 @@ ExamLogic Computing strictly adheres to the **25Thirty Learning** design mode.
 2. **Interactive Question & Logic Runner**: Practice environment with immediate feedback, test cases, and mark scheme breakdowns.
 3. **Revision Flashcards & Quizzes**: Multiple-choice and fill-in-the-blank revision exercises.
 4. **Student Progress Tracker**: Evidence-based summaries showing demonstrated results; page views, model answers, confidence and awaiting-review work do not create mastery.
+5. **Section Milestones**: A quiet evidence indicator (`Not started`, `Practice completed`, `Checkpoint secured`) derived from assessed question-level evidence. A section is labelled `Checkpoint unavailable` and excluded from the achievable total when it lacks enough mapped assessment. There are no points, streaks, leaderboards or rewards for opening content.
 
 ## 5. Copy Style & Voice
 - Direct, encouraging, clear language.
