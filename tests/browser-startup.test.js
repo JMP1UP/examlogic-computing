@@ -339,10 +339,28 @@ describe('production browser startup', () => {
 
     expect(panel.innerHTML).toContain('Today’s section');
     expect(panel.innerHTML).toContain('about 10 minutes');
-    expect(panel.innerHTML).toContain('Check this section (up to 3 questions)');
+    expect(panel.innerHTML).toContain('Check this section (3 questions · about 6 min)');
     expect(panel.innerHTML).toContain('View full topic');
     expect(panel.innerHTML).not.toContain('More ways to revise this topic');
     expect(panel.innerHTML).not.toContain('Copy notes and terms');
+  });
+
+  test('focused learning labels a completed section check as a recheck', () => {
+    const context = loadProductionScripts();
+    const panel = createPanel();
+    context.app.activeTopicId = 'topic_1_1';
+    context.app.activeObjectiveId = '1.1.1';
+    context.app.getSectionMilestones = jest.fn(() => [{
+      id: '1.1.1',
+      state: 'checkpoint_secured',
+      label: 'Section goal met'
+    }]);
+
+    context.app.renderStudentLearn(panel);
+
+    expect(panel.innerHTML).toContain('Section goal met');
+    expect(panel.innerHTML).toContain('Check this section again (3 questions · about 6 min)');
+    expect(panel.innerHTML).not.toContain('>Check this section (3 questions · about 6 min)<');
   });
 
   test('focused learning can return to the complete topic', () => {
@@ -383,6 +401,11 @@ describe('production browser startup', () => {
     context.app.switchTab = jest.fn();
     context.app.renderStudentRecall = jest.fn();
     context.app.activeTopicId = 'topic_1_1';
+    context.app.activeObjectiveId = '1.1.1';
+    context.app.activeExamTransferId = 'transfer_1';
+    context.app.examTransferStage = 'answer';
+    context.app.examTransferPlan = { 0: 'stale plan' };
+    context.app.examTransferResponse = 'stale response';
     context.app.quizQuestions = [{
       id: 'retry_fixture',
       type: 'mcq',
@@ -405,6 +428,122 @@ describe('production browser startup', () => {
     expect(context.app.switchTab).toHaveBeenCalledWith('stud-dashboard');
     transferButton.onclick();
     expect(context.app.switchTab).toHaveBeenCalledWith('stud-exam-transfer');
+    expect(context.app.activeExamTransferId).toBe('transfer_5');
+    expect(context.app.examTransferStage).toBe('decode');
+    expect(context.app.examTransferPlan).toEqual({});
+    expect(context.app.examTransferResponse).toBe('');
+  });
+
+  test('multiple-choice option order is mixed without mutating authored questions', () => {
+    const context = loadProductionScripts();
+    const questions = context.db.getQuestions().filter(question => question.type === 'mcq');
+    const originals = questions.map(question => [...question.options]);
+    const ordered = questions.map(question =>
+      context.app.getStableOptionOrder(question, 'activity_option_order_fixture')
+    );
+    const correctPositions = ordered.map(question => question.options.indexOf(question.answer));
+
+    expect(new Set(correctPositions).size).toBeGreaterThan(1);
+    expect(correctPositions.filter(position => position === 0).length).toBeLessThan(correctPositions.length);
+    expect(questions.map(question => question.options)).toEqual(originals);
+  });
+
+  test('a retry preserves the option order from the original activity', () => {
+    const context = loadProductionScripts();
+    const question = context.db.getQuestions().find(item => item.type === 'mcq');
+    const activityQuestion = context.app.getStableOptionOrder(question, 'stable_retry_activity');
+    context.app.quizQuestions = [activityQuestion];
+
+    const retryQuestions = context.app.getRetryQuestions(context.app.quizQuestions, [false]);
+
+    expect(retryQuestions[0]).toBe(activityQuestion);
+    expect(retryQuestions[0].options).toEqual(activityQuestion.options);
+  });
+
+  test('section-labelled exam transfer requires an exact specification match', () => {
+    const context = loadProductionScripts();
+
+    context.app.activeTopicId = 'topic_1_1';
+    context.app.activeObjectiveId = '1.1.2';
+    expect(context.app.getMatchingExamTransferTask()).toBeNull();
+    expect(context.app.getMatchingExamTransferTask(undefined, undefined, true)).toMatchObject({
+      id: 'transfer_5',
+      topicId: 'topic_1_1'
+    });
+
+    context.app.activeTopicId = 'topic_missing';
+    context.app.activeObjectiveId = 'missing';
+    expect(context.app.getMatchingExamTransferTask()).toBeNull();
+    expect(context.app.activateExamTransferForCurrentLearning()).toBe(false);
+  });
+
+  test('the Learn renderer binds its exact-match exam application action', () => {
+    const context = loadProductionScripts();
+    const examButton = {};
+    const panel = {
+      innerHTML: '',
+      querySelector: selector => selector === '.goto-exam-application-btn' ? examButton : null,
+      querySelectorAll: () => []
+    };
+    context.app.currentUser = context.db.getStudents()[0];
+    context.app.activeTopicId = 'topic_1_1';
+    context.app.activeObjectiveId = '1.1.1';
+    context.app.switchTab = jest.fn();
+
+    context.app.renderStudentLearn(panel);
+
+    expect(panel.innerHTML).toContain('Apply this in a 4-mark exam question');
+    expect(examButton.onclick).toEqual(expect.any(Function));
+    examButton.onclick();
+    expect(context.app.activeExamTransferId).toBe('transfer_5');
+    expect(context.app.switchTab).toHaveBeenCalledWith('stud-exam-transfer');
+  });
+
+  test('exam-transfer scenarios are ordered by paper and specification point', () => {
+    const context = loadProductionScripts();
+    const labels = context.app.getOrderedExamTransferTasks()
+      .map(task => `${task.paper}:${task.specificationPointId}`);
+
+    expect(labels).toEqual([
+      'Paper 1:1.1.1',
+      'Paper 1:1.2.1',
+      'Paper 1:1.2.4c',
+      'Paper 1:1.3.2',
+      'Paper 1:1.6.1',
+      'Paper 2:2.1.2',
+      'Paper 2:2.1.3',
+      'Paper 2:2.2.1',
+      'Paper 2:2.2.3',
+      'Paper 2:2.2.ERL',
+      'Paper 2:2.3.2',
+      'Paper 2:2.3.2',
+      'Paper 2:2.5.1'
+    ]);
+  });
+
+  test('every exam-transfer stage keeps the question visible and moves focus predictably', () => {
+    const context = loadProductionScripts();
+    const question = { scrollIntoView: jest.fn() };
+    const stage = { focus: jest.fn() };
+    const panel = {
+      innerHTML: '',
+      querySelector: selector => selector === '#exam-transfer-question'
+        ? question
+        : selector === '#exam-transfer-stage' ? stage : null,
+      querySelectorAll: () => []
+    };
+    context.app.currentUser = context.db.getStudents()[0];
+
+    for (const activeStage of ['decode', 'plan', 'answer', 'check', 'retry']) {
+      context.app.examTransferStage = activeStage;
+      context.app.renderStudentExamTransfer(panel);
+      expect(panel.innerHTML).toContain('id="exam-transfer-question"');
+      expect(panel.innerHTML).toContain('id="exam-transfer-stage"');
+    }
+
+    expect(question.scrollIntoView).toHaveBeenCalledTimes(5);
+    expect(stage.focus).toHaveBeenCalledTimes(5);
+    expect(stage.focus).toHaveBeenLastCalledWith({ preventScroll: true });
   });
 
   test('dashboard combines required workloads and aligns the suggested clean-learner duration', async () => {
@@ -433,8 +572,75 @@ describe('production browser startup', () => {
     context.app.renderStudentDashboard(panel);
 
     expect(panel.innerHTML).toContain('two required tasks · 25 minutes');
-    expect(panel.innerHTML).toContain('Suggested guided learning · 10 minutes');
+    expect(panel.innerHTML).toContain('Required work takes priority');
     expect(panel.innerHTML).not.toContain('3 of 5 test cases passed');
+  });
+
+  test('required work remains the only true dashboard next action', () => {
+    const context = loadProductionScripts();
+    const panel = createPanel();
+    context.app.currentUser = context.db.getStudents()[0];
+
+    context.app.renderStudentDashboard(panel);
+
+    expect(panel.innerHTML).toContain('Weekly study rhythm &middot; paused');
+    expect(panel.innerHTML).toContain('Recommended study resumes after required work');
+    expect(panel.innerHTML).not.toContain('planned activities complete');
+    expect(panel.innerHTML).not.toContain('id="weekly-rhythm-next"');
+  });
+
+  test('pause and real route re-entry preserve the active recall session', () => {
+    const context = loadProductionScripts();
+    const mainPanel = createPanel();
+    mainPanel.focus = jest.fn();
+    const navList = { innerHTML: '', appendChild: jest.fn() };
+    const appShell = { style: {}, setAttribute: jest.fn(), removeAttribute: jest.fn() };
+    const elements = {
+      'login-screen': { style: {} },
+      'app-shell': appShell,
+      'skip-link': { setAttribute: jest.fn() },
+      'nav-links-list': navList,
+      'main-panel': mainPanel,
+      'user-display-name': { textContent: '' },
+      'user-display-role': { textContent: '' },
+      'demo-banner': { style: {} }
+    };
+    context.document.getElementById = id => elements[id] || null;
+    context.document.createElement = () => ({
+      innerHTML: '',
+      querySelector: () => ({ onclick: null }),
+      appendChild: jest.fn()
+    });
+    context.app.currentUser = context.db.getStudents()[0];
+    context.app.retrievalDeckSessionId = 'stable-session';
+    context.app.retrievalDeckSeenCardIds = ['term_cpu'];
+    context.app.retrievalDeckRatedCount = 1;
+    context.app.retrievalDeckSessionTarget = 3;
+    context.app.retrievalDeckAttempt = 'cache stores frequently used data';
+    context.app.renderStudentDashboard = jest.fn();
+
+    context.app.switchTab('stud-dashboard');
+    context.app.switchTab('stud-retrieval');
+
+    expect(context.app.retrievalDeckSessionId).toBe('stable-session');
+    expect(context.app.retrievalDeckSeenCardIds).toEqual(['term_cpu']);
+    expect(context.app.retrievalDeckRatedCount).toBe(1);
+    expect(context.app.retrievalDeckAttempt).toBe('cache stores frequently used data');
+    expect(mainPanel.innerHTML).toContain('Card 2 of 3');
+  });
+
+  test('full-topic Learn describes its recall as a sample rather than complete evidence', () => {
+    const context = loadProductionScripts();
+    const panel = createPanel();
+    context.app.currentUser = context.db.getStudents()[0];
+    context.app.activeTopicId = 'topic_1_1';
+    context.app.activeObjectiveId = 'all';
+
+    context.app.renderStudentLearn(panel);
+
+    expect(panel.innerHTML).toContain('Check what you remember (up to 3 questions)');
+    expect(panel.innerHTML).toContain('does not prove complete coverage of the whole topic');
+    expect(panel.innerHTML).not.toContain('Optional: start 1.1 retrieval practice');
   });
 
   test('dashboard details expand and collapse while earned achievements remain evidence-backed', async () => {

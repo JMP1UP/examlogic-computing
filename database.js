@@ -1321,11 +1321,11 @@ def calculate_area(width, height):
     },
     {
       id: 'transfer_5', specificationPointId: '1.1.1', topicId: 'topic_1_1', paper: 'Paper 1', commandWord: 'Explain', marks: 4, minutes: 6, purpose: 'exam-transfer',
-      question: 'Describe the steps taken by the CPU during the Fetch phase of the Fetch-Decode-Execute (FDE) cycle. Name all registers involved.',
-      decodePrompt: 'The command requires listing the exact sequence of register transfers and data flow during the fetch step.',
-      requiredElements: ['PC value copied to MAR', 'MAR address sent to RAM', 'Instruction retrieved into MDR', 'PC incremented by 1'],
-      planningLabels: ['PC to MAR', 'RAM lookup', 'MDR receive', 'PC increment'],
-      modelPlan: ['PC address copied to MAR', 'read request sent to RAM at MAR address', 'data placed into MDR', 'Program Counter incremented by 1'],
+      question: 'Explain how the Program Counter (PC), Memory Address Register (MAR) and Memory Data Register (MDR) are used while an instruction is fetched. [4 marks]',
+      decodePrompt: 'Explain the linked movement of the instruction address and instruction data. Keep the roles of the MAR and MDR distinct.',
+      requiredElements: ['PC holds the address of the next instruction', 'PC address is copied to the MAR', 'instruction at that address is fetched from memory into the MDR', 'PC is incremented ready for the next instruction'],
+      planningLabels: ['PC role', 'Address moves to MAR', 'Instruction moves to MDR', 'PC increment'],
+      modelPlan: ['PC stores the address of the next instruction', 'copy that address from the PC to the MAR', 'fetch the instruction stored at that address into the MDR', 'increment the PC ready for the next fetch'],
       retryQuestion: 'Explain the function of the Accumulator (ACC) during the Execute phase of an arithmetic instruction.'
     },
     {

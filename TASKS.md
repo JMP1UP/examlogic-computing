@@ -41,4 +41,6 @@
 - Documentation and design system alignment to 25Thirty Learning mode.
 - Browser startup, local-data migration, question-ID integrity and canonical Learn-renderer blockers corrected.
 - New-learner demo made selectable without seeded attempts, submissions, progress or badges.
+- Practice-rhythm Phase 2: allow schools to configure appropriate programming weeks and fortnight anchors without weakening the default, add teacher visibility of engagement separate from attainment, and introduce explicit per-learner assignment activity metadata (including learner ID, activity type and completion timestamp) before assignments can satisfy rhythm items.
+- Practice-rhythm Phase 2: expand habit achievements only after longitudinal pupil testing; retain no leaderboard, punitive streak or reward for page/model views.
 - Static teacher demonstration narratives labelled so they are not mistaken for calculated learner judgements.

@@ -300,7 +300,7 @@
   ];
 
   const supportedPractice = {
-    '1.1.1': 'Use a four-column table headed fetch, decode, execute and store. For fetch, place the PC address in the MAR, copy memory contents to the MDR, copy the instruction to the control unit and increment the PC. Then annotate which register stores an address and which stores data.',
+    '1.1.1': 'Draw a three-step flow diagram for the fetch stage. Show the address moving from the PC to the MAR, then the instruction moving from memory to the MDR and on to the control unit. Add where the PC increases. Finish with one sentence explaining the difference between the MAR and MDR.',
     '1.1.2': 'Compare two processors for a video-editing task. Change one characteristic at a time, explain the likely effect, then explain why software that cannot run work in parallel may gain little from extra cores.',
     '1.1.3': 'For a washing machine, games console and desktop PC, identify the larger device, the computing purpose and whether users can choose many unrelated tasks. Justify which examples are embedded systems.',
     '1.2.1': 'Complete a RAM-versus-ROM table for volatility, purpose and typical contents. Then trace what happens when several applications fill RAM and explain why repeated virtual-memory transfers reduce performance.',

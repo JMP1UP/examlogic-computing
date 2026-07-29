@@ -62,6 +62,25 @@ describe('objective-level curriculum coverage integrity', () => {
     });
   });
 
+  test('keeps the CPU fetch guided task focused on one clear learner output', () => {
+    const cpuPurpose = data.curriculumContent.find(item => item.id === '1.1.1');
+
+    expect(cpuPurpose.supportedPractice).toContain('three-step flow diagram');
+    expect(cpuPurpose.supportedPractice).toContain('difference between the MAR and MDR');
+    expect(cpuPurpose.supportedPractice).not.toContain('four-column table');
+    expect(cpuPurpose.supportedPractice).not.toContain('decode, execute and store');
+  });
+
+  test('aligns the 1.1.1 exam application and four-mark rubric', () => {
+    const task = data.examTransferTasks.find(item => item.specificationPointId === '1.1.1');
+    expect(task).toMatchObject({ marks: 4, commandWord: 'Explain' });
+    expect(task.question).toContain('PC');
+    expect(task.question).toContain('MAR');
+    expect(task.question).toContain('MDR');
+    expect(task.requiredElements).toHaveLength(4);
+    expect(task.planningLabels).toEqual(['PC role', 'Address moves to MAR', 'Instruction moves to MDR', 'PC increment']);
+  });
+
   test('provides complete practice evidence for the priority Paper 2 strands', () => {
     ['2.2.3', '2.2.ERL', '2.1.2', '2.2.1', '2.3.2'].forEach(id => {
       const retrieval = data.questions.filter(item => item.specificationPointId === id && item.purpose === 'retrieval');

@@ -67,6 +67,16 @@ class App {
     this.quizAnswers = {};
     this.quizResults = null;
     this.quizEvidenceSet = null;
+    this.retrievalDeckTopicId = 'all';
+    this.retrievalDeckCardIndex = 0;
+    this.retrievalDeckAttempt = '';
+    this.retrievalDeckRevealed = false;
+    this.retrievalDeckRatedCount = 0;
+    this.retrievalDeckSessionComplete = false;
+    this.retrievalDeckExtraMode = false;
+    this.retrievalDeckSessionId = null;
+    this.retrievalDeckSeenCardIds = [];
+    this.retrievalDeckSessionTarget = 3;
     this.evidenceIdSequence = 0;
 
     // Written answers scaffold state
@@ -219,7 +229,11 @@ class App {
     if (normalised.length < minimumLength) return false;
     const compact = normalised.toLowerCase().replace(/[^a-z0-9]/g, '');
     if (compact.length < Math.max(2, minimumLength - 1)) return false;
-    return !/^(.)\1+$/.test(compact) && !['idk', 'dontknow', 'notsure', 'none', 'na', 'test'].includes(compact);
+    const tokens = normalised.toLowerCase().match(/[a-z0-9]+/g) || [];
+    const repeatedFiller = tokens.length >= 3 && new Set(tokens).size === 1;
+    return !/^(.)\1+$/.test(compact)
+      && !repeatedFiller
+      && !['ok', 'okay', 'no', 'yes', 'idk', 'dontknow', 'notsure', 'none', 'na', 'test'].includes(compact);
   }
 
   parseDemonstratedScore(attempt) {
@@ -268,6 +282,7 @@ class App {
         id: 'binary-fluent',
         storedName: 'Binary Fluent',
         title: 'Binary Check Complete',
+        category: 'demonstrated-skill',
         symbol: '01',
         criterion: 'Complete the Number skills activity, then retry anything you miss until the full set is correct.',
         earnedDescription: 'Earned by completing every question correctly in this Number skills activity.',
@@ -278,6 +293,7 @@ class App {
         id: 'debugging-detective',
         storedName: 'Debugging Detective',
         title: 'Debugging Detective',
+        category: 'demonstrated-skill',
         symbol: '</>',
         criterion: 'Fix the counting loop so it prints 1 to 5, then pass every test.',
         earnedDescription: 'Earned by fixing and testing the counting-loop program.',
@@ -316,6 +332,7 @@ class App {
         title: name,
         symbol: '✓',
         status: 'previously-earned',
+        category: /habit|week|regular|routine/i.test(name) ? 'study-habit' : 'historical',
         earnedDescription: 'Earned previously. It remains part of your learning record.'
       });
     });
@@ -391,7 +408,7 @@ class App {
           <article class="student-achievement-card student-achievement-card--earned">
             <span class="student-achievement-card__symbol" aria-hidden="true">${this.escapeHTML(item.symbol)}</span>
             <div>
-              <span class="student-achievement-state">${item.status === 'earned' ? 'Earned' : 'Previously earned'}</span>
+              <span class="student-achievement-state">${item.category === 'study-habit' ? 'Study-habit achievement' : item.status === 'earned' ? 'Demonstrated skill' : 'Previously earned'}</span>
               <h4>${this.escapeHTML(item.title)}</h4>
               <p>${this.escapeHTML(item.earnedDescription)}</p>
             </div>
@@ -413,9 +430,9 @@ class App {
     return `
       <section class="card student-achievement-panel" aria-labelledby="student-achievements-heading">
         <header>
-          <span class="student-kicker">Goals earned through checked work</span>
+          <span class="student-kicker">Study habits and demonstrated skills</span>
           <h3 id="student-achievements-heading">Your badges</h3>
-          <p>Badges show specific skills you have demonstrated in checked work. There is no time pressure.</p>
+          <p>Skill badges come from checked evidence. Study-habit achievements recognise regular practice only and never claim mastery. There is no time pressure.</p>
         </header>
         <div class="student-achievement-group">
           <h4>Achievements earned</h4>
@@ -703,6 +720,268 @@ class App {
 
   getRetryQuestions(questions, correctness) {
     return questions.filter((_, index) => correctness[index] === false);
+  }
+
+  getLocalDateKey(value = new Date()) {
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
+  getWeekWindow(now = new Date()) {
+    const current = new Date(now);
+    current.setHours(0, 0, 0, 0);
+    const mondayOffset = (current.getDay() + 6) % 7;
+    const start = new Date(current);
+    start.setDate(start.getDate() - mondayOffset);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    return { start, end };
+  }
+
+  isWithinWindow(value, window) {
+    const date = new Date(value);
+    return !Number.isNaN(date.getTime()) && date >= window.start && date < window.end;
+  }
+
+  getStudentPracticeRhythm(studentId = this.currentUser?.id, now = new Date()) {
+    const week = this.getWeekWindow(now);
+    const attempts = window.db.getAttempts().filter(item => item.studentId === studentId);
+    const weeklyAttempts = attempts.filter(item => this.isWithinWindow(item.date, week));
+    const retrievalDays = new Set(
+      weeklyAttempts
+        .filter(item => ['spaced_theory', 'retrieval_deck_session'].includes(item.type)
+          && item.type !== 'retrieval_rating'
+          && item.completionStatus !== 'viewed')
+        .map(item => this.getLocalDateKey(item.date))
+        .filter(Boolean)
+    );
+    const numberDone = weeklyAttempts.some(item => item.type === 'number_skills' && this.parseDemonstratedScore(item));
+    const programmingDone = window.db.getProgrammingSubmissions().some(item =>
+      item.studentId === studentId
+      && this.isWithinWindow(item.date, week)
+      && Boolean(String(item.code || '').trim())
+    ) || weeklyAttempts.some(item => item.type === 'pseudocode_assessed' && this.parseDemonstratedScore(item));
+    const fortnightStart = new Date(week.start);
+    fortnightStart.setDate(fortnightStart.getDate() - 7);
+    const examSubmitted = attempts.some(item =>
+      item.studentId === studentId
+      && item.type === 'exam_transfer_retry'
+      && new Date(item.date) >= fortnightStart
+      && item.completionStatus === 'awaiting_review'
+    );
+    const examDueThisWeek = Math.floor(week.start.getTime() / (14 * 24 * 3600 * 1000)) % 2 === 0;
+    const items = [
+      { id: 'retrieval', label: 'Recall on two different days', done: Math.min(retrievalDays.size, 2), target: 2, minutes: 10, route: 'stud-retrieval' },
+      { id: 'number', label: 'Number fluency', done: numberDone ? 1 : 0, target: 1, minutes: 10, route: 'stud-practise' },
+      { id: 'programming', label: 'Programming', done: programmingDone ? 1 : 0, target: 1, minutes: 15, route: 'stud-programming' }
+    ];
+    if (examDueThisWeek) {
+      items.push({ id: 'exam', label: '4–6 mark exam answer', done: examSubmitted ? 1 : 0, target: 1, minutes: 10, route: 'stud-exam-transfer', awaitingReview: examSubmitted });
+    }
+    const next = items.find(item => item.done < item.target) || null;
+    return {
+      week,
+      items,
+      next,
+      retrievalDays: retrievalDays.size,
+      completedCount: items.filter(item => item.done >= item.target).length,
+      totalMinutes: items.reduce((sum, item) => sum + item.minutes, 0),
+      habitAchieved: retrievalDays.size >= 2 && numberDone && programmingDone,
+      attainmentChanged: false
+    };
+  }
+
+  getCoveredTopicIds(student = this.currentUser) {
+    const controls = window.db.getClassroomControls(student?.classId);
+    const covered = new Set(Object.entries(controls || {})
+      .filter(([, status]) => ['teaching', 'recent', 'practice', 'priority'].includes(status))
+      .map(([topicId]) => topicId));
+    window.db.getAttempts()
+      .filter(item => item.studentId === student?.id)
+      .forEach(item => {
+        const question = window.db.getQuestions({ includeRetired: true }).find(candidate => candidate.id === item.questionId);
+        if (question?.topicId) covered.add(question.topicId);
+      });
+    return covered;
+  }
+
+  getRetrievalDeckCards(student = this.currentUser, now = new Date()) {
+    const covered = this.getCoveredTopicIds(student);
+    const ratings = window.db.getAttempts().filter(item =>
+      item.studentId === student?.id && ['retrieval_rating', 'retrieval_deck_extra'].includes(item.type)
+    );
+    return window.db.getKeyTerms()
+      .filter(card => covered.has(card.topicId))
+      .filter(card => this.retrievalDeckTopicId === 'all' || card.topicId === this.retrievalDeckTopicId)
+      .map(card => {
+        const latest = ratings.filter(item => item.questionId === card.id)
+          .sort((left, right) => new Date(right.date) - new Date(left.date))[0];
+        return { ...card, due: !latest?.dueDate || new Date(latest.dueDate) <= now, dueDate: latest?.dueDate || null };
+      })
+      .sort((left, right) => Number(right.due) - Number(left.due));
+  }
+
+  getRetrievalIntervalDays(rating, performance = null) {
+    if (rating === 'couldnt-recall') return 1;
+    if (rating === 'difficult') return performance === 'correct' ? 3 : 2;
+    return performance === 'incorrect' ? 3 : 7;
+  }
+
+  getLatestTopicSchedulingPerformance(topicId) {
+    const questionIds = new Set(window.db.getQuestions({ includeRetired: true })
+      .filter(question => question.topicId === topicId)
+      .map(question => question.id));
+    const latest = window.db.getAttempts()
+      .filter(item => item.studentId === this.currentUser?.id)
+      .filter(item => Array.isArray(item.questionEvidence)
+        && item.questionEvidence.some(evidence => questionIds.has(evidence.questionId)))
+      .sort((left, right) => new Date(right.date) - new Date(left.date))[0];
+    const score = this.parseDemonstratedScore(latest);
+    if (!score) return null;
+    return score.earned / score.available >= 0.7 ? 'correct' : 'incorrect';
+  }
+
+  recordRetrievalDeckRating(card, rating, now = new Date()) {
+    if (!this.isMeaningfulLearnerResponse(this.retrievalDeckAttempt, 2) || !this.retrievalDeckRevealed) return false;
+    if (!['couldnt-recall', 'difficult', 'secure'].includes(rating)) return false;
+    const performance = this.getLatestTopicSchedulingPerformance(card.topicId);
+    const due = new Date(now);
+    due.setDate(due.getDate() + this.getRetrievalIntervalDays(rating, performance));
+    if (!this.retrievalDeckSessionId) {
+      this.retrievalDeckSessionId = `retrieval_${this.currentUser.id}_${now.getTime()}_${this.evidenceIdSequence++}`;
+    }
+    if (this.retrievalDeckSeenCardIds.includes(card.id) && !this.retrievalDeckExtraMode) return false;
+    window.db.addAttempt({
+      studentId: this.currentUser.id,
+      type: this.retrievalDeckExtraMode ? 'retrieval_deck_extra' : 'retrieval_rating',
+      topic: card.topicId,
+      questionId: card.id,
+      sessionId: this.retrievalDeckSessionId,
+      score: 'engagement only',
+      response: this.retrievalDeckAttempt,
+      selfRating: rating,
+      schedulingPerformance: performance,
+      dueDate: due.toISOString(),
+      evidenceType: 'engagement_only',
+      contributesToMastery: false,
+      completionStatus: 'completed'
+    });
+    this.retrievalDeckAttempt = '';
+    this.retrievalDeckRevealed = false;
+    this.retrievalDeckCardIndex += 1;
+    if (!this.retrievalDeckExtraMode) {
+      this.retrievalDeckSeenCardIds.push(card.id);
+      this.retrievalDeckRatedCount += 1;
+      this.retrievalDeckSessionComplete = this.retrievalDeckRatedCount >= this.retrievalDeckSessionTarget;
+      if (this.retrievalDeckSessionComplete) {
+        window.db.addAttempt({
+          studentId: this.currentUser.id,
+          type: 'retrieval_deck_session',
+          topic: this.retrievalDeckTopicId,
+          questionIds: [...this.retrievalDeckSeenCardIds],
+          sessionId: this.retrievalDeckSessionId,
+          score: 'engagement only',
+          evidenceType: 'engagement_only',
+          contributesToMastery: false,
+          completionStatus: 'completed'
+        });
+      }
+    }
+    return true;
+  }
+
+  resetRetrievalDeckSession({ keepFilter = true } = {}) {
+    if (!keepFilter) this.retrievalDeckTopicId = 'all';
+    this.retrievalDeckCardIndex = 0;
+    this.retrievalDeckAttempt = '';
+    this.retrievalDeckRevealed = false;
+    this.retrievalDeckRatedCount = 0;
+    this.retrievalDeckSessionComplete = false;
+    this.retrievalDeckExtraMode = false;
+    this.retrievalDeckSessionId = null;
+    this.retrievalDeckSeenCardIds = [];
+    this.retrievalDeckSessionTarget = 3;
+  }
+
+  getStableOptionOrder(question, activityId) {
+    if (question?.type !== 'mcq' || !Array.isArray(question.options)) return question;
+    const options = [...question.options];
+    let seed = `${activityId}:${question.id}`.split('').reduce(
+      (value, character) => ((value * 31) + character.charCodeAt(0)) >>> 0,
+      2166136261
+    );
+    const nextRandom = () => {
+      seed = ((seed * 1664525) + 1013904223) >>> 0;
+      return seed / 4294967296;
+    };
+    for (let index = options.length - 1; index > 0; index--) {
+      const swapIndex = Math.floor(nextRandom() * (index + 1));
+      [options[index], options[swapIndex]] = [options[swapIndex], options[index]];
+    }
+    return { ...question, options };
+  }
+
+  selectFocusedRecallQuestions(topicQuestions, objectiveId, demonstratedFocuses = []) {
+    return window.db.selectObjectiveRecallQuestions(
+      topicQuestions,
+      objectiveId,
+      demonstratedFocuses
+    ).slice(0, 3);
+  }
+
+  getMatchingExamTransferTask(topicId = this.activeTopicId, objectiveId = this.activeObjectiveId, allowTopicFallback = false) {
+    const tasks = window.db.getExamTransferTasks();
+    const topicTasks = tasks.filter(task => task.topicId === topicId);
+    if (objectiveId && objectiveId !== 'all') {
+      const objectiveTask = topicTasks.find(task => task.specificationPointId === objectiveId);
+      if (objectiveTask) return objectiveTask;
+      return allowTopicFallback ? topicTasks[0] || null : null;
+    }
+    return allowTopicFallback ? topicTasks[0] || null : null;
+  }
+
+  getOrderedExamTransferTasks() {
+    return [...window.db.getExamTransferTasks()].sort((left, right) => {
+      const paperOrder = String(left.paper).localeCompare(String(right.paper), undefined, {
+        numeric: true,
+        sensitivity: 'base'
+      });
+      if (paperOrder !== 0) return paperOrder;
+
+      const specificationOrder = String(left.specificationPointId).localeCompare(
+        String(right.specificationPointId),
+        undefined,
+        { numeric: true, sensitivity: 'base' }
+      );
+      if (specificationOrder !== 0) return specificationOrder;
+
+      return String(left.commandWord).localeCompare(String(right.commandWord));
+    });
+  }
+
+  activateExamTransferForCurrentLearning() {
+    const task = this.getMatchingExamTransferTask();
+    if (!task) return false;
+    this.activeExamTransferId = task.id;
+    this.examTransferStage = 'decode';
+    this.examTransferPlan = {};
+    this.examTransferResponse = '';
+    this.switchTab('stud-exam-transfer');
+    return true;
+  }
+
+  activateScheduledExamTransfer() {
+    const task = this.getOrderedExamTransferTasks().find(item => item.marks >= 4 && item.marks <= 6);
+    if (!task) return false;
+    this.activeTopicId = task.topicId;
+    this.activeObjectiveId = task.specificationPointId;
+    this.activeExamTransferId = task.id;
+    this.examTransferStage = 'decode';
+    this.examTransferPlan = {};
+    this.examTransferResponse = '';
+    this.switchTab('stud-exam-transfer');
+    return true;
   }
 
   attemptMatchesTopic(attempt, topic) {
@@ -1028,6 +1307,16 @@ class App {
     this.quizAnswers = {};
     this.quizResults = null;
     this.quizEvidenceSet = null;
+    this.retrievalDeckTopicId = 'all';
+    this.retrievalDeckCardIndex = 0;
+    this.retrievalDeckAttempt = '';
+    this.retrievalDeckRevealed = false;
+    this.retrievalDeckRatedCount = 0;
+    this.retrievalDeckSessionComplete = false;
+    this.retrievalDeckExtraMode = false;
+    this.retrievalDeckSessionId = null;
+    this.retrievalDeckSeenCardIds = [];
+    this.retrievalDeckSessionTarget = 3;
     this.numberSkillsSet = [];
     this.numberSkillsAnswers = {};
     this.numberSkillsCalculations = {};
@@ -1270,6 +1559,7 @@ class App {
         { id: 'stud-simulators', label: 'Simulators', icon: SVG_ICONS.learn },
         { id: 'stud-programming', label: 'Programming', icon: SVG_ICONS.programme },
         { id: 'stud-practise', label: 'Practise', icon: SVG_ICONS.practise },
+        { id: 'stud-retrieval', label: 'Recall deck', icon: SVG_ICONS.revise },
         { id: 'stud-recall', label: 'Exam preparation', icon: SVG_ICONS.revise },
         { id: 'stud-progress', label: 'Progress', icon: SVG_ICONS.progress },
         { id: 'stud-messages', label: 'Messages', icon: SVG_ICONS.messages }
@@ -1328,6 +1618,9 @@ class App {
         break;
       case 'stud-practise':
         this.renderStudentPractise(mainPanel);
+        break;
+      case 'stud-retrieval':
+        this.renderStudentRetrievalDeck(mainPanel);
         break;
       case 'stud-recall':
         this.renderStudentRecall(mainPanel);
@@ -1504,6 +1797,7 @@ class App {
     const activeTestPreps = window.db.getTestPreps().filter(p => p.status === 'Active' && this.isPublishedToStudent(p, student));
     const upcomingSessions = window.db.getSupportSessions().filter(item => item.published && this.isPublishedToStudent(item, student));
     const controls = window.db.getClassroomControls(student.classId);
+    const practiceRhythm = this.getStudentPracticeRhythm(student.id);
 
     // Find currently teaching topics
     const activeTopics = [];
@@ -1531,7 +1825,9 @@ class App {
     const suggestedSession = hasDemonstratedBaseline
       ? 'one optional 5-minute recall activity'
       : 'one suggested 10-minute guided learning session';
-    const greetingText = `You have ${requiredCountWord} required ${requiredCount === 1 ? 'task' : 'tasks'} (${requiredMinutes} mins) and ${suggestedSession}.`;
+    const greetingText = requiredCount > 0
+      ? `You have ${requiredCountWord} required ${requiredCount === 1 ? 'task' : 'tasks'} (${requiredMinutes} mins). Complete required work before choosing optional study.`
+      : `You have no required tasks and ${suggestedSession}.`;
 
     // Compute dominant task for "Do this now"
     let dominantTaskHtml = '';
@@ -1851,6 +2147,26 @@ class App {
         <p>Complete your required work first; your full record remains in Progress.</p>
       </aside>
     `;
+    const requiredTaskActive = hasActiveTestPrep || Boolean(dominantAssignment);
+    const weeklyRhythmHtml = requiredTaskActive ? `
+      <section class="card" aria-labelledby="weekly-rhythm-heading">
+        <span class="student-kicker">Weekly study rhythm &middot; paused</span>
+        <h2 id="weekly-rhythm-heading">Recommended study resumes after required work</h2>
+        <p>Complete the required task above first. Your optional rhythm is waiting; it is not extra work to complete now and unfinished items do not become overdue.</p>
+      </section>
+    ` : `
+      <section class="card" aria-labelledby="weekly-rhythm-heading">
+        <span class="student-kicker">Study habit &middot; resets each Monday</span>
+        <h2 id="weekly-rhythm-heading">Your Computing rhythm</h2>
+        <p>${practiceRhythm.completedCount} of ${practiceRhythm.items.length} planned activities complete. About ${practiceRhythm.totalMinutes} minutes across the week.</p>
+        <p>Study activities record regular practice. Progress and attainment change only through checked evidence.</p>
+        <ul style="list-style:none; padding:0; display:grid; gap:8px;">
+          ${practiceRhythm.items.map(item => `<li ${!requiredTaskActive && practiceRhythm.next?.id === item.id ? 'aria-current="step"' : ''} style="display:flex; justify-content:space-between; gap:12px;"><span>${item.done >= item.target ? 'Done' : practiceRhythm.next?.id === item.id ? (requiredTaskActive ? 'After required work' : 'Up next') : 'Planned'} &middot; ${this.escapeHTML(item.label)}</span><strong>${item.done}/${item.target}</strong></li>`).join('')}
+        </ul>
+        ${practiceRhythm.habitAchieved ? '<p><strong>Study-habit achievement:</strong> Weekly rhythm complete. This recognises regular study, not mastery.</p>' : ''}
+        ${practiceRhythm.next ? `<button type="button" class="btn btn-secondary" id="weekly-rhythm-next" data-activity-id="${this.escapeHTML(practiceRhythm.next.id)}" data-route="${this.escapeHTML(practiceRhythm.next.route)}">Next: ${this.escapeHTML(practiceRhythm.next.label)} &middot; ${practiceRhythm.next.minutes} min</button>` : '<p><strong>Weekly plan complete.</strong> A new plan begins next Monday; unfinished optional study does not become overdue.</p>'}
+      </section>
+    `;
 
     panel.innerHTML = `
       <div class="student-page student-dashboard">
@@ -1860,7 +2176,7 @@ class App {
             <h1>${greeting}, ${shortName}</h1>
             <p class="student-brief__workload">
               <strong>${requiredCountWord} required ${requiredCount === 1 ? 'task' : 'tasks'} · ${requiredMinutes} minutes</strong>
-              <span>${hasDemonstratedBaseline ? 'Optional recall · up to 5 minutes' : 'Suggested guided learning · 10 minutes'}</span>
+              <span>${requiredTaskActive ? 'Required work takes priority' : hasDemonstratedBaseline ? 'Optional recall · up to 5 minutes' : 'Suggested guided learning · 10 minutes'}</span>
             </p>
           </div>
           <div class="student-brief__identity" id="student-profile-dropdown-container">
@@ -1886,6 +2202,7 @@ class App {
           </section>
 
           ${checkpointHtml}
+          ${weeklyRhythmHtml}
           ${earnedMarksHtml}
           <div class="student-plan-drawer">${seeMoreHtml}</div>
         </div>
@@ -1923,6 +2240,14 @@ class App {
 
     const achievementsButton = panel.querySelector('#dashboard-achievements-btn');
     if (achievementsButton) achievementsButton.onclick = () => this.switchTab('stud-progress');
+    const rhythmNextButton = panel.querySelector('#weekly-rhythm-next');
+    if (rhythmNextButton) rhythmNextButton.onclick = () => {
+      if (rhythmNextButton.getAttribute('data-activity-id') === 'exam') {
+        this.activateScheduledExamTransfer();
+      } else {
+        this.switchTab(rhythmNextButton.getAttribute('data-route'));
+      }
+    };
 
     const trigger = document.getElementById('student-profile-trigger');
     const dropdown = document.getElementById('student-profile-dropdown');
@@ -2003,6 +2328,18 @@ class App {
 
     const totalCoreMins = allObjectiveTeaching.reduce((acc, item) => acc + (item.workload?.coreLearningMinutes || 10), 0);
     const milestoneBySection = new Map(this.getSectionMilestones().map(milestone => [milestone.id, milestone]));
+    const focusedMilestone = isFilteredObjective ? milestoneBySection.get(this.activeObjectiveId) : null;
+    const focusedExamTask = isFilteredObjective ? this.getMatchingExamTransferTask(activeNote.topicId, this.activeObjectiveId) : null;
+    const focusedQuestionCount = isFilteredObjective
+      ? this.selectFocusedRecallQuestions(
+        window.db.getQuestions().filter(question => question.topicId === activeNote.topicId),
+        this.activeObjectiveId
+      ).length
+      : 0;
+    const focusedQuestionSummary = `${focusedQuestionCount} ${focusedQuestionCount === 1 ? 'question' : 'questions'} · about ${Math.max(2, focusedQuestionCount * 2)} min`;
+    const focusedCheckLabel = focusedMilestone && ['practice_completed', 'checkpoint_secured'].includes(focusedMilestone.state)
+      ? `Check this section again (${focusedQuestionSummary})`
+      : `Check this section (${focusedQuestionSummary})`;
 
     const objectiveTeachingHtml = objectiveTeaching.length
       ? objectiveTeaching.map(item => {
@@ -2037,7 +2374,9 @@ class App {
               <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
                 <button type="button" class="btn btn-secondary btn-sm save-try-btn" data-obj-id="${item.id}">Save draft — practice only</button>
                 <button type="button" class="btn btn-secondary btn-sm toggle-guide-btn" data-obj-id="${item.id}">View worked solution</button>
-                <button type="button" class="btn btn-secondary btn-sm goto-review-btn" data-spec-id="${item.id}">✍️ ${isFilteredObjective ? 'Optional: practise a written answer' : 'Practise in written answers &rarr;'}</button>
+                ${isFilteredObjective && focusedExamTask
+                  ? `<button type="button" class="btn btn-secondary btn-sm goto-exam-application-btn">Apply this in a ${focusedExamTask.marks}-mark exam question</button>`
+                  : `<button type="button" class="btn btn-secondary btn-sm goto-review-btn" data-spec-id="${item.id}">Practise in written answers &rarr;</button>`}
               </div>
               <div id="try-guide-${item.id}" class="card" style="display: none; margin-top: 12px; padding: 14px; background: rgba(45, 156, 145, 0.08); border-left: 4px solid var(--teal);">
                 <strong style="color: var(--teal); font-size: 13px;">Worked solution</strong>
@@ -2153,7 +2492,7 @@ class App {
           ${objectiveTeachingHtml}
           ${isFilteredObjective ? `
             <div style="display:flex; flex-wrap:wrap; gap:10px;">
-              <button class="btn btn-primary focused-objective-quiz-btn" data-topic-id="${activeNote.topicId}">Check this section (up to 3 questions)</button>
+              <button class="btn btn-primary focused-objective-quiz-btn" data-topic-id="${activeNote.topicId}">${focusedCheckLabel}</button>
               <button class="btn btn-secondary" id="view-full-topic-btn">View full topic</button>
             </div>
           ` : ''}
@@ -2209,12 +2548,12 @@ class App {
 
         <!-- Bottom Call to Action -->
         <div class="card" style="${isFilteredObjective ? 'display:none;' : ''} padding: 28px; text-align: center; background: linear-gradient(135deg, rgba(45, 156, 145, 0.12), rgba(7, 17, 31, 0.05)); border: 2px solid var(--teal);">
-          <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Done reading? Test your knowledge now!</h3>
+          <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Ready for a quick memory check?</h3>
           <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px; max-width: 500px; margin-left: auto; margin-right: auto;">
-            Reinforce what you just learned with a quick 5-minute retrieval check on <strong>${activeNote.title}</strong>.
+            Try a short sample of up to three questions from <strong>${activeNote.title}</strong>. This does not prove complete coverage of the whole topic.
           </p>
           <button class="btn btn-secondary btn-lg start-topic-quiz-btn" data-topic-id="${activeNote.topicId}" style="min-width: 220px; min-height: 44px; font-weight: 600;">
-            Optional: start ${activeNote.code} retrieval practice
+            Check what you remember (up to 3 questions)
           </button>
         </div>
       </div>
@@ -2321,6 +2660,8 @@ class App {
         this.switchTab('stud-recall');
       };
     });
+    const examApplicationButton = panel.querySelector('.goto-exam-application-btn');
+    if (examApplicationButton) examApplicationButton.onclick = () => this.activateExamTransferForCurrentLearning();
 
     const copyBtn = panel.querySelector('.copy-theory-summary-btn');
     if (copyBtn) {
@@ -2503,6 +2844,120 @@ class App {
   // ==================== LEARN ALONG ====================
 
   // ==================== WEEKLY NUMBER SKILLS ====================
+  renderStudentRetrievalDeck(panel) {
+    const topics = window.db.getUnits().flatMap(unit => unit.topics);
+    const covered = this.getCoveredTopicIds();
+    const cards = this.getRetrievalDeckCards();
+    const dueCards = cards.filter(card => card.due);
+    const distinctCards = [...new Map(cards.map(item => [item.id, item])).values()];
+    const availableCards = [
+      ...distinctCards.filter(card => card.due),
+      ...distinctCards.filter(card => !card.due)
+    ];
+    if (!this.retrievalDeckSessionId && !this.retrievalDeckSessionComplete && availableCards.length) {
+      this.retrievalDeckSessionId = `retrieval_${this.currentUser.id}_${Date.now()}_${this.evidenceIdSequence++}`;
+    }
+    if (this.retrievalDeckRatedCount === 0) {
+      this.retrievalDeckSessionTarget = Math.min(3, new Set(availableCards.map(item => item.id)).size);
+    }
+    const unseenCards = availableCards.filter(item => !this.retrievalDeckSeenCardIds.includes(item.id));
+    const cardPool = this.retrievalDeckExtraMode ? availableCards : unseenCards;
+    const card = cardPool.length ? cardPool[this.retrievalDeckCardIndex % cardPool.length] : null;
+    const showCompletion = this.retrievalDeckSessionComplete && !this.retrievalDeckExtraMode;
+
+    panel.innerHTML = `
+      <div class="student-route-header">
+        <span class="student-mode-label">Recall deck &middot; about 5 minutes</span>
+        <h1>Recall what you have covered</h1>
+        <p>Try the prompt before revealing the answer. Your rating changes when the card returns; it does not change attainment or Progress.</p>
+      </div>
+      <div class="card" style="margin-bottom:18px;">
+        <label for="retrieval-topic-filter"><strong>Topic</strong></label>
+        <select id="retrieval-topic-filter" class="form-control" style="max-width:420px; margin-top:6px;" ${this.retrievalDeckRatedCount > 0 ? 'disabled aria-describedby="retrieval-filter-status"' : ''}>
+          <option value="all">All covered topics</option>
+          ${topics.filter(topic => covered.has(topic.id)).map(topic => `<option value="${this.escapeHTML(topic.id)}" ${topic.id === this.retrievalDeckTopicId ? 'selected' : ''}>${this.escapeHTML(topic.name)}</option>`).join('')}
+        </select>
+        <p id="retrieval-filter-status" style="font-size:12px; color:var(--text-muted); margin:8px 0 0;">${this.retrievalDeckRatedCount > 0 ? 'Topic is fixed until this short session is complete. Pausing preserves your place.' : `${dueCards.length} ${dueCards.length === 1 ? 'card is' : 'cards are'} ready to practise now.`}</p>
+      </div>
+      ${showCompletion ? `
+        <article class="card" role="status">
+          <span class="student-mode-label">Recall activity complete</span>
+          <h2>You rated ${this.retrievalDeckSessionTarget} ${this.retrievalDeckSessionTarget === 1 ? 'card' : 'cards'}</h2>
+          <p>This completes one study activity for today. It records engagement only and does not change attainment or Progress.</p>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <button type="button" class="btn btn-primary" id="retrieval-session-back-btn">Back to your plan</button>
+            <button type="button" class="btn btn-secondary" id="retrieval-extra-btn">Continue with extra cards</button>
+          </div>
+        </article>
+      ` : card ? `
+        <article class="card" aria-labelledby="retrieval-card-term">
+          <span class="student-kicker">${this.retrievalDeckExtraMode ? 'Extra card' : `Card ${Math.min(this.retrievalDeckRatedCount + 1, this.retrievalDeckSessionTarget)} of ${this.retrievalDeckSessionTarget}`}</span>
+          <span class="badge badge-secondary">${this.escapeHTML(topics.find(topic => topic.id === card.topicId)?.name || 'Covered topic')}</span>
+          <h2 id="retrieval-card-term" style="margin-top:12px;">Explain: ${this.escapeHTML(card.term)}</h2>
+          <label for="retrieval-card-attempt"><strong>Your answer first</strong></label>
+          <textarea id="retrieval-card-attempt" class="form-control" rows="4" placeholder="Write what you can remember...">${this.escapeHTML(this.retrievalDeckAttempt)}</textarea>
+          <button type="button" class="btn btn-primary" id="retrieval-reveal-btn" style="margin-top:12px;">Reveal after my attempt</button>
+          <button type="button" class="btn btn-secondary" id="retrieval-pause-btn" style="margin-top:12px;">Pause and return to your plan</button>
+          <div id="retrieval-card-answer" tabindex="-1" ${this.retrievalDeckRevealed ? '' : 'hidden'} style="margin-top:16px;">
+            <div class="card" style="background:var(--bg-main);"><strong>Check your recall</strong><p>${this.escapeHTML(card.definition)}</p></div>
+            <fieldset style="margin-top:14px;">
+              <legend><strong>How did recall feel?</strong> Choose one to schedule the card.</legend>
+              <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
+                <button type="button" class="btn btn-secondary retrieval-rating-btn" data-rating="couldnt-recall">Not yet</button>
+                <button type="button" class="btn btn-secondary retrieval-rating-btn" data-rating="difficult">Needed effort</button>
+                <button type="button" class="btn btn-secondary retrieval-rating-btn" data-rating="secure">Easy to recall</button>
+              </div>
+            </fieldset>
+          </div>
+        </article>
+      ` : `
+        <div class="card" role="status"><h2>No recall cards available yet</h2><p>Your teacher needs to release a topic with recall cards. Completing a checked activity can also add its topic to future recall.</p><button class="btn btn-secondary" id="retrieval-home-btn">Back to Home</button></div>
+      `}
+    `;
+
+    const filter = panel.querySelector?.('#retrieval-topic-filter') || document.getElementById('retrieval-topic-filter');
+    if (filter) filter.onchange = () => {
+      if (this.retrievalDeckAttempt.trim() && typeof window.confirm === 'function'
+        && !window.confirm('Changing topic will discard this unfinished answer. Continue?')) return;
+      this.retrievalDeckTopicId = filter.value;
+      this.resetRetrievalDeckSession();
+      this.renderStudentRetrievalDeck(panel);
+    };
+    const attempt = panel.querySelector?.('#retrieval-card-attempt') || document.getElementById('retrieval-card-attempt');
+    if (attempt) attempt.oninput = () => { this.retrievalDeckAttempt = attempt.value; };
+    const reveal = panel.querySelector?.('#retrieval-reveal-btn') || document.getElementById('retrieval-reveal-btn');
+    if (reveal) reveal.onclick = () => {
+      this.retrievalDeckAttempt = attempt?.value.trim() || '';
+      if (!this.isMeaningfulLearnerResponse(this.retrievalDeckAttempt, 2)) return this.alert('Write what you can remember before revealing the answer.');
+      this.retrievalDeckRevealed = true;
+      this.renderStudentRetrievalDeck(panel);
+      (panel.querySelector?.('#retrieval-card-answer') || document.getElementById('retrieval-card-answer'))?.focus?.();
+    };
+    panel.querySelectorAll?.('.retrieval-rating-btn').forEach(button => {
+      button.onclick = () => {
+        if (!this.recordRetrievalDeckRating(card, button.getAttribute('data-rating'))) return this.alert('Attempt the card, reveal it and choose a rating.');
+        this.renderStudentRetrievalDeck(panel);
+        panel.querySelector?.(this.retrievalDeckSessionComplete && !this.retrievalDeckExtraMode ? '#retrieval-session-back-btn' : '#retrieval-card-attempt')?.focus?.();
+      };
+    });
+    const pause = panel.querySelector?.('#retrieval-pause-btn');
+    if (pause) pause.onclick = () => this.switchTab('stud-dashboard');
+    const sessionBack = panel.querySelector?.('#retrieval-session-back-btn');
+    if (sessionBack) sessionBack.onclick = () => {
+      this.resetRetrievalDeckSession();
+      this.switchTab('stud-dashboard');
+    };
+    const extra = panel.querySelector?.('#retrieval-extra-btn');
+    if (extra) extra.onclick = () => {
+      this.retrievalDeckExtraMode = true;
+      this.retrievalDeckAttempt = '';
+      this.retrievalDeckRevealed = false;
+      this.renderStudentRetrievalDeck(panel);
+    };
+    const home = panel.querySelector?.('#retrieval-home-btn') || document.getElementById('retrieval-home-btn');
+    if (home) home.onclick = () => this.switchTab('stud-dashboard');
+  }
+
   renderStudentPractise(panel) {
     // Generate questions if not set
     if (this.numberSkillsSet.length === 0) {
@@ -2899,20 +3354,22 @@ class App {
       selectedQuestions = this.quizRetryQuestions;
     } else if (this.activeObjectiveId && this.activeObjectiveId !== 'all') {
       const milestone = this.getSectionMilestones().find(item => item.id === this.activeObjectiveId);
-      const matchingObjQuestions = window.db.selectObjectiveRecallQuestions(
+      selectedQuestions = this.selectFocusedRecallQuestions(
         topicQuestions,
         this.activeObjectiveId,
         milestone?.demonstratedFocuses || []
       );
-      const otherQuestions = topicQuestions.filter(q => q.specificationPointId !== this.activeObjectiveId);
-      selectedQuestions = [...matchingObjQuestions, ...otherQuestions].slice(0, 3);
     } else {
       selectedQuestions = window.db.selectTopicRecallQuestions(topicQuestions);
     }
-    this.quizQuestions = selectedQuestions;
     this.quizRetryQuestions = null;
     if (!isRetry) {
-      this.quizEvidenceSet = this.createEvidenceSet('spaced_theory', this.activeTopicId, this.quizQuestions);
+      this.quizEvidenceSet = this.createEvidenceSet('spaced_theory', this.activeTopicId, selectedQuestions);
+      this.quizQuestions = selectedQuestions.map(question =>
+        this.getStableOptionOrder(question, this.quizEvidenceSet.activityId)
+      );
+    } else {
+      this.quizQuestions = selectedQuestions;
     }
     const activeTopic = window.db.getUnits().flatMap(unit => unit.topics.map(topic => ({ ...topic, paper: unit.paper }))).find(topic => topic.id === this.activeTopicId);
     this.quizAnswers = {};
@@ -3061,6 +3518,7 @@ class App {
       ...evidenceAttempt
     });
     const newlySecuredMilestones = this.getNewlySecuredMilestones(milestoneStatesBefore);
+    const matchingExamTransfer = this.getMatchingExamTransferTask();
 
     this.mainContentHTML(`
       <div id="quiz-result-summary" role="status" aria-live="polite" aria-atomic="true" style="margin-bottom: 24px;">
@@ -3074,7 +3532,7 @@ class App {
         <div class="quiz-result-actions" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:24px;">
           ${incorrectQuestions.length ? '<button class="btn btn-primary" id="quiz-retry-btn">Retry incorrect questions</button>' : '<button class="btn btn-primary" id="quiz-continue-home-btn">Continue to Home</button>'}
           ${incorrectQuestions.length ? '<button class="btn btn-secondary" id="quiz-continue-home-btn">Continue to Home</button>' : ''}
-          <button class="btn btn-secondary" id="quiz-exam-transfer-btn">Try an exam-style question</button>
+          ${matchingExamTransfer ? '<button class="btn btn-secondary" id="quiz-exam-transfer-btn">Try an exam-style question for this section</button>' : ''}
         </div>
         
         <div class="card" style="margin-top: 24px; padding: 24px; text-align: center;">
@@ -3101,7 +3559,7 @@ class App {
     const continueHomeButton = document.getElementById('quiz-continue-home-btn');
     if (continueHomeButton) continueHomeButton.onclick = () => this.switchTab('stud-dashboard');
     const examTransferButton = document.getElementById('quiz-exam-transfer-btn');
-    if (examTransferButton) examTransferButton.onclick = () => this.switchTab('stud-exam-transfer');
+    if (examTransferButton) examTransferButton.onclick = () => this.activateExamTransferForCurrentLearning();
     const retryButton = document.getElementById('quiz-retry-btn');
     if (retryButton) retryButton.onclick = () => {
       this.quizRetryQuestions = incorrectQuestions;
@@ -3433,8 +3891,15 @@ class App {
   }
 
   // ==================== OCR EXAM REFERENCE LANGUAGE ====================
+  focusExamTransferStage(panel) {
+    const question = panel.querySelector?.('#exam-transfer-question') || document.getElementById('exam-transfer-question');
+    const stage = panel.querySelector?.('#exam-transfer-stage') || document.getElementById('exam-transfer-stage');
+    question?.scrollIntoView?.({ block: 'start', behavior: 'auto' });
+    stage?.focus?.({ preventScroll: true });
+  }
+
   renderStudentExamTransfer(panel) {
-    const tasks = window.db.getExamTransferTasks();
+    const tasks = this.getOrderedExamTransferTasks();
     const task = tasks.find(item => item.id === this.activeExamTransferId) || tasks[0];
     const activeTopic = window.db.getUnits().flatMap(unit => unit.topics).find(topic => topic.id === task.topicId);
     const topicName = activeTopic ? activeTopic.name : '';
@@ -3464,7 +3929,7 @@ class App {
         <div style="height:100%; width:${progress}%; background:var(--teal); transition: width 0.3s ease;"></div>
       </div>
 
-      <div class="card" style="margin-bottom:18px; border-left: 5px solid var(--teal);">
+      <div class="card" id="exam-transfer-question" tabindex="-1" style="margin-bottom:18px; border-left: 5px solid var(--teal); scroll-margin-top:12px;">
         <label for="exam-transfer-task-select" style="font-weight:700;">Select Exam Question Scenario</label>
         <select id="exam-transfer-task-select" class="form-control" style="margin-top:7px;">
           ${tasks.map(item => `<option value="${item.id}" ${item.id === task.id ? 'selected' : ''}>${item.paper} &middot; ${item.specificationPointId} &middot; ${item.commandWord} (${item.marks} Marks)</option>`).join('')}
@@ -3473,7 +3938,7 @@ class App {
       </div>
 
       ${this.examTransferStage === 'decode' ? `
-        <div class="card" style="padding: 24px;">
+        <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 24px;">
           <span class="badge badge-primary">Stage 1 of 5: Understand</span>
           <h2 style="font-size:18px; margin-top:10px;">Work out what the question asks</h2>
           <div style="background: rgba(45, 156, 145, 0.08); padding: 14px; border-radius: 8px; border: 1px solid var(--teal); margin: 12px 0;">
@@ -3488,7 +3953,7 @@ class App {
       ` : ''}
 
       ${this.examTransferStage === 'plan' ? `
-        <div class="card" style="padding: 24px;">
+        <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 24px;">
           <span class="badge badge-primary">Stage 2 of 5: Plan</span>
           <h2 style="font-size:18px; margin-top:10px;">Plan your main points</h2>
           <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Add a short note for each part your answer needs:</p>
@@ -3506,7 +3971,7 @@ class App {
       ` : ''}
 
       ${this.examTransferStage === 'answer' ? `
-        <div class="card" style="padding: 24px;">
+        <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 24px;">
           <span class="badge badge-primary">Stage 3 of 5: Answer</span>
           <h2 style="font-size:18px; margin-top:10px;">Write your full answer</h2>
           <p style="font-size:13px; color:var(--text-muted); margin-bottom: 12px;">Aim for about ${Math.max(3, Math.round(task.minutes * 0.65))} minutes. Show working and use accurate computing terms.</p>
@@ -3531,7 +3996,7 @@ class App {
       ` : ''}
 
       ${this.examTransferStage === 'check' ? `
-        <div class="card" style="padding: 24px;">
+        <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 24px;">
           <span class="badge badge-primary">Stage 4 of 5: Check</span>
           <h2 style="font-size:18px; margin-top:10px;">Compare with the mark scheme</h2>
           <p>A mark scheme lists points an examiner may credit. This check is for practice, not a final mark. Tick only what your answer actually explains.</p>
@@ -3554,7 +4019,7 @@ class App {
       ` : ''}
 
       ${this.examTransferStage === 'retry' ? `
-        <div class="card" style="padding: 24px;">
+        <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 24px;">
           <span class="badge badge-warning">Stage 5 of 5: Retry</span>
           <h2 style="font-size:18px; margin-top:10px;">Try a similar question without help</h2>
           <p style="font-size:16px; font-weight:600; color: var(--text-main); margin-bottom: 12px;">${this.escapeHTML(task.retryQuestion)}</p>
@@ -3630,6 +4095,7 @@ class App {
       this.alert('Your answer has been sent for review. It does not count towards Progress yet.');
       this.switchTab('stud-dashboard');
     });
+    this.focusExamTransferStage(panel);
   }
 
   renderStudentProgrammingHub(panel) {
@@ -3658,7 +4124,7 @@ class App {
       </div>
 
       <div class="card" style="margin-bottom:24px; border-left:5px solid var(--teal);">
-        <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Recommended next · about 10 minutes</div>
+        <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Recommended next · about 15 minutes</div>
         <h2 style="margin:7px 0 5px;">Python level ${nextChallenge.level}: ${this.escapeHTML(nextChallenge.title)}</h2>
         <p style="margin:0 0 14px;">You will read code, follow what it does, fix code, then write and test code. Support is available one step at a time.</p>
         <button class="btn btn-primary" id="programming-continue-python">Continue Python</button>
@@ -4385,20 +4851,20 @@ class App {
             <p style="font-size:13px;">Use these prompts to organise your ideas, then build your draft.</p>
             
             <div class="form-group">
-              <label>Point 1 (What is the issue?):</label>
-              <input type="text" id="scaf-p1" class="form-control" style="font-size:13px;" placeholder="Name the first issue." value="${this.scaffoldPoints.p1}">
+              <label>First technical point or step</label>
+              <input type="text" id="scaf-p1" class="form-control" style="font-size:13px;" placeholder="State the first point the question needs." value="${this.escapeHTML(this.scaffoldPoints.p1)}">
             </div>
             <div class="form-group">
-              <label>Explain Point 1 (Why does this matter?):</label>
-              <input type="text" id="scaf-exp1" class="form-control" style="font-size:13px;" placeholder="Explain why it matters in this scenario." value="${this.scaffoldPoints.exp1}">
+              <label>Develop or link that point</label>
+              <input type="text" id="scaf-exp1" class="form-control" style="font-size:13px;" placeholder="Explain the process, reason or link required." value="${this.escapeHTML(this.scaffoldPoints.exp1)}">
             </div>
             <div class="form-group">
-              <label>Point 2 (What is the second issue?):</label>
-              <input type="text" id="scaf-p2" class="form-control" style="font-size:13px;" placeholder="Name a different issue." value="${this.scaffoldPoints.p2}">
+              <label>Second technical point or step</label>
+              <input type="text" id="scaf-p2" class="form-control" style="font-size:13px;" placeholder="State the next distinct point the question needs." value="${this.escapeHTML(this.scaffoldPoints.p2)}">
             </div>
             <div class="form-group">
-              <label>Explain Point 2 (Why does this matter?):</label>
-              <input type="text" id="scaf-exp2" class="form-control" style="font-size:13px;" placeholder="Explain its possible consequence." value="${this.scaffoldPoints.exp2}">
+              <label>Develop or link that point</label>
+              <input type="text" id="scaf-exp2" class="form-control" style="font-size:13px;" placeholder="Explain the process, reason or link required." value="${this.escapeHTML(this.scaffoldPoints.exp2)}">
             </div>
             <button class="btn btn-secondary btn-sm" id="construct-ans-btn">Build my draft from these notes</button>
           </details>
@@ -4418,9 +4884,9 @@ class App {
           <details style="margin-bottom: 12px;">
             <span style="font-size: 13px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">💡 Need a starting point? Click to insert a sentence starter:</span>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button type="button" class="btn btn-secondary btn-sm sentence-starter-btn" data-text="One significant ethical issue is " style="font-size: 11px; padding: 4px 8px; min-height: 28px;">"One significant issue is..."</button>
-              <button type="button" class="btn btn-secondary btn-sm sentence-starter-btn" data-text="This directly impacts the scenario because " style="font-size: 11px; padding: 4px 8px; min-height: 28px;">"This directly impacts..."</button>
-              <button type="button" class="btn btn-secondary btn-sm sentence-starter-btn" data-text="Consequently, this leads to " style="font-size: 11px; padding: 4px 8px; min-height: 28px;">"Consequently, this leads to..."</button>
+              <button type="button" class="btn btn-secondary btn-sm sentence-starter-btn" data-text="The first relevant point is " style="font-size: 11px; padding: 4px 8px; min-height: 28px;">"The first relevant point is..."</button>
+              <button type="button" class="btn btn-secondary btn-sm sentence-starter-btn" data-text="This answers the question because " style="font-size: 11px; padding: 4px 8px; min-height: 28px;">"This answers the question because..."</button>
+              <button type="button" class="btn btn-secondary btn-sm sentence-starter-btn" data-text="The next step or point is " style="font-size: 11px; padding: 4px 8px; min-height: 28px;">"The next step or point is..."</button>
             </div>
           </details>
 
@@ -4488,7 +4954,7 @@ class App {
         
         let constructed = '';
         if (p1 && exp1) constructed += `Firstly, ${p1} is important because ${exp1}. `;
-        if (p2 && exp2) constructed += `Secondly, ${p2} is an issue because ${exp2}.`;
+        if (p2 && exp2) constructed += `Secondly, ${p2}. ${exp2}.`;
 
         if (box) {
           box.value = constructed;
