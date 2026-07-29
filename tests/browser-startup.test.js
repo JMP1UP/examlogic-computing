@@ -97,7 +97,11 @@ describe('production browser startup', () => {
     const recoveryPanel = { focus: jest.fn() };
     const reloadButton = {};
     const loginScreen = { style: {} };
-    const appShell = { style: {} };
+    const appShell = {
+      style: {},
+      setAttribute: jest.fn(),
+      removeAttribute: jest.fn()
+    };
     const mainPanel = {
       innerHTML: '',
       querySelector: selector => selector === '#storage-recovery'
@@ -129,6 +133,7 @@ describe('production browser startup', () => {
     expect(recoveryPanel.focus).toHaveBeenCalled();
     expect(loginScreen.style.display).toBe('none');
     expect(appShell.style.display).toBe('flex');
+    expect(appShell.removeAttribute).toHaveBeenCalledWith('data-user-role');
     reloadButton.onclick();
     expect(context.location.reload).toHaveBeenCalled();
   });

@@ -138,7 +138,12 @@ describe('evidence-backed section milestones', () => {
     app.renderStudentDashboard(panel);
 
     expect(panel.innerHTML).toContain('Start guided learning');
-    expect(panel.innerHTML).toContain('0 of 27 available checkpoints');
+    expect(panel.innerHTML).toContain('Work that counts');
+    expect(panel.innerHTML).toContain('Your next checkpoint');
+    expect(panel.innerHTML).toContain('Your study plan');
+    expect(panel.innerHTML).toContain('Latest checked work');
+    expect(panel.innerHTML).not.toContain('Assessed evidence');
+    expect(panel.innerHTML).not.toContain('Older reduced-precision evidence');
     expect(panel.innerHTML).not.toContain('milestone-next-btn');
     expect(panel.innerHTML).not.toContain('last practised conversions three weeks ago');
   });
