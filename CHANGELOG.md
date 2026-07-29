@@ -26,6 +26,15 @@ All notable changes to ExamLogic Computing are recorded here.
 - Enabled checkpoints for 27 sufficiently assessed sections. Five under-assessed sections remain visible but excluded from the achievable denominator: `1.2.4c`, `1.5.2`, `2.1.1`, `2.2.2` and `2.2.PY`.
 
 ### Fixed
+- Added an evidence-safe weekly practice rhythm: two separate recall days, weekly Number and Programming, and a fortnightly exam answer, with awaiting-review work separated from attainment and no carried backlog.
+- Added a covered-topic recall deck with attempt-before-reveal, bounded distinct-card sessions, pause/resume, scheduling-only ratings and due dates that cannot inflate mastery or weekly engagement before session completion.
+- Prevented focused section checks from filling their question set with other objectives, and linked focused Learn sections to matched exam application where available.
+- Kept the exam question visible throughout its journey and aligned the 1.1.1 CPU fetch application with a clear four-mark requirement and rubric.
+- Mixed multiple-choice option order per activity while preserving the same order for retries, removing the authored first-answer pattern without changing marking.
+- Routed `Try an exam-style question` to the current specification section, or a task from the same topic only, and hid the action when no relevant task exists.
+- Ordered the exam-question scenario selector by paper and specification point instead of internal record order.
+- Relabelled the section-check action after assessed practice so completed work is visibly remembered and any repeat is clearly a recheck.
+- Simplified the CPU fetch guided task to one three-step diagram and a focused MAR/MDR explanation.
 - Escaped persisted pupil, teacher and assignment content at every reviewed student/staff render boundary so stored markup is displayed as text without rewriting saved records.
 - Scoped teacher rosters, evidence, submissions, messages, broadcasts, assignments, test preparation, support sessions and topic controls to the signed-in teacher's selected authorised class.
 - Replaced the unconditional message-monitoring clear state with an accurate class-scoped flagged count and direct route to the affected conversation.
