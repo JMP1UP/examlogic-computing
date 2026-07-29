@@ -273,7 +273,7 @@ describe('production browser startup', () => {
     context.app.activeTopicId = 'topic_1_3';
     context.app.renderStudentLearn(panel);
 
-    expect(panel.innerHTML).toContain('Learn each specification requirement');
+    expect(panel.innerHTML).toContain('Choose a specification section');
     expect(panel.innerHTML).toContain('1.2.3');
     expect(panel.innerHTML).toContain('Worked example');
     expect(panel.innerHTML).toContain('A text file with 2,000 characters');
@@ -330,7 +330,7 @@ describe('production browser startup', () => {
     viewFullTopicButton.onclick();
 
     expect(context.app.activeObjectiveId).toBe('all');
-    expect(panel.innerHTML).toContain('Learn each specification requirement');
+    expect(panel.innerHTML).toContain('Choose a specification section');
     expect(context.app.focusMainContent).toHaveBeenCalled();
   });
 
@@ -456,7 +456,7 @@ describe('production browser startup', () => {
       context.app.activeTopicId = topicId;
       context.app.renderStudentLearn(panel);
       expect(panel.innerHTML).not.toContain('Learning content unavailable');
-      expect(panel.innerHTML).toContain('Learn each specification requirement');
+      expect(panel.innerHTML).toContain('Choose a specification section');
     });
 
     const missingPanel = createPanel();

@@ -192,9 +192,9 @@ class App {
     const earned = evidence.reduce((total, item) => total + item.score.earned, 0);
     const available = evidence.reduce((total, item) => total + item.score.available, 0);
     const ratio = available ? earned / available : null;
-    const label = ratio === null ? 'No demonstrated evidence'
-      : ratio >= 0.85 ? 'Strong latest evidence'
-        : ratio >= 0.6 ? 'Developing latest evidence'
+    const label = ratio === null ? 'No checked result yet'
+      : ratio >= 0.85 ? 'Strong latest result'
+        : ratio >= 0.6 ? 'Developing latest result'
           : 'More practice needed';
     const legacyEvidenceCount = evidence.filter(item => item.score.precision === 'legacy').length;
     return { earned, available, ratio, label, evidenceCount: evidence.length, legacyEvidenceCount };
@@ -259,7 +259,7 @@ class App {
     const milestoneById = new Map(sections.map(section => [section.id, {
       ...section,
       state: section.available ? 'not_started' : 'not_available',
-      label: section.available ? 'Not started' : 'Checkpoint unavailable',
+      label: section.available ? 'Not started' : 'Progress check unavailable',
       latestDate: null,
       evidenceSources: new Set(),
       questionOutcomes: new Map(),
@@ -301,7 +301,7 @@ class App {
         const milestone = milestoneById.get(sectionId);
         const activityId = attempt.activityId || attempt.questionId;
         milestone.state = 'practice_completed';
-        milestone.label = 'Practice completed';
+        milestone.label = 'Checked practice started';
         milestone.evidenceSources.add(activityId);
         sectionOutcomes.forEach(outcome => milestone.questionOutcomes.set(outcome.questionId, outcome.correct === true));
         const ruleVersion = attempt.checkpointRuleVersions?.[sectionId];
@@ -329,7 +329,7 @@ class App {
       const ratio = requiredFocuses.length ? passedFocuses.length / requiredFocuses.length : 0;
       if (passedFocuses.length === requiredFocuses.length && ratio >= milestone.checkpointRule.minimumRatio) {
         milestone.state = 'checkpoint_secured';
-        milestone.label = 'Checkpoint secured';
+        milestone.label = 'Section goal met';
       }
     });
 
@@ -383,8 +383,8 @@ class App {
     if (!milestones.length) return '';
     return milestones.map(milestone => `
       <div class="milestone-acknowledgement" role="status" aria-live="polite">
-        <strong>Section checkpoint secured: ${this.escapeHTML(milestone.id)}</strong>
-        <span>${this.escapeHTML(milestone.name)} is now supported by demonstrated evidence.</span>
+        <strong>Section goal met: ${this.escapeHTML(milestone.id)}</strong>
+        <span>Your checked answers covered each part included in this section check.</span>
       </div>
     `).join('');
   }
@@ -1385,9 +1385,9 @@ class App {
         ? unresolvedMilestones.find(item => item.topicId === dominantAssignment.topicId)
         : generalNextMilestone;
     const checkpointRelationship = activeTestPreps[0]
-      ? 'This test preparation builds towards this checkpoint.'
+      ? 'This test preparation helps you work towards this section goal.'
       : dominantAssignment
-        ? 'This assignment builds towards this checkpoint.'
+        ? 'This assignment helps you work towards this section goal.'
         : 'Learn the essentials, then complete a check when it becomes your main task.';
 
     const remainingAssignments = assignments.filter(a => a.id !== dominantAssignmentId);
@@ -1481,10 +1481,10 @@ class App {
               <div class="card card-progress" style="padding: 20px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
                 <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">Recent progress</h3>
                 <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin: 0;">
-                  ${demonstratedProgress.ratio === null ? 'Complete an assessed activity to establish a performance baseline.' : `Current demonstrated score: ${demonstratedProgress.earned}/${demonstratedProgress.available} across the latest assessed activities.`}
+                  ${demonstratedProgress.ratio === null ? 'Complete a checked activity to see your first result here.' : `Latest checked score: ${demonstratedProgress.earned}/${demonstratedProgress.available} across your latest completed activities.`}
                 </p>
                 <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin: 8px 0 0 0; padding-top: 8px; border-top: 1px dashed var(--border-color);">
-                  Page visits, model views and self-assessment are not counted as demonstrated progress.
+                  Opening a page, viewing an example answer or rating your own work does not count towards Progress.
                 </p>
               </div>
             </div>
@@ -1542,15 +1542,15 @@ class App {
               <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 0;">${demonstratedProgress.evidenceCount} checked ${demonstratedProgress.evidenceCount === 1 ? 'activity is' : 'activities are'} contributing to your progress.</p>
             </div>
             <div class="card milestone-dashboard-card student-checkpoint-card" style="margin-bottom: 20px; padding: 20px;">
-              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Your next checkpoint</h3>
-              <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 10px;">${securedMilestones.length} of ${availableMilestones.length} available checkpoints secured through assessed work.</p>
+              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Your next section goal</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 10px;">${securedMilestones.length} of ${availableMilestones.length} available section goals met through checked work.</p>
               ${nextMilestone ? `
                 <div style="font-size:13px; margin-bottom:10px;">
                   <strong>Next:</strong> ${this.escapeHTML(nextMilestone.id)} · ${this.escapeHTML(nextMilestone.name)}
                 </div>
                 <p style="font-size:12px; color:var(--text-muted); margin:0;">${checkpointRelationship}</p>
-                <div class="student-checkpoint-trace" aria-label="Checkpoint route: learn, practise, secure"><span>Learn</span><span aria-hidden="true">→</span><span>Practise</span><span aria-hidden="true">→</span><span>Secure</span></div>
-              ` : '<p style="font-size:13px; margin:0;">No checkpoint is directly connected to this task. Complete your required work first; your full record remains in Progress.</p>'}
+                <div class="student-checkpoint-trace" aria-label="Section route: learn, practise, meet goal"><span>Learn</span><span aria-hidden="true">→</span><span>Practise</span><span aria-hidden="true">→</span><span>Meet goal</span></div>
+              ` : '<p style="font-size:13px; margin:0;">No section goal is directly connected to this task. Complete your required work first; your full record remains in Progress.</p>'}
               ${earnedAchievementCount > 0 ? `
                 <p style="font-size:13px; color:var(--text-muted); margin:12px 0 0;">
                   <strong>${earnedAchievementCount} ${earnedAchievementCount === 1 ? 'achievement' : 'achievements'} earned</strong>
@@ -1601,25 +1601,25 @@ class App {
       <section class="student-connected-checkpoint" aria-labelledby="connected-checkpoint-heading">
         <header class="student-connected-checkpoint__header">
           <div>
-            <span class="student-kicker">Connected checkpoint</span>
+            <span class="student-kicker">Your next section goal</span>
             <h2 id="connected-checkpoint-heading"><span>${this.escapeHTML(nextMilestone.id)}</span>${this.escapeHTML(nextMilestone.name)}</h2>
           </div>
           <div class="student-connected-checkpoint__count">
             <strong>${securedMilestones.length}</strong>
-            <span>of ${availableMilestones.length} secured</span>
+            <span>of ${availableMilestones.length} goals met</span>
           </div>
         </header>
         <p>${this.escapeHTML(checkpointRelationship)}</p>
-        <ol class="student-checkpoint-route" aria-label="Checkpoint route">
+        <ol class="student-checkpoint-route" aria-label="Section route">
           <li class="${nextMilestone.state === 'not_started' ? 'is-current' : 'is-complete'}" ${nextMilestone.state === 'not_started' ? 'aria-current="step"' : ''}>Learn${nextMilestone.state === 'practice_completed' ? '<span class="sr-only"> completed</span>' : ''}</li>
           <li class="${nextMilestone.state === 'practice_completed' ? 'is-current' : ''}" ${nextMilestone.state === 'practice_completed' ? 'aria-current="step"' : ''}>Practise</li>
-          <li>Secure</li>
+          <li>Meet goal</li>
         </ol>
       </section>
     ` : `
       <aside class="student-checkpoint-note">
-        <span class="student-kicker">Checkpoint record</span>
-        <strong>No checkpoint is directly connected to this task.</strong>
+        <span class="student-kicker">Section progress</span>
+        <strong>No section goal is directly connected to this task.</strong>
         <p>Complete your required work first; your full record remains in Progress.</p>
       </aside>
     `;
@@ -1749,7 +1749,7 @@ class App {
       panel.innerHTML = `
         <div class="card" role="status">
           <h1>Learning content unavailable</h1>
-          <p>This strand does not currently have a valid learning view. Return to Home and choose another topic.</p>
+          <p>This learning section is not available right now. Return to Home and choose another topic.</p>
           <button class="btn btn-secondary" id="learn-empty-back-btn">Back to Home</button>
         </div>
       `;
@@ -1817,16 +1817,16 @@ class App {
               </div>
               <div id="try-status-${item.id}" style="font-size: 12px; color: var(--teal); margin-top: 6px; display: none; font-weight: 600;"></div>
             </div>
-            <p style="font-size: 13px; margin: 12px 0 0;"><strong>Core learning:</strong> about ${item.workload.coreLearningMinutes} minutes. <strong>Optional retrieval:</strong> up to ${item.workload.retrievalMinutes} minutes.</p>
-            <p style="font-size: 13px; margin: 6px 0;"><strong>How OCR may assess this:</strong> ${item.assessmentModes.map(mode => this.escapeHTML(mode)).join(', ')}.</p>
-            <p style="margin: 14px 0 8px;"><strong>Common misconception:</strong> ${this.escapeHTML(item.misconception)}</p>
+            <p style="font-size: 13px; margin: 12px 0 0;"><strong>Reading and guided task:</strong> about ${item.workload.coreLearningMinutes} minutes. <strong>Optional quick recall:</strong> up to ${item.workload.retrievalMinutes} minutes; answer from memory.</p>
+            <p style="font-size: 13px; margin: 6px 0;"><strong>How this may appear in an OCR exam:</strong> ${item.assessmentModes.map(mode => this.escapeHTML(mode)).join(', ')}.</p>
+            <p style="margin: 14px 0 8px;"><strong>A common mistake to avoid:</strong> ${this.escapeHTML(item.misconception)}</p>
             <div style="display: flex; flex-wrap: wrap; gap: 6px;" aria-label="Key terms">
               ${item.keyTerms.map(term => `<span class="badge badge-secondary">${this.escapeHTML(term)}</span>`).join('')}
             </div>
           </article>
           `;
         }).join('')
-      : '<div class="card" role="status"><h2>Objective teaching unavailable</h2><p>This strand has no objective-level teaching to display. Return to the full Learn view and choose another section.</p><button class="btn btn-secondary" id="objective-empty-back-btn">Back to Learn</button></div>';
+      : '<div class="card" role="status"><h2>Learning content unavailable</h2><p>This section has no teaching content to display right now. Return to Learn and choose another section.</p><button class="btn btn-secondary" id="objective-empty-back-btn">Back to Learn</button></div>';
 
     // Group notes by paper
     const paper1Notes = theoryNotes.filter(n => n.paper === 'Paper 1');
@@ -1909,7 +1909,7 @@ class App {
         <!-- Objective-level teaching -->
         <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-            <h2 style="font-size: 21px; margin: 0;">Learn each specification requirement</h2>
+            <h2 style="font-size: 21px; margin: 0;">Choose a specification section</h2>
             <div style="${isFilteredObjective ? 'display:none;' : 'display:flex;'} gap: 6px; flex-wrap: wrap; align-items: center;">
               <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">View:</span>
               <button class="btn btn-secondary ${(!this.activeObjectiveId || this.activeObjectiveId === 'all') ? 'student-selected-control' : ''} objective-filter-btn" data-obj-id="all" style="padding: 4px 12px; font-size: 12px; border-radius: 14px;">
@@ -2145,7 +2145,7 @@ class App {
           contributesToMastery: false,
           completionStatus: 'formative_only'
         });
-        panel.innerHTML = `<div style="margin-bottom:24px;"><h1>Definition check feedback</h1><p><strong>Formative feedback only: ${secure}/10 responses included the configured important words.</strong> Keyword coverage does not award completion, attainment or mastery. Use the feedback to improve precision and resubmit.</p></div>${results.map((result, index) => `<div class="card" style="margin-bottom:14px; border-left:5px solid ${result.isSecure ? 'var(--green)' : 'var(--amber)'};"><h3>${index + 1}. ${result.item.term}</h3><p style="font-size:13px;"><strong>Your definition:</strong> ${this.escapeHTML(result.response)}</p><p style="font-size:13px;"><strong>Student-friendly model:</strong> ${result.item.definition}</p><p style="font-size:12px; color:var(--text-muted);"><strong>Important words:</strong> ${result.item.keywords.join(', ')}. You included: ${result.matched.join(', ') || 'none yet'}.</p></div>`).join('')}<button class="btn btn-primary" id="another-definition-test-btn">Improve and try another 10</button><button class="btn btn-secondary" id="dictionary-return-btn" style="margin-left:8px;">Back to dictionary</button>`;
+        panel.innerHTML = `<div style="margin-bottom:24px;"><h1>Definition check feedback</h1><p><strong>Practice feedback only: ${secure}/10 definitions included the important words being checked.</strong> This does not count towards Progress or give you a final result. Use the feedback to improve your definitions, then try again.</p></div>${results.map((result, index) => `<div class="card" style="margin-bottom:14px; border-left:5px solid ${result.isSecure ? 'var(--green)' : 'var(--amber)'};"><h3>${index + 1}. ${result.item.term}</h3><p style="font-size:13px;"><strong>Your definition:</strong> ${this.escapeHTML(result.response)}</p><p style="font-size:13px;"><strong>Example definition:</strong> ${result.item.definition}</p><p style="font-size:12px; color:var(--text-muted);"><strong>Important words:</strong> ${result.item.keywords.join(', ')}. You included: ${result.matched.join(', ') || 'none yet'}.</p></div>`).join('')}<button class="btn btn-primary" id="another-definition-test-btn">Improve and try another 10</button><button class="btn btn-secondary" id="dictionary-return-btn" style="margin-left:8px;">Back to dictionary</button>`;
         document.getElementById('another-definition-test-btn').onclick = () => { this.startDefinitionTest(); };
         document.getElementById('dictionary-return-btn').onclick = () => { this.definitionTestMode = false; this.definitionTestTerms = []; this.render(); };
       };
@@ -2915,7 +2915,7 @@ class App {
       <div class="student-route-header">
         <span class="student-mode-label">Simulators</span>
         <h1>Explore one computing process</h1>
-        <p>Choose a tool, complete its short brief, then return Home. Simulator use is optional and does not create assessed evidence.</p>
+        <p>Choose a tool, complete its short brief, then return Home. Simulator use is optional and does not count towards Progress.</p>
       </div>
 
       <!-- Tool Selector Sub-Tabs -->
@@ -3247,23 +3247,24 @@ class App {
 
       ${this.examTransferStage === 'decode' ? `
         <div class="card" style="padding: 24px;">
-          <span class="badge badge-primary">Stage 1 of 5: Decode Command Word</span>
-          <h2 style="font-size:18px; margin-top:10px;">Deconstruct the Question Requirements</h2>
+          <span class="badge badge-primary">Stage 1 of 5: Understand</span>
+          <h2 style="font-size:18px; margin-top:10px;">Work out what the question asks</h2>
           <div style="background: rgba(45, 156, 145, 0.08); padding: 14px; border-radius: 8px; border: 1px solid var(--teal); margin: 12px 0;">
-            <strong style="color: var(--teal);">Command Word: ${task.commandWord}</strong>
+            <strong style="color: var(--teal);">Command word: ${task.commandWord}</strong>
+            <p style="font-size: 12.5px; margin: 4px 0 0;">The command word is the instruction word, such as describe, explain or evaluate.</p>
             <p style="font-size: 13.5px; margin: 4px 0 0 0; line-height: 1.5;">${this.escapeHTML(task.decodePrompt)}</p>
           </div>
-          <label for="transfer-decode-response" style="font-weight: 600; font-size: 14px;">In your own words, what must your answer contain to secure full marks?</label>
-          <textarea id="transfer-decode-response" class="form-control" rows="3" placeholder="e.g. Needs 2 linked reasons with technical terms..."></textarea>
-          <button id="transfer-to-plan" class="btn btn-primary" style="margin-top:14px; min-height: 40px;">Next: Build Answer Structure &rarr;</button>
+          <label for="transfer-decode-response" style="font-weight: 600; font-size: 14px;">In your own words, what does the question require?</label>
+          <textarea id="transfer-decode-response" class="form-control" rows="3" placeholder="For example: explain two reasons and link each one to the scenario."></textarea>
+          <button id="transfer-to-plan" class="btn btn-primary" style="margin-top:14px; min-height: 40px;">Next: Plan your answer &rarr;</button>
         </div>
       ` : ''}
 
       ${this.examTransferStage === 'plan' ? `
         <div class="card" style="padding: 24px;">
-          <span class="badge badge-primary">Stage 2 of 5: Structure & Plan</span>
-          <h2 style="font-size:18px; margin-top:10px;">Scaffold Your Main Points</h2>
-          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Fill in bullet notes for each required mark-scheme component:</p>
+          <span class="badge badge-primary">Stage 2 of 5: Plan</span>
+          <h2 style="font-size:18px; margin-top:10px;">Plan your main points</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Add a short note for each part your answer needs:</p>
           ${task.planningLabels.map((label, index) => `
             <div class="form-group" style="margin-bottom: 14px;">
               <label for="transfer-plan-${index}" style="font-weight: 600; font-size: 13.5px;">Point ${index + 1}: ${this.escapeHTML(label)}</label>
@@ -3279,20 +3280,20 @@ class App {
 
       ${this.examTransferStage === 'answer' ? `
         <div class="card" style="padding: 24px;">
-          <span class="badge badge-primary">Stage 3 of 5: Independent Extended Writing</span>
-          <h2 style="font-size:18px; margin-top:10px;">Write Your Full Response</h2>
-          <p style="font-size:13px; color:var(--text-muted); margin-bottom: 12px;">Aim for approx ${Math.max(3, Math.round(task.minutes * 0.65))} minutes. Show working and use precise technical vocabulary.</p>
+          <span class="badge badge-primary">Stage 3 of 5: Answer</span>
+          <h2 style="font-size:18px; margin-top:10px;">Write your full answer</h2>
+          <p style="font-size:13px; color:var(--text-muted); margin-bottom: 12px;">Aim for about ${Math.max(3, Math.round(task.minutes * 0.65))} minutes. Show working and use accurate computing terms.</p>
           <textarea id="transfer-answer-response" class="form-control" rows="8" placeholder="Write your full extended response here...">${this.escapeHTML(this.examTransferResponse)}</textarea>
           
           <!-- Real-Time Scanner Badge -->
           <div id="live-keyphrase-scanner" style="margin-top:14px; background:rgba(45, 156, 145, 0.08); border:1px solid var(--teal); border-radius: 8px; padding:12px 16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 8px;">
-              <span style="font-size:13px; font-weight:700; color:var(--teal);">🔍 Real-Time ExamLogic Scanner</span>
+              <span style="font-size:13px; font-weight:700; color:var(--teal);">Useful terms found</span>
               <span id="scanner-match-count" class="badge badge-primary" style="font-size: 12px;">
-                ${scanKeyphrases(this.examTransferResponse)} of ${task.requiredElements.length} Mark Scheme Criteria Detected
+                ${scanKeyphrases(this.examTransferResponse)} of ${task.requiredElements.length} suggested terms found
               </span>
             </div>
-            <p style="font-size:12px; color:var(--text-muted); margin:4px 0 0 0;">As you type, the scanner detects technical terms and mark-scheme concepts live.</p>
+            <p style="font-size:12px; color:var(--text-muted); margin:4px 0 0 0;">This checks for possible matching words only. It does not decide whether your explanation is correct or award a mark.</p>
           </div>
 
           <div style="display: flex; gap: 10px; margin-top:16px;">
@@ -3304,9 +3305,9 @@ class App {
 
       ${this.examTransferStage === 'check' ? `
         <div class="card" style="padding: 24px;">
-          <span class="badge badge-primary">Stage 4 of 5: Mark Scheme Self-Check</span>
-          <h2 style="font-size:18px; margin-top:10px;">Formative Mark Scheme Checklist</h2>
-          <p>This is formative evidence, not a final mark. Tick only what your answer actually communicates.</p>
+          <span class="badge badge-primary">Stage 4 of 5: Check</span>
+          <h2 style="font-size:18px; margin-top:10px;">Compare with the mark scheme</h2>
+          <p>A mark scheme lists points an examiner may credit. This check is for practice, not a final mark. Tick only what your answer actually explains.</p>
           <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
             ${task.requiredElements.map((element, index) => `
               <label style="display:flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-main); border-radius: 6px; border: 1px solid var(--border-color); font-size: 14px; cursor: pointer;">
@@ -3316,7 +3317,7 @@ class App {
             `).join('')}
           </div>
           <details class="card" style="margin-top:14px; background: rgba(7, 17, 31, 0.04); padding: 16px;">
-            <summary style="cursor:pointer; font-weight:700; font-size: 14px;">Compare with Examiner Model Solution</summary>
+            <summary style="cursor:pointer; font-weight:700; font-size: 14px;">Compare with an example answer plan</summary>
             <ol style="margin-top: 10px; padding-left: 20px; font-size: 13.5px; line-height: 1.6;">
               ${task.modelPlan.map(item => `<li>${this.escapeHTML(item)}</li>`).join('')}
             </ol>
@@ -3327,11 +3328,11 @@ class App {
 
       ${this.examTransferStage === 'retry' ? `
         <div class="card" style="padding: 24px;">
-          <span class="badge badge-warning">Stage 5 of 5: Unassisted Method Transfer</span>
-          <h2 style="font-size:18px; margin-top:10px;">Test Your Method Independently</h2>
+          <span class="badge badge-warning">Stage 5 of 5: Retry</span>
+          <h2 style="font-size:18px; margin-top:10px;">Try a similar question without help</h2>
           <p style="font-size:16px; font-weight:600; color: var(--text-main); margin-bottom: 12px;">${this.escapeHTML(task.retryQuestion)}</p>
-          <textarea id="transfer-retry-response" class="form-control" rows="8" placeholder="Write your unassisted response here..."></textarea>
-          <button id="transfer-finish" class="btn btn-primary" style="margin-top:16px; min-height: 44px;">Finish & Record Practice Progress</button>
+          <textarea id="transfer-retry-response" class="form-control" rows="8" placeholder="Write your answer without help here..."></textarea>
+          <button id="transfer-finish" class="btn btn-primary" style="margin-top:16px; min-height: 44px;">Send answer for teacher review</button>
         </div>
       ` : ''}
     `;
@@ -3355,8 +3356,8 @@ class App {
         const matches = scanKeyphrases(text);
         const badge = document.getElementById('scanner-match-count');
         if (badge) {
-          badge.textContent = `${matches} of ${task.requiredElements.length} Mark Scheme Criteria Detected`;
-          badge.className = matches === task.requiredElements.length ? 'badge badge-success' : 'badge badge-primary';
+          badge.textContent = `${matches} of ${task.requiredElements.length} suggested terms found`;
+          badge.className = 'badge badge-primary';
         }
       };
     }
@@ -3399,7 +3400,7 @@ class App {
       this.examTransferStage = 'decode';
       this.examTransferPlan = {};
       this.examTransferResponse = '';
-      this.alert('Retry submitted for review. No mastery or completion credit has been awarded yet.');
+      this.alert('Your answer has been sent for review. It does not count towards Progress yet.');
       this.switchTab('stud-dashboard');
     });
   }
@@ -3426,7 +3427,7 @@ class App {
       <div class="student-route-header">
         <span class="student-mode-label">Programming · Paper 2</span>
         <h1>Programming</h1>
-        <p style="max-width:760px;">Build programming fluency over time. Python and OCR Exam Reference Language are connected, but progress is tracked separately so a strength in one does not hide a gap in the other.</p>
+        <p style="max-width:760px;">Build your programming skills one short stage at a time. Python and OCR pseudocode are recorded separately, so completing one does not complete the other.</p>
       </div>
 
       <div class="card" style="margin-bottom:24px; border-left:5px solid var(--teal);">
@@ -3442,14 +3443,14 @@ class App {
           <h2 style="margin:10px 0 5px;">${completedChallengeIds.size} of ${challenges.length} pathway stages completed</h2>
           <div style="height:9px; background:var(--bg-main); border-radius:8px; overflow:hidden; margin:12px 0;"><div style="width:${pythonPercent}%; height:100%; background:var(--teal);"></div></div>
           <p style="font-size:13px; color:var(--text-muted);">Read, trace, complete, debug, construct, test and transfer code into exam problems.</p>
-          <button class="btn btn-secondary programming-open-strand" data-target="stud-programme">Open Python pathway</button>
+          <button class="btn btn-secondary programming-open-strand" data-target="stud-programme">Open Python stages</button>
         </section>
         <section class="card">
           <span class="badge badge-warning">OCR Exam Reference Language</span>
           <h2 style="margin:10px 0 5px;">${completedPseudocodeIds.size} of ${pseudocodeSkills.length} pathway stages completed</h2>
           <div style="height:9px; background:var(--bg-main); border-radius:8px; overflow:hidden; margin:12px 0;"><div style="width:${pseudocodePercent}%; height:100%; background:var(--amber);"></div></div>
           <p style="font-size:13px; color:var(--text-muted);">Read, trace, complete, write and refine the language used in OCR Paper 2 questions.</p>
-          <button class="btn btn-secondary programming-open-strand" data-target="stud-pseudocode">Open OCR-language pathway</button>
+          <button class="btn btn-secondary programming-open-strand" data-target="stud-pseudocode">Open OCR pseudocode stages</button>
         </section>
       </div>
 
@@ -3491,8 +3492,8 @@ class App {
     panel.innerHTML = `
       <div class="student-route-header">
         <span class="student-mode-label">Pseudocode &middot; Paper 2 Section B</span>
-        <h1>OCR Exam Reference Language and Pseudocode</h1>
-        <p style="font-size:14px; color:var(--text-muted); margin:0;">Learn to read, trace, complete, write and refine algorithms. OCR exam questions use the Exam Reference Language (ERL).</p>
+        <h1>Pseudocode for OCR exams</h1>
+        <p style="font-size:14px; color:var(--text-muted); margin:0;">OCR Exam Reference Language (ERL) is the pseudocode style OCR expects when an exam asks you to write an algorithm.</p>
       </div>
 
       <div class="card" style="margin-bottom:20px; background:var(--bg-main);">
@@ -3507,7 +3508,7 @@ class App {
         </div>
         <p style="font-size:12px; color:var(--text-muted); margin:4px 0 8px 0;">Use the inputs-processes-outputs framework to read and predict, write, or find and fix a fault.</p>
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-top:8px;">
-          <label style="font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px;"><input type="checkbox" class="exam-prep-chk"> 1. Circle command word (read and predict, trace, write, find and fix a fault)</label>
+          <label style="font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px;"><input type="checkbox" class="exam-prep-chk"> 1. Underline the task instruction: trace, write, complete, refine, or find and correct errors</label>
           <label style="font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px;"><input type="checkbox" class="exam-prep-chk"> 2. List inputs-processes-outputs</label>
           <label style="font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px;"><input type="checkbox" class="exam-prep-chk"> 3. Mark sequence, selection & iteration</label>
           <label style="font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px;"><input type="checkbox" class="exam-prep-chk"> 4. Trace 1 test value against mark scheme</label>
@@ -3520,7 +3521,7 @@ class App {
           <span class="badge badge-primary">Level ${task.level}: ${task.skill}</span><h2 style="margin:10px 0;">${task.title}</h2>
           <pre style="padding:16px; border-radius:8px; background:#07111f; color:#e2e8f0; overflow:auto;"><code>${this.escapeHTML(task.code)}</code></pre>
           <p style="font-weight:600;">${task.prompt}</p>
-          <div style="padding:10px 12px; background:var(--bg-main); border-radius:8px; font-size:13px; margin-bottom:12px;"><strong>Decode it first:</strong> command = ${task.skill.toLowerCase()} &middot; identify the expected output &middot; choose the control structure &middot; check boundaries and operators.</div>
+          <div style="padding:10px 12px; background:var(--bg-main); border-radius:8px; font-size:13px; margin-bottom:12px;"><strong>Work out the task first:</strong> instruction = ${task.skill.toLowerCase()} &middot; identify the expected output &middot; choose the control structure &middot; check boundaries and operators.</div>
           <textarea id="pseudocode-response" class="form-control" rows="7" placeholder="Write your answer here..."></textarea>
           <div style="display:flex; gap:10px; margin-top:12px;"><button id="pseudocode-check-btn" class="btn btn-primary">Check answer</button><button id="pseudocode-help-btn" class="btn btn-secondary">Show a hint</button><button id="pseudocode-model-btn" class="btn btn-secondary">Show model (no progress credit)</button></div>
           <div id="pseudocode-feedback" class="card" style="display:none; margin-top:14px; background:var(--bg-main);"></div>
@@ -3547,7 +3548,7 @@ class App {
       const isCorrect = this.assessPseudocodeResponse(response, task.answer);
       feedback.style.display = 'block';
       if (!isCorrect) {
-        feedback.innerHTML = '<strong>Submitted for review.</strong><p>This answer is meaningfully different from the stored example, so no automated mastery or completion credit has been awarded. A teacher can review equivalent valid logic. You can still revise and resubmit.</p>';
+        feedback.innerHTML = '<strong>Submitted for review.</strong><p>Your answer uses different logic from the example, so StudySpice cannot mark it safely. It has been sent for teacher review and does not count towards Progress yet. You can improve and submit it again.</p>';
         window.db.addAttempt({
           studentId: this.currentUser.id,
           type: 'pseudocode_review',
@@ -3637,7 +3638,7 @@ class App {
           <div class="card" style="margin-bottom: 20px; border-left: 5px solid var(--teal); padding: 20px;">
             <span class="badge badge-primary">Stage 1 of 4: Read and Predict</span>
             <h3 style="margin-top: 12px; margin-bottom: 8px;">1. Read the code</h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Analyze the logic of this Python algorithm carefully. Identify the command word and trace the inputs-processes-outputs.</p>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Read the program in order. Track how each variable changes, then predict the output before you run it.</p>
             <pre style="padding:16px; border-radius:8px; background:#07115F; color:#e2e8f0; overflow:auto; font-family: monospace; font-size: 14px;"><code>${this.escapeHTML(challenge.code)}</code></pre>
           </div>
 
@@ -4026,7 +4027,7 @@ class App {
       if (status) status.textContent = 'Python runtime: run complete';
       if (consoleOutput) consoleOutput.textContent = results.map((result, idx) => `Test ${idx + 1}:\n${result.output || result.error || '(no output)'}`).join('\n\n');
       if (submitBtn) submitBtn.disabled = !allPassed;
-      this.alert(allPassed ? 'Success: All test cases passed! You can now submit your solution.' : 'Some test cases failed. Use the evidence, support ladder, or tutor for your next change.');
+      this.alert(allPassed ? 'Success: All test cases passed! You can now submit your solution.' : 'Some test cases failed. Use the test results, support steps or tutor to decide what to change.');
     } catch (error) {
       if (status) status.textContent = 'Python runtime: could not complete the run';
       if (consoleOutput) consoleOutput.textContent = error.message;
@@ -4044,7 +4045,7 @@ class App {
     const button = document.getElementById('ai-programming-tutor-btn');
     if (!output || !this.lastProgrammingEvidence.length) return;
     output.style.display = 'block';
-    output.innerHTML = '<strong>Tutor:</strong> Looking at the first useful piece of evidence...';
+    output.innerHTML = '<strong>Tutor:</strong> Looking at the first useful test result...';
     if (button) button.disabled = true;
     let feedback = null;
     try {
@@ -4096,7 +4097,7 @@ class App {
       window.db.saveData();
     }
 
-    this.alert('Confirmed: Programming submission received and logged in progress registry.');
+    this.alert('Your programming submission has been saved. You can view its status in Progress.');
     this.switchTab('stud-dashboard');
   }
 
@@ -4109,7 +4110,7 @@ class App {
       <div style="margin-bottom: 24px;">
         <span class="badge badge-primary">${activeQ.marks} Marks · ${activeQ.commandWord} Question</span>
         <h1 style="margin-top: 8px;">✍️ Extended Written Answers: GCSE Practice</h1>
-        <p style="font-size:15px; color: var(--text-muted);">Construct developed responses containing precise technical terms applied directly to scenarios.</p>
+        <p style="font-size:15px; color: var(--text-muted);">Write clear, developed answers that use accurate computing terms and apply them to the scenario.</p>
       </div>
 
       <div style="display: grid; grid-template-columns: 280px 1fr; gap: 32px;">
@@ -4133,8 +4134,8 @@ class App {
 
           <!-- Stage 4 planning Scaffold -->
           <details open class="card" style="margin-bottom: 24px; border-left: 5px solid var(--amber);">
-            <h4 style="color: var(--amber); margin-bottom: 8px;">📋 Planning Frame Scaffold</h4>
-            <p style="font-size:13px;">Complete these prompts to structure your response correctly, then click "Construct Answer".</p>
+            <h4 style="color: var(--amber); margin-bottom: 8px;">📋 Plan your answer</h4>
+            <p style="font-size:13px;">Use these prompts to organise your ideas, then build your draft.</p>
             
             <div class="form-group">
               <label>Point 1 (What is the issue?):</label>
@@ -4152,7 +4153,7 @@ class App {
               <label>Explain Point 2 (Why does this matter?):</label>
               <input type="text" id="scaf-exp2" class="form-control" style="font-size:13px;" placeholder="Explain its possible consequence." value="${this.scaffoldPoints.exp2}">
             </div>
-            <button class="btn btn-secondary btn-sm" id="construct-ans-btn">Construct Answer from Planning Frame</button>
+            <button class="btn btn-secondary btn-sm" id="construct-ans-btn">Build my draft from these notes</button>
           </details>
 
           <!-- Content hints only visible after attempt -->
@@ -4186,9 +4187,9 @@ class App {
 
           <!-- AI Formative Feedback display area -->
           <div id="ai-feedback-panel" class="card" style="margin-top: 32px; border-top: 5px solid var(--teal); display: none;">
-            <h3 style="color: var(--teal); margin-bottom: 12px;">🤖 Formative Feedback — AI Assisted</h3>
+            <h3 style="color: var(--teal); margin-bottom: 12px;">Practice feedback</h3>
             <div style="font-size: 14px; line-height: 1.6; color: var(--text-muted);">
-              <div>Estimated Mark: <strong id="ai-est-mark" style="color: var(--text-main); font-size:18px;"></strong></div>
+              <div><strong id="ai-est-mark" style="color: var(--text-main); font-size:16px;"></strong></div>
               <div style="margin-top:12px;"><strong>Strengths:</strong> <span id="ai-strengths"></span></div>
               <div style="margin-top:8px;"><strong>Areas for improvement:</strong> <span id="ai-improvements"></span></div>
               <div style="margin-top:8px; border-left:3px solid var(--coral); padding-left:12px;"><strong>Clear action item:</strong> <span id="ai-action"></span></div>
@@ -4276,7 +4277,7 @@ class App {
   }
 
   async requestAiWritingFeedback(question, responseText, button) {
-    if (button) { button.disabled = true; button.textContent = 'Checking against the rubric…'; }
+    if (button) { button.disabled = true; button.textContent = 'Checking against the feedback guide…'; }
     try {
       const token = window.db.getSessionToken();
       if (!token) throw new Error('Local fallback');
@@ -4286,7 +4287,7 @@ class App {
       });
       if (!response.ok) throw new Error('Feedback service unavailable');
       const { feedback } = await response.json();
-      document.getElementById('ai-est-mark').textContent = `${feedback.estimatedMark} / ${question.marks} (formative estimate)`;
+      document.getElementById('ai-est-mark').textContent = 'Practice feedback only — not a mark';
       document.getElementById('ai-strengths').textContent = feedback.strength;
       document.getElementById('ai-improvements').textContent = feedback.improvement;
       document.getElementById('ai-action').textContent = `${feedback.revisionPrompt} ${feedback.rubricEvidence}`;
@@ -4294,9 +4295,9 @@ class App {
       const titleEl = document.querySelector('#ai-feedback-panel h3');
       if (titleEl) {
         if (feedback.source === 'deterministic') {
-          titleEl.innerHTML = `🤖 Formative Feedback — Local Rubric Sandbox <span style="font-size:12px; font-weight:normal; color:var(--text-muted);">(Demo Fallback)</span>`;
+          titleEl.textContent = 'Practice feedback — local guide';
         } else {
-          titleEl.innerHTML = `🤖 Formative Feedback — AI Assisted`;
+          titleEl.textContent = 'Practice feedback';
         }
       }
       
@@ -4325,14 +4326,14 @@ class App {
       id: question.id
     });
 
-    estMarkSpan.textContent = `${feedback.estimatedMark} / ${question.marks} (formative estimate)`;
+    estMarkSpan.textContent = 'Practice feedback only — not a mark';
     strengthsSpan.textContent = feedback.strength;
     improvementsSpan.textContent = feedback.improvement;
     actionSpan.textContent = `${feedback.revisionPrompt} ${feedback.rubricEvidence}`;
     
     const titleEl = document.querySelector('#ai-feedback-panel h3');
     if (titleEl) {
-      titleEl.innerHTML = `🤖 Formative Feedback — Local Rubric Sandbox <span style="font-size:12px; font-weight:normal; color:var(--text-muted);">(Demo Fallback)</span>`;
+      titleEl.textContent = 'Practice feedback — local guide';
     }
     
     fPanel.style.display = 'block';
@@ -4454,6 +4455,14 @@ class App {
     const student = window.db.getStudents().find(s => s.id === this.currentUser.id) || this.currentUser;
     const attempts = window.db.getAttempts().filter(a => a.studentId === this.currentUser.id);
     const displayedAttempts = this.getDisplayedEvidenceAttempts(attempts);
+    const topicLabels = new Map(window.db.getUnits().flatMap(unit => unit.topics).map(topic => [topic.id, topic.name]));
+    const activityTypeLabels = {
+      spaced_theory: 'Quick recall',
+      number_skills: 'Number skills',
+      pseudocode_assessed: 'Pseudocode check',
+      exam_transfer_retry: 'Exam answer sent for review',
+      definition_test: 'Definition practice'
+    };
     const submissions = window.db.getProgrammingSubmissions().filter(s => s.studentId === this.currentUser.id);
     const writtenSubmissions = window.db.getWrittenSubmissions().filter(s => s.studentId === this.currentUser.id);
     const milestones = this.getSectionMilestones(student.id);
@@ -4475,13 +4484,13 @@ class App {
             const evidenceSummary = item.available
               ? [
                 item.evidenceSourceCount
-                  ? `${item.evidenceSourceCount} assessed ${item.evidenceSourceCount === 1 ? 'activity' : 'activities'}`
-                  : 'No assessed activity yet',
+                  ? `${item.evidenceSourceCount} checked ${item.evidenceSourceCount === 1 ? 'activity' : 'activities'}`
+                  : 'No checked activity yet',
                 item.latestDate ? `Latest ${new Date(item.latestDate).toLocaleDateString()}` : null,
-                demonstrated.length ? `Demonstrated: ${demonstrated.join(', ')}` : null,
-                remaining.length ? `Still to demonstrate: ${remaining.join(', ')}` : null
+                demonstrated.length ? `Shown so far: ${demonstrated.join(', ')}` : null,
+                remaining.length ? `Still to show: ${remaining.join(', ')}` : null
               ].filter(Boolean).join(' · ')
-              : 'There are not yet enough suitable assessed questions for this section, so it is excluded from the checkpoint total.';
+              : 'There are not yet enough suitable checked questions for this section, so it is not included in the section total.';
             return `
             <div class="milestone-list-row">
               <div class="milestone-list-heading">
@@ -4502,8 +4511,8 @@ class App {
       const topicAttempts = attempts.filter(attempt => this.attemptMatchesTopic(attempt, topic));
       const mastery = this.getDemonstratedMastery(topicAttempts);
       const badgeClass = mastery.ratio === null ? 'badge-secondary' : mastery.ratio >= 0.85 ? 'badge-success' : mastery.ratio >= 0.6 ? 'badge-warning' : 'badge-primary';
-      const legacyDetail = mastery.legacyEvidenceCount ? ` · ${mastery.legacyEvidenceCount} reduced-precision legacy ${mastery.legacyEvidenceCount === 1 ? 'record' : 'records'}` : '';
-      const detail = mastery.ratio === null ? 'No scored activity yet' : `${mastery.earned}/${mastery.available} from ${mastery.evidenceCount} latest assessed ${mastery.evidenceCount === 1 ? 'activity' : 'activities'}${legacyDetail}`;
+      const legacyDetail = mastery.legacyEvidenceCount ? ` · ${mastery.legacyEvidenceCount} older ${mastery.legacyEvidenceCount === 1 ? 'result' : 'results'} with less question detail` : '';
+      const detail = mastery.ratio === null ? 'No checked result yet' : `${mastery.earned}/${mastery.available} from ${mastery.evidenceCount} latest checked ${mastery.evidenceCount === 1 ? 'activity' : 'activities'}${legacyDetail}`;
       return `<div style="display:flex; justify-content:space-between; gap:12px; font-size:14px;"><span>${this.escapeHTML(topic.name)}</span><span><span class="badge ${badgeClass}">${mastery.label}</span><span style="display:block; font-size:11px; color:var(--text-muted); text-align:right;">${detail}</span></span></div>`;
     }).join('');
 
@@ -4511,37 +4520,37 @@ class App {
       <div class="student-route-header">
         <span class="student-mode-label">Your learning record</span>
         <h1>Your progress and achievements</h1>
-        <p>See what checked work demonstrates, then choose a section to learn or practise next.</p>
+        <p>See what your checked work shows, then choose a section to learn or practise next.</p>
       </div>
 
       <section class="card milestone-summary-card" aria-labelledby="section-milestone-heading">
         <div class="milestone-summary-heading">
           <div>
-            <h2 id="section-milestone-heading">Section milestones</h2>
-            <p>${securedCount} of ${availableMilestones.length} available section checkpoints secured · ${practicedCount} with assessed practice in progress</p>
+            <h2 id="section-milestone-heading">Section progress</h2>
+            <p>${securedCount} of ${availableMilestones.length} available section goals met · ${practicedCount} with checked practice in progress</p>
           </div>
           <strong>${securedCount}/${availableMilestones.length}</strong>
         </div>
-        <div class="milestone-progress" role="progressbar" aria-label="Available section checkpoints secured" aria-valuemin="0" aria-valuemax="${availableMilestones.length}" aria-valuenow="${securedCount}">
+        <div class="milestone-progress" role="progressbar" aria-label="Available section goals met" aria-valuemin="0" aria-valuemax="${availableMilestones.length}" aria-valuenow="${securedCount}">
           <span style="width:${milestonePercent}%"></span>
         </div>
-        <p class="milestone-empty-state">Assessed practice means you have completed marked work in a section. A checkpoint is secured only when that work covers every required assessment focus. Topic evidence describes your latest assessed work; it is not a claim of permanent mastery.</p>
-        ${securedCount === 0 && practicedCount === 0 ? '<p class="milestone-empty-state">No section checkpoints yet. Complete an assessed activity to begin.</p>' : ''}
-        ${unavailableCount ? `<p class="milestone-empty-state">${unavailableCount} curriculum ${unavailableCount === 1 ? 'section is' : 'sections are'} shown below but excluded from this total until enough mapped assessment is available.</p>` : ''}
+        <p class="milestone-empty-state">Checked practice is an activity that StudySpice has marked. A section goal is met only when checked work covers each part included in the current section check. The topic results below show your latest checked work; they do not claim that you will remember it permanently.</p>
+        ${securedCount === 0 && practicedCount === 0 ? '<p class="milestone-empty-state">No section progress yet. Complete a checked activity to start.</p>' : ''}
+        ${unavailableCount ? `<p class="milestone-empty-state">${unavailableCount} curriculum ${unavailableCount === 1 ? 'section is' : 'sections are'} shown below but not included in this total until enough suitable questions are available.</p>` : ''}
         <details class="milestone-details">
-          <summary>View all section milestones</summary>
+          <summary>View all sections</summary>
           ${milestoneGroups}
         </details>
       </section>
 
       <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px;">
         <div>
-          <h2 style="font-size:20px; margin-bottom:16px;">Topic evidence summary</h2>
+          <h2 style="font-size:20px; margin-bottom:16px;">Latest checked results by topic</h2>
           
           <div class="card" style="margin-bottom:32px;">
             <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-weight:600;">
-              <span>Demonstrated performance</span>
-              <span>Latest assessed evidence only</span>
+              <span>Latest checked result</span>
+              <span>Only the latest completed check for each activity counts</span>
             </div>
             
             <div style="display:flex; flex-direction:column; gap:12px;">
@@ -4549,7 +4558,7 @@ class App {
             </div>
           </div>
 
-          <h2 style="font-size:20px; margin-bottom:16px;">Recent Quiz Attempts</h2>
+          <h2 style="font-size:20px; margin-bottom:16px;">Recent activities</h2>
           <div class="table-container" style="margin-bottom:32px;">
             <table>
               <thead>
@@ -4557,19 +4566,19 @@ class App {
                   <th scope="col">Topic</th>
                   <th scope="col">Type</th>
                   <th scope="col">Score</th>
-                  <th scope="col">Evidence status</th>
+                  <th scope="col">Does this count?</th>
                   <th scope="col">Date</th>
                 </tr>
               </thead>
               <tbody>
                 ${displayedAttempts.map(a => `
                   <tr>
-                    <td>${a.topic}</td>
-                    <td>${a.type}</td>
+                    <td>${this.escapeHTML(topicLabels.get(a.topic) || a.topic || 'General activity')}</td>
+                    <td>${this.escapeHTML(activityTypeLabels[a.type] || String(a.type || 'Activity').replaceAll('_', ' '))}</td>
                     <td>${a.score}</td>
                     <td>${this.parseDemonstratedScore(a)
-                      ? (this.hasCheckpointPrecision(a) ? 'Demonstrated' : 'Demonstrated · reduced-precision legacy')
-                      : a.completionStatus === 'awaiting_review' ? 'Awaiting review' : 'Formative or unassessed'}</td>
+                      ? (this.hasCheckpointPrecision(a) ? 'Counts towards Progress' : 'Older result — counts towards the topic result, but cannot meet a section goal')
+                      : a.completionStatus === 'awaiting_review' ? 'Waiting for teacher review — does not count yet' : 'Practice only — does not count towards Progress'}</td>
                     <td>${new Date(a.date).toLocaleDateString()}</td>
                   </tr>
                 `).join('')}
@@ -4582,7 +4591,7 @@ class App {
           <!-- Consistency Badges -->
           <div class="card" style="margin-bottom:24px;">
           <h3>Earned badges</h3>
-            <p style="font-size: 13px; margin-bottom: 16px;">Shown only when the learner record contains the corresponding consistency or demonstrated-achievement award.</p>
+            <p style="font-size: 13px; margin-bottom: 16px;">Only achievements you have earned are shown.</p>
             
             <div style="display:flex; flex-direction:column; gap:12px;">
               <div class="card" style="padding:12px; background-color: var(--bg-main); ${(student.achievements || []).includes('Binary Fluent') ? 'display:flex' : 'display:none'}; gap:12px; align-items:center;">

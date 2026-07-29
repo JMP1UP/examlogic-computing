@@ -64,8 +64,8 @@ describe('GCSE learning design', () => {
     expect(appSource).toContain('Computer Science dictionary');
     expect(appSource).toContain('Test me on 10 random terms');
     expect(appSource).toContain('.slice(0, 10)');
-    expect(appSource).toContain('Formative feedback only');
-    expect(appSource).toContain('Keyword coverage does not award completion, attainment or mastery');
+    expect(appSource).toContain('Practice feedback only');
+    expect(appSource).toContain('This does not count towards Progress or give you a final result');
   });
 
   test('supports targeted publishing and dated intervention sessions', () => {
@@ -99,7 +99,7 @@ describe('GCSE learning design', () => {
     expect(databaseSource).toContain('examTransferTasks: [');
     expect(databaseSource).toContain("specificationPointId: '1.2.4c'");
     expect(appSource).toContain("const stages = ['decode', 'plan', 'answer', 'check', 'retry']");
-    expect(appSource).toContain('This is formative evidence, not a final mark');
+    expect(appSource).toContain('This check is for practice, not a final mark');
     expect(appSource).toContain("type: 'exam_transfer_retry'");
   });
 

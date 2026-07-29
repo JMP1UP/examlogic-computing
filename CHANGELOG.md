@@ -23,6 +23,10 @@ All notable changes to ExamLogic Computing are recorded here.
 - Enabled checkpoints for 27 sufficiently assessed sections. Five under-assessed sections remain visible but excluded from the achievable denominator: `1.2.4c`, `1.5.2`, `2.1.1`, `2.2.2` and `2.2.PY`.
 
 ### Fixed
+- Rewrote pupil-facing Progress, Learn, programming and exam-answer instructions in plain English while retaining the OCR terms pupils must recognise.
+- Replaced the exam-answer keyword scanner's marking implication with an explicitly formative suggested-term check.
+- Corrected SQL-injection prevention, validation, testing-data and legislation explanations after examiner review.
+- Replaced the unexplained software-development instruction “refactor” with the OCR-aligned term “refine” and a concrete description of the required changes.
 - Replaced the horizontally scrolling Learn topic strip with a responsive wrapping grid so every topic remains visible and keyboard-accessible.
 - Replaced potentially misleading message identity and presence copy with the assigned teacher and factual monitoring hours.
 - Clarified formative exam-transfer status and practice-result storage.

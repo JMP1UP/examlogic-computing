@@ -67,7 +67,7 @@ describe('learning-record integrity', () => {
       earned: 0,
       available: 0,
       ratio: null,
-      label: 'No demonstrated evidence',
+      label: 'No checked result yet',
       evidenceCount: 0,
       legacyEvidenceCount: 0
     });
@@ -78,10 +78,10 @@ describe('learning-record integrity', () => {
 
     expect(app.getDemonstratedMastery([
       { evidenceVersion: 2, activityId: 'strong', type: 'spaced_theory', score: '3/3', contributesToMastery: true }
-    ]).label).toBe('Strong latest evidence');
+    ]).label).toBe('Strong latest result');
     expect(app.getDemonstratedMastery([
       { evidenceVersion: 2, activityId: 'developing', type: 'spaced_theory', score: '2/3', contributesToMastery: true }
-    ]).label).toBe('Developing latest evidence');
+    ]).label).toBe('Developing latest result');
     expect(app.getDemonstratedMastery([
       { evidenceVersion: 2, activityId: 'practice', type: 'spaced_theory', score: '1/3', contributesToMastery: true }
     ]).label).toBe('More practice needed');
@@ -267,9 +267,9 @@ describe('learning-record integrity', () => {
     app.renderStudentProgress(panel);
 
     expect(app.getDisplayedEvidenceAttempts(attempts)).toEqual(attempts);
-    expect(panel.innerHTML).toContain('Demonstrated · reduced-precision legacy');
-    expect(panel.innerHTML).toContain('Formative or unassessed');
-    expect(panel.innerHTML).toContain('Awaiting review');
+    expect(panel.innerHTML).toContain('Older result — counts towards the topic result, but cannot meet a section goal');
+    expect(panel.innerHTML).toContain('Practice only — does not count towards Progress');
+    expect(panel.innerHTML).toContain('Waiting for teacher review — does not count yet');
   });
 
   test('Progress labels pre-checkpoint version 2 evidence as reduced precision without rewriting it', () => {
@@ -304,7 +304,7 @@ describe('learning-record integrity', () => {
       available: 3,
       precision: 'question-level'
     });
-    expect(panel.innerHTML).toContain('Demonstrated · reduced-precision legacy');
+    expect(panel.innerHTML).toContain('Older result — counts towards the topic result, but cannot meet a section goal');
     expect(attempt).toEqual(original);
   });
 
@@ -333,7 +333,7 @@ describe('learning-record integrity', () => {
     database.getUnits.mockReturnValue([{ topics: [{ id: 'topic_1_1', name: 'Systems Architecture' }] }]);
     const panel = { innerHTML: '' };
     app.renderStudentProgress(panel);
-    expect(panel.innerHTML).toContain('Demonstrated · reduced-precision legacy');
+    expect(panel.innerHTML).toContain('Older result — counts towards the topic result, but cannot meet a section goal');
 
     mixedSectionAttempt.checkpointRuleVersions['1.1.2'] = 1;
     expect(app.hasCheckpointPrecision(mixedSectionAttempt)).toBe(true);

@@ -521,7 +521,7 @@ const defaultDatabase = {
           </ul>`,
           workedExample: `<strong>SQL Injection Example:</strong><br>
           Entering <code>' OR '1'='1</code> into an unsecured login text box can force the database query to evaluate to TRUE, granting unauthorized admin access without a password!`,
-          examinerTip: 'For SQL Injection, always mention that input validation and sanitized parameters prevent this vulnerability.'
+          examinerTip: 'Parameterised queries are the main defence against SQL injection because input is treated as data rather than as part of an SQL instruction. Validation and sanitisation may provide additional input checks.'
         },
         {
           heading: '2. Defensive Prevention Methods',
@@ -536,7 +536,7 @@ const defaultDatabase = {
           </ul>`,
           workedExample: `<strong>How Firewalls Protect Networks:</strong><br>
           A firewall inspects packet headers (source IP, destination port). If a packet attempts to access blocked port 21 (FTP) from an unknown external IP, the firewall drops the packet.`,
-          examinerTip: 'In 4-mark answers on security, match the threat to its exact solution (e.g. SQL Injection $\\rightarrow$ Input sanitisation; Malware $\\rightarrow$ Anti-virus & patching).'
+          examinerTip: 'In security answers, match each threat to a suitable prevention. Parameterised queries are the main defence against SQL injection because input is treated as data, not as part of an SQL instruction. Validation and sanitisation can add further input checks.'
         }
       ],
       keyTerms: ['Malware', 'Phishing', 'Social Engineering', 'Brute Force Attack', 'DDoS', 'SQL Injection', 'Firewall', 'Encryption', 'Penetration Testing', 'User Access Levels', '2FA'],
@@ -634,7 +634,7 @@ const defaultDatabase = {
             <li><strong>Copyright, Designs and Patents Act 1988:</strong> Protects intellectual property (software code, music, images, videos) from unauthorized copying, modification, or distribution.</li>
           </ul>`,
           workedExample: `<strong>Applying Legislation in Exam Scenarios:</strong><br>
-          If an employee downloads customer credit card records without permission, they breach the <em>Data Protection Act 2018</em> (unsecured personal data handling) AND the <em>Computer Misuse Act 1990</em> (unauthorized access to data).`,
+          If an employee accesses and downloads customer credit card records without permission, the unauthorised access may be an offence under the <em>Computer Misuse Act 1990</em>. The organisation's handling and security of that personal data may also raise issues under the <em>Data Protection Act 2018</em>.`,
           examinerTip: 'Always name the exact law in 6-8 mark essay questions (e.g. "Computer Misuse Act 1990", not just "hacking law").'
         },
         {
@@ -1833,7 +1833,7 @@ def calculate_area(width, height):
             "To check if the source code contains any syntax errors"
       ],
       "answer": "To check if input data is sensible and meets specific rules before processing",
-      "explanation": "Input validation is a defensive design technique that filters out erroneous data before it is processed, preventing code crashes."
+      "explanation": "Input validation checks whether data follows specified rules before it is processed. If a check fails, the program should reject the data or ask for it again."
 },
     {
       "id": "q_2_3_b",
@@ -2638,15 +2638,15 @@ def calculate_area(width, height):
       "indicativeContent": [
             "Authentication: Ensuring the user is who they claim to be, e.g. using usernames, strong passwords, and multi-factor codes.",
             "Input Validation: Restricting input fields to verify that data fits expected formats, lengths, and ranges (e.g. ensuring password fits length constraints, rating is integer).",
-            "Input Sanitisation: Cleaning inputs by stripping out characters that could execute SQL code (preventing SQL Injection).",
+            "Parameterised Queries: Keeping input separate from the SQL instruction so it is treated as data rather than executable SQL. Validation and sanitisation may add further input checks.",
             "Maintainability: Using commenting, indentation, and clear naming conventions so other programmers can audit and fix bugs in code."
       ],
       "rubric": [
             "1-2 Marks: Lists defensive design concepts (like validation or authentication) but fails to explain them.",
             "3-4 Marks: Explains two defensive design methods with moderate detail linked to the login scenario.",
-            "5-6 Marks: Explains three methods (e.g., authentication, validation, sanitisation) thoroughly, linking them to security and robustness in the login console."
+            "5-6 Marks: Explains three methods (for example authentication, validation and parameterised queries) thoroughly, linking them to security and robustness in the login console."
       ],
-      "modelAnswer": "Firstly, the programmer should implement input validation to ensure that user inputs fit specific criteria, such as checking password length or ensuring the username contains only legal characters. Secondly, authentication should be used to verify the user's identity, such as checking password records in a database before granting access. Thirdly, input sanitisation should be applied to remove characters like quotes or semicolons from text boxes, preventing hackers from executing SQL Injection attacks on the school database.",
+      "modelAnswer": "Firstly, the programmer should implement input validation to ensure that user inputs fit specific criteria, such as checking password length or ensuring the username uses an allowed format. Secondly, authentication should be used to verify the user's identity, such as checking password records in a database before granting access. Thirdly, parameterised queries should keep user input separate from SQL instructions, so input is treated as data rather than executable SQL.",
       "misconceptions": [
             {
                   "phrase": "physical security",
