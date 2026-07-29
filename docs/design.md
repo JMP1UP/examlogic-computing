@@ -57,3 +57,25 @@ ExamLogic Computing strictly adheres to the **25Thirty Learning** design mode.
 ## 7. Branding Standards
 - Product Name: **ExamLogic Computing**
 - Endorsement: **by 25Thirty** (Header), **A 25Thirty product** (Footer)
+
+## 8. Student art direction: Signal / Paste
+
+Student pages use a restrained **Signal / Paste** visual language: precise computing
+metadata and routes combined with the controlled energy of editorial paste-up
+graphics. Warm paper, navy structure, accessible teal and a small cyan/acid accent
+give student work a distinct identity while keeping teaching and assessment surfaces
+calm.
+
+- The required task remains the single dominant action.
+- Expressive details are limited to page openings, task identity, checkpoints and
+  navigation state.
+- Monospace type is reserved for short metadata; learning copy remains in Inter.
+- Checkpoints and achievements describe demonstrated evidence and never reward
+  visits, model-answer views, confidence or self-marking.
+- Teacher pages retain the established professional 25Thirty Learning treatment.
+- Decorative marks carry no meaning, disappear safely in forced-colour layouts and
+  must not interfere with keyboard focus, zoom or 320px reflow.
+
+Signal / Paste explicitly excludes graffiti fonts, fake youth slang, hacker-terminal
+clichés, glitch effects, neon overload, points, streaks, leaderboards and decorative
+texture behind questions or teaching text.

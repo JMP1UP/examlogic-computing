@@ -978,6 +978,7 @@ class App {
     if (storageRecovery?.active) {
       loginScreen.style.display = 'none';
       appShell.style.display = 'flex';
+      appShell.removeAttribute('data-user-role');
       if (skipLink) skipLink.setAttribute('href', '#storage-recovery');
       if (navList) navList.innerHTML = '';
       const userName = document.getElementById('user-display-name');
@@ -1002,6 +1003,7 @@ class App {
     }
 
     if (!this.currentUser) {
+      appShell.removeAttribute('data-user-role');
       if (skipLink) skipLink.setAttribute('href', '#login-screen');
       loginScreen.style.display = 'block';
       appShell.style.display = 'none';
@@ -1012,6 +1014,7 @@ class App {
 
     loginScreen.style.display = 'none';
     appShell.style.display = 'flex';
+    appShell.setAttribute('data-user-role', this.currentUser.role);
     if (skipLink) skipLink.setAttribute('href', '#main-panel');
 
     const demoBanner = document.getElementById('demo-banner');
@@ -1262,7 +1265,7 @@ class App {
     const milestones = this.getSectionMilestones(student.id);
     const availableMilestones = milestones.filter(item => item.available);
     const securedMilestones = availableMilestones.filter(item => item.state === 'checkpoint_secured');
-    const nextMilestone = availableMilestones.find(item => item.state === 'practice_completed')
+    const generalNextMilestone = availableMilestones.find(item => item.state === 'practice_completed')
       || availableMilestones.find(item => item.state === 'not_started');
     const activeTestPreps = window.db.getTestPreps().filter(p => p.status === 'Active' && this.isPublishedToStudent(p, student));
     const upcomingSessions = window.db.getSupportSessions().filter(item => item.published && this.isPublishedToStudent(item, student));
@@ -1299,6 +1302,7 @@ class App {
     // Compute dominant task for "Do this now"
     let dominantTaskHtml = '';
     let dominantAssignmentId = null;
+    let dominantAssignment = null;
     let hasActiveTestPrep = activeTestPreps.length > 0;
 
     if (hasActiveTestPrep) {
@@ -1316,6 +1320,7 @@ class App {
       const incompleteRequiredAssignments = assignments.filter(a => a.status !== 'Completed' && (a.status === 'Required' || a.status === 'Overdue'));
       if (incompleteRequiredAssignments.length > 0) {
         const a = incompleteRequiredAssignments[0];
+        dominantAssignment = a;
         dominantAssignmentId = a.id;
         const isOverdue = a.status === 'Overdue';
         const isProgramming = a.title.toLowerCase().includes('programming');
@@ -1348,6 +1353,18 @@ class App {
         `;
       }
     }
+
+    const unresolvedMilestones = availableMilestones.filter(item => item.state !== 'checkpoint_secured');
+    const nextMilestone = activeTestPreps[0]
+      ? unresolvedMilestones.find(item => activeTestPreps[0].specificationPointIds.includes(item.id))
+      : dominantAssignment
+        ? unresolvedMilestones.find(item => item.topicId === dominantAssignment.topicId)
+        : generalNextMilestone;
+    const checkpointRelationship = activeTestPreps[0]
+      ? 'This test preparation builds towards this checkpoint.'
+      : dominantAssignment
+        ? 'This assignment builds towards this checkpoint.'
+        : 'Learn the essentials, then complete a check when it becomes your main task.';
 
     const remainingAssignments = assignments.filter(a => a.id !== dominantAssignmentId);
 
@@ -1459,13 +1476,15 @@ class App {
     }
 
     panel.innerHTML = `
-      <div class="dashboard-container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
-          <div>
+      <div class="dashboard-container student-page student-dashboard">
+        <div class="student-dashboard__header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+          <div class="student-dashboard__brief">
+            <span class="student-mode-label">Weekly brief</span>
             <h1 style="margin-bottom: 6px; font-weight: 700;">${greeting}, ${shortName}</h1>
             <p style="font-size:16px; color: var(--text-muted); margin: 0;">${greetingText}</p>
             <div style="margin-top: 8px; font-size: 14px; color: var(--text-muted); font-weight: 500;">
-              Demonstrated performance: <strong style="color: var(--teal);">${demonstratedProgress.label}</strong>
+              Latest checked work: <strong style="color: var(--teal);">${demonstratedProgress.label.replace(' latest evidence', '').replace(' evidence', '')}</strong>
+              <span class="student-evidence-note">Based on completed checks.</span>
             </div>
           </div>
           <!-- Profile Control -->
@@ -1486,30 +1505,28 @@ class App {
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 32px; align-items: start;">
+        <div class="student-dashboard__primary-grid" style="display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 32px; align-items: start;">
           <div>
-            <h2 style="font-size:18px; margin-bottom:12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Do this now</h2>
-            ${dominantTaskHtml}
+            <h2 class="student-section-label" style="font-size:18px; margin-bottom:12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Do this now</h2>
+            <div class="student-task-sheet">${dominantTaskHtml}</div>
           </div>
 
           <div>
-            <h2 style="font-size:18px; margin-bottom:12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">This week</h2>
-            <div class="card card-progress" style="margin-bottom: 20px; padding: 20px;">
-              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Assessed evidence</h3>
-              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 0;">${demonstratedProgress.evidenceCount} latest assessed ${demonstratedProgress.evidenceCount === 1 ? 'activity contributes' : 'activities contribute'} to progress.</p>
-              ${demonstratedProgress.legacyEvidenceCount ? '<p style="font-size:12px; color:var(--text-muted); margin:8px 0 0;">Older reduced-precision evidence remains visible in Progress but cannot create a section checkpoint.</p>' : ''}
+            <h2 class="student-section-label" style="font-size:18px; margin-bottom:12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">This week</h2>
+            <div class="card card-progress student-status-rail" style="margin-bottom: 20px; padding: 20px;">
+              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Work that counts</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 0;">${demonstratedProgress.evidenceCount} checked ${demonstratedProgress.evidenceCount === 1 ? 'activity is' : 'activities are'} contributing to your progress.</p>
             </div>
-            <div class="card milestone-dashboard-card" style="margin-bottom: 20px; padding: 20px;">
-              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Section checkpoints</h3>
+            <div class="card milestone-dashboard-card student-checkpoint-card" style="margin-bottom: 20px; padding: 20px;">
+              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Your next checkpoint</h3>
               <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 10px;">${securedMilestones.length} of ${availableMilestones.length} available checkpoints secured through assessed work.</p>
               ${nextMilestone ? `
                 <div style="font-size:13px; margin-bottom:10px;">
                   <strong>Next:</strong> ${this.escapeHTML(nextMilestone.id)} · ${this.escapeHTML(nextMilestone.name)}
                 </div>
-                <p style="font-size:12px; color:var(--text-muted); margin:0;">${nextMilestone.state === 'practice_completed'
-                  ? 'Continue assessed practice when it is your main task.'
-                  : 'Use Learn when you are ready to work towards this checkpoint.'}</p>
-              ` : '<p style="font-size:13px; margin:0;">All available section checkpoints are secured.</p>'}
+                <p style="font-size:12px; color:var(--text-muted); margin:0;">${checkpointRelationship}</p>
+                <div class="student-checkpoint-trace" aria-label="Checkpoint route: learn, practise, secure"><span>Learn</span><span aria-hidden="true">→</span><span>Practise</span><span aria-hidden="true">→</span><span>Secure</span></div>
+              ` : '<p style="font-size:13px; margin:0;">No checkpoint is directly connected to this task. Complete your required work first; your full record remains in Progress.</p>'}
               ${earnedAchievementCount > 0 ? `
                 <p style="font-size:13px; color:var(--text-muted); margin:12px 0 0;">
                   <strong>${earnedAchievementCount} ${earnedAchievementCount === 1 ? 'achievement' : 'achievements'} earned</strong>
@@ -1518,10 +1535,10 @@ class App {
               ` : ''}
             </div>
             <div class="card" style="margin-bottom:20px; padding:16px 20px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
-              <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Computing workload</h3>
-              <div style="font-weight: 700; font-size: 18px; color: var(--teal);">${requiredMinutes} minutes required</div>
+              <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Your study plan</h3>
+              <div style="font-weight: 700; font-size: 18px; color: var(--teal);">${requiredMinutes} minutes required this week</div>
               <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">${hasDemonstratedBaseline
-                ? 'Optional retrieval: up to 5 minutes.'
+                ? 'Optional quick recall: up to 5 minutes.'
                 : 'Suggested guided learning: 10 minutes.'}</div>
             </div>
           </div>
@@ -1684,9 +1701,9 @@ class App {
     const paper2Notes = theoryNotes.filter(n => n.paper === 'Paper 2');
 
     panel.innerHTML = `
-      <div class="learn-hub-container">
+      <div class="learn-hub-container student-page student-learn">
         <!-- Header -->
-        <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+        <div class="student-route-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
           <div>
             <span class="badge badge-primary">GCSE Computer Science Specification &middot; 25Thirty Learning</span>
             <h1 style="font-size: 28px; font-weight: 700; margin: 8px 0 4px 0;">${isFilteredObjective ? 'Today’s section' : 'Learn and review theory'}</h1>
@@ -2118,6 +2135,7 @@ class App {
     panel.innerHTML = `
       <div class="card" style="margin-bottom:20px; padding:14px;"><strong>Choose one practice mode</strong><div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;"><button class="btn btn-primary btn-sm practice-mode-btn" data-target="stud-practise">Number skills</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-written">Long answers</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-dictionary">Key terms</button></div><div style="font-size:12px; color:var(--text-muted); margin-top:8px;">Complete one short mode, then stop or return home. Python and OCR-language learning now have their own Programming area.</div></div>
       <div style="margin-bottom: 24px;">
+        <span class="student-mode-label">Practice workshop</span>
         <span class="badge badge-primary">Ongoing spaced practice</span>
         <h1 style="margin-top: 8px; font-weight: 700;">🔢 Practise: Number Skills</h1>
         <p style="font-size: 15px; color: var(--text-muted); margin: 0;">Ongoing spaced practice and calculation skill development.</p>
@@ -2540,7 +2558,8 @@ class App {
     }
 
     panel.innerHTML = `
-      <div style="margin-bottom: 24px;">
+      <div class="student-route-header" style="margin-bottom: 24px;">
+        <span class="student-mode-label">Recall · ${this.quizQuestions.length} questions · about 5 minutes</span>
         <span class="badge badge-primary">Revise & Assess</span>
         <h1 style="margin-top: 8px; font-weight: 700;">🧠 Revise: ${activeTopic ? activeTopic.name : this.activeTopicId}</h1>
         <p style="font-size: 15px; color: var(--text-muted); margin: 0;">Assessment-focused mixed sets, mock preparation and timed quiz work.</p>
@@ -4306,6 +4325,7 @@ class App {
     panel.innerHTML = `
       <div style="margin-bottom: 24px;">
         <h1>📈 Your progress and achievements</h1>
+        <span class="student-mode-label">Your learning record</span>
         <p>Review demonstrated evidence, section checkpoints and earned badges.</p>
       </div>
 

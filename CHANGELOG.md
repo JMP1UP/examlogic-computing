@@ -5,6 +5,12 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Added the student-only Signal / Paste visual direction, with restrained route
+  framing, task identity and checkpoint cues while leaving teacher screens unchanged.
+- Reframed dashboard reporting as checked work, a required study plan and a
+  task-linked next checkpoint without changing evidence or completion rules.
+- Added dark-mode, forced-colour and narrow-layout safeguards for the new student
+  surfaces.
 - Added restrained, evidence-backed section milestones across Learn, Dashboard and Progress.
 - Added quiet checkpoint acknowledgement after qualifying assessed activities, without points, streaks, leaderboards or page-view rewards.
 - Added versioned, focus-based checkpoint rules so only representative demonstrated evidence can secure a section; retries replace the latest outcome for the same activity and concept.

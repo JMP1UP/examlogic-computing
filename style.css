@@ -1094,6 +1094,239 @@ body.dark-mode .badge-primary {
   width: 100%;
 }
 
+body.dark-mode .demo-banner {
+  color: #78350F !important;
+}
+
+/* Student visual direction: Signal / Paste.
+   Role scoping keeps the teacher workspace and public landing page unchanged. */
+.app-container[data-user-role="student"] {
+  --student-ink: #071827;
+  --student-paper: #FAF8F2;
+  --student-panel: #FFFFFF;
+  --student-panel-tint: #F1F7F6;
+  --student-signal: #1B6E66;
+  --student-electric: #247C9E;
+  --student-acid: #DCEB55;
+  --student-rule: #B9CED2;
+  --student-meta: #52657A;
+  --student-shadow: 5px 5px 0 rgba(7, 24, 39, 0.12);
+  --student-font-meta: Consolas, "Courier New", monospace;
+}
+
+body.dark-mode .app-container[data-user-role="student"] {
+  --student-ink: #EAF7F5;
+  --student-panel: #18233F;
+  --student-panel-tint: #132036;
+  --student-rule: #49657A;
+  --student-meta: #B6C8D5;
+  --student-shadow: 5px 5px 0 rgba(0, 0, 0, 0.3);
+}
+
+.student-dashboard__header {
+  position: relative;
+  padding: 8px 0 18px 18px;
+  border-left: 4px solid var(--student-electric);
+}
+
+.student-dashboard__header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 72px;
+  height: 5px;
+  background: var(--student-acid);
+  pointer-events: none;
+}
+
+.student-mode-label,
+.student-section-label {
+  display: block;
+  font-family: var(--student-font-meta);
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  line-height: 1.35;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--student-meta) !important;
+}
+
+.student-dashboard__brief > p {
+  font-size: 16px !important;
+}
+
+.student-evidence-note {
+  display: block;
+  margin-top: 3px;
+  color: var(--student-meta);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.student-dashboard__primary-grid {
+  position: relative;
+}
+
+.student-task-sheet {
+  position: relative;
+}
+
+.student-task-sheet > .card {
+  border-radius: 5px;
+  border-width: 2px;
+  box-shadow: var(--student-shadow);
+  background: var(--student-panel);
+}
+
+.student-task-sheet::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: -10px;
+  right: 18px;
+  width: 42px;
+  height: 5px;
+  padding: 0;
+  background: var(--student-ink);
+  pointer-events: none;
+}
+
+.student-status-rail {
+  border-radius: 6px;
+  border-left: 4px solid var(--student-electric);
+  box-shadow: none;
+  background: var(--student-panel-tint);
+}
+
+.student-checkpoint-card {
+  position: relative;
+  border-radius: 6px;
+  border: 1px solid var(--student-rule);
+  box-shadow: 4px 4px 0 rgba(36, 124, 158, 0.12);
+}
+
+.student-checkpoint-card::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  right: 18px;
+  width: 34px;
+  height: 5px;
+  background: var(--student-acid);
+  pointer-events: none;
+}
+
+.student-checkpoint-trace {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  color: var(--student-meta);
+  font: 700 13px/1.4 var(--student-font-meta);
+}
+
+.app-container[data-user-role="student"] .student-route-header {
+  position: relative;
+  padding: 12px 16px 14px;
+  border-left: 4px solid var(--student-electric);
+  border-bottom: 1px solid var(--student-rule);
+  background: color-mix(in srgb, var(--student-panel) 92%, var(--student-electric));
+}
+
+.app-container[data-user-role="student"] .student-route-header::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  bottom: -3px;
+  width: 54px;
+  height: 5px;
+  background: var(--student-acid);
+  pointer-events: none;
+}
+
+.app-container[data-user-role="student"] .student-learn article.card {
+  border-radius: 6px !important;
+  box-shadow: none;
+}
+
+.app-container[data-user-role="student"] .student-workshop-selector,
+.app-container[data-user-role="student"] .student-assessment-brief,
+.app-container[data-user-role="student"] .milestone-summary-card {
+  border-radius: 6px;
+  border-left: 4px solid var(--student-electric);
+  box-shadow: none;
+}
+
+.app-container[data-user-role="student"] .nav-link.active {
+  border-left: 4px solid var(--student-acid);
+  background: rgba(36, 124, 158, 0.24);
+}
+
+.app-container[data-user-role="student"] #main-panel > div > h1,
+.app-container[data-user-role="student"] #main-panel > section > h1 {
+  border-left: 4px solid var(--student-electric);
+  padding-left: 14px;
+}
+
+.app-container[data-user-role="student"] .worked-example,
+.app-container[data-user-role="student"] pre,
+.app-container[data-user-role="student"] code {
+  border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  .student-dashboard__header {
+    align-items: flex-start !important;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .student-dashboard__primary-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .student-task-sheet::before {
+    right: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-container[data-user-role="student"] .main-content {
+    background: var(--bg-main);
+  }
+
+  .student-dashboard__header {
+    padding-left: 12px;
+  }
+
+  .student-task-sheet > .card,
+  .student-checkpoint-card {
+    box-shadow: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .app-container[data-user-role="student"] .main-content {
+    background: Canvas;
+  }
+
+  .student-dashboard__header::after,
+  .student-task-sheet::before,
+  .student-checkpoint-card::after,
+  .student-route-header::after {
+    display: none;
+  }
+
+  .student-task-sheet > .card,
+  .student-status-rail,
+  .student-checkpoint-card {
+    border: 2px solid CanvasText;
+    box-shadow: none;
+  }
+}
+
 .btn-link {
   appearance: none;
   padding: 0;
