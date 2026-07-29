@@ -52,4 +52,40 @@ describe('student Signal / Paste visual system', () => {
     expect(app).toContain("event.key !== 'Escape'");
     expect(css).toContain('.student-checkpoint-route .is-current');
   });
+
+  test('carries the student system into routes without competing with the task', () => {
+    expect(app).toContain('student-instruction-route');
+    expect(app).toContain('Recommended learning sequence');
+    expect(app).toContain('Suggested starting point');
+    expect(app).toContain('student-mini-brief');
+    expect(app).toContain('student-workshop-selector');
+    expect(app).toContain('Simulator use is optional and does not create assessed evidence.');
+    expect(css).toContain('.student-instruction-route');
+    expect(css).toContain('.student-start-panel');
+    expect(css).toContain('.student-route-header--quiet');
+    expect(css).not.toContain('var(--student-electric)');
+    expect(app).not.toContain('Revise & Assess');
+    expect(app).not.toContain('Ongoing spaced practice');
+  });
+
+  test('gives literal next-step and availability information', () => {
+    expect(app).toContain('Learn this section');
+    expect(app).toContain("this.activeObjectiveId = objectiveId");
+    expect(app).toContain('Messages monitored');
+    expect(app).toContain('a reply may not be immediate');
+    expect(app).not.toContain('● Online');
+    expect(app).toContain("window.db.getCoordinators().find(item => item.id === studentClass?.teacherId)");
+    expect(app).toContain('Teacher messaging unavailable');
+    expect(app).toContain('No message was sent');
+    expect(app).toContain('message.senderId === contactId');
+  });
+
+  test('keeps formative and retry language honest and useful', () => {
+    expect(app).toContain('This practice does not create a score automatically; your final independent response is sent for review.');
+    expect(app).toContain('Your latest result has been saved and may change the support shown in this skill.');
+    expect(app).not.toContain('Your results have been logged for adaptive spaced practice scaffolding.');
+    expect(app).toContain('<button class="btn btn-secondary" onclick="app.switchTab(\'stud-dashboard\')"');
+    expect(app).toContain('Work through Decode, Plan, Answer, Check and Retry.');
+    expect(app).toContain('teachingObjectiveIds.has(item.id)');
+  });
 });

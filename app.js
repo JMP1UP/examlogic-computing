@@ -1809,7 +1809,7 @@ class App {
               <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
                 <button type="button" class="btn btn-secondary btn-sm save-try-btn" data-obj-id="${item.id}">💾 Save response</button>
                 <button type="button" class="btn btn-secondary btn-sm toggle-guide-btn" data-obj-id="${item.id}">💡 Check worked solution</button>
-                <button type="button" class="btn ${isFilteredObjective ? 'btn-secondary' : 'btn-primary'} btn-sm goto-review-btn" data-spec-id="${item.id}">✍️ ${isFilteredObjective ? 'Optional: practise a written answer' : 'Practise in written answers &rarr;'}</button>
+                <button type="button" class="btn btn-secondary btn-sm goto-review-btn" data-spec-id="${item.id}">✍️ ${isFilteredObjective ? 'Optional: practise a written answer' : 'Practise in written answers &rarr;'}</button>
               </div>
               <div id="try-guide-${item.id}" class="card" style="display: none; margin-top: 12px; padding: 14px; background: rgba(45, 156, 145, 0.08); border-left: 4px solid var(--teal);">
                 <strong style="color: var(--teal); font-size: 13px;">Guided Solution Reference:</strong>
@@ -1837,29 +1837,39 @@ class App {
         <!-- Header -->
         <div class="student-route-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
           <div>
-            <span class="badge badge-primary">GCSE Computer Science Specification &middot; 25Thirty Learning</span>
+            <span class="student-mode-label">Learn</span>
             <h1 style="font-size: 28px; font-weight: 700; margin: 8px 0 4px 0;">${isFilteredObjective ? 'Today’s section' : 'Learn and review theory'}</h1>
             <p style="font-size: 15px; color: var(--text-muted); margin: 0;">${isFilteredObjective
               ? `${this.escapeHTML(focusedObjectiveTeaching?.scope || '')} · about ${focusedObjectiveTeaching?.workload?.coreLearningMinutes || 10} minutes`
-              : 'Comprehensive, specification-aligned revision guides, worked examples, and examiner tips.'}</p>
-          </div>
-          <!-- Quick Quiz & Copy Note CTAs -->
-          <div style="${isFilteredObjective ? 'display:none;' : 'display:flex;'} gap: 10px; align-items: center; flex-wrap: wrap;">
-            <button class="btn btn-secondary copy-theory-summary-btn" style="min-height: 44px; padding: 0 16px; font-weight: 600;">
-              📋 Copy notes and terms
-            </button>
-            <button class="btn btn-primary start-topic-quiz-btn" data-topic-id="${activeNote.topicId}" style="min-height: 44px; padding: 0 20px; font-weight: 600;">
-              ⚡ Test this topic (5-min quiz) &rarr;
-            </button>
+              : 'Choose one specification section. Read the explanation, try the guided task, then check the section.'}</p>
           </div>
         </div>
+        ${isFilteredObjective ? `
+          <ol class="student-instruction-route" aria-label="Recommended learning sequence">
+            <li><strong>Read</strong><span>the explanation and worked example</span></li>
+            <li><strong>Try</strong><span>the guided task and save your response</span></li>
+            <li><strong>Check</strong><span>the section when you are ready</span></li>
+          </ol>
+        ` : `
+          <div class="student-start-panel">
+            <div><strong>Suggested starting point</strong><p>Work through the first section for about 10 minutes. You can still browse the full topic below.</p></div>
+            <button type="button" class="btn btn-primary" id="learn-recommended-start-btn" data-objective-id="${this.escapeHTML(allObjectiveTeaching[0]?.id || '')}">Start ${this.escapeHTML(allObjectiveTeaching[0]?.scope || 'first section')}</button>
+          </div>
+          <details class="student-more-routes">
+            <summary>More ways to revise this topic</summary>
+            <div>
+              <button class="btn btn-secondary copy-theory-summary-btn">Copy notes and terms</button>
+              <button class="btn btn-secondary start-topic-quiz-btn" data-topic-id="${activeNote.topicId}">Optional: test this topic (up to 3 questions)</button>
+            </div>
+          </details>
+        `}
 
         <!-- Paper Selector Tabs -->
         <div style="${isFilteredObjective ? 'display:none;' : 'display:flex;'} gap: 12px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 12px;">
-          <button class="btn ${currentPaper === 'Paper 1' ? 'btn-primary' : 'btn-secondary'} paper-tab-btn" data-paper="Paper 1" style="border-radius: 8px; font-weight: 600;">
+          <button class="btn btn-secondary ${currentPaper === 'Paper 1' ? 'student-selected-control' : ''} paper-tab-btn" data-paper="Paper 1" style="border-radius: 8px; font-weight: 600;">
             💻 Paper 1: Computer Systems
           </button>
-          <button class="btn ${currentPaper === 'Paper 2' ? 'btn-primary' : 'btn-secondary'} paper-tab-btn" data-paper="Paper 2" style="border-radius: 8px; font-weight: 600;">
+          <button class="btn btn-secondary ${currentPaper === 'Paper 2' ? 'student-selected-control' : ''} paper-tab-btn" data-paper="Paper 2" style="border-radius: 8px; font-weight: 600;">
             🧩 Paper 2: Computational Thinking, Algorithms & Programming
           </button>
         </div>
@@ -1867,7 +1877,7 @@ class App {
         <!-- Topic Pills Navigation -->
         <div style="${isFilteredObjective ? 'display:none;' : 'display:flex;'} gap: 8px; overflow-x: auto; padding-bottom: 16px; margin-bottom: 24px;">
           ${(currentPaper === 'Paper 1' ? paper1Notes : paper2Notes).map(note => `
-            <button class="btn ${note.topicId === activeNote.topicId ? 'btn-primary' : 'btn-secondary'} topic-pill-btn" data-topic-id="${note.topicId}" style="white-space: nowrap; font-size: 13px; padding: 6px 14px; border-radius: 20px; font-weight: 600;">
+            <button class="btn btn-secondary ${note.topicId === activeNote.topicId ? 'student-selected-control' : ''} topic-pill-btn" data-topic-id="${note.topicId}" style="white-space: nowrap; font-size: 13px; padding: 6px 14px; border-radius: 20px; font-weight: 600;">
               ${note.code} ${note.title}
             </button>
           `).join('')}
@@ -1902,11 +1912,11 @@ class App {
             <h2 style="font-size: 21px; margin: 0;">Learn each specification requirement</h2>
             <div style="${isFilteredObjective ? 'display:none;' : 'display:flex;'} gap: 6px; flex-wrap: wrap; align-items: center;">
               <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">View:</span>
-              <button class="btn ${(!this.activeObjectiveId || this.activeObjectiveId === 'all') ? 'btn-primary' : 'btn-secondary'} objective-filter-btn" data-obj-id="all" style="padding: 4px 12px; font-size: 12px; border-radius: 14px;">
+              <button class="btn btn-secondary ${(!this.activeObjectiveId || this.activeObjectiveId === 'all') ? 'student-selected-control' : ''} objective-filter-btn" data-obj-id="all" style="padding: 4px 12px; font-size: 12px; border-radius: 14px;">
                 All (${allObjectiveTeaching.length})
               </button>
               ${allObjectiveTeaching.map(item => `
-                <button class="btn ${this.activeObjectiveId === item.id ? 'btn-primary' : 'btn-secondary'} objective-filter-btn" data-obj-id="${item.id}" style="padding: 4px 12px; font-size: 12px; border-radius: 14px;">
+                <button class="btn btn-secondary ${this.activeObjectiveId === item.id ? 'student-selected-control' : ''} objective-filter-btn" data-obj-id="${item.id}" style="padding: 4px 12px; font-size: 12px; border-radius: 14px;">
                   ${item.officialSpecificationPointId}
                 </button>
               `).join('')}
@@ -1975,8 +1985,8 @@ class App {
           <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px; max-width: 500px; margin-left: auto; margin-right: auto;">
             Reinforce what you just learned with a quick 5-minute retrieval check on <strong>${activeNote.title}</strong>.
           </p>
-          <button class="btn btn-primary btn-lg start-topic-quiz-btn" data-topic-id="${activeNote.topicId}" style="min-width: 220px; min-height: 44px; font-weight: 600;">
-            🚀 Start ${activeNote.code} Retrieval Practice
+          <button class="btn btn-secondary btn-lg start-topic-quiz-btn" data-topic-id="${activeNote.topicId}" style="min-width: 220px; min-height: 44px; font-weight: 600;">
+            Optional: start ${activeNote.code} retrieval practice
           </button>
         </div>
       </div>
@@ -2014,6 +2024,14 @@ class App {
     if (viewFullTopicButton) {
       viewFullTopicButton.onclick = () => {
         this.activeObjectiveId = 'all';
+        this.renderStudentLearn(panel);
+        this.focusMainContent();
+      };
+    }
+    const recommendedStartButton = panel.querySelector('#learn-recommended-start-btn');
+    if (recommendedStartButton) {
+      recommendedStartButton.onclick = () => {
+        this.activeObjectiveId = recommendedStartButton.getAttribute('data-objective-id');
         this.renderStudentLearn(panel);
         this.focusMainContent();
       };
@@ -2178,7 +2196,7 @@ class App {
     const endIdx = showAll ? selected.length : Math.min(this.testPrepOffset + 3, selected.length);
 
     panel.innerHTML = `
-      <div style="margin-bottom:24px;">
+      <div class="student-route-header">
         <span class="badge badge-primary">${prep.sessionMinutes}-minute session</span>
         <h1 style="margin-top:8px;">${this.escapeHTML(prep.title)}</h1>
         <p>${selected.length} specification points selected · ${this.formatDueDate(prep.testDate).replace('Due ', 'Test ')}</p>
@@ -2265,13 +2283,12 @@ class App {
     }
 
     panel.innerHTML = `
-      <div class="card" style="margin-bottom:20px; padding:14px;"><strong>Choose one practice mode</strong><div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;"><button class="btn btn-primary btn-sm practice-mode-btn" data-target="stud-practise">Number skills</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-written">Long answers</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-dictionary">Key terms</button></div><div style="font-size:12px; color:var(--text-muted); margin-top:8px;">Complete one short mode, then stop or return home. Python and OCR-language learning now have their own Programming area.</div></div>
-      <div style="margin-bottom: 24px;">
-        <span class="student-mode-label">Practice workshop</span>
-        <span class="badge badge-primary">Ongoing spaced practice</span>
-        <h1 style="margin-top: 8px; font-weight: 700;">🔢 Practise: Number Skills</h1>
-        <p style="font-size: 15px; color: var(--text-muted); margin: 0;">Ongoing spaced practice and calculation skill development.</p>
+      <div class="student-route-header">
+        <span class="student-mode-label">Practice &middot; Number skills &middot; ${this.numberSkillsSet.length} questions &middot; about 10 minutes</span>
+        <h1>Practise number skills</h1>
+        <p>Answer the questions in order, submit the set, then retry any incorrect answers. Your latest checked result can contribute to Progress.</p>
       </div>
+      <div class="card student-workshop-selector" style="margin-bottom:20px; padding:14px;"><strong>Choose one practice mode</strong><div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;"><button class="btn btn-secondary student-selected-control btn-sm practice-mode-btn" data-target="stud-practise">Number skills</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-written">Long answers</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-dictionary">Key terms</button></div><div style="font-size:13px; color:var(--text-muted); margin-top:8px;">Complete one short mode, then stop or return Home. Python and OCR-language learning have their own Programming area.</div></div>
 
       <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px; align-items: start;">
         <div>
@@ -2623,13 +2640,13 @@ class App {
       <div style="margin-bottom: 24px;">
         <h1>Your practice results</h1>
         <p>Assessed result: <strong style="color: var(--teal); font-size:20px;">${assessedScore}</strong></p>
-        <p style="font-size: 14px;">Your results have been logged for adaptive spaced practice scaffolding.</p>
+        <p style="font-size: 14px;">Your latest result has been saved and may change the support shown in this skill.</p>
       </div>
       ${this.renderMilestoneAcknowledgement(newlySecuredMilestones)}
       <div>
         ${feedbackHTML}
         ${incorrectQuestions.length ? '<button class="btn btn-primary" id="retry-number-skills-btn" style="margin-top:16px;">Retry incorrect questions</button>' : ''}
-        <button class="btn btn-primary" onclick="app.switchTab('stud-dashboard')" style="margin-top: 16px;">Back to dashboard</button>
+        <button class="btn btn-secondary" onclick="app.switchTab('stud-dashboard')" style="margin-top: 16px;">Back to dashboard</button>
       </div>
     `);
     const retryButton = document.getElementById('retry-number-skills-btn');
@@ -2692,12 +2709,9 @@ class App {
     panel.innerHTML = `
       <div class="student-route-header" style="margin-bottom: 24px;">
         <span class="student-mode-label">Recall · ${this.quizQuestions.length} questions · about 5 minutes</span>
-        <span class="badge badge-primary">Revise & Assess</span>
-        <h1 style="margin-top: 8px; font-weight: 700;">🧠 Revise: ${activeTopic ? activeTopic.name : this.activeTopicId}</h1>
-        <p style="font-size: 15px; color: var(--text-muted); margin: 0;">Assessment-focused mixed sets, mock preparation and timed quiz work.</p>
+        <h1>${this.escapeHTML(activeTopic ? activeTopic.name : this.activeTopicId)}</h1>
+        <p>Complete this focused set, then use the checked result to choose your next step.</p>
       </div>
-
-      <div class="card" style="margin-bottom:20px; padding:14px;"><strong>${this.escapeHTML(activeTopic?.paper || 'GCSE')} · ${this.escapeHTML(activeTopic?.name || this.activeTopicId)} · ${this.quizQuestions.length} questions · about 5 minutes</strong><div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Complete this focused set, then choose a clear next step from your results.</div></div>
       <form id="quiz-form">
         ${this.quizQuestions.map((q, idx) => {
           let fieldsHTML = '';
@@ -2889,22 +2903,30 @@ class App {
     else if (this.logicGateType === 'OR') gateResult = (this.logicInputA || this.logicInputB) ? 1 : 0;
     else if (this.logicGateType === 'NOT') gateResult = (!this.logicInputA) ? 1 : 0;
     else if (this.logicGateType === 'XOR') gateResult = (this.logicInputA !== this.logicInputB) ? 1 : 0;
+    const simulatorBriefs = {
+      'binary-shift': 'Perform one left shift and compare the displayed value before and after.',
+      'fde-cycle': 'Use Step until one complete fetch-decode-execute cycle has been displayed.',
+      'logic-gates': 'Try two input combinations and compare the displayed outputs.',
+      algorithms: 'Switch between Binary and Linear Search and compare the displayed traces.',
+      'file-size-calc': 'Enter one example and use the calculator to check its file-size units.'
+    };
 
     panel.innerHTML = `
-      <div style="margin-bottom:20px;">
-        <span class="badge badge-primary">Interactive CS Visualizers &middot; Paper 1 & Paper 2</span>
-        <h1 style="margin-top:8px;">Interactive Simulators Workbench</h1>
-        <p style="font-size:14px; color:var(--text-muted); margin:0;">Manipulate bits, trace CPU registers, build logic circuits, and step through search/sort algorithms.</p>
+      <div class="student-route-header">
+        <span class="student-mode-label">Simulators</span>
+        <h1>Explore one computing process</h1>
+        <p>Choose a tool, complete its short brief, then return Home. Simulator use is optional and does not create assessed evidence.</p>
       </div>
 
       <!-- Tool Selector Sub-Tabs -->
       <div style="display:flex; gap:8px; margin-bottom:24px; border-bottom:2px solid var(--border-color); padding-bottom:12px; overflow-x:auto;">
-        <button class="btn ${this.activeSimTool === 'binary-shift' ? 'btn-primary' : 'btn-secondary'} sim-tool-btn" data-tool="binary-shift">🧮 Binary & Hex Shift</button>
-        <button class="btn ${this.activeSimTool === 'fde-cycle' ? 'btn-primary' : 'btn-secondary'} sim-tool-btn" data-tool="fde-cycle">⚡ CPU FDE Cycle</button>
-        <button class="btn ${this.activeSimTool === 'logic-gates' ? 'btn-primary' : 'btn-secondary'} sim-tool-btn" data-tool="logic-gates">🔌 Logic Gates Workbench</button>
-        <button class="btn ${this.activeSimTool === 'algorithms' ? 'btn-primary' : 'btn-secondary'} sim-tool-btn" data-tool="algorithms">📊 Search & Sort Trace</button>
-        <button class="btn ${this.activeSimTool === 'file-size-calc' ? 'btn-primary' : 'btn-secondary'} sim-tool-btn" data-tool="file-size-calc">📐 File Size Math</button>
+        <button class="btn btn-secondary ${this.activeSimTool === 'binary-shift' ? 'student-selected-control' : ''} sim-tool-btn" data-tool="binary-shift">🧮 Binary & Hex Shift</button>
+        <button class="btn btn-secondary ${this.activeSimTool === 'fde-cycle' ? 'student-selected-control' : ''} sim-tool-btn" data-tool="fde-cycle">⚡ CPU FDE Cycle</button>
+        <button class="btn btn-secondary ${this.activeSimTool === 'logic-gates' ? 'student-selected-control' : ''} sim-tool-btn" data-tool="logic-gates">🔌 Logic Gates Workbench</button>
+        <button class="btn btn-secondary ${this.activeSimTool === 'algorithms' ? 'student-selected-control' : ''} sim-tool-btn" data-tool="algorithms">📊 Search & Sort Trace</button>
+        <button class="btn btn-secondary ${this.activeSimTool === 'file-size-calc' ? 'student-selected-control' : ''} sim-tool-btn" data-tool="file-size-calc">📐 File Size Math</button>
       </div>
+      <div class="student-mini-brief" role="note"><strong>Your short task</strong><span>${this.escapeHTML(simulatorBriefs[this.activeSimTool])}</span><button type="button" class="btn btn-secondary" onclick="app.switchTab('stud-dashboard')">Finish and return Home</button></div>
 
       ${this.activeSimTool === 'binary-shift' ? `
         <div class="card" style="padding:24px;">
@@ -3205,10 +3227,10 @@ class App {
     };
 
     panel.innerHTML = `
-      <div style="margin-bottom:20px;">
-        <span class="badge badge-primary">ExamLogic Scaffolding Engine &middot; ${task.paper} &middot; ${task.marks} Marks (${task.minutes} mins)</span>
-        <h1 style="margin-top:8px;">Apply Knowledge: ${topicName} (${task.specificationPointId})</h1>
-        <p style="font-size:14px; color:var(--text-muted); margin:0;">Follow the 5-stage ExamLogic pipeline to master high-mark exam questions.</p>
+      <div class="student-route-header">
+        <span class="student-mode-label">Exam preparation &middot; ${task.paper} &middot; ${task.marks} marks &middot; about ${task.minutes} minutes</span>
+        <h1>Apply knowledge: ${topicName} (${task.specificationPointId})</h1>
+        <p>Work through Decode, Plan, Answer, Check and Retry. This practice does not create a score automatically; your final independent response is sent for review.</p>
       </div>
 
       <div style="height:8px; background:var(--border-color); border-radius:4px; margin-bottom:20px; overflow:hidden;">
@@ -3401,9 +3423,9 @@ class App {
     const pseudocodePercent = Math.round((completedPseudocodeIds.size / pseudocodeSkills.length) * 100);
 
     panel.innerHTML = `
-      <div style="margin-bottom:24px;">
-        <span class="badge badge-warning">Paper 2 · practical and exam-language skills</span>
-        <h1 style="margin-top:8px;">Programming</h1>
+      <div class="student-route-header">
+        <span class="student-mode-label">Programming · Paper 2</span>
+        <h1>Programming</h1>
         <p style="max-width:760px;">Build programming fluency over time. Python and OCR Exam Reference Language are connected, but progress is tracked separately so a strength in one does not hide a gap in the other.</p>
       </div>
 
@@ -3467,9 +3489,9 @@ class App {
     ];
     const task = tasks[this.activePseudocodeTask] || tasks[0];
     panel.innerHTML = `
-      <div style="margin-bottom:24px;">
-        <span class="badge badge-warning">Paper 2 &middot; Section B Pseudocode & Algorithms</span>
-        <h1 style="margin-top:8px;">OCR Exam Reference Language and Pseudocode</h1>
+      <div class="student-route-header">
+        <span class="student-mode-label">Pseudocode &middot; Paper 2 Section B</span>
+        <h1>OCR Exam Reference Language and Pseudocode</h1>
         <p style="font-size:14px; color:var(--text-muted); margin:0;">Learn to read, trace, complete, write and refine algorithms. OCR exam questions use the Exam Reference Language (ERL).</p>
       </div>
 
@@ -3493,7 +3515,7 @@ class App {
       </div>
 
       <div class="pseudocode-workspace">
-        <div class="card"><h3 style="font-size:15px;">Progression</h3>${tasks.map((item, index) => `<button class="btn ${index === this.activePseudocodeTask ? 'btn-primary' : 'btn-secondary'} btn-sm pseudocode-task-btn" data-task-index="${index}" style="width:100%; margin-top:8px; text-align:left;">${item.level}. ${item.skill}: ${item.title}</button>`).join('')}</div>
+        <div class="card"><h3 style="font-size:15px;">Progression</h3>${tasks.map((item, index) => `<button class="btn btn-secondary ${index === this.activePseudocodeTask ? 'student-selected-control' : ''} btn-sm pseudocode-task-btn" data-task-index="${index}" style="width:100%; margin-top:8px; text-align:left;">${item.level}. ${item.skill}: ${item.title}</button>`).join('')}</div>
         <div class="card">
           <span class="badge badge-primary">Level ${task.level}: ${task.skill}</span><h2 style="margin:10px 0;">${task.title}</h2>
           <pre style="padding:16px; border-radius:8px; background:#07111f; color:#e2e8f0; overflow:auto;"><code>${this.escapeHTML(task.code)}</code></pre>
@@ -4330,20 +4352,41 @@ class App {
 
   // ==================== SECURE MESSAGES ====================
   renderStudentMessages(panel) {
-    const messages = window.db.getMessages().filter(m => m.senderId === this.currentUser.id || m.receiverId === this.currentUser.id);
+    const student = window.db.getStudents().find(item => item.id === this.currentUser.id) || this.currentUser;
+    const studentClass = window.db.getClasses().find(item => item.id === student.classId);
+    const assignedContact = window.db.getCoordinators().find(item => item.id === studentClass?.teacherId);
+    if (!assignedContact) {
+      panel.innerHTML = `
+        <div class="card" role="status">
+          <h1>Teacher messaging unavailable</h1>
+          <p>Your assigned Computing contact could not be confirmed, so no message has been sent. Ask your school to check your class assignment.</p>
+          <button type="button" class="btn btn-secondary" id="messages-unavailable-home">Back to Home</button>
+        </div>
+      `;
+      panel.querySelector?.('#messages-unavailable-home')?.addEventListener('click', () => this.switchTab('stud-dashboard'));
+      this.focusMainContent();
+      return;
+    }
+    const contactId = assignedContact.id;
+    const contactName = assignedContact.name;
+    const messages = window.db.getMessages().filter(message =>
+      (message.senderId === this.currentUser.id && message.receiverId === contactId)
+      || (message.senderId === contactId && message.receiverId === this.currentUser.id)
+    );
+    const communicationHours = window.db.getSettings().communicationHours;
     
     panel.innerHTML = `
-      <div style="margin-bottom: 24px;">
-        <span class="badge badge-primary">Secure messaging channel</span>
-        <h1 style="margin-top: 8px;">💬 Teacher Messages: Mrs. Smith</h1>
-        <p style="font-size: 15px; color: var(--text-muted);">Ask for help with topics, assignments, or coding questions. All logs are archived for school safety audits.</p>
+      <div class="student-route-header student-route-header--quiet">
+        <span class="student-mode-label">Messages</span>
+        <h1>Ask your Computing teacher</h1>
+        <p>Send a question about a topic, assignment or programming task. Messages are monitored during ${this.escapeHTML(communicationHours)}; a reply may not be immediate.</p>
       </div>
 
       <div class="chat-container">
         <div class="chat-header">
           <div>
-            <strong>Mrs. Smith</strong>
-            <span style="font-size:11px; color: var(--green); margin-left:8px;">● Online (Hours: ${window.db.getSettings().communicationHours})</span>
+            <strong>${this.escapeHTML(contactName)}</strong>
+            <span class="student-contact-hours">Messages monitored ${this.escapeHTML(communicationHours)}</span>
           </div>
         </div>
 
@@ -4351,7 +4394,7 @@ class App {
           ${messages.map(m => `
             <div class="chat-bubble ${m.senderId === this.currentUser.id ? 'sent' : 'received'}">
               <div style="font-size:11px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">
-                ${m.senderId === this.currentUser.id ? 'You' : 'Mrs. Smith'} · ${new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                ${m.senderId === this.currentUser.id ? 'You' : this.escapeHTML(contactName)} · ${new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
               </div>
               <div>${m.text}</div>
               ${m.flagged ? `<div style="font-size: 10px; color: #FECACA; font-weight:600; margin-top: 4px;">⚠️ Safety warning: Flagged by school filters</div>` : ''}
@@ -4360,7 +4403,8 @@ class App {
         </div>
 
         <div class="chat-input-area">
-          <input type="text" id="chat-text-input" class="form-control" placeholder="Type your question..." value="${this.messageDraft}">
+          <label class="sr-only" for="chat-text-input">Your message to ${this.escapeHTML(contactName)}</label>
+          <input type="text" id="chat-text-input" class="form-control" placeholder="Type your question..." value="${this.escapeHTML(this.messageDraft)}">
           <button class="btn btn-primary" id="chat-send-btn">Send</button>
         </div>
       </div>
@@ -4391,9 +4435,13 @@ class App {
     const text = this.messageDraft.trim();
     if (!text) return;
 
+    const student = window.db.getStudents().find(item => item.id === this.currentUser.id) || this.currentUser;
+    const studentClass = window.db.getClasses().find(item => item.id === student.classId);
+    const receiverId = window.db.getCoordinators().find(item => item.id === studentClass?.teacherId)?.id;
+    if (!receiverId) return this.alert('Your assigned Computing contact could not be confirmed. No message was sent.');
     window.db.addMessage({
       senderId: this.currentUser.id,
-      receiverId: 'coord_1',
+      receiverId,
       text
     });
 
@@ -4409,6 +4457,8 @@ class App {
     const submissions = window.db.getProgrammingSubmissions().filter(s => s.studentId === this.currentUser.id);
     const writtenSubmissions = window.db.getWrittenSubmissions().filter(s => s.studentId === this.currentUser.id);
     const milestones = this.getSectionMilestones(student.id);
+    const curriculumContent = window.db.getCurriculumContent?.() || [];
+    const teachingObjectiveIds = new Set(curriculumContent.map(item => item.id));
     const availableMilestones = milestones.filter(item => item.available);
     const unavailableCount = milestones.length - availableMilestones.length;
     const securedCount = availableMilestones.filter(item => item.state === 'checkpoint_secured').length;
@@ -4439,6 +4489,9 @@ class App {
               ${this.getMilestoneBadge(item)}
               </div>
               <span class="milestone-evidence-detail">${this.escapeHTML(evidenceSummary)}</span>
+              ${item.state !== 'checkpoint_secured' && teachingObjectiveIds.has(item.id)
+                ? `<button type="button" class="progress-learn-link progress-learn-section" data-objective-id="${this.escapeHTML(item.id)}">Learn this section</button>`
+                : item.state !== 'checkpoint_secured' ? '<span class="milestone-evidence-detail">Learning route unavailable for this section.</span>' : ''}
             </div>
           `;
           }).join('')}
@@ -4455,10 +4508,10 @@ class App {
     }).join('');
 
     panel.innerHTML = `
-      <div style="margin-bottom: 24px;">
-        <h1>📈 Your progress and achievements</h1>
+      <div class="student-route-header">
         <span class="student-mode-label">Your learning record</span>
-        <p>Review demonstrated evidence, section checkpoints and earned badges.</p>
+        <h1>Your progress and achievements</h1>
+        <p>See what checked work demonstrates, then choose a section to learn or practise next.</p>
       </div>
 
       <section class="card milestone-summary-card" aria-labelledby="section-milestone-heading">
@@ -4551,6 +4604,22 @@ class App {
         </div>
       </div>
     `;
+    (panel.querySelectorAll ? panel.querySelectorAll('.progress-learn-section') : []).forEach(button => {
+      button.onclick = () => {
+        const objectiveId = button.getAttribute('data-objective-id');
+        const topic = window.db.getUnits().flatMap(unit => unit.topics).find(item => item.objectives.some(objective => objective.id === objectiveId));
+        const teachingAvailable = (window.db.getCurriculumContent?.() || []).some(item => item.id === objectiveId);
+        if (!topic || !teachingAvailable) {
+          panel.innerHTML = '<div class="card" role="status"><h1>Learning content unavailable</h1><p>This section does not currently have a valid learning view.</p><button class="btn btn-secondary" id="progress-learning-back">Back to Progress</button></div>';
+          panel.querySelector?.('#progress-learning-back')?.addEventListener('click', () => this.renderStudentProgress(panel));
+          this.focusMainContent();
+          return;
+        }
+        this.activeTopicId = topic.id;
+        this.activeObjectiveId = objectiveId;
+        this.switchTab('stud-learn');
+      };
+    });
   }
 
   // ==================== TEACHER OVERVIEW ====================
