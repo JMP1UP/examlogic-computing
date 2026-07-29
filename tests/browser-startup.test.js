@@ -157,6 +157,34 @@ describe('production browser startup', () => {
     expect(context.db.getWrittenSubmissions().filter(item => item.studentId === context.app.currentUser.id)).toEqual([]);
   });
 
+  test('renders a stored secondary assignment as literal text without mutating it', async () => {
+    const context = loadProductionScripts();
+    context.app.render = jest.fn();
+    await context.app.quickLogin('student');
+    const hostileAssignment = {
+      id: 'assign_hostile',
+      title: '<img src=x onerror="alert(1)"> Revision',
+      classId: 'class_1',
+      topicId: 'topic_1_3" autofocus onfocus="alert(2)',
+      dueDate: '2026-08-20',
+      status: 'Recommended',
+      estimatedMinutes: 5,
+      completedCount: 0
+    };
+    context.db.cachedData.assignments.push(hostileAssignment);
+    context.app.dashboardSeeMoreExpanded = true;
+    const target = createPanel();
+    target.querySelectorAll = () => [];
+    const before = JSON.stringify(hostileAssignment);
+
+    context.app.renderStudentDashboard(target);
+
+    expect(target.innerHTML).toContain('&lt;img src=x onerror=&quot;alert(1)&quot;&gt; Revision');
+    expect(target.innerHTML).not.toContain('<img src=x onerror=');
+    expect(target.innerHTML).toContain('topic_1_3&quot; autofocus onfocus=&quot;alert(2)');
+    expect(JSON.stringify(hostileAssignment)).toBe(before);
+  });
+
   test('re-entering the clean demo removes only fixture evidence and namespaced drafts', async () => {
     const context = loadProductionScripts();
     const fixtureId = 'student_release_fixture';

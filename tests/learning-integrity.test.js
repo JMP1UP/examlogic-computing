@@ -267,7 +267,7 @@ describe('learning-record integrity', () => {
     app.renderStudentProgress(panel);
 
     expect(app.getDisplayedEvidenceAttempts(attempts)).toEqual(attempts);
-    expect(panel.innerHTML).toContain('Older result — counts towards the topic result, but cannot meet a section goal');
+    expect(panel.innerHTML).toContain('Older result — included in the topic result, but cannot meet a section goal');
     expect(panel.innerHTML).toContain('Practice only — does not count towards Progress');
     expect(panel.innerHTML).toContain('Waiting for teacher review — does not count yet');
   });
@@ -304,7 +304,7 @@ describe('learning-record integrity', () => {
       available: 3,
       precision: 'question-level'
     });
-    expect(panel.innerHTML).toContain('Older result — counts towards the topic result, but cannot meet a section goal');
+    expect(panel.innerHTML).toContain('Older result — included in the topic result, but cannot meet a section goal');
     expect(attempt).toEqual(original);
   });
 
@@ -333,7 +333,7 @@ describe('learning-record integrity', () => {
     database.getUnits.mockReturnValue([{ topics: [{ id: 'topic_1_1', name: 'Systems Architecture' }] }]);
     const panel = { innerHTML: '' };
     app.renderStudentProgress(panel);
-    expect(panel.innerHTML).toContain('Older result — counts towards the topic result, but cannot meet a section goal');
+    expect(panel.innerHTML).toContain('Older result — included in the topic result, but cannot meet a section goal');
 
     mixedSectionAttempt.checkpointRuleVersions['1.1.2'] = 1;
     expect(app.hasCheckpointPrecision(mixedSectionAttempt)).toBe(true);

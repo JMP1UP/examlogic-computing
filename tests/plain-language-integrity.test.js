@@ -37,4 +37,44 @@ describe('pupil-facing plain-language integrity', () => {
     expect(appSource).not.toContain('available sections completed');
     expect(appSource).toContain('do not claim that you will remember it permanently');
   });
+
+  test('uses one consistent pupil-facing name for recall and the exam-answer sequence', () => {
+    expect(appSource).not.toContain('Spaced recall');
+    expect(appSource).not.toContain('Spaced quiz completed');
+    expect(appSource).not.toContain('Spaced Theory Check');
+    expect(databaseSource).not.toContain('Spaced Theory Check');
+    expect(appSource).toContain('Quick recall completed');
+    expect(appSource).toContain('Understand, Plan, Answer, Check and Retry');
+    expect(appSource).not.toContain('Decode, Plan, Answer, Check and Retry');
+  });
+
+  test('describes workload and practice drafts without implying extra credit or a false total', () => {
+    expect(appSource).toContain('Core guided learning:');
+    expect(appSource).toContain('Optional notes and quick recall are additional.');
+    expect(appSource).toContain('Save draft — practice only');
+    expect(appSource).not.toContain('Topic Workload:');
+    expect(databaseSource).not.toContain("summary: 'Master how");
+  });
+
+  test('gives each pseudocode task a concept-specific answer-safe hint', () => {
+    const pseudocodeSection = appSource.slice(
+      appSource.indexOf('renderStudentPseudocode(panel)'),
+      appSource.indexOf('// ==================== PROGRAMMING sandbox')
+    );
+    const hints = [...pseudocodeSection.matchAll(/hint: '([^']+)'/g)].map(match => match[1]);
+    expect(hints).toHaveLength(5);
+    expect(new Set(hints).size).toBe(5);
+    hints.forEach(hint => expect(hint.length).toBeGreaterThanOrEqual(70));
+    expect(hints[0]).toContain('value held by score');
+    expect(hints[1]).toContain('trace table');
+    expect(hints[2]).toContain('too low');
+    expect(hints[3]).toContain('accumulator');
+    expect(hints[4]).toContain('array index');
+  });
+
+  test('makes repeated official references distinguishable by section scope', () => {
+    expect(appSource).toContain('${this.escapeHTML(item.officialSpecificationPointId)} — ${this.escapeHTML(item.scope)}');
+    expect(appSource).toContain('Included as your latest checked result');
+    expect(appSource).not.toContain('Counts towards Progress');
+  });
 });

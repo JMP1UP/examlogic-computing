@@ -76,6 +76,7 @@ class App {
     this.messageDraft = '';
     this.selectedChatStudentId = null;
     this.teacherMessageDraft = '';
+    this.selectedTeacherClassId = null;
 
     // Teacher assignment creator
     this.newAssignmentTopic = '';
@@ -132,6 +133,66 @@ class App {
     if (!student || student.role !== 'student') return true;
     if (!item.recipientType || item.recipientType === 'class') return !item.classId || item.classId === student.classId;
     return item.recipientType === 'students' && (item.recipientIds || []).includes(student.id);
+  }
+
+  getAuthorizedTeacherClasses() {
+    if (!this.currentUser || this.currentUser.role === 'student') return [];
+    return window.db.getClasses().filter(item => item.teacherId === this.currentUser.id);
+  }
+
+  getSelectedTeacherClass() {
+    const classes = this.getAuthorizedTeacherClasses();
+    if (!classes.length) {
+      this.selectedTeacherClassId = null;
+      return null;
+    }
+    const selected = classes.find(item => item.id === this.selectedTeacherClassId) || classes[0];
+    this.selectedTeacherClassId = selected.id;
+    return selected;
+  }
+
+  getTeacherClassStudents() {
+    const selectedClass = this.getSelectedTeacherClass();
+    if (!selectedClass) return [];
+    return window.db.getStudents().filter(student => student.classId === selectedClass.id);
+  }
+
+  getTeacherClassStudentIds() {
+    return new Set(this.getTeacherClassStudents().map(student => student.id));
+  }
+
+  getTeacherClassMessages() {
+    const studentIds = this.getTeacherClassStudentIds();
+    const teacherId = this.currentUser?.id;
+    if (!teacherId) return [];
+    return window.db.getMessages().filter(message =>
+      (message.senderId === teacherId && studentIds.has(message.receiverId))
+      || (message.receiverId === teacherId && studentIds.has(message.senderId))
+    );
+  }
+
+  getTeacherClassRecords(records) {
+    const studentIds = this.getTeacherClassStudentIds();
+    return (records || []).filter(record => studentIds.has(record.studentId));
+  }
+
+  getTeacherClassPublishedRecords(records) {
+    const selectedClass = this.getSelectedTeacherClass();
+    if (!selectedClass) return [];
+    return (records || []).filter(record => record.classId === selectedClass.id);
+  }
+
+  canTeacherAccessStudent(studentId) {
+    return this.getTeacherClassStudentIds().has(studentId);
+  }
+
+  renderTeacherClassEmptyState(panel) {
+    panel.innerHTML = `
+      <div class="empty-state-card" role="status">
+        <h1>No authorised class available</h1>
+        <p>This account is not assigned to a class, so no pupil records or publishing controls are available.</p>
+      </div>
+    `;
   }
 
   getAdaptiveSupportLevel(topic = 'binary conversions') {
@@ -1271,7 +1332,7 @@ class App {
       || availableMilestones.find(item => item.state === 'not_started');
     const activeTestPreps = window.db.getTestPreps().filter(p => p.status === 'Active' && this.isPublishedToStudent(p, student));
     const upcomingSessions = window.db.getSupportSessions().filter(item => item.published && this.isPublishedToStudent(item, student));
-    const controls = window.db.getClassroomControls();
+    const controls = window.db.getClassroomControls(student.classId);
 
     // Find currently teaching topics
     const activeTopics = [];
@@ -1343,7 +1404,7 @@ class App {
           kind: hasDemonstratedBaseline ? 'Quick recall' : 'Guided learning',
           label: hasDemonstratedBaseline ? 'Optional' : 'Suggested start',
           title: hasDemonstratedBaseline ? 'Binary shifts and conversions' : 'Architecture of the CPU',
-          meta: [hasDemonstratedBaseline ? 'Spaced recall' : 'Core learning', hasDemonstratedBaseline ? '5 min' : '10 min'],
+          meta: [hasDemonstratedBaseline ? 'Quick recall' : 'Core learning', hasDemonstratedBaseline ? '5 min' : '10 min'],
           description: hasDemonstratedBaseline
             ? 'Your latest checked work suggests this short retrieval activity is worth revisiting.'
             : 'Build confidence with a guided explanation and worked example before attempting assessed questions.',
@@ -1414,10 +1475,10 @@ class App {
                       return `
                         <div class="card card-info" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border: 1px solid var(--border-color); background-color: var(--bg-card);">
                           <div>
-                            <h4 style="margin: 0 0 4px; font-weight: 600; font-size: 15px; color: var(--text-main);">${a.title}</h4>
-                            <span class="badge ${badgeClass}" style="font-size: 11px; padding: 2px 6px;">${badgeText}</span>
+                            <h4 style="margin: 0 0 4px; font-weight: 600; font-size: 15px; color: var(--text-main);">${this.escapeHTML(a.title)}</h4>
+                            <span class="badge ${badgeClass}" style="font-size: 11px; padding: 2px 6px;">${this.escapeHTML(badgeText)}</span>
                           </div>
-                          <button class="btn ${isCompleted ? 'btn-secondary' : 'btn-primary'} btn-sm start-assignment-btn" data-topic-id="${a.topicId}" ${isCompleted ? 'disabled style="opacity: 0.6;"' : ''} style="min-height: 32px; padding: 0 12px; font-size: 12px;">${btnText}</button>
+                          <button class="btn ${isCompleted ? 'btn-secondary' : 'btn-primary'} btn-sm start-assignment-btn" data-topic-id="${this.escapeHTML(a.topicId)}" ${isCompleted ? 'disabled style="opacity: 0.6;"' : ''} style="min-height: 32px; padding: 0 12px; font-size: 12px;">${btnText}</button>
                         </div>
                       `;
                     }).join('')}
@@ -1798,21 +1859,21 @@ class App {
             <!-- Interactive Try it with support -->
             <div style="background: var(--bg-main); border-left: 4px solid var(--amber); padding: 16px; border-radius: 0 8px 8px 0; margin-top: 14px;">
               <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
-                <strong style="font-size: 15px; color: var(--text-main);">✍️ Try it with support (Guided Practice)</strong>
-                <span class="badge badge-secondary" style="font-size: 11px;">Interactive Practice</span>
+                <strong style="font-size: 15px; color: var(--text-main);">Try this</strong>
+                <span class="badge badge-secondary" style="font-size: 11px;">Guided practice</span>
               </div>
               <p style="line-height: 1.6; margin: 0 0 12px; font-weight: 500;">${this.escapeHTML(item.supportedPractice)}</p>
               <div class="form-group" style="margin-bottom: 12px;">
-                <label for="try-input-${item.id}" style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">Your Practice Response / Solution Draft:</label>
+                <label for="try-input-${item.id}" style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">Your practice answer</label>
                 <textarea id="try-input-${item.id}" class="form-control try-practice-textarea" data-obj-id="${item.id}" rows="3" placeholder="Type your response or step-by-step working here..." style="font-size: 13.5px; line-height: 1.5;">${this.escapeHTML(savedPractice)}</textarea>
               </div>
               <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
-                <button type="button" class="btn btn-secondary btn-sm save-try-btn" data-obj-id="${item.id}">💾 Save response</button>
-                <button type="button" class="btn btn-secondary btn-sm toggle-guide-btn" data-obj-id="${item.id}">💡 Check worked solution</button>
+                <button type="button" class="btn btn-secondary btn-sm save-try-btn" data-obj-id="${item.id}">Save draft — practice only</button>
+                <button type="button" class="btn btn-secondary btn-sm toggle-guide-btn" data-obj-id="${item.id}">View worked solution</button>
                 <button type="button" class="btn btn-secondary btn-sm goto-review-btn" data-spec-id="${item.id}">✍️ ${isFilteredObjective ? 'Optional: practise a written answer' : 'Practise in written answers &rarr;'}</button>
               </div>
               <div id="try-guide-${item.id}" class="card" style="display: none; margin-top: 12px; padding: 14px; background: rgba(45, 156, 145, 0.08); border-left: 4px solid var(--teal);">
-                <strong style="color: var(--teal); font-size: 13px;">Guided Solution Reference:</strong>
+                <strong style="color: var(--teal); font-size: 13px;">Worked solution</strong>
                 <p style="font-size: 13.5px; line-height: 1.6; margin: 6px 0 0;">${this.escapeHTML(item.workedExample)}</p>
               </div>
               <div id="try-status-${item.id}" style="font-size: 12px; color: var(--teal); margin-top: 6px; display: none; font-weight: 600;"></div>
@@ -1894,7 +1955,7 @@ class App {
           <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">${activeNote.title}</h2>
           <p style="font-size: 15px; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px;">${activeNote.summary}</p>
           <div style="font-size: 13px; color: var(--text-main); margin-bottom: 16px; background: var(--bg-main); padding: 8px 12px; border-radius: 6px; display: inline-block;">
-            ⏱️ <strong>Topic Workload:</strong> ~${totalCoreMins} minutes total across ${allObjectiveTeaching.length} objective modules (~10–15 mins per module).
+            <strong>Core guided learning:</strong> about ${totalCoreMins} minutes across ${allObjectiveTeaching.length} sections. Optional notes and quick recall are additional.
           </div>
           
           <!-- Specification Points Covered -->
@@ -1916,8 +1977,8 @@ class App {
                 All (${allObjectiveTeaching.length})
               </button>
               ${allObjectiveTeaching.map(item => `
-                <button class="btn btn-secondary ${this.activeObjectiveId === item.id ? 'student-selected-control' : ''} objective-filter-btn" data-obj-id="${item.id}" style="padding: 4px 12px; font-size: 12px; border-radius: 14px;">
-                  ${item.officialSpecificationPointId}
+                <button class="btn btn-secondary ${this.activeObjectiveId === item.id ? 'student-selected-control' : ''} objective-filter-btn" data-obj-id="${this.escapeHTML(item.id)}" style="padding: 4px 12px; font-size: 12px; border-radius: 14px;">
+                  ${this.escapeHTML(item.officialSpecificationPointId)} — ${this.escapeHTML(item.scope)}
                 </button>
               `).join('')}
             </div>
@@ -2837,7 +2898,7 @@ class App {
 
     this.mainContentHTML(`
       <div id="quiz-result-summary" role="status" aria-live="polite" aria-atomic="true" style="margin-bottom: 24px;">
-        <h1>Spaced quiz completed</h1>
+        <h1>Quick recall completed</h1>
         <p>Score: <strong style="color: var(--teal); font-size:20px;">${quizScore}</strong></p>
         <p>${incorrectQuestions.length ? `${incorrectQuestions.length} question${incorrectQuestions.length === 1 ? '' : 's'} can now be retried with guidance.` : 'All questions were correct; no retry is needed.'}</p>
       </div>
@@ -3230,7 +3291,7 @@ class App {
       <div class="student-route-header">
         <span class="student-mode-label">Exam preparation &middot; ${task.paper} &middot; ${task.marks} marks &middot; about ${task.minutes} minutes</span>
         <h1>Apply knowledge: ${topicName} (${task.specificationPointId})</h1>
-        <p>Work through Decode, Plan, Answer, Check and Retry. This practice does not create a score automatically; your final independent response is sent for review.</p>
+        <p>Work through Understand, Plan, Answer, Check and Retry. This practice does not create a score automatically; your final independent response is sent for review.</p>
       </div>
 
       <div style="height:8px; background:var(--border-color); border-radius:4px; margin-bottom:20px; overflow:hidden;">
@@ -3273,7 +3334,7 @@ class App {
           `).join('')}
           <div style="display: flex; gap: 10px; margin-top: 16px;">
             <button id="transfer-back-decode" class="btn btn-secondary">&larr; Back</button>
-            <button id="transfer-to-answer" class="btn btn-primary">Next: Write Independent Answer &rarr;</button>
+            <button id="transfer-to-answer" class="btn btn-primary">Next: write your answer &rarr;</button>
           </div>
         </div>
       ` : ''}
@@ -3433,21 +3494,21 @@ class App {
       <div class="card" style="margin-bottom:24px; border-left:5px solid var(--teal);">
         <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Recommended next · about 10 minutes</div>
         <h2 style="margin:7px 0 5px;">Python level ${nextChallenge.level}: ${this.escapeHTML(nextChallenge.title)}</h2>
-        <p style="margin:0 0 14px;">Continue the read → trace → complete → debug → write → test progression. Support is available one step at a time.</p>
+        <p style="margin:0 0 14px;">You will read code, follow what it does, fix code, then write and test code. Support is available one step at a time.</p>
         <button class="btn btn-primary" id="programming-continue-python">Continue Python</button>
       </div>
 
       <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; margin-bottom:24px;">
         <section class="card">
           <span class="badge badge-primary">Practical Python</span>
-          <h2 style="margin:10px 0 5px;">${completedChallengeIds.size} of ${challenges.length} pathway stages completed</h2>
+          <h2 style="margin:10px 0 5px;">${completedChallengeIds.size} of ${challenges.length} stages completed</h2>
           <div style="height:9px; background:var(--bg-main); border-radius:8px; overflow:hidden; margin:12px 0;"><div style="width:${pythonPercent}%; height:100%; background:var(--teal);"></div></div>
-          <p style="font-size:13px; color:var(--text-muted);">Read, trace, complete, debug, construct, test and transfer code into exam problems.</p>
+          <p style="font-size:13px; color:var(--text-muted);">Read code, follow what it does, complete it, fix faults, write it and test it in exam-style problems.</p>
           <button class="btn btn-secondary programming-open-strand" data-target="stud-programme">Open Python stages</button>
         </section>
         <section class="card">
           <span class="badge badge-warning">OCR Exam Reference Language</span>
-          <h2 style="margin:10px 0 5px;">${completedPseudocodeIds.size} of ${pseudocodeSkills.length} pathway stages completed</h2>
+          <h2 style="margin:10px 0 5px;">${completedPseudocodeIds.size} of ${pseudocodeSkills.length} stages completed</h2>
           <div style="height:9px; background:var(--bg-main); border-radius:8px; overflow:hidden; margin:12px 0;"><div style="width:${pseudocodePercent}%; height:100%; background:var(--amber);"></div></div>
           <p style="font-size:13px; color:var(--text-muted);">Read, trace, complete, write and refine the language used in OCR Paper 2 questions.</p>
           <button class="btn btn-secondary programming-open-strand" data-target="stud-pseudocode">Open OCR pseudocode stages</button>
@@ -3482,11 +3543,11 @@ class App {
 
   renderStudentPseudocode(panel) {
     const tasks = [
-      { level: 1, skill: 'Read', title: 'Variables and output', code: 'score = 7\nscore = score + 3\nprint(score)', prompt: 'What value is printed? Explain how the variable changes.', answer: '10 is printed. score starts at 7 and is reassigned to 7 + 3.' },
-      { level: 2, skill: 'Trace', title: 'Selection and iteration', code: 'total = 0\nfor i=1 to 4\n    if i MOD 2 == 0 then\n        total = total + i\n    endif\nnext i\nprint(total)', prompt: 'Trace i and total. What is printed?', answer: '6 is printed. Only the even values 2 and 4 are added.' },
-      { level: 3, skill: 'Complete', title: 'Input validation', code: 'age = input("Age")\nwhile __________\n    age = input("Try again")\nendwhile', prompt: 'Complete the condition so only ages from 11 to 16 inclusive are accepted.', answer: 'age < 11 OR age > 16' },
-      { level: 4, skill: 'Write', title: 'Count-controlled algorithm', code: '// Write OCR Exam Reference Language here', prompt: 'Input five scores, calculate the total and print the mean.', answer: 'total = 0\nfor i=1 to 5\n    score = int(input("Score"))\n    total = total + score\nnext i\nprint(total / 5)' },
-      { level: 5, skill: 'Refine', title: 'Find and correct errors', code: 'for i=0 to names.length\n    if names[i] = target then\n        print("Found")\n    end if\nnext', prompt: 'Refine the algorithm to use valid OCR Exam Reference Language and avoid an array-bound error.', answer: 'for i=0 to names.length - 1\n    if names[i] == target then\n        print("Found")\n    endif\nnext i' }
+      { level: 1, skill: 'Read', title: 'Variables and output', code: 'score = 7\nscore = score + 3\nprint(score)', prompt: 'What value is printed? Explain how the variable changes.', answer: '10 is printed. score starts at 7 and is reassigned to 7 + 3.', hint: 'Follow the statements in order. Write the value held by score after each assignment, then look at what print uses.' },
+      { level: 2, skill: 'Trace', title: 'Selection and iteration', code: 'total = 0\nfor i=1 to 4\n    if i MOD 2 == 0 then\n        total = total + i\n    endif\nnext i\nprint(total)', prompt: 'Trace i and total. What is printed?', answer: '6 is printed. Only the even values 2 and 4 are added.', hint: 'Make a two-column trace table for i and total. Update total only on iterations where the MOD condition is true.' },
+      { level: 3, skill: 'Complete', title: 'Input validation', code: 'age = input("Age")\nwhile __________\n    age = input("Try again")\nendwhile', prompt: 'Complete the condition so only ages from 11 to 16 inclusive are accepted.', answer: 'age < 11 OR age > 16', hint: 'A validation loop repeats while an input is invalid. Consider separately what makes an age too low and what makes it too high.' },
+      { level: 4, skill: 'Write', title: 'Count-controlled algorithm', code: '// Write OCR Exam Reference Language here', prompt: 'Input five scores, calculate the total and print the mean.', answer: 'total = 0\nfor i=1 to 5\n    score = int(input("Score"))\n    total = total + score\nnext i\nprint(total / 5)', hint: 'Plan three steps: start an accumulator, repeat the input and addition a fixed number of times, then calculate the mean after the loop.' },
+      { level: 5, skill: 'Refine', title: 'Find and correct errors', code: 'for i=0 to names.length\n    if names[i] = target then\n        print("Found")\n    end if\nnext', prompt: 'Refine the algorithm to use valid OCR Exam Reference Language and avoid an array-bound error.', answer: 'for i=0 to names.length - 1\n    if names[i] == target then\n        print("Found")\n    endif\nnext i', hint: 'Check the final valid array index, the equality operator, and the exact words used to close the selection and loop.' }
     ];
     const task = tasks[this.activePseudocodeTask] || tasks[0];
     panel.innerHTML = `
@@ -3539,7 +3600,7 @@ class App {
     document.getElementById('pseudocode-help-btn').onclick = () => {
       const feedback = document.getElementById('pseudocode-feedback');
       feedback.style.display = 'block';
-      feedback.innerHTML = '<strong>Hint:</strong> Focus on the precise operator, boundary or control structure the question is assessing.';
+      feedback.innerHTML = `<strong>Hint:</strong> ${this.escapeHTML(task.hint)}`;
     };
     document.getElementById('pseudocode-check-btn').onclick = () => {
       const feedback = document.getElementById('pseudocode-feedback');
@@ -4397,7 +4458,7 @@ class App {
               <div style="font-size:11px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">
                 ${m.senderId === this.currentUser.id ? 'You' : this.escapeHTML(contactName)} · ${new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
               </div>
-              <div>${m.text}</div>
+              <div>${this.escapeHTML(m.text)}</div>
               ${m.flagged ? `<div style="font-size: 10px; color: #FECACA; font-weight:600; margin-top: 4px;">⚠️ Safety warning: Flagged by school filters</div>` : ''}
             </div>
           `).join('')}
@@ -4473,6 +4534,9 @@ class App {
     const securedCount = availableMilestones.filter(item => item.state === 'checkpoint_secured').length;
     const practicedCount = availableMilestones.filter(item => item.state === 'practice_completed').length;
     const milestonePercent = availableMilestones.length ? Math.round((securedCount / availableMilestones.length) * 100) : 0;
+    const nextProgressMilestone = availableMilestones.find(item =>
+      item.state !== 'checkpoint_secured' && teachingObjectiveIds.has(item.id)
+    );
     const milestoneGroups = ['Paper 1', 'Paper 2'].map(paper => {
       const paperMilestones = milestones.filter(item => item.paper === paper);
       return `
@@ -4522,6 +4586,16 @@ class App {
         <h1>Your progress and achievements</h1>
         <p>See what your checked work shows, then choose a section to learn or practise next.</p>
       </div>
+
+      ${nextProgressMilestone ? `
+        <section class="student-start-panel" aria-labelledby="progress-next-heading">
+          <div>
+            <strong id="progress-next-heading">What to work on next</strong>
+            <p>${this.escapeHTML(nextProgressMilestone.id)} · ${this.escapeHTML(nextProgressMilestone.name)}</p>
+          </div>
+          <button type="button" class="btn btn-primary progress-learn-section" data-objective-id="${this.escapeHTML(nextProgressMilestone.id)}">Learn this section</button>
+        </section>
+      ` : ''}
 
       <section class="card milestone-summary-card" aria-labelledby="section-milestone-heading">
         <div class="milestone-summary-heading">
@@ -4577,7 +4651,7 @@ class App {
                     <td>${this.escapeHTML(activityTypeLabels[a.type] || String(a.type || 'Activity').replaceAll('_', ' '))}</td>
                     <td>${a.score}</td>
                     <td>${this.parseDemonstratedScore(a)
-                      ? (this.hasCheckpointPrecision(a) ? 'Counts towards Progress' : 'Older result — counts towards the topic result, but cannot meet a section goal')
+                      ? (this.hasCheckpointPrecision(a) ? 'Included as your latest checked result' : 'Older result — included in the topic result, but cannot meet a section goal')
                       : a.completionStatus === 'awaiting_review' ? 'Waiting for teacher review — does not count yet' : 'Practice only — does not count towards Progress'}</td>
                     <td>${new Date(a.date).toLocaleDateString()}</td>
                   </tr>
@@ -4633,17 +4707,27 @@ class App {
 
   // ==================== TEACHER OVERVIEW ====================
   renderTeacherOverview(panel) {
-    const students = window.db.getStudents();
-    const flags = window.db.getMessages().filter(m => m.flagged);
-    const wrs = window.db.getWrittenSubmissions();
+    const selectedClass = this.getSelectedTeacherClass();
+    if (!selectedClass) return this.renderTeacherClassEmptyState(panel);
+    const authorizedClasses = this.getAuthorizedTeacherClasses();
+    const students = this.getTeacherClassStudents();
+    const messages = this.getTeacherClassMessages();
+    const flags = messages.filter(m => m.flagged);
+    const firstFlaggedStudentId = flags.length
+      ? (flags[0].senderId === this.currentUser.id ? flags[0].receiverId : flags[0].senderId)
+      : null;
+    const wrs = this.getTeacherClassRecords(window.db.getWrittenSubmissions());
 
     const writtenCount = wrs.filter(w => w.status === 'Awaiting Teacher Review').length;
-    const programmingCount = window.db.getProgrammingSubmissions().filter(item => item.status !== 'Teacher Reviewed').length;
-    const pseudocodeReviewCount = this.getPendingPseudocodeReviews(window.db.getAttempts()).length;
+    const programmingCount = this.getTeacherClassRecords(window.db.getProgrammingSubmissions()).filter(item => item.status !== 'Teacher Reviewed').length;
+    const pseudocodeReviewCount = this.getPendingPseudocodeReviews(this.getTeacherClassRecords(window.db.getAttempts())).length;
     const totalAwaitingReview = writtenCount + programmingCount + pseudocodeReviewCount;
     const activeThisWeek = students.filter(student => Date.now() - new Date(student.lastActive).getTime() <= 7 * 24 * 3600 * 1000).length;
     const weeklyCompletion = students.length ? Math.round((activeThisWeek / students.length) * 100) : 0;
     const savedPriorityCount = students.filter(student => (student.personalRevisionPriorities || []).length > 0).length;
+    const monitoringStatusHtml = flags.length
+      ? `<button type="button" id="teacher-flagged-messages" class="btn btn-sm" role="status" style="font-size:13px; color:#991B1B; font-weight:700; margin-left:12px; padding:4px 8px; background:#FEF2F2; border:1px solid #FCA5A5;">⚠ ${flags.length} flagged message${flags.length === 1 ? '' : 's'} in this class</button>`
+      : `<span role="status" style="font-size:13px; color:#047857; font-weight:600; display:inline-flex; align-items:center; gap:4px; margin-left:12px; padding:4px 8px; background-color:rgba(16,185,129,0.06); border-radius:4px;">No flagged messages in this class</span>`;
 
     panel.innerHTML = `
       <div class="dashboard-container">
@@ -4654,24 +4738,19 @@ class App {
               <h1 style="margin: 0; font-weight: 700; font-size: 28px; display: inline-flex; align-items: center;">
                 <span style="display: inline-flex; align-items: center; vertical-align: middle; margin-right: 8px; color: var(--teal); opacity: 0.85;">
                   ${SVG_ICONS.progress}
-                </span>Group A overview
+                </span>${this.escapeHTML(selectedClass.name)} overview
               </h1>
               <!-- Class Selector Dropdown -->
               <div style="position: relative; display: inline-block;" id="teacher-class-selector-container">
                 <button class="btn btn-secondary" id="teacher-class-trigger" style="display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 8px; font-weight: 600; min-height: 36px; border: 1px solid var(--border-color);">
-                  <span>Group A</span> <span style="font-size: 8px; color: var(--text-muted);">▼</span>
+                  <span>${this.escapeHTML(selectedClass.name)}</span> <span style="font-size: 8px; color: var(--text-muted);">▼</span>
                 </button>
                 <div id="teacher-class-dropdown" class="card" style="position: absolute; left: 0; top: 40px; width: 180px; z-index: 100; padding: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid var(--border-color); background-color: var(--bg-card); text-align: left;">
-                  <a href="#" class="dropdown-item" style="display: block; padding: 6px 12px; font-size: 14px; color: var(--text-main); text-decoration: none; font-weight: 600; border-radius: 4px; background-color: var(--bg-main);">Group A (Year 10)</a>
-                  <a href="#" class="dropdown-item" style="display: block; padding: 6px 12px; font-size: 14px; color: var(--text-main); text-decoration: none; border-radius: 4px;">Group B (Year 11)</a>
-                  <a href="#" class="dropdown-item" style="display: block; padding: 6px 12px; font-size: 14px; color: var(--text-main); text-decoration: none; border-radius: 4px;">Group C (Year 9)</a>
+                  ${authorizedClasses.map(item => `<a href="#" class="dropdown-item teacher-class-option" data-class-id="${this.escapeHTML(item.id)}" style="display: block; padding: 6px 12px; font-size: 14px; color: var(--text-main); text-decoration: none; font-weight: ${item.id === selectedClass.id ? '700' : '500'}; border-radius: 4px; background-color: ${item.id === selectedClass.id ? 'var(--bg-main)' : 'transparent'};">${this.escapeHTML(item.name)}</a>`).join('')}
                 </div>
               </div>
               
-              <!-- Quiet message monitoring status -->
-              <span style="font-size: 13px; color: #047857; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin-left: 12px; padding: 4px 8px; background-color: rgba(16, 185, 129, 0.06); border-radius: 4px;" title="All student messages comply with communications policy.">
-                🛡️ Message monitoring: clear
-              </span>
+              ${monitoringStatusHtml}
             </div>
             <p style="font-size:15px; color: var(--text-muted); margin: 0;">Monitor engagement, review work and identify areas for support.</p>
           </div>
@@ -4760,7 +4839,7 @@ class App {
                 <div>
                   <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                     <div>
-                      <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin: 0 0 4px 0;">Spaced Theory Check – Data Representation</h3>
+                      <h3 style="font-size: 16px; font-weight: 600; color: var(--text-main); margin: 0 0 4px 0;">Quick Recall Check — Data Representation</h3>
                       <div style="font-size: 13px; color: var(--text-muted); font-weight: 500;">
                         No verified completion or accuracy summary is available for this demo assignment.
                       </div>
@@ -4928,6 +5007,16 @@ class App {
         dropdown.classList.remove('show-dropdown');
       });
     }
+    panel.querySelectorAll('.teacher-class-option').forEach(option => {
+      option.onclick = event => {
+        event.preventDefault();
+        const classId = option.getAttribute('data-class-id');
+        if (!this.getAuthorizedTeacherClasses().some(item => item.id === classId)) return;
+        this.selectedTeacherClassId = classId;
+        this.selectedChatStudentId = null;
+        this.render();
+      };
+    });
 
     // Bind Action toggle link
     const toggleLink = document.getElementById('action-toggle-link');
@@ -4962,17 +5051,26 @@ class App {
     const btnProg = document.getElementById('action-review-prog');
     const btnAisha = document.getElementById('action-msg-aisha');
     const btnChat = document.getElementById('action-view-chat');
+    const flaggedMessagesButton = document.getElementById('teacher-flagged-messages');
 
     if (btnWritten) btnWritten.onclick = () => this.switchTab('teach-written');
     if (btnProg) btnProg.onclick = () => this.switchTab('teach-programming');
     if (btnAisha) btnAisha.onclick = () => this.switchTab('teach-messages');
     if (btnChat) btnChat.onclick = () => this.switchTab('teach-messages');
+    if (flaggedMessagesButton) flaggedMessagesButton.onclick = () => {
+      if (firstFlaggedStudentId && this.canTeacherAccessStudent(firstFlaggedStudentId)) {
+        this.selectedChatStudentId = firstFlaggedStudentId;
+      }
+      this.switchTab('teach-messages');
+    };
   }
 
   // ==================== TEACHER CLASSES ====================
   renderTeacherClasses(panel) {
-    const students = window.db.getStudents();
-    const attempts = window.db.getAttempts();
+    const selectedClass = this.getSelectedTeacherClass();
+    if (!selectedClass) return this.renderTeacherClassEmptyState(panel);
+    const students = this.getTeacherClassStudents();
+    const attempts = this.getTeacherClassRecords(window.db.getAttempts());
     const query = (this.rosterSearchQuery || '').toLowerCase().trim();
     const filteredStudents = students.filter(s => s.name.toLowerCase().includes(query) || s.email.toLowerCase().includes(query));
 
@@ -5008,11 +5106,11 @@ class App {
               </tr>
             ` : filteredStudents.map(s => `
               <tr>
-                <td><strong>${s.name}</strong></td>
-                <td>${s.email}</td>
-                <td>${s.yearGroup}</td>
-                <td>🔥 ${s.streak} weeks</td>
-                <td>${s.personalRevisionPriorities.join(', ') || 'None log'}</td>
+                <td><strong>${this.escapeHTML(s.name)}</strong></td>
+                <td>${this.escapeHTML(s.email)}</td>
+                <td>${this.escapeHTML(s.yearGroup)}</td>
+                <td>🔥 ${this.escapeHTML(s.streak)} weeks</td>
+                <td>${this.escapeHTML((s.personalRevisionPriorities || []).join(', ') || 'None recorded')}</td>
                 <td>${attempts.filter(attempt => attempt.studentId === s.id && String(attempt.type).startsWith('exam_transfer')).length} attempts</td>
                 <td><span class="badge ${s.active ? 'badge-success' : 'badge-danger'}">${s.active ? 'Active' : 'Suspended'}</span></td>
               </tr>
@@ -5038,10 +5136,12 @@ class App {
 
   // ==================== TEACHER ASSIGN ====================
   renderTeacherAssign(panel) {
-    const assignments = window.db.getAssignments();
+    const selectedClass = this.getSelectedTeacherClass();
+    if (!selectedClass) return this.renderTeacherClassEmptyState(panel);
+    const assignments = this.getTeacherClassPublishedRecords(window.db.getAssignments());
     const units = window.db.getUnits();
     const topics = units.flatMap(u => u.topics);
-    const students = window.db.getStudents();
+    const students = this.getTeacherClassStudents();
     const currentRequiredMinutes = assignments
       .filter(a => a.status === 'Required' || a.status === 'Overdue')
       .reduce((sum, a) => sum + Number(a.estimatedMinutes || 10), 0);
@@ -5060,7 +5160,7 @@ class App {
             <div style="font-size:12px; color:var(--text-muted);">A warning appears above 20 minutes per week.</div>
           </div>
           <form id="create-assign-form">
-            <div class="form-group"><label for="assign-recipient-in">Publish to</label><select id="assign-recipient-in" class="form-control"><option value="class">Whole class</option>${students.map(student => `<option value="${student.id}">${this.escapeHTML(student.name)} only</option>`).join('')}</select><div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Use an individual target for intervention without increasing everyone’s workload.</div></div>
+            <div class="form-group"><label for="assign-recipient-in">Publish to</label><select id="assign-recipient-in" class="form-control"><option value="class">Whole class</option>${students.map(student => `<option value="${this.escapeHTML(student.id)}">${this.escapeHTML(student.name)} only</option>`).join('')}</select><div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Use an individual target for intervention without increasing everyone’s workload.</div></div>
             <div class="form-group">
               <label for="assign-title-in">Task Title</label>
               <input type="text" id="assign-title-in" class="form-control" placeholder="e.g. Weekly Binary Shift Quiz" required>
@@ -5102,10 +5202,10 @@ class App {
             ${assignments.map(a => `
               <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                  <h3 style="margin-bottom: 4px;">${a.title}</h3>
-                  <div style="font-size: 12px; color: var(--text-muted);">Due: ${a.dueDate} · ${a.status} · ${a.estimatedMinutes || 10} mins</div>
+                  <h3 style="margin-bottom: 4px;">${this.escapeHTML(a.title)}</h3>
+                  <div style="font-size: 12px; color: var(--text-muted);">Due: ${this.escapeHTML(a.dueDate)} · ${this.escapeHTML(a.status)} · ${this.escapeHTML(a.estimatedMinutes || 10)} mins</div>
                 </div>
-                <span class="badge badge-primary">${a.completedCount} recorded completions</span>
+                <span class="badge badge-primary">${this.escapeHTML(a.completedCount)} recorded completions</span>
               </div>
             `).join('')}
           </div>
@@ -5123,6 +5223,10 @@ class App {
         const estimatedMinutes = Number(document.getElementById('assign-minutes-in').value);
         const status = document.getElementById('assign-status-in').value;
         const recipient = document.getElementById('assign-recipient-in').value;
+        if (recipient !== 'class' && !this.canTeacherAccessStudent(recipient)) {
+          this.alert('That pupil is not in your selected authorised class. Nothing was published.');
+          return;
+        }
 
         if (status === 'Required' && currentRequiredMinutes + estimatedMinutes > 20) {
           const confirmed = window.confirm(`This would create ${currentRequiredMinutes + estimatedMinutes} minutes of required Computing work. Keep the total realistic alongside other GCSEs. Publish anyway?`);
@@ -5131,7 +5235,7 @@ class App {
 
         window.db.addAssignment({
           title,
-          classId: 'class_1',
+          classId: selectedClass.id,
           topicId,
           dueDate,
           status,
@@ -5148,9 +5252,11 @@ class App {
 
   // ==================== TEACHER TEST PREPARATION ====================
   renderTeacherTestPrep(panel) {
+    const selectedClass = this.getSelectedTeacherClass();
+    if (!selectedClass) return this.renderTeacherClassEmptyState(panel);
     const units = window.db.getUnits();
-    const testPreps = window.db.getTestPreps();
-    const students = window.db.getStudents();
+    const testPreps = this.getTeacherClassPublishedRecords(window.db.getTestPreps());
+    const students = this.getTeacherClassStudents();
 
     panel.innerHTML = `
       <div style="margin-bottom:24px;">
@@ -5161,7 +5267,7 @@ class App {
 
       <div style="display:grid; grid-template-columns:1.25fr 0.75fr; gap:28px; align-items:start;">
         <form id="test-prep-form" class="card">
-          <div class="form-group"><label for="prep-recipient-in">Publish to</label><select id="prep-recipient-in" class="form-control"><option value="class">Whole class</option>${students.map(student => `<option value="${student.id}">${this.escapeHTML(student.name)} only</option>`).join('')}</select></div>
+          <div class="form-group"><label for="prep-recipient-in">Publish to</label><select id="prep-recipient-in" class="form-control"><option value="class">Whole class</option>${students.map(student => `<option value="${this.escapeHTML(student.id)}">${this.escapeHTML(student.name)} only</option>`).join('')}</select></div>
           <div class="form-group">
             <label for="prep-title-in">Test name</label>
             <input id="prep-title-in" class="form-control" placeholder="e.g. Paper 2 Algorithms Check" required>
@@ -5233,6 +5339,10 @@ class App {
       const includePython = document.getElementById('prep-python-in').checked;
       const includePseudocode = document.getElementById('prep-pseudocode-in').checked;
       const recipient = document.getElementById('prep-recipient-in').value;
+      if (recipient !== 'class' && !this.canTeacherAccessStudent(recipient)) {
+        this.alert('That pupil is not in your selected authorised class. Nothing was published.');
+        return;
+      }
       if (!specificationPointIds.length && !includePython && !includePseudocode) {
         this.alert('Select at least one specification point or programming strand.');
         return;
@@ -5241,7 +5351,7 @@ class App {
       if (includePseudocode && !specificationPointIds.includes('2.2.ERL')) specificationPointIds.push('2.2.ERL');
       window.db.addTestPrep({
         title: document.getElementById('prep-title-in').value.trim(),
-        classId: 'class_1',
+        classId: selectedClass.id,
         testDate: document.getElementById('prep-date-in').value,
         weeklyMinutes: Number(document.getElementById('prep-weekly-in').value),
         sessionMinutes: Number(document.getElementById('prep-session-in').value),
@@ -5258,8 +5368,10 @@ class App {
 
   // ==================== TEACHER REVISION & INTERVENTION SESSIONS ====================
   renderTeacherSessions(panel) {
-    const students = window.db.getStudents();
-    const sessions = window.db.getSupportSessions();
+    const selectedClass = this.getSelectedTeacherClass();
+    if (!selectedClass) return this.renderTeacherClassEmptyState(panel);
+    const students = this.getTeacherClassStudents();
+    const sessions = this.getTeacherClassPublishedRecords(window.db.getSupportSessions());
     panel.innerHTML = `
       <div style="margin-bottom:24px;"><span class="badge badge-primary">Revision and intervention</span><h1 style="margin-top:8px;">Support sessions</h1><p>Schedule one purposeful session and publish it only to the pupils who need it.</p></div>
       <div style="display:grid; grid-template-columns:0.9fr 1.1fr; gap:28px; align-items:start;">
@@ -5269,12 +5381,12 @@ class App {
           <div class="form-group"><label for="session-type-in">Purpose</label><select id="session-type-in" class="form-control"><option>Revision</option><option>Intervention</option><option>Programming clinic</option><option>Exam technique</option></select></div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"><div class="form-group"><label for="session-date-in">Date</label><input type="date" id="session-date-in" class="form-control" required></div><div class="form-group"><label for="session-time-in">Start time</label><input type="time" id="session-time-in" class="form-control" required></div></div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"><div class="form-group"><label for="session-duration-in">Length</label><select id="session-duration-in" class="form-control"><option value="20">20 minutes</option><option value="30" selected>30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option></select></div><div class="form-group"><label for="session-location-in">Location or link</label><input id="session-location-in" class="form-control" required></div></div>
-          <fieldset style="border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:14px;"><legend style="font-weight:700;">Publish to</legend><label style="display:block; margin-bottom:8px;"><input type="checkbox" id="session-whole-class-in"> Whole class</label>${students.map(student => `<label style="display:block; margin:6px 0;"><input type="checkbox" class="session-student-checkbox" value="${student.id}"> ${this.escapeHTML(student.name)}</label>`).join('')}</fieldset>
+          <fieldset style="border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:14px;"><legend style="font-weight:700;">Publish to</legend><label style="display:block; margin-bottom:8px;"><input type="checkbox" id="session-whole-class-in"> Whole class</label>${students.map(student => `<label style="display:block; margin:6px 0;"><input type="checkbox" class="session-student-checkbox" value="${this.escapeHTML(student.id)}"> ${this.escapeHTML(student.name)}</label>`).join('')}</fieldset>
           <div class="form-group"><label for="session-notes-in">What pupils should bring or prepare</label><textarea id="session-notes-in" class="form-control" rows="3" placeholder="One short instruction"></textarea></div>
           <div id="session-recipient-summary" style="font-size:13px; margin-bottom:12px; color:var(--text-muted);">Select the class or individual pupils.</div>
           <button class="btn btn-primary" type="submit">Publish session</button>
         </form>
-        <div><h2 style="font-size:18px;">Published sessions</h2>${sessions.map(session => `<div class="card" style="margin-top:12px;"><span class="badge badge-primary">${this.escapeHTML(session.type)}</span><h3 style="margin:8px 0 4px;">${this.escapeHTML(session.title)}</h3><div style="font-size:13px; color:var(--text-muted);">${session.date} at ${this.escapeHTML(session.startTime)} · ${session.durationMinutes} mins · ${this.escapeHTML(session.location)}</div><div style="font-size:12px; margin-top:8px;">${session.recipientType === 'class' ? 'Whole class' : `${(session.recipientIds || []).length} selected pupil${(session.recipientIds || []).length === 1 ? '' : 's'}`}</div></div>`).join('') || '<p>No sessions published.</p>'}</div>
+        <div><h2 style="font-size:18px;">Published sessions</h2>${sessions.map(session => `<div class="card" style="margin-top:12px;"><span class="badge badge-primary">${this.escapeHTML(session.type)}</span><h3 style="margin:8px 0 4px;">${this.escapeHTML(session.title)}</h3><div style="font-size:13px; color:var(--text-muted);">${this.escapeHTML(session.date)} at ${this.escapeHTML(session.startTime)} · ${this.escapeHTML(session.durationMinutes)} mins · ${this.escapeHTML(session.location)}</div><div style="font-size:12px; margin-top:8px;">${session.recipientType === 'class' ? 'Whole class' : `${(session.recipientIds || []).length} selected pupil${(session.recipientIds || []).length === 1 ? '' : 's'}`}</div></div>`).join('') || '<p>No sessions published.</p>'}</div>
       </div>`;
     const wholeClass = document.getElementById('session-whole-class-in');
     const pupilBoxes = Array.from(panel.querySelectorAll('.session-student-checkbox'));
@@ -5290,11 +5402,14 @@ class App {
       event.preventDefault();
       const recipientIds = pupilBoxes.filter(box => box.checked).map(box => box.value);
       if (!wholeClass.checked && !recipientIds.length) return this.alert('Choose the whole class or at least one pupil.');
+      if (recipientIds.some(studentId => !this.canTeacherAccessStudent(studentId))) {
+        return this.alert('A selected pupil is not in your authorised class. Nothing was published.');
+      }
       window.db.addSupportSession({
         title: document.getElementById('session-title-in').value.trim(), type: document.getElementById('session-type-in').value,
         date: document.getElementById('session-date-in').value, startTime: document.getElementById('session-time-in').value,
         durationMinutes: Number(document.getElementById('session-duration-in').value), location: document.getElementById('session-location-in').value.trim(),
-        notes: document.getElementById('session-notes-in').value.trim(), classId: 'class_1', recipientType: wholeClass.checked ? 'class' : 'students', recipientIds
+        notes: document.getElementById('session-notes-in').value.trim(), classId: selectedClass.id, recipientType: wholeClass.checked ? 'class' : 'students', recipientIds
       });
       this.alert('Session published to the selected pupils.'); this.render();
     };
@@ -5302,8 +5417,10 @@ class App {
 
   // ==================== TEACHER TOPICS CONTROLS ====================
   renderTeacherTopics(panel) {
+    const selectedClass = this.getSelectedTeacherClass();
+    if (!selectedClass) return this.renderTeacherClassEmptyState(panel);
     const units = window.db.getUnits();
-    const controls = window.db.getClassroomControls();
+    const controls = window.db.getClassroomControls(selectedClass.id);
     const coverage = this.getCurriculumCoverage();
     const objectiveCoverage = this.getObjectiveCoverage();
     const coverageCounts = coverage.reduce((counts, item) => {
@@ -5373,14 +5490,17 @@ class App {
   }
 
   updateClassroomTopic(topicId, status) {
-    window.db.updateClassroomControl(topicId, status);
+    const selectedClass = this.getSelectedTeacherClass();
+    if (!selectedClass) return;
+    window.db.updateClassroomControl(topicId, status, selectedClass.id);
     this.render();
   }
 
   // ==================== TEACHER PROGRAMMING REVIEW ====================
   renderTeacherProgramming(panel) {
-    const subs = window.db.getProgrammingSubmissions();
-    const students = window.db.getStudents();
+    if (!this.getSelectedTeacherClass()) return this.renderTeacherClassEmptyState(panel);
+    const subs = this.getTeacherClassRecords(window.db.getProgrammingSubmissions());
+    const students = this.getTeacherClassStudents();
     const challenges = window.db.getProgrammingChallenges();
 
     panel.innerHTML = `
@@ -5413,16 +5533,16 @@ class App {
               const testCount = chal ? (chal.testCases || []).length : 0;
               return `
                 <tr>
-                  <td><strong>${studName}</strong></td>
-                  <td>${chalName}</td>
+                  <td><strong>${this.escapeHTML(studName)}</strong></td>
+                  <td>${this.escapeHTML(chalName)}</td>
                   <td>
-                    <span class="badge badge-success">${s.status}</span>
+                    <span class="badge badge-success">${this.escapeHTML(s.status)}</span>
                     <div style="font-size:11px; color:var(--green); margin-top:4px; font-weight:600;">✅ Passed ${testCount}/${testCount} tests</div>
                   </td>
-                  <td><span class="badge ${s.supportUsed === 'None' ? 'badge-primary' : 'badge-warning'}">${s.supportUsed}</span></td>
-                  <td>${s.explanationResponse || 'No response'}</td>
+                  <td><span class="badge ${s.supportUsed === 'None' ? 'badge-primary' : 'badge-warning'}">${this.escapeHTML(s.supportUsed)}</span></td>
+                  <td>${this.escapeHTML(s.explanationResponse || 'No response')}</td>
                   <td>
-                    <pre style="font-size:11px; background:#f1f5f9; padding:8px; border-radius:4px; max-width:400px; overflow-x:auto;">${s.code}</pre>
+                    <pre style="font-size:11px; background:#f1f5f9; padding:8px; border-radius:4px; max-width:400px; overflow-x:auto;">${this.escapeHTML(s.code)}</pre>
                   </td>
                 </tr>
               `;
@@ -5435,8 +5555,9 @@ class App {
 
   // ==================== TEACHER WRITTEN ANSWERS ====================
   renderTeacherWritten(panel) {
-    const subs = window.db.getWrittenSubmissions();
-    const students = window.db.getStudents();
+    if (!this.getSelectedTeacherClass()) return this.renderTeacherClassEmptyState(panel);
+    const subs = this.getTeacherClassRecords(window.db.getWrittenSubmissions());
+    const students = this.getTeacherClassStudents();
     const questions = window.db.getWrittenQuestions();
 
     const pending = subs.filter(s => s.status === 'Awaiting Teacher Review');
@@ -5454,46 +5575,54 @@ class App {
     } else {
       pendingHtml = pending.map(s => {
         const studName = (students.find(st => st.id === s.studentId) || { name: 'Unknown' }).name;
-        const q = (questions.find(qu => qu.id === s.questionId) || { question: 'Unknown question', marks: 4 });
-        const maxMarks = q.marks || 4;
+        const q = questions.find(qu => qu.id === s.questionId);
+        const maxMarks = Number(q?.marks);
+        if (!q || !Number.isInteger(maxMarks) || maxMarks <= 0) {
+          return `
+            <div class="card" role="status" style="margin-bottom:16px;">
+              <strong>Student: ${this.escapeHTML(studName)}</strong>
+              <h3 style="font-size:16px; margin:10px 0 6px;">Question unavailable — mark cannot be recorded</h3>
+              <p style="margin:0;">The original question or mark total cannot be confirmed. The submitted response remains preserved for an administrator to reconcile.</p>
+            </div>
+          `;
+        }
         return `
           <div class="card" style="margin-bottom: 16px;">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
               <div>
-                <strong>Student: ${studName}</strong> · Submitted paragraph for review
+                <strong>Student: ${this.escapeHTML(studName)}</strong> · Submitted paragraph for review
                 <div style="font-size:12px; color: var(--text-muted); margin-top:4px;">Date: ${new Date(s.date).toLocaleDateString()}</div>
               </div>
-              <span class="badge badge-warning">${s.status}</span>
+              <span class="badge badge-warning">${this.escapeHTML(s.status)}</span>
             </div>
             
             <div style="background-color: var(--bg-main); padding: 12px; border-radius: 8px; font-size:13px; margin-bottom:16px;">
-              <strong>Question Prompt:</strong> "${q.question}"
+              <strong>Question Prompt:</strong> "${this.escapeHTML(q.question)}"
             </div>
 
             <div style="font-style: italic; font-size:14px; color: var(--text-main); margin-bottom:16px; line-height: 1.5; border-left: 3px solid var(--border-color); padding-left:12px;">
-              "${s.response}"
+              "${this.escapeHTML(s.response)}"
             </div>
 
-            <!-- AI Evaluation Summary -->
+            <!-- Automated formative prompts -->
             <div class="card" style="background-color: rgba(45,156,145,0.02); margin-bottom: 16px; font-size: 13px;">
-              <h4 style="color: var(--teal); font-size:14px; margin-bottom:6px;">🤖 Automated AI Formative Feedback</h4>
-              <div>Estimated Mark: <strong>${s.estimatedMark}</strong></div>
-              <div>Strengths: ${s.strengths}</div>
-              <div>Improvements: ${s.improvements}</div>
+              <h4 style="color: var(--teal); font-size:14px; margin-bottom:6px;">Automated formative prompts — check before using</h4>
+              <div>Strengths: ${this.escapeHTML(s.strengths)}</div>
+              <div>Improvements: ${this.escapeHTML(s.improvements)}</div>
             </div>
 
             <!-- Teacher grading controls -->
-            <form class="teacher-grade-form" data-sid="${s.id}">
+            <form class="teacher-grade-form" data-sid="${this.escapeHTML(s.id)}">
               <div style="display:flex; gap:12px; align-items:flex-end;">
                 <div class="form-group" style="margin:0;">
-                  <label>Manual Override Mark (0-${maxMarks})</label>
-                  <input type="number" name="teacherMark" class="form-control" style="width:100px;" value="${s.teacherMark || s.estimatedMark}" min="0" max="${maxMarks}" required>
+                  <label>Teacher mark (0-${maxMarks})</label>
+                  <input type="number" name="teacherMark" class="form-control" style="width:100px;" value="" min="0" max="${this.escapeHTML(maxMarks)}" step="1" required>
                 </div>
                 <div class="form-group" style="margin:0; flex:1;">
                   <label>Teacher Formative Comment — optional</label>
-                  <input type="text" name="teacherFeedback" class="form-control" placeholder="Write feedback comment (optional)..." value="${s.teacherFeedback || ''}">
+                  <input type="text" name="teacherFeedback" class="form-control" placeholder="Write feedback comment (optional)..." value="${this.escapeHTML(s.teacherFeedback || '')}">
                 </div>
-                <button type="submit" class="btn btn-primary btn-sm" style="height:40px;">Approve mark</button>
+                <button type="submit" class="btn btn-primary btn-sm" style="height:40px;">Record reviewed mark</button>
               </div>
             </form>
           </div>
@@ -5514,16 +5643,16 @@ class App {
                 <div class="card" style="opacity: 0.85;">
                   <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
                     <div>
-                      <strong>Student: ${studName}</strong> · Reviewed
+                      <strong>Student: ${this.escapeHTML(studName)}</strong> · Reviewed
                       <div style="font-size:12px; color: var(--text-muted); margin-top:4px;">Date: ${new Date(s.date).toLocaleDateString()}</div>
                     </div>
-                    <span class="badge badge-success">${s.status}</span>
+                    <span class="badge badge-success">${this.escapeHTML(s.status)}</span>
                   </div>
                   <div style="font-size:14px; margin-bottom:12px;">
-                    <strong>Approved Mark:</strong> ${s.teacherMark} / ${q.marks || 4}
+                    <strong>Approved Mark:</strong> ${this.escapeHTML(s.teacherMark)} / ${this.escapeHTML(q.marks || 4)}
                   </div>
                   <div style="font-size:13px; color: var(--text-muted); font-style: italic;">
-                    Comment: "${s.teacherFeedback || 'No feedback comment provided.'}"
+                    Comment: "${this.escapeHTML(s.teacherFeedback || 'No feedback comment provided.')}"
                   </div>
                 </div>
               `;
@@ -5536,7 +5665,7 @@ class App {
     panel.innerHTML = `
       <div style="margin-bottom: 24px;">
         <h1>✍️ Written Answers assessment dashboard</h1>
-        <p>Review student paragraphs, AI estimated mark-bands, and provide teacher manual overrides.</p>
+        <p>Review each student paragraph independently, record a teacher mark and add an optional comment.</p>
       </div>
 
       <div style="display:flex; flex-direction:column;">
@@ -5556,23 +5685,46 @@ class App {
   }
 
   submitTeacherWrittenOverride(subId, form) {
+    const submission = window.db.getWrittenSubmissions().find(item => item.id === subId);
+    if (!submission || !this.canTeacherAccessStudent(submission.studentId)) {
+      this.alert('This submission is not in your selected authorised class. No mark was recorded.');
+      return;
+    }
     const mark = form.elements['teacherMark'].value;
     const comment = form.elements['teacherFeedback'].value.trim();
+    const question = window.db.getWrittenQuestions().find(item => item.id === submission.questionId);
+    const maxMarks = Number(question?.marks);
+    if (!question || !Number.isInteger(maxMarks) || maxMarks <= 0) {
+      this.alert('The original question or mark total cannot be confirmed. No mark was recorded.');
+      return;
+    }
+    if (String(mark).trim() === '') {
+      this.alert(`Enter a whole-number teacher mark from 0 to ${maxMarks}.`);
+      return;
+    }
+    const numericMark = Number(mark);
+    if (!Number.isInteger(numericMark) || numericMark < 0 || numericMark > maxMarks) {
+      this.alert(`Enter a whole-number teacher mark from 0 to ${maxMarks}.`);
+      return;
+    }
 
     window.db.updateWrittenSubmission(subId, {
-      teacherMark: mark,
+      teacherMark: String(numericMark),
       teacherFeedback: comment,
       status: 'Teacher Reviewed'
     });
 
-    this.alert('Confirmed: Written mark approved and recorded.');
+    this.alert('Teacher-reviewed mark recorded.');
     this.render();
   }
 
   // ==================== TEACHER MESSAGES CONSOLE ====================
   renderTeacherMessages(panel) {
-    const messages = window.db.getMessages();
-    const students = window.db.getStudents();
+    const selectedClass = this.getSelectedTeacherClass();
+    if (!selectedClass) return this.renderTeacherClassEmptyState(panel);
+    const teacherId = this.currentUser.id;
+    const messages = this.getTeacherClassMessages();
+    const students = this.getTeacherClassStudents();
 
     // Filter active student chats
     const activeStudents = students.filter(s => messages.some(m => m.senderId === s.id || m.receiverId === s.id));
@@ -5586,8 +5738,9 @@ class App {
 
     // Get selected student info
     const selectedStudent = this.selectedChatStudentId ? students.find(s => s.id === this.selectedChatStudentId) : null;
+    if (this.selectedChatStudentId && !selectedStudent) this.selectedChatStudentId = null;
     const chatMessages = selectedStudent 
-      ? messages.filter(m => (m.senderId === 'coord_1' && m.receiverId === selectedStudent.id) || (m.senderId === selectedStudent.id && m.receiverId === 'coord_1'))
+      ? messages.filter(m => (m.senderId === teacherId && m.receiverId === selectedStudent.id) || (m.senderId === selectedStudent.id && m.receiverId === teacherId))
       : [];
 
     panel.innerHTML = `
@@ -5618,7 +5771,7 @@ class App {
             <div style="margin-bottom:12px;">
               <select id="start-new-chat-select" class="form-control" style="font-size:13px; padding: 6px 12px;">
                 <option value="" disabled selected>+ Start chat with student...</option>
-                ${inactiveStudents.map(s => `<option value="${s.id}">${s.name} (${s.yearGroup})</option>`).join('')}
+                ${inactiveStudents.map(s => `<option value="${this.escapeHTML(s.id)}">${this.escapeHTML(s.name)} (${this.escapeHTML(s.yearGroup)})</option>`).join('')}
               </select>
             </div>
 
@@ -5629,13 +5782,13 @@ class App {
                 const lastMsg = [...messages].reverse().find(m => m.senderId === s.id || m.receiverId === s.id);
                 const isSelected = s.id === this.selectedChatStudentId;
                 return `
-                  <div class="chat-list-item" style="cursor:pointer; padding:12px; border-radius:8px; border: 1px solid ${isSelected ? 'var(--teal)' : 'var(--border-color)'}; background: ${isSelected ? 'rgba(45, 156, 145, 0.08)' : 'var(--bg-card)'}; transition: background 0.2s;" data-student-id="${s.id}">
+                  <div class="chat-list-item" style="cursor:pointer; padding:12px; border-radius:8px; border: 1px solid ${isSelected ? 'var(--teal)' : 'var(--border-color)'}; background: ${isSelected ? 'rgba(45, 156, 145, 0.08)' : 'var(--bg-card)'}; transition: background 0.2s;" data-student-id="${this.escapeHTML(s.id)}">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                      <strong style="font-size:13px; color: ${isSelected ? 'var(--teal)' : 'var(--text-main)'};">${s.name}</strong>
+                      <strong style="font-size:13px; color: ${isSelected ? 'var(--teal)' : 'var(--text-main)'};">${this.escapeHTML(s.name)}</strong>
                       <span style="font-size:10px; color: var(--text-muted);">${new Date(lastMsg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                     </div>
                     <div style="color: var(--text-muted); font-size:12px; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; margin-top:4px;">
-                      ${lastMsg.text}
+                      ${this.escapeHTML(lastMsg.text)}
                     </div>
                   </div>
                 `;
@@ -5649,8 +5802,8 @@ class App {
           ${selectedStudent ? `
             <div class="chat-header" style="padding:16px 24px; border-bottom:1px solid var(--border-color); background: rgba(7, 17, 31, 0.01); display:flex; align-items:center; justify-content:space-between;">
               <div>
-                <strong style="font-size:16px;">${selectedStudent.name}</strong>
-                <span style="font-size:12px; color:var(--text-muted); margin-left:8px;">${selectedStudent.yearGroup} · Student</span>
+                <strong style="font-size:16px;">${this.escapeHTML(selectedStudent.name)}</strong>
+                <span style="font-size:12px; color:var(--text-muted); margin-left:8px;">${this.escapeHTML(selectedStudent.yearGroup)} · Student</span>
               </div>
             </div>
 
@@ -5658,18 +5811,18 @@ class App {
               ${chatMessages.length === 0 ? `
                 <div style="text-align:center; color:var(--text-muted); font-size:13px; padding-top:48px;">No messages yet. Send a message below to start the conversation.</div>
               ` : chatMessages.map(m => `
-                <div class="chat-bubble ${m.senderId === 'coord_1' ? 'sent' : 'received'}">
+                <div class="chat-bubble ${m.senderId === teacherId ? 'sent' : 'received'}">
                   <div style="font-size:11px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">
-                    ${m.senderId === 'coord_1' ? 'You' : selectedStudent.name.split(' ')[0]} · ${new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    ${m.senderId === teacherId ? 'You' : this.escapeHTML(selectedStudent.name.split(' ')[0])} · ${new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   </div>
-                  <div>${m.text}</div>
+                  <div>${this.escapeHTML(m.text)}</div>
                   ${m.flagged ? `<div style="font-size: 10px; color: #FECACA; font-weight:600; margin-top: 4px;">⚠️ Safety warning: Flagged by school filters</div>` : ''}
                 </div>
               `).join('')}
             </div>
 
             <div class="chat-input-area" style="padding:16px 24px; border-top:1px solid var(--border-color); display:flex; gap:12px; background: var(--bg-card);">
-              <input type="text" id="teacher-chat-text-input" class="form-control" style="flex:1;" placeholder="Type your reply to ${selectedStudent.name.split(' ')[0]}..." value="${this.teacherMessageDraft || ''}">
+              <input type="text" id="teacher-chat-text-input" class="form-control" style="flex:1;" placeholder="Type your reply to ${this.escapeHTML(selectedStudent.name.split(' ')[0])}..." value="${this.escapeHTML(this.teacherMessageDraft || '')}">
               <button class="btn btn-primary" id="teacher-chat-send-btn">Send</button>
             </div>
           ` : `
@@ -5735,7 +5888,7 @@ class App {
         // Broadcast message to all student local feeds
         students.forEach(s => {
           window.db.addMessage({
-            senderId: 'coord_1',
+            senderId: teacherId,
             receiverId: s.id,
             text: `[CLASS ANNOUNCEMENT]: ${txt}`
           });
@@ -5751,9 +5904,13 @@ class App {
   sendTeacherMessage(studentId) {
     const text = this.teacherMessageDraft ? this.teacherMessageDraft.trim() : '';
     if (!text) return;
+    if (!this.canTeacherAccessStudent(studentId)) {
+      this.alert('This pupil is not in your selected authorised class. No message was sent.');
+      return;
+    }
 
     window.db.addMessage({
-      senderId: 'coord_1',
+      senderId: this.currentUser.id,
       receiverId: studentId,
       text: text
     });

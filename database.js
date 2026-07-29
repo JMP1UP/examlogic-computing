@@ -157,7 +157,7 @@ const defaultDatabase = {
       paper: 'Paper 1',
       title: 'Systems Architecture',
       subtitle: 'CPU Architecture, Registers, Fetch-Decode-Execute Cycle & Embedded Systems',
-      summary: 'Master the central processing unit: Von Neumann architecture, internal registers, performance factors, and embedded firmware.',
+      summary: 'Learn about the central processing unit: Von Neumann architecture, internal registers, performance factors, and embedded firmware.',
       specificationPoints: [
         '1.1.1 Architecture of the CPU: Purpose of CPU, ALU, CU, Cache, Registers (MAR, MDR, PC, ACC)',
         '1.1.2 CPU Performance: Clock speed, Cache size, Number of Cores',
@@ -320,7 +320,7 @@ const defaultDatabase = {
       paper: 'Paper 1',
       title: 'Data Representation',
       subtitle: 'Binary, Hexadecimal, Binary Arithmetic, Characters, Images, Sound & Compression',
-      summary: 'Master how numbers, text, images, and audio are encoded into binary digits (bits) and compressed.',
+      summary: 'Learn how numbers, text, images, and audio are encoded into binary digits (bits) and compressed.',
       specificationPoints: [
         '1.2.3 Units of Data: bit, nibble, byte, KB, MB, GB, TB, PB',
         '1.2.4a Data Storage - Numbers: Binary, Denary, Hexadecimal, Binary Addition, Logical Shifts',
@@ -940,7 +940,7 @@ def calculate_area(width, height):
       paper: 'Paper 2',
       title: 'Boolean Logic',
       subtitle: 'Logic Gates (AND, OR, NOT), Truth Tables & Circuit Diagrams',
-      summary: 'Master Boolean logic operations, 2-input and 3-input truth tables, and logic gate circuit diagrams.',
+      summary: 'Learn Boolean logic operations, 2-input and 3-input truth tables, and logic gate circuit diagrams.',
       specificationPoints: [
         '2.4.1 Boolean Logic: Logic gate symbols (AND, OR, NOT), Truth tables (2 and 3 inputs), Combining logic gates'
       ],
@@ -1233,7 +1233,7 @@ def calculate_area(width, height):
   assignments: [
     {
       id: 'assign_1',
-      title: 'Spaced Theory Check - Data Rep',
+      title: 'Quick Recall Check - Data Representation',
       classId: 'class_1',
       topicId: 'topic_1_3',
       dueDate: new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString().split('T')[0],
@@ -3888,7 +3888,18 @@ class LocalDB {
   getStudents() { return this.cachedData.students; }
   getClasses() { return this.cachedData.classes; }
   getUnits() { return this.cachedData.units; }
-  getClassroomControls() { return this.cachedData.classroomControls; }
+  getClassroomControls(classId = null) {
+    if (!classId) return this.cachedData.classroomControls;
+    const scoped = {};
+    Object.entries(this.cachedData.classroomControls || {}).forEach(([key, value]) => {
+      if (!key.includes(':')) scoped[key] = value;
+    });
+    Object.entries(this.cachedData.classroomControls || {}).forEach(([key, value]) => {
+      const prefix = `${classId}:`;
+      if (key.startsWith(prefix)) scoped[key.slice(prefix.length)] = value;
+    });
+    return scoped;
+  }
   getAssignments() { return this.cachedData.assignments; }
   getTestPreps() { return this.cachedData.testPreps || []; }
   getSupportSessions() { return this.cachedData.supportSessions || []; }
@@ -3934,8 +3945,9 @@ class LocalDB {
     }
   }
 
-  updateClassroomControl(topicId, status) {
-    this.cachedData.classroomControls[topicId] = status;
+  updateClassroomControl(topicId, status, classId = null) {
+    const key = classId ? `${classId}:${topicId}` : topicId;
+    this.cachedData.classroomControls[key] = status;
     this.saveData();
   }
 

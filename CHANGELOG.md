@@ -23,6 +23,12 @@ All notable changes to ExamLogic Computing are recorded here.
 - Enabled checkpoints for 27 sufficiently assessed sections. Five under-assessed sections remain visible but excluded from the achievable denominator: `1.2.4c`, `1.5.2`, `2.1.1`, `2.2.2` and `2.2.PY`.
 
 ### Fixed
+- Escaped persisted pupil, teacher and assignment content at every reviewed student/staff render boundary so stored markup is displayed as text without rewriting saved records.
+- Scoped teacher rosters, evidence, submissions, messages, broadcasts, assignments, test preparation, support sessions and topic controls to the signed-in teacher's selected authorised class.
+- Replaced the unconditional message-monitoring clear state with an accurate class-scoped flagged count and direct route to the affected conversation.
+- Removed automated estimated-mark presentation and pre-filling from written review; teachers must now enter a valid independent mark against a confirmed question.
+- Prevented orphaned historical written submissions from being marked against an invented mark total while preserving the original response.
+- Clarified student section controls, workload, recall terminology, pseudocode hints and Progress next actions without changing curriculum scope or evidence rules.
 - Rewrote pupil-facing Progress, Learn, programming and exam-answer instructions in plain English while retaining the OCR terms pupils must recognise.
 - Replaced the exam-answer keyword scanner's marking implication with an explicitly formative suggested-term check.
 - Corrected SQL-injection prevention, validation, testing-data and legislation explanations after examiner review.
@@ -58,6 +64,7 @@ All notable changes to ExamLogic Computing are recorded here.
 - Aligned stylesheet, database and application cache tokens so compatibility and dashboard fixes load together.
 
 ### Tests
+- Added executed staff-integrity coverage for stored-content injection, class isolation, cross-class write rejection, safeguarding routing, independent marking and orphaned written questions.
 - Added whole-specification traceability, workload, supported-practice, retired-content and application-route validation.
 - Added production-order browser startup and Student Demo smoke coverage.
 - Added realistic schema 12 migration fixtures and preservation assertions.
