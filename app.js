@@ -1043,10 +1043,12 @@ class App {
         { id: 'stud-progress', label: 'Progress', icon: SVG_ICONS.progress },
         { id: 'stud-messages', label: 'Messages', icon: SVG_ICONS.messages }
       ];
-      links.forEach(link => {
+      links.forEach((link, index) => {
         const li = document.createElement('li');
         li.innerHTML = `<a class="nav-link ${this.activeTab === link.id ? 'active' : ''}" href="#" data-tab="${link.id}" ${this.activeTab === link.id ? 'aria-current="page"' : ''}>
-          <span style="display: inline-flex; align-items: center; margin-right: 12px; opacity: 0.85;">${link.icon}</span> ${link.label}
+          <span style="display: inline-flex; align-items: center; margin-right: 12px; opacity: 0.85;">${link.icon}</span>
+          <span>${link.label}</span>
+          <span class="student-nav-index" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>
         </a>`;
         li.querySelector('a').onclick = (e) => { e.preventDefault(); this.closeMobileNav(); this.switchTab(link.id); };
         navList.appendChild(li);
@@ -1301,58 +1303,80 @@ class App {
 
     // Compute dominant task for "Do this now"
     let dominantTaskHtml = '';
+    let dominantTask = null;
     let dominantAssignmentId = null;
     let dominantAssignment = null;
     let hasActiveTestPrep = activeTestPreps.length > 0;
 
     if (hasActiveTestPrep) {
       const prep = activeTestPreps[0];
-      dominantTaskHtml = `
-        <div class="card card-action" style="margin-bottom:24px; border-left:5px solid var(--teal); padding: 24px;">
-          <span class="badge badge-primary">Prep for test · ${prep.weeklyMinutes} mins this week</span>
-          <h2 style="font-size:20px; margin:12px 0 6px;">${this.escapeHTML(prep.title)}</h2>
-          <p style="font-size:14px; color:var(--text-muted);">${prep.specificationPointIds.length} specification points · ${this.formatDueDate(prep.testDate).replace('Due ', 'Test ')}</p>
-          <p style="font-size:13px; color: var(--text-muted);">Your plan adapts each specification point separately. Normal optional recommendations are reduced while this plan is active.</p>
-          <button class="btn btn-primary btn-lg test-prep-start-btn" data-prep-id="${prep.id}" style="margin-top: 12px; min-height: 40px;">Continue test preparation (${prep.sessionMinutes} mins)</button>
-        </div>
-      `;
+      dominantTask = {
+        kind: 'Test preparation',
+        label: 'Required',
+        title: prep.title,
+        meta: [`${prep.specificationPointIds.length} specification points`, this.formatDueDate(prep.testDate).replace('Due ', 'Test ')],
+        description: 'Your plan adapts each specification point separately. Optional recommendations are reduced while this plan is active.',
+        actionLabel: 'Continue test preparation',
+        actionMinutes: prep.sessionMinutes,
+        actionClass: 'test-prep-start-btn',
+        actionAttributes: `data-prep-id="${this.escapeHTML(prep.id)}"`
+      };
     } else {
       const incompleteRequiredAssignments = assignments.filter(a => a.status !== 'Completed' && (a.status === 'Required' || a.status === 'Overdue'));
       if (incompleteRequiredAssignments.length > 0) {
         const a = incompleteRequiredAssignments[0];
         dominantAssignment = a;
+        dominantTask = {
+          kind: 'Assignment',
+          label: a.status,
+          title: a.title,
+          meta: [this.formatDueDate(a.dueDate), a.title.toLowerCase().includes('programming') ? 'Programming task' : 'Knowledge check'],
+          description: a.status === 'Overdue' ? 'This required assignment is overdue. Complete it before optional revision.' : 'Complete this required assignment before optional revision.',
+          actionLabel: a.title.toLowerCase().includes('programming') ? 'Start programming' : 'Start check',
+          actionMinutes: Number(a.estimatedMinutes || 10),
+          actionClass: 'start-assignment-btn',
+          actionAttributes: `data-topic-id="${this.escapeHTML(a.topicId)}"`
+        };
         dominantAssignmentId = a.id;
-        const isOverdue = a.status === 'Overdue';
-        const isProgramming = a.title.toLowerCase().includes('programming');
-        let badgeClass = isOverdue ? 'badge-warning' : 'badge-primary';
-        let naturalDate = this.formatDueDate(a.dueDate);
-        let borderStyle = isOverdue ? 'border: 1.5px solid var(--coral); border-left: 5px solid var(--coral);' : 'border-left: 5px solid var(--teal);';
-        let btnText = isProgramming ? 'Start programming' : 'Start check';
-        let progressStateText = 'Not started';
-        
-        dominantTaskHtml = `
-          <div class="card card-action" style="margin-bottom:24px; ${borderStyle} padding: 24px;">
-            <span class="badge ${badgeClass}" style="font-size: 12px; padding: 4px 8px; font-weight: 500;">${a.status} · ${naturalDate}</span>
-            <h2 style="font-size:20px; margin:12px 0 6px;">${a.title}</h2>
-            <p style="font-size:14px; color:var(--text-muted); margin-bottom: 12px;">${progressStateText}</p>
-            <button class="btn btn-primary btn-lg start-assignment-btn" data-topic-id="${a.topicId}" style="min-height: 40px;">${btnText}</button>
-          </div>
-        `;
       } else {
-        dominantTaskHtml = `
-          <div class="card card-action" style="padding: 24px; border-left: 5px solid var(--teal); margin-bottom: 24px;">
-            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
-              <span class="badge badge-primary">${hasDemonstratedBaseline ? 'Spaced recall · 5 mins' : 'Start here · 10 mins'}</span>
-            </div>
-            <h3 style="font-size: 22px; margin-bottom: 8px; font-weight: 700; color: var(--text-main);">${hasDemonstratedBaseline ? '🔢 Binary shifts & conversions' : 'Architecture of the CPU'}</h3>
-            <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 24px; max-width: 90%;">${hasDemonstratedBaseline
-              ? 'Your existing evidence suggests this short retrieval activity is worth revisiting.'
-              : 'Build confidence with a guided explanation and worked example before attempting assessed questions.'}</p>
-            <button class="btn btn-primary btn-lg" id="today-rec-btn" style="min-width: 180px; align-self: flex-start; min-height: 40px;">${hasDemonstratedBaseline ? 'Continue practice' : 'Start guided learning'}</button>
-          </div>
-        `;
+        dominantTask = {
+          kind: hasDemonstratedBaseline ? 'Quick recall' : 'Guided learning',
+          label: hasDemonstratedBaseline ? 'Optional' : 'Suggested start',
+          title: hasDemonstratedBaseline ? 'Binary shifts and conversions' : 'Architecture of the CPU',
+          meta: [hasDemonstratedBaseline ? 'Spaced recall' : 'Core learning', hasDemonstratedBaseline ? '5 min' : '10 min'],
+          description: hasDemonstratedBaseline
+            ? 'Your latest checked work suggests this short retrieval activity is worth revisiting.'
+            : 'Build confidence with a guided explanation and worked example before attempting assessed questions.',
+          actionLabel: hasDemonstratedBaseline ? 'Continue practice' : 'Start guided learning',
+          actionMinutes: hasDemonstratedBaseline ? 5 : 10,
+          actionClass: '',
+          actionAttributes: 'id="today-rec-btn"'
+        };
       }
     }
+
+    dominantTaskHtml = `
+      <section class="student-primary-task" aria-labelledby="primary-task-title">
+        <div class="student-primary-task__index" aria-hidden="true">01</div>
+        <div class="student-primary-task__body">
+          <div class="student-primary-task__eyebrow">
+            <span class="student-priority-tag">${this.escapeHTML(dominantTask.label)}</span>
+            <span>${this.escapeHTML(dominantTask.kind)}</span>
+            <span>${dominantTask.actionMinutes} min</span>
+          </div>
+          <h2 id="primary-task-title">${this.escapeHTML(dominantTask.title)}</h2>
+          <div class="student-primary-task__meta">
+            ${dominantTask.meta.map(item => `<span>${this.escapeHTML(item)}</span>`).join('')}
+          </div>
+          <p class="student-primary-task__description">${this.escapeHTML(dominantTask.description)}</p>
+          <button class="btn student-primary-task__action ${dominantTask.actionClass}" ${dominantTask.actionAttributes}>
+            <span>${this.escapeHTML(dominantTask.actionLabel)}</span>
+            <span aria-hidden="true">&rarr;</span>
+            <small>${dominantTask.actionMinutes} min</small>
+          </button>
+        </div>
+      </section>
+    `;
 
     const unresolvedMilestones = availableMilestones.filter(item => item.state !== 'checkpoint_secured');
     const nextMilestone = activeTestPreps[0]
@@ -1548,6 +1572,98 @@ class App {
       </div>
     `;
 
+    const dashboardDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }).toUpperCase();
+    const latestLevel = demonstratedProgress.ratio === null
+      ? 'No checked work yet'
+      : demonstratedProgress.label.replace(' latest evidence', '').replace(' evidence', '');
+    const achievementNames = (student.achievements || []).map((achievement, index) => {
+      if (typeof achievement === 'string') return achievement;
+      return achievement?.name || achievement?.title || `Achievement ${index + 1}`;
+    });
+    const earnedMarksHtml = achievementNames.length ? `
+      <section class="student-earned-marks" aria-labelledby="earned-marks-heading">
+        <div class="student-earned-marks__title">
+          <span class="student-kicker">Earned through checked work</span>
+          <h2 id="earned-marks-heading">Achievements</h2>
+        </div>
+        <div class="student-earned-marks__list">
+          ${achievementNames.map((name, index) => `
+            <div class="student-earned-mark">
+              <span aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>
+              <strong>${this.escapeHTML(name)}</strong>
+            </div>
+          `).join('')}
+        </div>
+        <button type="button" id="dashboard-achievements-btn" class="btn-link">View your learning record</button>
+      </section>
+    ` : '';
+    const checkpointHtml = nextMilestone ? `
+      <section class="student-connected-checkpoint" aria-labelledby="connected-checkpoint-heading">
+        <header class="student-connected-checkpoint__header">
+          <div>
+            <span class="student-kicker">Connected checkpoint</span>
+            <h2 id="connected-checkpoint-heading"><span>${this.escapeHTML(nextMilestone.id)}</span>${this.escapeHTML(nextMilestone.name)}</h2>
+          </div>
+          <div class="student-connected-checkpoint__count">
+            <strong>${securedMilestones.length}</strong>
+            <span>of ${availableMilestones.length} secured</span>
+          </div>
+        </header>
+        <p>${this.escapeHTML(checkpointRelationship)}</p>
+        <ol class="student-checkpoint-route" aria-label="Checkpoint route">
+          <li class="${nextMilestone.state === 'not_started' ? 'is-current' : 'is-complete'}" ${nextMilestone.state === 'not_started' ? 'aria-current="step"' : ''}>Learn${nextMilestone.state === 'practice_completed' ? '<span class="sr-only"> completed</span>' : ''}</li>
+          <li class="${nextMilestone.state === 'practice_completed' ? 'is-current' : ''}" ${nextMilestone.state === 'practice_completed' ? 'aria-current="step"' : ''}>Practise</li>
+          <li>Secure</li>
+        </ol>
+      </section>
+    ` : `
+      <aside class="student-checkpoint-note">
+        <span class="student-kicker">Checkpoint record</span>
+        <strong>No checkpoint is directly connected to this task.</strong>
+        <p>Complete your required work first; your full record remains in Progress.</p>
+      </aside>
+    `;
+
+    panel.innerHTML = `
+      <div class="student-page student-dashboard">
+        <header class="student-brief">
+          <div class="student-brief__copy">
+            <span class="student-kicker">Weekly brief / ${dashboardDate}</span>
+            <h1>${greeting}, ${shortName}</h1>
+            <p class="student-brief__workload">
+              <strong>${requiredCountWord} required ${requiredCount === 1 ? 'task' : 'tasks'} · ${requiredMinutes} minutes</strong>
+              <span>${hasDemonstratedBaseline ? 'Optional recall · up to 5 minutes' : 'Suggested guided learning · 10 minutes'}</span>
+            </p>
+          </div>
+          <div class="student-brief__identity" id="student-profile-dropdown-container">
+            <button class="btn" id="student-profile-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="student-profile-dropdown">
+              <span class="student-profile-initials">${student.name.split(' ').map(name => name[0]).join('')}</span>
+              <span>${shortName}</span><span aria-hidden="true">▼</span>
+            </button>
+            <div id="student-profile-dropdown" class="card">
+              <div><strong>${this.escapeHTML(student.name)}</strong><br>${this.escapeHTML(student.email)}</div>
+              <a href="#" id="dropdown-signout" class="dropdown-item">Sign out</a>
+            </div>
+          </div>
+          <div class="student-brief__motif" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        </header>
+
+        <div class="student-dashboard__flow">
+          ${dominantTaskHtml}
+
+          <section class="student-signal-strip" aria-label="This week's study status">
+            <div class="student-signal student-signal--required"><span>Required</span><strong>${requiredMinutes} min</strong><small>this week</small></div>
+            <div class="student-signal"><span>Work that counts</span><strong>${demonstratedProgress.evidenceCount}</strong><small>checked ${demonstratedProgress.evidenceCount === 1 ? 'activity' : 'activities'}</small></div>
+            <div class="student-signal"><span>Latest checked work</span><strong>${this.escapeHTML(latestLevel)}</strong><small>from completed checks</small></div>
+          </section>
+
+          ${checkpointHtml}
+          ${earnedMarksHtml}
+          <div class="student-plan-drawer">${seeMoreHtml}</div>
+        </div>
+      </div>
+    `;
+
     panel.querySelectorAll('.view-topic-btn').forEach(btn => {
       btn.onclick = () => {
         this.activeTopicId = btn.getAttribute('data-topic-id');
@@ -1586,8 +1702,24 @@ class App {
       trigger.onclick = (e) => {
         e.stopPropagation();
         dropdown.classList.toggle('show-dropdown');
+        trigger.setAttribute('aria-expanded', dropdown.classList.contains('show-dropdown') ? 'true' : 'false');
       };
-      document.addEventListener('click', () => { dropdown.classList.remove('show-dropdown'); });
+      document.addEventListener('click', () => {
+        dropdown.classList.remove('show-dropdown');
+        trigger.setAttribute('aria-expanded', 'false');
+      });
+      trigger.onkeydown = (event) => {
+        if (event.key !== 'Escape') return;
+        dropdown.classList.remove('show-dropdown');
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.focus();
+      };
+      dropdown.onkeydown = (event) => {
+        if (event.key !== 'Escape') return;
+        dropdown.classList.remove('show-dropdown');
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.focus();
+      };
     }
 
     const dropSignout = document.getElementById('dropdown-signout');

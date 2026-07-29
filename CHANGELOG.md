@@ -5,6 +5,9 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Rebuilt the student dashboard with the bolder Signal / Paste — Cut Through
+  composition: split weekly brief, overlapping task sheet, continuous status strip,
+  semantic checkpoint route and evidence-backed achievement marks.
 - Added the student-only Signal / Paste visual direction, with restrained route
   framing, task identity and checkpoint cues while leaving teacher screens unchanged.
 - Reframed dashboard reporting as checked work, a required study plan and a

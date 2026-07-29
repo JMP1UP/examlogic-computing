@@ -60,11 +60,11 @@ ExamLogic Computing strictly adheres to the **25Thirty Learning** design mode.
 
 ## 8. Student art direction: Signal / Paste
 
-Student pages use a restrained **Signal / Paste** visual language: precise computing
-metadata and routes combined with the controlled energy of editorial paste-up
-graphics. Warm paper, navy structure, accessible teal and a small cyan/acid accent
-give student work a distinct identity while keeping teaching and assessment surfaces
-calm.
+Student pages use a **Signal / Paste — Cut Through** visual language: precise
+computing metadata and routes combined with the controlled energy of editorial
+paste-up graphics. On Home, large navy/cyan colour fields, an overlapping task
+sheet, a continuous signal strip and an explicit checkpoint route establish a
+confident identity. Teaching and assessment surfaces remain substantially calmer.
 
 - The required task remains the single dominant action.
 - Expressive details are limited to page openings, task identity, checkpoints and
