@@ -23,6 +23,7 @@ All notable changes to ExamLogic Computing are recorded here.
 - Enabled checkpoints for 27 sufficiently assessed sections. Five under-assessed sections remain visible but excluded from the achievable denominator: `1.2.4c`, `1.5.2`, `2.1.1`, `2.2.2` and `2.2.PY`.
 
 ### Fixed
+- Replaced the horizontally scrolling Learn topic strip with a responsive wrapping grid so every topic remains visible and keyboard-accessible.
 - Replaced potentially misleading message identity and presence copy with the assigned teacher and factual monitoring hours.
 - Clarified formative exam-transfer status and practice-result storage.
 - Replaced low-contrast yellow and reused accent foregrounds with WCAG AA text tokens, and raised small interface labels to a readable minimum across student, teacher, public and dark-mode views.

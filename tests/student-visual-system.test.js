@@ -64,6 +64,9 @@ describe('student Signal / Paste visual system', () => {
     expect(css).toContain('.student-start-panel');
     expect(css).toContain('.student-route-header--quiet');
     expect(css).not.toContain('var(--student-electric)');
+    expect(app).toContain('student-topic-grid');
+    expect(css).toContain('.student-topic-grid .topic-pill-btn');
+    expect(app).not.toContain('overflow-x: auto; padding-bottom: 16px; margin-bottom: 24px;');
     expect(app).not.toContain('Revise & Assess');
     expect(app).not.toContain('Ongoing spaced practice');
   });

@@ -1741,6 +1741,24 @@ body.dark-mode .app-container[data-user-role="student"] {
   padding-top: 12px;
 }
 
+.app-container[data-user-role="student"] .student-topic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.app-container[data-user-role="student"] .student-topic-grid .topic-pill-btn {
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: left;
+  white-space: normal;
+}
+
 .app-container[data-user-role="student"] .student-learn article.card {
   border-radius: 6px !important;
   box-shadow: none;

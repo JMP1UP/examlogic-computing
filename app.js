@@ -1875,9 +1875,9 @@ class App {
         </div>
 
         <!-- Topic Pills Navigation -->
-        <div style="${isFilteredObjective ? 'display:none;' : 'display:flex;'} gap: 8px; overflow-x: auto; padding-bottom: 16px; margin-bottom: 24px;">
+        <div class="student-topic-grid" style="${isFilteredObjective ? 'display:none;' : ''}">
           ${(currentPaper === 'Paper 1' ? paper1Notes : paper2Notes).map(note => `
-            <button class="btn btn-secondary ${note.topicId === activeNote.topicId ? 'student-selected-control' : ''} topic-pill-btn" data-topic-id="${note.topicId}" style="white-space: nowrap; font-size: 13px; padding: 6px 14px; border-radius: 20px; font-weight: 600;">
+            <button class="btn btn-secondary ${note.topicId === activeNote.topicId ? 'student-selected-control' : ''} topic-pill-btn" data-topic-id="${note.topicId}">
               ${note.code} ${note.title}
             </button>
           `).join('')}
