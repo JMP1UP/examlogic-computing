@@ -65,6 +65,16 @@ function createPanel() {
 }
 
 describe('production browser startup', () => {
+  test('loads behaviourally coupled assets with one release token', () => {
+    const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+    const releaseTokens = [
+      ...html.matchAll(/(?:style\.css|database\.js|app\.js)\?v=([^"']+)/g)
+    ].map(match => match[1]);
+
+    expect(releaseTokens).toHaveLength(3);
+    expect(new Set(releaseTokens).size).toBe(1);
+  });
+
   test('loads production scripts together and opens the Student Demo', async () => {
     const context = loadProductionScripts();
 
@@ -80,6 +90,47 @@ describe('production browser startup', () => {
       isDemo: true
     });
     expect(context.app.activeTab).toBe('stud-dashboard');
+  });
+
+  test('shows a focused read-only recovery screen when saved browser data cannot be upgraded', () => {
+    const context = loadProductionScripts();
+    const recoveryPanel = { focus: jest.fn() };
+    const reloadButton = {};
+    const loginScreen = { style: {} };
+    const appShell = { style: {} };
+    const mainPanel = {
+      innerHTML: '',
+      querySelector: selector => selector === '#storage-recovery'
+        ? recoveryPanel
+        : selector === '#storage-recovery-reload-btn' ? reloadButton : null
+    };
+    const navList = { innerHTML: '' };
+    const skipLink = { setAttribute: jest.fn() };
+    const userName = { textContent: '' };
+    const userRole = { textContent: '' };
+    const elements = {
+      'login-screen': loginScreen,
+      'app-shell': appShell,
+      'main-panel': mainPanel,
+      'nav-links-list': navList,
+      'skip-link': skipLink,
+      'user-display-name': userName,
+      'user-display-role': userRole
+    };
+    context.document.getElementById = id => elements[id] || null;
+    context.db.recoveryState = { active: true, reason: 'migration' };
+    context.db.readOnly = true;
+    context.location.reload = jest.fn();
+
+    context.app.render();
+
+    expect(mainPanel.innerHTML).toContain('Your saved work has not been deleted or replaced.');
+    expect(mainPanel.innerHTML).toContain('role="alert"');
+    expect(recoveryPanel.focus).toHaveBeenCalled();
+    expect(loginScreen.style.display).toBe('none');
+    expect(appShell.style.display).toBe('flex');
+    reloadButton.onclick();
+    expect(context.location.reload).toHaveBeenCalled();
   });
 
   test('opens a selectable new-learner demo without seeded evidence or badges', async () => {

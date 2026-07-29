@@ -32,8 +32,9 @@ describe('User experience regression checks', () => {
   });
 
   test('updated interface assets use the current cache-busting release', () => {
-    expect(html).toContain('style.css?v=1.6.8');
-    expect(html).toContain('app.js?v=1.6.8');
+    expect(html).toContain('style.css?v=1.6.10');
+    expect(html).toContain('database.js?v=1.6.10');
+    expect(html).toContain('app.js?v=1.6.10');
   });
 
   test('mobile navigation is collapsible and keyboard dismissible', () => {

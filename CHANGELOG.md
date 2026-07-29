@@ -35,6 +35,9 @@ All notable changes to ExamLogic Computing are recorded here.
 - Corrected dashboard workload wording to combine required assignments and test preparation, and separated retry, optional confidence reflection and onward navigation after recall.
 - Replaced broad mastery labels with latest-evidence wording and exposed each section checkpoint's contributing activity count, latest date, demonstrated focuses and remaining focuses.
 - Restored the dashboard's expandable secondary details with accessible state and focus handling, and surfaced genuinely earned achievements quietly beside section checkpoints.
+- Added conservative migration support for recognisable pre-versioned browser data, preserving user-owned records before applying the existing schema 12-to-13 migration.
+- Added a focused read-only recovery screen for unrecognisable data or browser-storage write failures, without overwriting the original saved value.
+- Aligned stylesheet, database and application cache tokens so compatibility and dashboard fixes load together.
 
 ### Tests
 - Added whole-specification traceability, workload, supported-practice, retired-content and application-route validation.
@@ -45,6 +48,7 @@ All notable changes to ExamLogic Computing are recorded here.
 - Added question-level retry, Progress presentation, adversarial definition-response, exhaustive recall-route/hint and clean-learner fixture coverage.
 - Added browser coverage for the selectable clean learner and integrity coverage for pseudocode awaiting review.
 - Added regression coverage for narrow-layout safeguards, reduced motion, scrolling table semantics, focused learning and explicit post-quiz choices.
+- Added unversioned/schema-11 preservation, unrecognisable-data recovery, storage-write failure and coupled-asset release-token tests.
 
 ## [Unreleased] - 2026-07-24
 

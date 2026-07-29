@@ -3757,12 +3757,47 @@ const DATA_MIGRATIONS = {
   12: migrateSchema12To13
 };
 
+function prepareLegacyDataForSchema12(storedData) {
+  const migrated = cloneData(storedData);
+  migrated.schemaVersion = 12;
+  return migrated;
+}
+
+function isRecognisableLegacyData(storedData) {
+  if (!storedData || typeof storedData !== 'object' || Array.isArray(storedData)) return false;
+  const knownCollections = [
+    'schools',
+    'students',
+    'classes',
+    'attempts',
+    'assignments',
+    'questions',
+    'units',
+    'writtenSubmissions',
+    'programmingSubmissions',
+    'studentProgress'
+  ];
+  const presentCollections = knownCollections.filter(key =>
+    Object.prototype.hasOwnProperty.call(storedData, key) && Array.isArray(storedData[key])
+  );
+  const hasCoreStudySpiceCollection = ['students', 'attempts', 'questions', 'units']
+    .some(key => presentCollections.includes(key));
+  return hasCoreStudySpiceCollection && presentCollections.length >= 3;
+}
+
 function migrateStoredData(storedData) {
   let migrated = cloneData(storedData);
   let version = Number(migrated.schemaVersion);
 
-  if (!Number.isInteger(version) || version < 12) {
-    throw new Error('Stored StudySpice data predates the supported migration path.');
+  if (!Number.isInteger(version) || version === 11) {
+    if (!isRecognisableLegacyData(migrated)) {
+      throw new Error('Stored browser data is not a recognisable StudySpice dataset.');
+    }
+    migrated = prepareLegacyDataForSchema12(migrated);
+    version = migrated.schemaVersion;
+  }
+  if (version < 11) {
+    throw new Error(`Stored StudySpice schema ${version} predates the safe migration path.`);
   }
   if (version > defaultDatabase.schemaVersion) {
     throw new Error('Stored StudySpice data is newer than this application.');
@@ -3792,30 +3827,49 @@ class LocalDB {
   constructor() {
     this.cachedData = null;
     this.sessionToken = null;
+    this.readOnly = false;
+    this.recoveryState = null;
     this.loadData();
   }
 
   loadData() {
     let parsedRaw = null;
+    let migratedData = null;
     try {
       const raw = localStorage.getItem(DB_KEY);
       parsedRaw = raw ? JSON.parse(raw) : null;
-      this.cachedData = parsedRaw ? migrateStoredData(parsedRaw) : cloneData(defaultDatabase);
+      migratedData = parsedRaw ? migrateStoredData(parsedRaw) : cloneData(defaultDatabase);
+      this.cachedData = migratedData;
       localStorage.setItem(DB_KEY, JSON.stringify(this.cachedData));
     } catch (e) {
       console.error('Error loading LocalDB; stored data has not been overwritten:', e);
-      this.cachedData = parsedRaw && typeof parsedRaw === 'object'
-        ? parsedRaw
-        : cloneData(defaultDatabase);
+      this.cachedData = migratedData || cloneData(defaultDatabase);
+      this.readOnly = true;
+      this.recoveryState = {
+        active: true,
+        reason: migratedData ? 'storage_write' : 'migration'
+      };
     }
   }
 
   saveData() {
+    if (this.readOnly) {
+      console.warn('StudySpice is in read-only recovery mode; browser data was not changed.');
+      return false;
+    }
     try {
       localStorage.setItem(DB_KEY, JSON.stringify(this.cachedData));
+      return true;
     } catch (e) {
       console.error('Error saving LocalDB:', e);
+      this.readOnly = true;
+      this.recoveryState = { active: true, reason: 'storage_write' };
+      return false;
     }
+  }
+
+  getRecoveryState() {
+    return this.recoveryState ? { ...this.recoveryState } : null;
   }
 
   // Auth helper

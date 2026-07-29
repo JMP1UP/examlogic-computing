@@ -1,5 +1,6 @@
 const schema12Fixture = require('./fixtures/schema-12-data');
 const anonymisedSchema12Fixture = require('./fixtures/schema-12-anonymised-verification');
+const legacyUnversionedFixture = require('./fixtures/legacy-unversioned-data');
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -91,6 +92,82 @@ describe('StudySpice local-data migrations', () => {
     expect(reconciled.questions.find(question => question.id === 'q_1_1_a').assessmentFocus)
       .toBe('control-unit-coordination');
     expect(reconciled.attempts.some(attempt => attempt.questionEvidence?.some(item => item.assessmentFocus))).toBe(false);
+  });
+
+  test.each([
+    ['unversioned', undefined],
+    ['schema 11', 11]
+  ])('upgrades %s browser data without deleting user-owned records', (_label, schemaVersion) => {
+    const stored = clone(legacyUnversionedFixture);
+    if (schemaVersion !== undefined) stored.schemaVersion = schemaVersion;
+    global.localStorage.getItem.mockReturnValue(JSON.stringify(stored));
+
+    require('../database');
+    const migrated = global.window.db.cachedData;
+
+    [
+      'schools',
+      'students',
+      'classes',
+      'attempts',
+      'writtenSubmissions',
+      'programmingSubmissions',
+      'assignments',
+      'settings',
+      'studentProgress',
+      'messages',
+      'customUserRecords'
+    ].forEach(key => expect(migrated[key]).toEqual(stored[key]));
+    expect(migrated.schemaVersion).toBe(13);
+    expect(migrated.questions.find(question => question.id === 'legacy_question_fixture'))
+      .toMatchObject(stored.questions[0]);
+    expect(global.localStorage.setItem).toHaveBeenCalledWith(
+      'studyspice_db',
+      expect.stringContaining('"schemaVersion":13')
+    );
+  });
+
+  test('keeps unrecognisable browser data unchanged and enters read-only recovery mode', () => {
+    const stored = { unrelated: { value: 'do not replace' } };
+    global.localStorage.getItem.mockReturnValue(JSON.stringify(stored));
+
+    require('../database');
+    const database = global.window.db;
+
+    expect(global.localStorage.setItem).not.toHaveBeenCalled();
+    expect(database.getRecoveryState()).toEqual({ active: true, reason: 'migration' });
+    expect(database.readOnly).toBe(true);
+    database.saveData();
+    expect(global.localStorage.setItem).not.toHaveBeenCalled();
+  });
+
+  test('does not skip unknown migrations for schema 10 or earlier', () => {
+    const stored = clone(legacyUnversionedFixture);
+    stored.schemaVersion = 10;
+    global.localStorage.getItem.mockReturnValue(JSON.stringify(stored));
+
+    require('../database');
+    const database = global.window.db;
+
+    expect(global.localStorage.setItem).not.toHaveBeenCalled();
+    expect(database.getRecoveryState()).toEqual({ active: true, reason: 'migration' });
+    expect(database.readOnly).toBe(true);
+  });
+
+  test('keeps migrated learner data in memory but read-only when browser storage cannot be written', () => {
+    const stored = clone(legacyUnversionedFixture);
+    global.localStorage.getItem.mockReturnValue(JSON.stringify(stored));
+    global.localStorage.setItem.mockImplementation(() => {
+      throw new Error('Storage unavailable');
+    });
+
+    require('../database');
+    const database = global.window.db;
+
+    expect(database.getRecoveryState()).toEqual({ active: true, reason: 'storage_write' });
+    expect(database.cachedData.schemaVersion).toBe(13);
+    expect(database.cachedData.attempts).toEqual(stored.attempts);
+    expect(database.readOnly).toBe(true);
   });
 
   test('verifies an anonymised realistic schema 12 dataset before and after migration', () => {

@@ -973,6 +973,33 @@ class App {
     const mainPanel = document.getElementById('main-panel');
     const navList = document.getElementById('nav-links-list');
     const skipLink = document.getElementById('skip-link');
+    const storageRecovery = window.db.getRecoveryState?.();
+
+    if (storageRecovery?.active) {
+      loginScreen.style.display = 'none';
+      appShell.style.display = 'flex';
+      if (skipLink) skipLink.setAttribute('href', '#storage-recovery');
+      if (navList) navList.innerHTML = '';
+      const userName = document.getElementById('user-display-name');
+      const userRole = document.getElementById('user-display-role');
+      if (userName) userName.textContent = 'Saved data recovery';
+      if (userRole) userRole.textContent = 'Read-only mode';
+      mainPanel.innerHTML = `
+        <section id="storage-recovery" class="card" role="alert" aria-live="assertive" aria-atomic="true" tabindex="-1" style="max-width:720px; margin:40px auto; padding:28px;">
+          <h1>StudySpice could not update this browser’s saved data</h1>
+          <p>Your saved work has not been deleted or replaced. StudySpice is in read-only mode so no further changes will be written over it.</p>
+          <p>${storageRecovery.reason === 'storage_write'
+            ? 'This browser could not save the safely updated data. Check that browser storage is available, then try again.'
+            : 'The saved data could not be recognised safely enough to update automatically.'}</p>
+          <button type="button" class="btn btn-primary" id="storage-recovery-reload-btn" style="min-height:44px;">Reload StudySpice</button>
+        </section>
+      `;
+      const recoveryPanel = mainPanel.querySelector('#storage-recovery');
+      if (recoveryPanel?.focus) recoveryPanel.focus();
+      const reloadButton = mainPanel.querySelector('#storage-recovery-reload-btn');
+      if (reloadButton) reloadButton.onclick = () => window.location.reload();
+      return;
+    }
 
     if (!this.currentUser) {
       if (skipLink) skipLink.setAttribute('href', '#login-screen');

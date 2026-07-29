@@ -108,4 +108,13 @@ describe('cross-page text readability', () => {
     expect(app).toContain('Scrollable data table');
     expect(app).toContain('class="table-container" tabindex="0" role="region" aria-label="Exam Reference Language syntax table"');
   });
+
+  test('storage migration failures have a focused, non-destructive recovery alert', () => {
+    expect(app).toContain('id="storage-recovery"');
+    expect(app).toContain('role="alert"');
+    expect(app).toContain('aria-live="assertive"');
+    expect(app).toContain('Your saved work has not been deleted or replaced.');
+    expect(app).toContain('id="storage-recovery-reload-btn"');
+    expect(app).toContain('recoveryPanel.focus()');
+  });
 });

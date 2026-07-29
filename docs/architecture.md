@@ -50,6 +50,15 @@ denominator evidence. Schema-12 and earlier schema-13 attempts remain unchanged
 in storage; calculations identify records without versioned activity metadata
 as reduced-precision legacy evidence.
 
+Recognisable browser datasets created before schema versioning are conservatively
+treated as the schema-12 baseline, then passed through the same non-destructive
+12-to-13 migration. Recognition requires several known StudySpice collections
+and at least one core collection; arbitrary browser JSON is never inferred to be
+StudySpice data. If recognition, migration or persistence fails, the original
+stored value is not overwritten. The data layer enters read-only recovery mode
+and the application presents an accessible reload/recovery screen rather than
+continuing to write against an incompatible shape.
+
 Checkpoint eligibility is governed by an explicit versioned rule registry rather
 than raw question counts. Each rule lists the distinct assessment focuses that
 must all be demonstrated. New evidence snapshots the applicable rule version;
