@@ -29,6 +29,7 @@ All notable changes to ExamLogic Computing are recorded here.
 - Made the selectable clean new-learner demo repeatable: each entry clears only its dedicated fixture evidence, badges, transient answers and namespaced drafts while preserving assignments, settings and other learners' records.
 - Labelled static teacher examples as demonstration narrative rather than calculated learner judgements.
 - Improved code-display typography, keyboard focus coverage and responsive pseudocode layout.
+- Added semantic quiz groups and labels, current-page navigation state, route/result focus management, live score announcements, scoped table headers and named recovery actions for unavailable content.
 
 ### Tests
 - Added whole-specification traceability, workload, supported-practice, retired-content and application-route validation.

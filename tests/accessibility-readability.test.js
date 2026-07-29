@@ -60,4 +60,31 @@ describe('cross-page text readability', () => {
     expect(html).toContain('id="login-screen"');
     expect(html).toContain('id="app-shell"');
   });
+
+  test('interactive routes expose current state, focus handling and result announcements', () => {
+    expect(app).toContain('aria-current="page"');
+    expect(app).toContain('focusMainContent(selector');
+    expect(app).toContain('id="quiz-result-summary" role="status" aria-live="polite" aria-atomic="true"');
+    expect(app).toContain('for="try-input-${item.id}"');
+    expect(app).toMatch(/renderStudentPractise\(document\.getElementById\('main-panel'\)\);\s*this\.focusMainContent\(\);/);
+    expect(app).toMatch(/renderStudentRecall\(document\.getElementById\('main-panel'\)\);\s*this\.focusMainContent\(\);/);
+  });
+
+  test('all generated table column headers declare their scope', () => {
+    expect(app).not.toMatch(/<th\b(?![^>]*\bscope="col")/);
+    expect(app).toContain('<th scope="col"');
+  });
+
+  test('missing-content states are announced and provide named recovery actions', () => {
+    [
+      'Learning content unavailable',
+      'Objective teaching unavailable',
+      'Recall questions unavailable',
+      'Challenge not found',
+      'Screen not found'
+    ].forEach(heading => expect(app).toContain(heading));
+    ['Back to Home', 'Back to Learn', 'Back to Programming'].forEach(action =>
+      expect(app).toContain(action)
+    );
+  });
 });

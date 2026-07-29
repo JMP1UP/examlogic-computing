@@ -945,6 +945,16 @@ class App {
   switchTab(tabId) {
     this.activeTab = tabId;
     this.render();
+    this.focusMainContent();
+  }
+
+  focusMainContent(selector = 'h1, h2') {
+    const mainPanel = document.getElementById('main-panel');
+    if (!mainPanel) return;
+    const target = mainPanel.querySelector?.(selector) || mainPanel;
+    if (!target?.focus) return;
+    if (target !== mainPanel && target.setAttribute) target.setAttribute('tabindex', '-1');
+    target.focus();
   }
 
   render() {
@@ -995,7 +1005,7 @@ class App {
       ];
       links.forEach(link => {
         const li = document.createElement('li');
-        li.innerHTML = `<a class="nav-link ${this.activeTab === link.id ? 'active' : ''}" href="#" data-tab="${link.id}">
+        li.innerHTML = `<a class="nav-link ${this.activeTab === link.id ? 'active' : ''}" href="#" data-tab="${link.id}" ${this.activeTab === link.id ? 'aria-current="page"' : ''}>
           <span style="display: inline-flex; align-items: center; margin-right: 12px; opacity: 0.85;">${link.icon}</span> ${link.label}
         </a>`;
         li.querySelector('a').onclick = (e) => { e.preventDefault(); this.closeMobileNav(); this.switchTab(link.id); };
@@ -1017,7 +1027,7 @@ class App {
       ];
       links.forEach(link => {
         const li = document.createElement('li');
-        li.innerHTML = `<a class="nav-link ${this.activeTab === link.id ? 'active' : ''}" href="#" data-tab="${link.id}">
+        li.innerHTML = `<a class="nav-link ${this.activeTab === link.id ? 'active' : ''}" href="#" data-tab="${link.id}" ${this.activeTab === link.id ? 'aria-current="page"' : ''}>
           <span style="display: inline-flex; align-items: center; margin-right: 12px; opacity: 0.85;">${link.icon}</span> ${link.label}
         </a>`;
         li.querySelector('a').onclick = (e) => { e.preventDefault(); this.closeMobileNav(); this.switchTab(link.id); };
@@ -1107,7 +1117,12 @@ class App {
         break;
 
       default:
-        mainPanel.innerHTML = `<h2>Screen not found</h2>`;
+        mainPanel.innerHTML = `<div class="card" role="status"><h1>Screen not found</h1><p>This route is unavailable. Return to the appropriate home screen and choose another task.</p><button class="btn btn-secondary" id="unknown-route-back-btn">Back to Home</button></div>`;
+        const unknownRouteBackButton = document.getElementById('unknown-route-back-btn');
+        if (unknownRouteBackButton) {
+          unknownRouteBackButton.onclick = () =>
+            this.switchTab(this.currentUser.role === 'student' ? 'stud-dashboard' : 'teach-overview');
+        }
     }
   }
 
@@ -1520,6 +1535,7 @@ class App {
       `;
       const backButton = panel.querySelector('#learn-empty-back-btn');
       if (backButton) backButton.onclick = () => this.switchTab('stud-dashboard');
+      this.focusMainContent();
       return;
     }
     const currentPaper = activeNote ? activeNote.paper : 'Paper 1';
@@ -1566,7 +1582,7 @@ class App {
               </div>
               <p style="line-height: 1.6; margin: 0 0 12px; font-weight: 500;">${this.escapeHTML(item.supportedPractice)}</p>
               <div class="form-group" style="margin-bottom: 12px;">
-                <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">Your Practice Response / Solution Draft:</label>
+                <label for="try-input-${item.id}" style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">Your Practice Response / Solution Draft:</label>
                 <textarea id="try-input-${item.id}" class="form-control try-practice-textarea" data-obj-id="${item.id}" rows="3" placeholder="Type your response or step-by-step working here..." style="font-size: 13.5px; line-height: 1.5;">${this.escapeHTML(savedPractice)}</textarea>
               </div>
               <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
@@ -1589,7 +1605,7 @@ class App {
           </article>
           `;
         }).join('')
-      : '<div class="card" role="status"><strong>Objective-level teaching is unavailable for this strand.</strong></div>';
+      : '<div class="card" role="status"><h2>Objective teaching unavailable</h2><p>This strand has no objective-level teaching to display. Return to the full Learn view and choose another section.</p><button class="btn btn-secondary" id="objective-empty-back-btn">Back to Learn</button></div>';
 
     // Group notes by paper
     const paper1Notes = theoryNotes.filter(n => n.paper === 'Paper 1');
@@ -1764,6 +1780,14 @@ class App {
         this.renderStudentLearn(panel);
       };
     });
+    const objectiveEmptyBackButton = panel.querySelector('#objective-empty-back-btn');
+    if (objectiveEmptyBackButton) {
+      objectiveEmptyBackButton.onclick = () => {
+        this.activeObjectiveId = 'all';
+        this.renderStudentLearn(panel);
+        this.focusMainContent();
+      };
+    }
 
     panel.querySelectorAll('.save-try-btn').forEach(btn => {
       btn.onclick = () => {
@@ -2374,11 +2398,13 @@ class App {
       this.numberSkillsSet = incorrectQuestions;
       this.numberSkillsAnswers = {};
       this.renderStudentPractise(document.getElementById('main-panel'));
+      this.focusMainContent();
     };
   }
 
   mainContentHTML(html) {
     document.getElementById('main-panel').innerHTML = html;
+    this.focusMainContent();
   }
 
   // ==================== SPACED RETRIEVAL QUIZ ====================
@@ -2410,14 +2436,17 @@ class App {
     
     if (this.quizQuestions.length === 0) {
       panel.innerHTML = `
-        <h2>Quiz Recall</h2>
-        <p>No questions found in this topic yet.</p>
-        <button class="btn btn-secondary" id="empty-quiz-back-btn">Back</button>
+        <div class="card" role="status">
+          <h1>Recall questions unavailable</h1>
+          <p>This topic has no recall questions to display. Return Home and choose a different learning task.</p>
+          <button class="btn btn-secondary" id="empty-quiz-back-btn">Back to Home</button>
+        </div>
       `;
-      const backBtn = document.getElementById('empty-quiz-back-btn');
+      const backBtn = panel.querySelector?.('#empty-quiz-back-btn') || document.getElementById('empty-quiz-back-btn');
       if (backBtn) {
         backBtn.onclick = () => this.switchTab('stud-dashboard');
       }
+      this.focusMainContent();
       return;
     }
 
@@ -2433,16 +2462,16 @@ class App {
         ${this.quizQuestions.map((q, idx) => {
           let fieldsHTML = '';
           if (q.type === 'mcq') {
-            fieldsHTML = q.options.map(opt => `
-              <label style="display: block; margin-bottom: 8px; font-size: 14px;">
-                <input type="radio" name="q_${idx}" value="${opt}" required> ${opt}
+            fieldsHTML = q.options.map((opt, optionIndex) => `
+              <label for="q-${idx}-option-${optionIndex}" style="display: block; margin-bottom: 8px; font-size: 14px;">
+                <input id="q-${idx}-option-${optionIndex}" type="radio" name="q_${idx}" value="${opt}" required> ${opt}
               </label>
             `).join('');
           } else if (q.type === 'matching') {
             fieldsHTML = q.items.map((item, iIndex) => `
               <div style="margin-bottom: 8px; font-size: 14px;">
-                <strong>${item.label}</strong> matches to:
-                <select name="q_${idx}_${iIndex}" class="form-control" style="max-width:300px; display:inline-block; margin-left:8px;" required>
+                <label for="q-${idx}-match-${iIndex}"><strong>${item.label}</strong> matches to:</label>
+                <select id="q-${idx}-match-${iIndex}" name="q_${idx}_${iIndex}" class="form-control" style="max-width:300px; display:inline-block; margin-left:8px;" required>
                   <option value="" disabled selected>Select...</option>
                   ${q.items.map(it => `<option value="${it.match}">${it.match}</option>`).join('')}
                 </select>
@@ -2451,15 +2480,15 @@ class App {
           } else if (q.type === 'missing_words') {
             fieldsHTML = Object.keys(q.blanks).map(key => `
               <div class="form-group" style="max-width:300px;">
-                <label>${key.toUpperCase()}:</label>
-                <input type="text" name="q_${idx}_${key}" class="form-control" required placeholder="Write term">
+                <label for="q-${idx}-blank-${key}">${key.toUpperCase()}:</label>
+                <input id="q-${idx}-blank-${key}" type="text" name="q_${idx}_${key}" class="form-control" required placeholder="Write term">
               </div>
             `).join('');
           } else if (q.type === 'sequencing') {
             fieldsHTML = q.sequence.map((step, sIdx) => `
               <div style="margin-bottom: 8px; font-size: 14px;">
-                Step ${sIdx + 1}:
-                <select name="q_${idx}_${sIdx}" class="form-control" style="max-width: 400px; display:inline-block; margin-left:8px;" required>
+                <label for="q-${idx}-step-${sIdx}">Step ${sIdx + 1}:</label>
+                <select id="q-${idx}-step-${sIdx}" name="q_${idx}_${sIdx}" class="form-control" style="max-width: 400px; display:inline-block; margin-left:8px;" required>
                   <option value="" disabled selected>Choose step...</option>
                   ${q.sequence.map(s => `<option value="${s}">${s}</option>`).join('')}
                 </select>
@@ -2468,11 +2497,10 @@ class App {
           }
 
           return `
-            <div class="card" style="margin-bottom: 24px;">
-              <h3 style="margin-bottom: 12px;">Question ${idx + 1}</h3>
-              <p style="font-size:15px; color: var(--text-main); font-weight:600; margin-bottom:16px;">${q.question}</p>
+            <fieldset class="card" style="margin-bottom: 24px;">
+              <legend style="font-size:15px; color: var(--text-main); font-weight:600; margin-bottom:16px;">Question ${idx + 1}: ${q.question}</legend>
               <div>${fieldsHTML}</div>
-            </div>
+            </fieldset>
           `;
         }).join('')}
         
@@ -2489,6 +2517,7 @@ class App {
         this.gradeQuiz();
       };
     }
+    this.focusMainContent();
   }
 
   gradeQuiz() {
@@ -2555,9 +2584,10 @@ class App {
     const newlySecuredMilestones = this.getNewlySecuredMilestones(milestoneStatesBefore);
 
     this.mainContentHTML(`
-      <div style="margin-bottom: 24px;">
+      <div id="quiz-result-summary" role="status" aria-live="polite" aria-atomic="true" style="margin-bottom: 24px;">
         <h1>Spaced quiz completed</h1>
         <p>Score: <strong style="color: var(--teal); font-size:20px;">${quizScore}</strong></p>
+        <p>${incorrectQuestions.length ? `${incorrectQuestions.length} question${incorrectQuestions.length === 1 ? '' : 's'} can now be retried with guidance.` : 'All questions were correct; no retry is needed.'}</p>
       </div>
       ${this.renderMilestoneAcknowledgement(newlySecuredMilestones)}
       <div>
@@ -2585,6 +2615,7 @@ class App {
     if (retryButton) retryButton.onclick = () => {
       this.quizRetryQuestions = incorrectQuestions;
       this.renderStudentRecall(document.getElementById('main-panel'));
+      this.focusMainContent();
     };
   }
 
@@ -2755,9 +2786,9 @@ class App {
             <table style="width:100%; border-collapse:collapse; text-align:center; font-size:14px;">
               <thead>
                 <tr style="background:rgba(45,156,145,0.1); border-bottom:2px solid var(--border-color);">
-                  <th style="padding:8px;">Input A</th>
-                  ${this.logicGateType !== 'NOT' ? `<th style="padding:8px;">Input B</th>` : ''}
-                  <th style="padding:8px;">Output Q</th>
+                  <th scope="col" style="padding:8px;">Input A</th>
+                  ${this.logicGateType !== 'NOT' ? `<th scope="col" style="padding:8px;">Input B</th>` : ''}
+                  <th scope="col" style="padding:8px;">Output Q</th>
                 </tr>
               </thead>
               <tbody>
@@ -4201,11 +4232,11 @@ class App {
             <table>
               <thead>
                 <tr>
-                  <th>Topic</th>
-                  <th>Type</th>
-                  <th>Score</th>
-                  <th>Evidence status</th>
-                  <th>Date</th>
+                  <th scope="col">Topic</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Score</th>
+                  <th scope="col">Evidence status</th>
+                  <th scope="col">Date</th>
                 </tr>
               </thead>
               <tbody>
@@ -4420,10 +4451,10 @@ class App {
                 <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
                   <thead>
                     <tr style="background-color: var(--bg-main); border-bottom: 1px solid var(--border-color);">
-                      <th style="padding: 12px 16px; font-weight: 600; color: var(--text-muted);">Student</th>
-                      <th style="padding: 12px 16px; font-weight: 600; color: var(--text-muted);">Reason</th>
-                      <th style="padding: 12px 16px; font-weight: 600; color: var(--text-muted);">Last activity</th>
-                      <th style="padding: 12px 16px; font-weight: 600; color: var(--text-muted); text-align: right;">Action</th>
+                      <th scope="col" style="padding: 12px 16px; font-weight: 600; color: var(--text-muted);">Student</th>
+                      <th scope="col" style="padding: 12px 16px; font-weight: 600; color: var(--text-muted);">Reason</th>
+                      <th scope="col" style="padding: 12px 16px; font-weight: 600; color: var(--text-muted);">Last activity</th>
+                      <th scope="col" style="padding: 12px 16px; font-weight: 600; color: var(--text-muted); text-align: right;">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -4612,13 +4643,13 @@ class App {
         <table>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Year Group</th>
-              <th>Homework Streak</th>
-              <th>Revision Priority</th>
-              <th>Exam transfer</th>
-              <th>Status</th>
+              <th scope="col">Name</th>
+              <th scope="col">Email</th>
+              <th scope="col">Year Group</th>
+              <th scope="col">Homework Streak</th>
+              <th scope="col">Revision Priority</th>
+              <th scope="col">Exam transfer</th>
+              <th scope="col">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -4972,7 +5003,7 @@ class App {
                       </div>
                     </div>
                     <details style="margin-top:10px;"><summary style="cursor:pointer; font-size:12px; font-weight:700;">View specification-point evidence</summary>
-                      <div class="table-container" style="margin-top:10px;"><table><thead><tr><th>Point</th><th>Terms</th><th>Diagnostic</th><th>Retrieval</th><th>Application</th><th>Exam transfer</th><th>Priority gaps</th></tr></thead><tbody>
+                      <div class="table-container" style="margin-top:10px;"><table><thead><tr><th scope="col">Point</th><th scope="col">Terms</th><th scope="col">Diagnostic</th><th scope="col">Retrieval</th><th scope="col">Application</th><th scope="col">Exam transfer</th><th scope="col">Priority gaps</th></tr></thead><tbody>
                         ${objectiveRows.map(item => `<tr><td><strong>${item.specificationPointId}</strong><div style="font-size:11px;">${this.escapeHTML(item.specificationPointName)}</div></td><td>${item.keyTermCount}</td><td>${item.diagnosticCount}</td><td>${item.retrievalCount}</td><td>${item.applicationCount}</td><td>${item.examTransferCount}</td><td style="font-size:11px;">${item.missing.slice(0, 3).join(', ')}${item.missing.length > 3 ? ` +${item.missing.length - 3}` : ''}</td></tr>`).join('')}
                       </tbody></table></div>
                     </details>
@@ -5015,12 +5046,12 @@ class App {
         <table>
           <thead>
             <tr>
-              <th>Student</th>
-              <th>Challenge</th>
-              <th>Status</th>
-              <th>Support Used</th>
-              <th>Reflective Response</th>
-              <th>Code Submitted</th>
+              <th scope="col">Student</th>
+              <th scope="col">Challenge</th>
+              <th scope="col">Status</th>
+              <th scope="col">Support Used</th>
+              <th scope="col">Reflective Response</th>
+              <th scope="col">Code Submitted</th>
             </tr>
           </thead>
           <tbody>
@@ -5466,9 +5497,9 @@ class App {
           <table style="width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left;">
             <thead>
               <tr style="background: rgba(45, 156, 145, 0.12); border-bottom: 2px solid var(--border-color);">
-                <th style="padding: 10px;">Construct</th>
-                <th style="padding: 10px;">Python 3 Syntax</th>
-                <th style="padding: 10px;">OCR Reference Language (ERL)</th>
+                <th scope="col" style="padding: 10px;">Construct</th>
+                <th scope="col" style="padding: 10px;">Python 3 Syntax</th>
+                <th scope="col" style="padding: 10px;">OCR Reference Language (ERL)</th>
               </tr>
             </thead>
             <tbody>

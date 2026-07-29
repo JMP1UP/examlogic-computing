@@ -425,7 +425,66 @@ describe('learning-record integrity', () => {
 
     expect(app.quizQuestions).toHaveLength(3);
     expect(panel.innerHTML).toContain('about 5 minutes');
+    expect((panel.innerHTML.match(/<fieldset/g) || [])).toHaveLength(3);
+    expect((panel.innerHTML.match(/<legend/g) || [])).toHaveLength(3);
+    expect(panel.innerHTML).toContain('for="q-0-option-0"');
+    expect(panel.innerHTML).toContain('id="q-0-option-0"');
     expect(database.addAttempt).not.toHaveBeenCalled();
+  });
+
+  test('structured recall controls have explicit labels without changing grading names', () => {
+    const { app, database } = loadApp();
+    database.getQuestions.mockReturnValue([
+      {
+        id: 'matching',
+        topicId: 'topic_fixture',
+        type: 'matching',
+        question: 'Match each item',
+        items: [{ label: 'A', match: 'B' }]
+      },
+      {
+        id: 'missing',
+        topicId: 'topic_fixture',
+        type: 'missing_words',
+        question: 'Complete each blank',
+        blanks: { word1: 'CPU' }
+      },
+      {
+        id: 'sequence',
+        topicId: 'topic_fixture',
+        type: 'sequencing',
+        question: 'Order each step',
+        sequence: ['Fetch', 'Decode']
+      }
+    ]);
+    database.getUnits.mockReturnValue([{
+      paper: 'Paper fixture',
+      topics: [{ id: 'topic_fixture', name: 'Synthetic topic' }]
+    }]);
+    app.activeTopicId = 'topic_fixture';
+    const panel = { innerHTML: '' };
+
+    app.renderStudentRecall(panel);
+
+    expect(panel.innerHTML).toContain('for="q-0-match-0"');
+    expect(panel.innerHTML).toContain('name="q_0_0"');
+    expect(panel.innerHTML).toContain('for="q-1-blank-word1"');
+    expect(panel.innerHTML).toContain('name="q_1_word1"');
+    expect(panel.innerHTML).toContain('for="q-2-step-0"');
+    expect(panel.innerHTML).toContain('name="q_2_0"');
+  });
+
+  test('focus management targets the new route heading', () => {
+    const { app, document } = loadApp();
+    const heading = { focus: jest.fn(), setAttribute: jest.fn() };
+    const mainPanel = { focus: jest.fn(), querySelector: jest.fn(() => heading) };
+    document.getElementById.mockImplementation(id => id === 'main-panel' ? mainPanel : null);
+
+    app.focusMainContent();
+
+    expect(heading.setAttribute).toHaveBeenCalledWith('tabindex', '-1');
+    expect(heading.focus).toHaveBeenCalled();
+    expect(mainPanel.focus).not.toHaveBeenCalled();
   });
 
   test('incorrect responses always retain a retry route', () => {

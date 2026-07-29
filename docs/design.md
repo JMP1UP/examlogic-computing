@@ -30,6 +30,7 @@ ExamLogic Computing strictly adheres to the **25Thirty Learning** design mode.
 3. **Revision Flashcards & Quizzes**: Multiple-choice and fill-in-the-blank revision exercises.
 4. **Student Progress Tracker**: Evidence-based summaries showing demonstrated results; page views, model answers, confidence and awaiting-review work do not create mastery.
 5. **Section Milestones**: A quiet evidence indicator (`Not started`, `Practice completed`, `Checkpoint secured`) derived from assessed question-level evidence. A checkpoint requires every focus in the section's current versioned rule; several question IDs assessing one focus cannot manufacture breadth. A section is labelled `Checkpoint unavailable` and excluded from the achievable total when it lacks a representative rule. There are no points, streaks, leaderboards or rewards for opening content.
+6. **Accessible interaction state**: Route changes and retry rerenders move focus to the new content heading. Quiz questions use semantic groups and explicitly labelled controls; results are announced separately from milestone acknowledgements. Navigation exposes the current page, tables declare column headers, and unavailable activities provide a named recovery route.
 
 ## 5. Copy Style & Voice
 - Direct, encouraging, clear language.
