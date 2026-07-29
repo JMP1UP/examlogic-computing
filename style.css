@@ -1599,6 +1599,7 @@ body.dark-mode .app-container[data-user-role="student"] {
 
 .app-container[data-user-role="student"] .student-route-header {
   position: relative;
+  margin-bottom: 24px;
   padding: 12px 16px 14px;
   border-left: 5px solid var(--student-cyan);
   border-bottom: 1px solid var(--student-rule);
@@ -1616,6 +1617,130 @@ body.dark-mode .app-container[data-user-role="student"] {
   pointer-events: none;
 }
 
+.app-container[data-user-role="student"] .student-route-header--quiet {
+  background: var(--student-sheet);
+}
+
+.app-container[data-user-role="student"] .student-route-header h1 {
+  margin: 6px 0;
+}
+
+.app-container[data-user-role="student"] .student-route-header p {
+  max-width: 72ch;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.app-container[data-user-role="student"] .student-instruction-route {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+}
+
+.app-container[data-user-role="student"] .student-instruction-route li {
+  min-height: 76px;
+  padding: 14px 16px;
+  border-right: 1px solid var(--border-color);
+}
+
+.app-container[data-user-role="student"] .student-instruction-route li:last-child {
+  border-right: 0;
+}
+
+.app-container[data-user-role="student"] .student-instruction-route strong,
+.app-container[data-user-role="student"] .student-instruction-route span {
+  display: block;
+}
+
+.app-container[data-user-role="student"] .student-instruction-route strong {
+  color: var(--teal-text);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.app-container[data-user-role="student"] .student-instruction-route span {
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.app-container[data-user-role="student"] .student-start-panel,
+.app-container[data-user-role="student"] .student-mini-brief {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 0 24px;
+  padding: 16px 18px;
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--student-acid);
+  background: var(--bg-card);
+}
+
+.app-container[data-user-role="student"] .student-start-panel p {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+}
+
+.app-container[data-user-role="student"] .student-mini-brief {
+  justify-content: flex-start;
+}
+
+.app-container[data-user-role="student"] .student-mini-brief strong {
+  flex: 0 0 auto;
+  color: var(--teal-text);
+}
+
+.app-container[data-user-role="student"] .student-contact-hours {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.app-container[data-user-role="student"] .progress-learn-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--teal-text);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.app-container[data-user-role="student"] .milestone-list-row .progress-learn-section {
+  justify-self: start;
+  margin-top: 8px;
+}
+
+.app-container[data-user-role="student"] .student-selected-control {
+  border-color: var(--student-cyan);
+  box-shadow: inset 0 -3px 0 var(--student-acid);
+  color: var(--text-main);
+}
+
+.app-container[data-user-role="student"] .student-more-routes {
+  margin: -12px 0 24px;
+}
+
+.app-container[data-user-role="student"] .student-more-routes summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.app-container[data-user-role="student"] .student-more-routes > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 12px;
+}
+
 .app-container[data-user-role="student"] .student-learn article.card {
   border-radius: 6px !important;
   box-shadow: none;
@@ -1625,7 +1750,7 @@ body.dark-mode .app-container[data-user-role="student"] {
 .app-container[data-user-role="student"] .student-assessment-brief,
 .app-container[data-user-role="student"] .milestone-summary-card {
   border-radius: 6px;
-  border-left: 4px solid var(--student-electric);
+  border-left: 4px solid var(--student-cyan);
   box-shadow: none;
 }
 
@@ -1727,6 +1852,26 @@ body.dark-mode .app-container[data-user-role="student"] {
 
   .student-earned-marks {
     grid-template-columns: 1fr;
+  }
+
+  .app-container[data-user-role="student"] .student-instruction-route {
+    grid-template-columns: 1fr;
+  }
+
+  .app-container[data-user-role="student"] .student-instruction-route li {
+    min-height: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .app-container[data-user-role="student"] .student-instruction-route li:last-child {
+    border-bottom: 0;
+  }
+
+  .app-container[data-user-role="student"] .student-start-panel,
+  .app-container[data-user-role="student"] .student-mini-brief {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
 

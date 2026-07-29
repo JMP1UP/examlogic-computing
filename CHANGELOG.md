@@ -5,6 +5,8 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Extended Cut Through across student routes with compact orientation, a recommended Learn start, an explicit Read → Try → Check sequence and bounded simulator tasks.
+- Added direct Learn actions from incomplete Progress sections without changing evidence or milestone calculations.
 - Rebuilt the student dashboard with the bolder Signal / Paste — Cut Through
   composition: split weekly brief, overlapping task sheet, continuous status strip,
   semantic checkpoint route and evidence-backed achievement marks.
@@ -21,6 +23,8 @@ All notable changes to ExamLogic Computing are recorded here.
 - Enabled checkpoints for 27 sufficiently assessed sections. Five under-assessed sections remain visible but excluded from the achievable denominator: `1.2.4c`, `1.5.2`, `2.1.1`, `2.2.2` and `2.2.PY`.
 
 ### Fixed
+- Replaced potentially misleading message identity and presence copy with the assigned teacher and factual monitoring hours.
+- Clarified formative exam-transfer status and practice-result storage.
 - Replaced low-contrast yellow and reused accent foregrounds with WCAG AA text tokens, and raised small interface labels to a readable minimum across student, teacher, public and dark-mode views.
 - Corrected out-of-scope TCP/IP layer-name assessment, misleading MAC permanence and storage-unit feedback, ERL terminator syntax, a variables/constants mapping, and inaccurate programming explanations.
 - Reclassified the old layer-name item as a preserved historical record and added an in-scope layers-benefit replacement.

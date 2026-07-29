@@ -279,6 +279,28 @@ describe('production browser startup', () => {
     expect(panel.innerHTML).toContain('A text file with 2,000 characters');
   });
 
+  test('unfiltered Learn has one primary start and opens that focused section', () => {
+    const context = loadProductionScripts();
+    const startButton = { getAttribute: () => '1.2.3' };
+    const panel = createPanel();
+    panel.querySelector = selector => selector === '#learn-recommended-start-btn' ? startButton : null;
+    context.app.activeTopicId = 'topic_1_3';
+    context.app.activeObjectiveId = 'all';
+    context.app.focusMainContent = jest.fn();
+
+    context.app.renderStudentLearn(panel);
+
+    expect(panel.innerHTML.match(/class="[^"]*\bbtn-primary\b/g)).toHaveLength(1);
+    expect(panel.innerHTML).toContain('Suggested starting point');
+    expect(panel.innerHTML).toContain('More ways to revise this topic');
+
+    startButton.onclick();
+
+    expect(context.app.activeObjectiveId).toBe('1.2.3');
+    expect(panel.innerHTML).toContain('Today’s section');
+    expect(panel.innerHTML).toContain('Recommended learning sequence');
+  });
+
   test('focused guided learning leads with one section and defers broad navigation', () => {
     const context = loadProductionScripts();
     const panel = createPanel();
@@ -291,7 +313,8 @@ describe('production browser startup', () => {
     expect(panel.innerHTML).toContain('about 10 minutes');
     expect(panel.innerHTML).toContain('Check this section (up to 3 questions)');
     expect(panel.innerHTML).toContain('View full topic');
-    expect(panel.innerHTML).toMatch(/display:none;[^"]*gap: 10px/);
+    expect(panel.innerHTML).not.toContain('More ways to revise this topic');
+    expect(panel.innerHTML).not.toContain('Copy notes and terms');
   });
 
   test('focused learning can return to the complete topic', () => {

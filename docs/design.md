@@ -79,3 +79,12 @@ confident identity. Teaching and assessment surfaces remain substantially calmer
 Signal / Paste explicitly excludes graffiti fonts, fake youth slang, hacker-terminal
 clichés, glitch effects, neon overload, points, streaks, leaderboards and decorative
 texture behind questions or teaching text.
+
+The student routes use three deliberate intensity levels:
+
+- Home may use the strongest composition around the single required task.
+- Route openings, results and Progress summaries use compact orientation headers.
+- Teaching, answer construction, retry feedback, messages and code remain visually quiet.
+- Every state presents one primary action and describes required, optional and evidence-producing work explicitly.
+- Learn uses a literal Read → Try → Check sequence; optional tools use bounded briefs and clear stopping points.
+- Student styling remains scoped beneath the authenticated student shell and must not alter teacher routes.
