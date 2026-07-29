@@ -13,14 +13,14 @@ describe('student Signal / Paste visual system', () => {
   });
 
   test('uses student-facing dashboard language without weakening evidence wording', () => {
-    expect(app).toContain('Latest checked work:');
     expect(app).toContain('Work that counts');
-    expect(app).toContain('checked ${demonstratedProgress.evidenceCount === 1');
-    expect(app).toContain('Your next checkpoint');
-    expect(app).toContain('Your study plan');
-    expect(app).toContain('Based on completed checks.');
-    expect(app).toContain('minutes required this week');
-    expect(app).toContain('Optional quick recall: up to 5 minutes.');
+    expect(app).toContain('Latest checked work');
+    expect(app).toContain('Connected checkpoint');
+    expect(app).toContain('student-primary-task');
+    expect(app).toContain('student-signal-strip');
+    expect(app).toContain('student-earned-marks');
+    expect(app).toContain('No checked work yet');
+    expect(app).toContain('>Achievements</h2>');
   });
 
   test('connects required work to a relevant checkpoint without changing milestone state', () => {
@@ -36,7 +36,20 @@ describe('student Signal / Paste visual system', () => {
     expect(css).toContain('body.dark-mode .app-container[data-user-role="student"]');
     expect(css).toContain('@media (max-width: 480px)');
     expect(css).toContain('pointer-events: none');
-    expect(css).toContain('font-size: 13px !important');
+    expect(css).toContain('.student-primary-task__action');
+    expect(css).toContain('.student-checkpoint-route');
+    expect(css).toContain('.student-brief__motif');
+    expect(css).toContain('--student-earned-bg: #175C56');
+    expect(css).toMatch(/#student-profile-dropdown\s*\{[\s\S]*?visibility: hidden/);
+    expect(css).toMatch(/#student-profile-dropdown\.show-dropdown\s*\{[\s\S]*?visibility: visible/);
     expect(css).not.toMatch(/glitch|flicker|animation:\s*scan/i);
+  });
+
+  test('exposes checkpoint and profile state without relying on colour', () => {
+    expect(app).toContain('aria-current="step"');
+    expect(app).toContain('<span class="sr-only"> completed</span>');
+    expect(app).toContain('aria-controls="student-profile-dropdown"');
+    expect(app).toContain("event.key !== 'Escape'");
+    expect(css).toContain('.student-checkpoint-route .is-current');
   });
 });

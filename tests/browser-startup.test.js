@@ -381,8 +381,8 @@ describe('production browser startup', () => {
 
     context.app.renderStudentDashboard(panel);
 
-    expect(panel.innerHTML).toContain('two required tasks (25 mins)');
-    expect(panel.innerHTML).toContain('one suggested 10-minute guided learning session');
+    expect(panel.innerHTML).toContain('two required tasks · 25 minutes');
+    expect(panel.innerHTML).toContain('Suggested guided learning · 10 minutes');
     expect(panel.innerHTML).not.toContain('3 of 5 test cases passed');
   });
 
@@ -416,7 +416,8 @@ describe('production browser startup', () => {
 
     context.app.currentUser.achievements = ['Binary Fluent'];
     context.app.renderStudentDashboard(panel);
-    expect(panel.innerHTML).toContain('1 achievement earned');
+    expect(panel.innerHTML).toContain('Earned through checked work');
+    expect(panel.innerHTML).toContain('Binary Fluent');
     context.app.switchTab = jest.fn();
     achievementsButton.onclick();
     expect(context.app.switchTab).toHaveBeenCalledWith('stud-progress');
