@@ -10,6 +10,10 @@ function loadApp() {
     saveData,
     addAttempt,
     getQuestions: jest.fn(() => []),
+    selectTopicRecallQuestions: jest.fn(questions => questions.slice(0, 3)),
+    selectObjectiveRecallQuestions: jest.fn((questions, objectiveId) =>
+      questions.filter(question => question.specificationPointId === objectiveId).slice(0, 3)
+    ),
     getUnits: jest.fn(() => []),
     getAttempts: jest.fn(() => []),
     getStudents: jest.fn(() => []),

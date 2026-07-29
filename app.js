@@ -2337,30 +2337,6 @@ class App {
   }
 
   // ==================== SPACED RETRIEVAL QUIZ ====================
-  selectObjectiveRecallQuestions(topicQuestions, objectiveId) {
-    const objectiveQuestions = topicQuestions.filter(question => question.specificationPointId === objectiveId);
-    const rule = (window.db.getCheckpointRules?.() || {})[objectiveId];
-    if (!rule) return objectiveQuestions.slice(0, 3);
-    const milestone = this.getSectionMilestones().find(item => item.id === objectiveId);
-    const demonstrated = new Set(milestone?.demonstratedFocuses || []);
-    const orderedFocuses = [
-      ...rule.requiredFocuses.filter(focus => !demonstrated.has(focus)),
-      ...rule.requiredFocuses.filter(focus => demonstrated.has(focus))
-    ];
-    const selected = [];
-    orderedFocuses.forEach(focus => {
-      if (selected.length >= 3) return;
-      const question = objectiveQuestions.find(candidate =>
-        candidate.assessmentFocus === focus && !selected.includes(candidate)
-      );
-      if (question) selected.push(question);
-    });
-    objectiveQuestions.forEach(question => {
-      if (selected.length < 3 && !selected.includes(question)) selected.push(question);
-    });
-    return selected.slice(0, 3);
-  }
-
   renderStudentRecall(panel) {
     const topicQuestions = window.db.getQuestions().filter(q => q.topicId === this.activeTopicId);
     const isRetry = Boolean(this.quizRetryQuestions);
@@ -2368,24 +2344,16 @@ class App {
     if (this.quizRetryQuestions) {
       selectedQuestions = this.quizRetryQuestions;
     } else if (this.activeObjectiveId && this.activeObjectiveId !== 'all') {
-      const matchingObjQuestions = this.selectObjectiveRecallQuestions(topicQuestions, this.activeObjectiveId);
+      const milestone = this.getSectionMilestones().find(item => item.id === this.activeObjectiveId);
+      const matchingObjQuestions = window.db.selectObjectiveRecallQuestions(
+        topicQuestions,
+        this.activeObjectiveId,
+        milestone?.demonstratedFocuses || []
+      );
       const otherQuestions = topicQuestions.filter(q => q.specificationPointId !== this.activeObjectiveId);
       selectedQuestions = [...matchingObjQuestions, ...otherQuestions].slice(0, 3);
     } else {
-      const specPoints = [...new Set(topicQuestions.map(q => q.specificationPointId).filter(Boolean))];
-      if (specPoints.length > 1) {
-        const picked = [];
-        specPoints.forEach(sp => {
-          const q = topicQuestions.find(candidate => candidate.specificationPointId === sp && !picked.includes(candidate));
-          if (q && picked.length < 3) picked.push(q);
-        });
-        topicQuestions.forEach(q => {
-          if (picked.length < 3 && !picked.includes(q)) picked.push(q);
-        });
-        selectedQuestions = picked.slice(0, 3);
-      } else {
-        selectedQuestions = topicQuestions.slice(0, 3);
-      }
+      selectedQuestions = window.db.selectTopicRecallQuestions(topicQuestions);
     }
     this.quizQuestions = selectedQuestions;
     this.quizRetryQuestions = null;

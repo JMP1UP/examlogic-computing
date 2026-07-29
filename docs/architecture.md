@@ -65,7 +65,10 @@ support safe version-2 grouping.
 Each question reachable in a five-minute recall set owns its `retryHint` in its
 source content object. Validation enforces structural safety and reviewed
 conceptual anchors, but human curriculum review remains responsible for judging
-the teaching quality of each hint.
+the teaching quality of each hint. Production and validation share the same
+topic- and objective-selection functions. Validation enumerates every objective
+route across all combinations of previously demonstrated checkpoint focuses, so
+newly reachable questions cannot bypass the hint contract.
 
 Definition keyword checks are formative records only. They do not contribute to
 completion, attainment or mastery until a trustworthy assessor is available.

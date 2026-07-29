@@ -82,24 +82,25 @@ describe('question-bank identifier and mapping integrity', () => {
   });
 
   test('requires answer-safe actionable guidance for every reachable recall question', () => {
-    const reachable = data.units.flatMap(unit =>
-      unit.topics.flatMap(topic => data.questions.filter(question => question.topicId === topic.id).slice(0, 3))
-    );
-    expect(reachable).toHaveLength(36);
-    expect(new Set(reachable.map(question => question.retryHint)).size).toBe(36);
+    const reachable = database.enumerateReachableRecallQuestions(data);
+    expect(reachable).toHaveLength(84);
+    expect(reachable.map(question => question.id)).toContain('q_1_1_a');
+    expect(new Set(reachable.map(question => question.retryHint)).size).toBe(84);
     reachable.forEach(question => {
       expect(Object.prototype.hasOwnProperty.call(question, 'retryHint')).toBe(true);
       expect(question.retryHint).toEqual(expect.any(String));
       expect(question.retryHint.length).toBeGreaterThanOrEqual(50);
       expect(question.retryHint).not.toMatch(/reread|read the question|try again|review the question wording|review this topic|check your notes|think carefully/i);
-      expect(question.retryHint.toLowerCase().replace(/[^a-z0-9]/g, ''))
-        .not.toContain(String(question.answer).toLowerCase().replace(/[^a-z0-9]/g, ''));
+      const hintWords = question.retryHint.toLowerCase().match(/[a-z0-9]+/g) || [];
+      const answerWords = String(question.answer).toLowerCase().match(/[a-z0-9]+/g) || [];
+      expect(answerWords.length === 1
+        ? hintWords.includes(answerWords[0])
+        : hintWords.join(' ').includes(answerWords.join(' '))).toBe(false);
     });
   });
 
   test('rejects missing, generic and answer-revealing retry guidance', () => {
-    const reachableId = data.units[0].topics[0].id;
-    const questionId = data.questions.find(question => question.topicId === reachableId).id;
+    const questionId = 'q_1_1_a';
     const malformed = JSON.parse(JSON.stringify(data));
     malformed.questions.find(question => question.id === questionId).retryHint = '';
     expect(() => database.validateQuestionBank(malformed)).toThrow(/actionable conceptual retry guidance/);
@@ -110,6 +111,26 @@ describe('question-bank identifier and mapping integrity', () => {
     const revealing = JSON.parse(JSON.stringify(data));
     const revealingQuestion = revealing.questions.find(question => question.id === questionId);
     revealingQuestion.retryHint = `The correct answer is ${revealingQuestion.answer}; select that option to continue.`;
+    expect(() => database.validateQuestionBank(revealing)).toThrow(/reveals its answer/);
+  });
+
+  test('rejects retry guidance that reveals a correct matching pair', () => {
+    const revealing = JSON.parse(JSON.stringify(data));
+    const question = revealing.questions.find(item => item.id === 'q_1_3_d');
+    question.retryHint = `Lossy Compression: ${question.items[0].match}`;
+
+    expect(() => database.validateQuestionBank(revealing)).toThrow(/reveals its answer/);
+  });
+
+  test('rejects retry guidance that reveals a missing-word value', () => {
+    const revealing = JSON.parse(JSON.stringify(data));
+    const question = revealing.questions.find(item => item.id === 'q_1_1_a');
+    question.type = 'missing_words';
+    delete question.answer;
+    delete question.options;
+    question.blanks = { word1: 'decoder', word2: 'signal' };
+    question.retryHint = 'The missing component is decoder; enter that exact word before considering the second blank.';
+
     expect(() => database.validateQuestionBank(revealing)).toThrow(/reveals its answer/);
   });
 
@@ -134,9 +155,7 @@ describe('question-bank identifier and mapping integrity', () => {
   });
 
   test('rejects copied questions, copied distractors and duplicate hints', () => {
-    const reachable = data.units.flatMap(unit =>
-      unit.topics.flatMap(topic => data.questions.filter(question => question.topicId === topic.id).slice(0, 3))
-    );
+    const reachable = database.enumerateReachableRecallQuestions(data);
 
     const copiedQuestion = JSON.parse(JSON.stringify(data));
     const questionCopy = copiedQuestion.questions.find(question => question.id === reachable[0].id);
@@ -153,5 +172,19 @@ describe('question-bank identifier and mapping integrity', () => {
     const second = duplicate.questions.find(question => question.id === reachable[1].id);
     second.retryHint = first.retryHint;
     expect(() => database.validateQuestionBank(duplicate)).toThrow(/reviewed conceptual focus|reuse identical retry guidance/);
+  });
+
+  test('uses the same topic and objective selectors that production exposes', () => {
+    data.units.forEach(unit => {
+      unit.topics.forEach(topic => {
+        const questions = data.questions.filter(question => question.topicId === topic.id && question.retired !== true);
+        expect(database.selectTopicRecallQuestions(questions)).toHaveLength(Math.min(3, questions.length));
+        topic.objectives.forEach(objective => {
+          const selected = database.selectObjectiveRecallQuestions(questions, objective.id);
+          expect(selected.length).toBeLessThanOrEqual(3);
+          expect(selected.every(question => question.specificationPointId === objective.id)).toBe(true);
+        });
+      });
+    });
   });
 });

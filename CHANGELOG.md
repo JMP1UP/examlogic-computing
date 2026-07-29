@@ -21,7 +21,7 @@ All notable changes to ExamLogic Computing are recorded here.
 - Assigned stable unique IDs to 13 duplicated retrieval questions, retaining each legacy ID on the renamed content for audit interpretation.
 - Consolidated the student Learn page to one curriculum-backed renderer with controlled missing-content states.
 - Preserved full question-set evidence across partial retries so reduced retry denominators cannot inflate mastery.
-- Added individually reviewed, question-owned retry guidance to every question reachable in a five-minute recall set.
+- Added individually reviewed, question-owned retry guidance to all 84 questions reachable through topic or objective five-minute recall routes.
 - Grouped version-2 retry snapshots by activity in Progress so only the latest counted evidence is presented while storage history remains intact.
 - Classified definition keyword checks as formative-only evidence and labelled reduced-precision historical evidence.
 - Added a recovery route for unavailable programming challenges and aligned earned-badge wording with stored awards.
@@ -36,7 +36,7 @@ All notable changes to ExamLogic Computing are recorded here.
 - Added realistic schema 12 migration fixtures and preservation assertions.
 - Added question-bank ID and specification-mapping validation.
 - Added Learn-renderer behaviour coverage for objective teaching, worked examples and every selectable topic.
-- Added question-level retry, Progress presentation, adversarial definition-response, recall-hint and clean-learner fixture coverage.
+- Added question-level retry, Progress presentation, adversarial definition-response, exhaustive recall-route/hint and clean-learner fixture coverage.
 - Added browser coverage for the selectable clean learner and integrity coverage for pseudocode awaiting review.
 
 ## [Unreleased] - 2026-07-24
