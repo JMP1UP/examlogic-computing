@@ -35,6 +35,8 @@
 - None.
 
 ## Recently completed
+- Staff security and integrity hotfix: safe rendering of stored content, authorised class scoping, accurate safeguarding status and independent written marking.
+- Student clarity follow-up: unique section controls, answer-safe pseudocode hints, honest workload/Progress wording and consistent Quick recall terminology.
 - Full J277 v3.1 traceability review, requirement-specific assessment metadata and core programming-technique coverage implemented.
 - Documentation and design system alignment to 25Thirty Learning mode.
 - Browser startup, local-data migration, question-ID integrity and canonical Learn-renderer blockers corrected.

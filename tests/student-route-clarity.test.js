@@ -94,6 +94,28 @@ describe('student route clarity behaviour', () => {
     expect(app.alert).toHaveBeenCalledWith(expect.stringContaining('No message was sent'));
   });
 
+  test('messages display stored markup as text rather than executable HTML', () => {
+    const { app, database } = loadApp();
+    app.currentUser = { id: 'student_1', classId: 'class_1', role: 'student' };
+    database.getStudents.mockReturnValue([app.currentUser]);
+    database.getClasses.mockReturnValue([{ id: 'class_1', teacherId: 'teacher_1' }]);
+    database.getCoordinators.mockReturnValue([{ id: 'teacher_1', name: 'Teacher <img src=x>' }]);
+    database.getMessages.mockReturnValue([{
+      senderId: 'teacher_1',
+      receiverId: 'student_1',
+      text: '<img src=x onerror="alert(1)"><script>alert(2)</script>',
+      timestamp: '2026-01-01'
+    }]);
+    const panel = { innerHTML: '', querySelector: jest.fn(() => null) };
+
+    app.renderStudentMessages(panel);
+
+    expect(panel.innerHTML).toContain('&lt;script&gt;alert(2)&lt;/script&gt;');
+    expect(panel.innerHTML).toContain('Teacher &lt;img src=x&gt;');
+    expect(panel.innerHTML).not.toContain('<script>');
+    expect(panel.innerHTML).not.toContain('<img src=x onerror=');
+  });
+
   test('Progress opens a focused Learn route only when teaching exists', () => {
     const { app, database } = loadApp();
     app.currentUser = { id: 'student_1', role: 'student', achievements: [] };
