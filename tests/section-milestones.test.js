@@ -139,7 +139,7 @@ describe('evidence-backed section milestones', () => {
 
     expect(panel.innerHTML).toContain('Start guided learning');
     expect(panel.innerHTML).toContain('Work that counts');
-    expect(panel.innerHTML).toContain('Connected checkpoint');
+    expect(panel.innerHTML).toContain('Your next section goal');
     expect(panel.innerHTML).toContain("This week's study status");
     expect(panel.innerHTML).toContain('Latest checked work');
     expect(panel.innerHTML).not.toContain('Assessed evidence');
@@ -155,12 +155,12 @@ describe('evidence-backed section milestones', () => {
 
     app.renderStudentProgress(panel);
 
-    expect(panel.innerHTML).toContain('0 of 27 available section checkpoints');
-    expect(panel.innerHTML).toContain('5 curriculum sections are shown below but excluded');
+    expect(panel.innerHTML).toContain('0 of 27 available section goals met');
+    expect(panel.innerHTML).toContain('5 curriculum sections are shown below but not included');
     expect((panel.innerHTML.match(/milestone-list-row/g) || [])).toHaveLength(32);
-    expect((panel.innerHTML.match(/Checkpoint unavailable/g) || [])).toHaveLength(5);
-    expect(panel.innerHTML).toContain('not yet enough suitable assessed questions');
-    expect(panel.innerHTML).toContain('Topic evidence summary');
+    expect((panel.innerHTML.match(/Progress check unavailable/g) || [])).toHaveLength(5);
+    expect(panel.innerHTML).toContain('not yet enough suitable checked questions');
+    expect(panel.innerHTML).toContain('Latest checked results by topic');
   });
 
   test('ignores page views, formative checks, awaiting-review work and reduced-precision history', () => {
@@ -198,11 +198,11 @@ describe('evidence-backed section milestones', () => {
 
     const panel = createPanel();
     app.renderStudentProgress(panel);
-    expect(panel.innerHTML).toContain('1 assessed activity');
+    expect(panel.innerHTML).toContain('1 checked activity');
     expect(panel.innerHTML).toContain('Latest ');
-    expect(panel.innerHTML).toContain('Demonstrated:');
-    expect(panel.innerHTML).toContain('Still to demonstrate:');
-    expect(panel.innerHTML).toContain('it is not a claim of permanent mastery');
+    expect(panel.innerHTML).toContain('Shown so far:');
+    expect(panel.innerHTML).toContain('Still to show:');
+    expect(panel.innerHTML).toContain('do not claim that you will remember it permanently');
   });
 
   test('shows assessed practice without claiming a checkpoint when evidence is weak', () => {
@@ -303,9 +303,9 @@ describe('evidence-backed section milestones', () => {
 
     const panel = createPanel();
     app.renderStudentProgress(panel);
-    expect(panel.innerHTML).toContain('Checkpoint secured');
-    expect(panel.innerHTML).toContain('Demonstrated: CPU Component Roles');
-    expect(panel.innerHTML).not.toContain('Still to demonstrate: CPU Component Roles');
+    expect(panel.innerHTML).toContain('Section goal met');
+    expect(panel.innerHTML).toContain('Shown so far: CPU Component Roles');
+    expect(panel.innerHTML).not.toContain('Still to show: CPU Component Roles');
   });
 
   test('does not reinterpret focus evidence under a missing or different rule version', () => {

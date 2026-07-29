@@ -15,7 +15,7 @@ describe('student Signal / Paste visual system', () => {
   test('uses student-facing dashboard language without weakening evidence wording', () => {
     expect(app).toContain('Work that counts');
     expect(app).toContain('Latest checked work');
-    expect(app).toContain('Connected checkpoint');
+    expect(app).toContain('Your next section goal');
     expect(app).toContain('student-primary-task');
     expect(app).toContain('student-signal-strip');
     expect(app).toContain('student-earned-marks');
@@ -26,8 +26,8 @@ describe('student Signal / Paste visual system', () => {
   test('connects required work to a relevant checkpoint without changing milestone state', () => {
     expect(app).toContain("activeTestPreps[0].specificationPointIds.includes(item.id)");
     expect(app).toContain('item.topicId === dominantAssignment.topicId');
-    expect(app).toContain('This test preparation builds towards this checkpoint.');
-    expect(app).toContain('This assignment builds towards this checkpoint.');
+    expect(app).toContain('This test preparation helps you work towards this section goal.');
+    expect(app).toContain('This assignment helps you work towards this section goal.');
     expect(app).not.toContain('id="milestone-next-btn"');
   });
 
@@ -59,11 +59,14 @@ describe('student Signal / Paste visual system', () => {
     expect(app).toContain('Suggested starting point');
     expect(app).toContain('student-mini-brief');
     expect(app).toContain('student-workshop-selector');
-    expect(app).toContain('Simulator use is optional and does not create assessed evidence.');
+    expect(app).toContain('Simulator use is optional and does not count towards Progress.');
     expect(css).toContain('.student-instruction-route');
     expect(css).toContain('.student-start-panel');
     expect(css).toContain('.student-route-header--quiet');
     expect(css).not.toContain('var(--student-electric)');
+    expect(app).toContain('student-topic-grid');
+    expect(css).toContain('.student-topic-grid .topic-pill-btn');
+    expect(app).not.toContain('overflow-x: auto; padding-bottom: 16px; margin-bottom: 24px;');
     expect(app).not.toContain('Revise & Assess');
     expect(app).not.toContain('Ongoing spaced practice');
   });

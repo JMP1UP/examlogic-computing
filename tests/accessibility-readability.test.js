@@ -78,7 +78,7 @@ describe('cross-page text readability', () => {
   test('missing-content states are announced and provide named recovery actions', () => {
     [
       'Learning content unavailable',
-      'Objective teaching unavailable',
+      'Learning content unavailable',
       'Recall questions unavailable',
       'Challenge not found',
       'Screen not found'

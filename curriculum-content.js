@@ -264,7 +264,7 @@
   {
     id: '2.3.2', officialSpecificationPointId: '2.3.2', sourcePages: '19',
     scope: 'Purpose and stages of testing, syntax/logic errors, test-data categories, test plans and refinement.',
-    explanation: 'Iterative testing checks modules during development; final or terminal testing checks the completed program. Syntax errors break language grammar and prevent translation or execution. Logic errors allow a program to run but produce unexpected results. Normal data should be accepted, boundary data is valid at an edge, invalid data has the correct type but should be rejected, and erroneous data has the wrong type. A test plan includes data, category, expected result and actual result.',
+    explanation: 'Iterative testing checks parts of a program during development; final or terminal testing checks the completed program. Syntax errors break language grammar and prevent translation or execution. Logic errors allow a program to run but produce an unexpected result. Normal data is typical valid data. Boundary data is valid data at an allowed limit. Invalid or erroneous data should be rejected; examples include a value outside the permitted range or data of the wrong type. A test plan includes the test data, its category, the expected result and the actual result.',
     workedExample: 'For an integer range 1 to 10: 5 is normal, 1 and 10 are boundaries, 11 is invalid, and “five” is erroneous.',
     keyTerms: ['iterative testing', 'terminal testing', 'normal data', 'boundary data', 'invalid data', 'erroneous data'],
     misconception: 'A value just outside a valid range is invalid, not boundary data.',
@@ -327,7 +327,7 @@
     '2.2.3': 'Complete linked examples for slicing and concatenation, file open/read/write/close, record fields, SELECT-FROM-WHERE, 1D and 2D arrays, functions, procedures, local/global scope and random numbers.',
     '2.2.PY': 'Progress through reading, tracing, completing, debugging, writing and testing Python. For each constructed program, state inputs, processes and outputs and run normal, boundary and invalid tests before refinement.',
     '2.2.ERL': 'Translate a short Python selection and loop into current OCR ERL using = for assignment, == for equality and endif. Trace it, complete a missing construct, then write and refine an equivalent solution.',
-    '2.3.1': 'Design a login input routine that anticipates misuse, authenticates identity and validates format. Refactor it into named subprograms with meaningful identifiers, indentation and comments that explain intent.',
+    '2.3.1': 'Design a login input routine that handles likely misuse, checks identity and checks the input format. Then refine it: split the code into clearly named subprograms, use meaningful names and indentation, and add comments that explain its purpose.',
     '2.3.2': 'Create a test plan with normal, both boundary, invalid and erroneous values. Record expected and actual results, identify syntax versus logic faults and refine the program before final testing.',
     '2.4.1': 'Complete AND, OR and NOT truth tables, then evaluate a two-gate diagram one intermediate output at a time. Finally draw or edit a diagram that matches a stated access-control rule.',
     '2.5.1': 'Compare high- and low-level languages for readability and hardware control. Choose a compiler or interpreter for development and distribution, linking translation timing, diagnostics and execution.',

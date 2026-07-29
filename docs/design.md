@@ -88,3 +88,17 @@ The student routes use three deliberate intensity levels:
 - Every state presents one primary action and describes required, optional and evidence-producing work explicitly.
 - Learn uses a literal Read → Try → Check sequence; optional tools use bounded briefs and clear stopping points.
 - Student styling remains scoped beneath the authenticated student shell and must not alter teacher routes.
+
+## 9. Pupil language
+
+Student instructions use direct verbs, short sentences and one clear next action.
+Required GCSE Computer Science and OCR exam terms remain visible, but unfamiliar
+terms are explained at first use. Product and engineering language such as
+“refactor”, “registry”, “objective-level” and raw stored activity identifiers must
+not appear in pupil-facing copy.
+
+Progress language states plainly whether work counts. A section goal may be shown
+as met only when the current evidence rule is satisfied; the interface must not
+describe that as permanent mastery or full curriculum completion. Keyword matching,
+self-checks and model answers are labelled as practice and must not imply an
+examiner-awarded mark.

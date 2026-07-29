@@ -32,9 +32,17 @@ describe('User experience regression checks', () => {
   });
 
   test('updated interface assets use the current cache-busting release', () => {
-    expect(html).toContain('style.css?v=1.6.13');
-    expect(html).toContain('database.js?v=1.6.13');
-    expect(html).toContain('app.js?v=1.6.13');
+    expect(html).toContain('style.css?v=1.6.15');
+    expect(html).toContain('curriculum-content.js?v=1.0.2');
+    expect(html).toContain('database.js?v=1.6.15');
+    expect(html).toContain('app.js?v=1.6.15');
+  });
+
+  test('describes recommendations without unsupported memory or scheduling claims', () => {
+    expect(html).toContain('Example optional recall activity');
+    expect(html).toContain('Each five-minute quiz has no more than three questions');
+    expect(html).not.toMatch(/spacing algorithms|map memory retention|starting to forget/i);
+    expect(html).not.toMatch(/compiler sandbox|teacher'?s console for overrides/i);
   });
 
   test('mobile navigation is collapsible and keyboard dismissible', () => {

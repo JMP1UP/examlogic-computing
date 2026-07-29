@@ -193,7 +193,7 @@ describe('objective-level curriculum coverage integrity', () => {
     expect(appSource).not.toContain("missing.push('retrieval alternatives')");
     expect(appSource).not.toContain("missing.push('spaced alternatives')");
     expect(appSource).toContain("completeEvidence ? 'Awaiting QA'");
-    expect(appSource).toContain('Learn each specification requirement');
+    expect(appSource).toContain('Choose a specification section');
     expect(appSource).toContain('item.officialSpecificationPointId');
   });
 });
