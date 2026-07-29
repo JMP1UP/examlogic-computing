@@ -154,6 +154,8 @@ describe('evidence-backed section milestones', () => {
     expect(panel.innerHTML).toContain('5 curriculum sections are shown below but excluded');
     expect((panel.innerHTML.match(/milestone-list-row/g) || [])).toHaveLength(32);
     expect((panel.innerHTML.match(/Checkpoint unavailable/g) || [])).toHaveLength(5);
+    expect(panel.innerHTML).toContain('not yet enough suitable assessed questions');
+    expect(panel.innerHTML).toContain('Topic evidence summary');
   });
 
   test('ignores page views, formative checks, awaiting-review work and reduced-precision history', () => {
@@ -186,6 +188,16 @@ describe('evidence-backed section milestones', () => {
       attemptedQuestionCount: 3,
       correctQuestionCount: 3
     });
+    expect(app.formatAssessmentFocus('two-dimensional-arrays')).toBe('Two Dimensional Arrays');
+    expect(app.formatAssessmentFocus('sql-querying')).toBe('SQL Querying');
+
+    const panel = createPanel();
+    app.renderStudentProgress(panel);
+    expect(panel.innerHTML).toContain('1 assessed activity');
+    expect(panel.innerHTML).toContain('Latest ');
+    expect(panel.innerHTML).toContain('Demonstrated:');
+    expect(panel.innerHTML).toContain('Still to demonstrate:');
+    expect(panel.innerHTML).toContain('it is not a claim of permanent mastery');
   });
 
   test('shows assessed practice without claiming a checkpoint when evidence is weak', () => {
@@ -283,6 +295,12 @@ describe('evidence-backed section milestones', () => {
       checkpointRuleVersion: 1,
       remainingFocuses: []
     });
+
+    const panel = createPanel();
+    app.renderStudentProgress(panel);
+    expect(panel.innerHTML).toContain('Checkpoint secured');
+    expect(panel.innerHTML).toContain('Demonstrated: CPU Component Roles');
+    expect(panel.innerHTML).not.toContain('Still to demonstrate: CPU Component Roles');
   });
 
   test('does not reinterpret focus evidence under a missing or different rule version', () => {

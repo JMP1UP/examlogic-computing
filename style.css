@@ -784,12 +784,24 @@ tr:hover td {
 
 .milestone-list-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  flex-direction: column;
+  gap: 5px;
   padding: 9px 0;
   border-bottom: 1px solid var(--border-color);
   font-size: 13px;
+}
+
+.milestone-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+}
+
+.milestone-evidence-detail {
+  color: var(--text-muted);
+  line-height: 1.45;
 }
 
 .milestone-acknowledgement {
@@ -806,7 +818,7 @@ tr:hover td {
 }
 
 @media (max-width: 640px) {
-  .milestone-list-row,
+  .milestone-list-heading,
   .milestone-summary-heading {
     align-items: flex-start;
     flex-direction: column;

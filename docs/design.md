@@ -33,6 +33,7 @@ ExamLogic Computing strictly adheres to the **25Thirty Learning** design mode.
 6. **Accessible interaction state**: Route changes and retry rerenders move focus to the new content heading. Quiz questions use semantic groups and explicitly labelled controls; results are announced separately from milestone acknowledgements. Navigation exposes the current page, tables declare column headers, and unavailable activities provide a named recovery route.
 7. **Focused learning state**: An objective-level Learn route leads with the selected section, its core teaching and one primary checkpoint action. Extended topic material remains available through a secondary `View full topic` action instead of competing with the immediate task.
 8. **Honest workload and reflection**: Dashboard workload combines every required assignment and active test-preparation plan. Confidence is an optional reflection after retry or continuation choices and never changes a score, checkpoint or route automatically.
+9. **Explainable evidence**: Progress uses `Strong latest evidence`, `Developing latest evidence` and `More practice needed` rather than claiming topic mastery. Section rows expose their evidence source count, latest date, demonstrated assessment focuses and remaining focuses; unavailable checkpoints state why they are excluded.
 
 ## 5. Copy Style & Voice
 - Direct, encouraging, clear language.

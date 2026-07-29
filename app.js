@@ -193,9 +193,9 @@ class App {
     const available = evidence.reduce((total, item) => total + item.score.available, 0);
     const ratio = available ? earned / available : null;
     const label = ratio === null ? 'No demonstrated evidence'
-      : ratio >= 0.85 ? 'Secure'
-        : ratio >= 0.6 ? 'Developing'
-          : 'Needs practice';
+      : ratio >= 0.85 ? 'Strong latest evidence'
+        : ratio >= 0.6 ? 'Developing latest evidence'
+          : 'More practice needed';
     const legacyEvidenceCount = evidence.filter(item => item.score.precision === 'legacy').length;
     return { earned, available, ratio, label, evidenceCount: evidence.length, legacyEvidenceCount };
   }
@@ -360,6 +360,16 @@ class App {
       ? '&#10003;'
       : milestone.state === 'practice_completed' ? '&#9679;' : milestone.state === 'not_available' ? '&mdash;' : '&#9675;';
     return `<span class="section-milestone ${badgeClass}" data-milestone-state="${milestone.state}"><span aria-hidden="true">${symbol}</span> ${milestone.label}</span>`;
+  }
+
+  formatAssessmentFocus(focus) {
+    const acronyms = new Set(['cpu', 'ram', 'rom', 'lan', 'wan', 'sql', 'ide', 'erl']);
+    return String(focus || '')
+      .split('-')
+      .map(word => acronyms.has(word.toLowerCase())
+        ? word.toUpperCase()
+        : word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 
   getNewlySecuredMilestones(previousStates, studentId = this.currentUser?.id) {
@@ -1405,7 +1415,7 @@ class App {
                   ${demonstratedProgress.ratio === null ? 'Complete an assessed activity to establish a performance baseline.' : `Current demonstrated score: ${demonstratedProgress.earned}/${demonstratedProgress.available} across the latest assessed activities.`}
                 </p>
                 <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin: 8px 0 0 0; padding-top: 8px; border-top: 1px dashed var(--border-color);">
-                  Page visits, model views and self-assessment are not counted as mastery.
+                  Page visits, model views and self-assessment are not counted as demonstrated progress.
                 </p>
               </div>
             </div>
@@ -2388,7 +2398,7 @@ class App {
     const attemptKind = this.numberSkillsEvidenceSet.hasOriginalAttempt ? 'retry' : 'original';
     this.numberSkillsEvidenceSet.hasOriginalAttempt = true;
     const evidenceAttempt = this.buildQuestionLevelAttempt(this.numberSkillsEvidenceSet, attemptKind);
-    const masteryScore = evidenceAttempt.score;
+    const assessedScore = evidenceAttempt.score;
     const milestoneStatesBefore = new Map(this.getSectionMilestones().map(item => [item.id, item.state]));
     window.db.addAttempt({
       studentId: this.currentUser.id,
@@ -2415,7 +2425,7 @@ class App {
     this.mainContentHTML(`
       <div style="margin-bottom: 24px;">
         <h1>Your practice results</h1>
-        <p>Mastery score: <strong style="color: var(--teal); font-size:20px;">${masteryScore}</strong></p>
+        <p>Assessed result: <strong style="color: var(--teal); font-size:20px;">${assessedScore}</strong></p>
         <p style="font-size: 14px;">Your results have been logged for adaptive spaced practice scaffolding.</p>
       </div>
       ${this.renderMilestoneAcknowledgement(newlySecuredMilestones)}
@@ -4209,15 +4219,32 @@ class App {
     const milestoneGroups = ['Paper 1', 'Paper 2'].map(paper => {
       const paperMilestones = milestones.filter(item => item.paper === paper);
       return `
-        <section class="milestone-paper-group" aria-labelledby="milestone-${paper.replace(' ', '-')}">
-          <h4 id="milestone-${paper.replace(' ', '-')}">${paper}</h4>
-          ${paperMilestones.map(item => `
+        <details class="milestone-paper-group">
+          <summary id="milestone-${paper.replace(' ', '-')}"><strong>${paper}</strong></summary>
+          ${paperMilestones.map(item => {
+            const demonstrated = item.demonstratedFocuses.map(focus => this.formatAssessmentFocus(focus));
+            const remaining = item.remainingFocuses.map(focus => this.formatAssessmentFocus(focus));
+            const evidenceSummary = item.available
+              ? [
+                item.evidenceSourceCount
+                  ? `${item.evidenceSourceCount} assessed ${item.evidenceSourceCount === 1 ? 'activity' : 'activities'}`
+                  : 'No assessed activity yet',
+                item.latestDate ? `Latest ${new Date(item.latestDate).toLocaleDateString()}` : null,
+                demonstrated.length ? `Demonstrated: ${demonstrated.join(', ')}` : null,
+                remaining.length ? `Still to demonstrate: ${remaining.join(', ')}` : null
+              ].filter(Boolean).join(' · ')
+              : 'There are not yet enough suitable assessed questions for this section, so it is excluded from the checkpoint total.';
+            return `
             <div class="milestone-list-row">
+              <div class="milestone-list-heading">
               <span><strong>${this.escapeHTML(item.id)}</strong> · ${this.escapeHTML(item.name)}</span>
               ${this.getMilestoneBadge(item)}
+              </div>
+              <span class="milestone-evidence-detail">${this.escapeHTML(evidenceSummary)}</span>
             </div>
-          `).join('')}
-        </section>
+          `;
+          }).join('')}
+        </details>
       `;
     }).join('');
     const topicMasteryHtml = window.db.getUnits().flatMap(unit => unit.topics).map(topic => {
@@ -4246,6 +4273,7 @@ class App {
         <div class="milestone-progress" role="progressbar" aria-label="Available section checkpoints secured" aria-valuemin="0" aria-valuemax="${availableMilestones.length}" aria-valuenow="${securedCount}">
           <span style="width:${milestonePercent}%"></span>
         </div>
+        <p class="milestone-empty-state">Assessed practice means you have completed marked work in a section. A checkpoint is secured only when that work covers every required assessment focus. Topic evidence describes your latest assessed work; it is not a claim of permanent mastery.</p>
         ${securedCount === 0 && practicedCount === 0 ? '<p class="milestone-empty-state">No section checkpoints yet. Complete an assessed activity to begin.</p>' : ''}
         ${unavailableCount ? `<p class="milestone-empty-state">${unavailableCount} curriculum ${unavailableCount === 1 ? 'section is' : 'sections are'} shown below but excluded from this total until enough mapped assessment is available.</p>` : ''}
         <details class="milestone-details">
@@ -4256,7 +4284,7 @@ class App {
 
       <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px;">
         <div>
-          <h2 style="font-size:20px; margin-bottom:16px;">Syllabus Mastery Map</h2>
+          <h2 style="font-size:20px; margin-bottom:16px;">Topic evidence summary</h2>
           
           <div class="card" style="margin-bottom:32px;">
             <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-weight:600;">

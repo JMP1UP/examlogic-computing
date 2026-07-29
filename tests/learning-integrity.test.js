@@ -73,6 +73,20 @@ describe('learning-record integrity', () => {
     });
   });
 
+  test('describes calculated topic evidence without claiming mastery', () => {
+    const { app } = loadApp();
+
+    expect(app.getDemonstratedMastery([
+      { evidenceVersion: 2, activityId: 'strong', type: 'spaced_theory', score: '3/3', contributesToMastery: true }
+    ]).label).toBe('Strong latest evidence');
+    expect(app.getDemonstratedMastery([
+      { evidenceVersion: 2, activityId: 'developing', type: 'spaced_theory', score: '2/3', contributesToMastery: true }
+    ]).label).toBe('Developing latest evidence');
+    expect(app.getDemonstratedMastery([
+      { evidenceVersion: 2, activityId: 'practice', type: 'spaced_theory', score: '1/3', contributesToMastery: true }
+    ]).label).toBe('More practice needed');
+  });
+
   test('keeps meaningful non-matching pseudocode available for review without awarding credit', () => {
     const { app } = loadApp();
     const reviewAttempt = {
