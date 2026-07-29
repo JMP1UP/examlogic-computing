@@ -76,6 +76,11 @@ completion, attainment or mastery until a trustworthy assessor is available.
 The selectable clean-learner demo uses a dedicated non-persisted persona ID, so
 it begins without seeded attempts, submissions, progress or badges. It is a
 product demonstration state rather than a new authentication or database role.
+Re-entry uses an ID-guarded reset that removes only that fixture's attempts,
+submissions and any stale fixture student record. Assignments, settings and
+other learners' records are not reset. Locally saved guided-practice drafts are
+namespaced by learner ID; clean-demo entry clears only its own namespace and
+also resets learner-owned in-memory answer and message state.
 
 Pseudocode uses strict normalised matching only to recognise the defined
 reference answer. A meaningful non-matching response is stored as

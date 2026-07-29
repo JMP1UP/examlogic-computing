@@ -26,7 +26,7 @@ All notable changes to ExamLogic Computing are recorded here.
 - Classified definition keyword checks as formative-only evidence and labelled reduced-precision historical evidence.
 - Added a recovery route for unavailable programming challenges and aligned earned-badge wording with stored awards.
 - Routed meaningful non-matching pseudocode submissions to teacher review without awarding completion or mastery.
-- Added a selectable clean new-learner demo with no seeded evidence, progress or badges.
+- Made the selectable clean new-learner demo repeatable: each entry clears only its dedicated fixture evidence, badges, transient answers and namespaced drafts while preserving assignments, settings and other learners' records.
 - Labelled static teacher examples as demonstration narrative rather than calculated learner judgements.
 - Improved code-display typography, keyboard focus coverage and responsive pseudocode layout.
 

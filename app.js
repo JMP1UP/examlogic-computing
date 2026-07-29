@@ -586,6 +586,7 @@ class App {
   }
 
   clearSession() {
+    this.resetLearnerSessionState();
     this.currentUser = null;
     localStorage.removeItem('studyspice_session');
     this.activeTab = 'stud-dashboard';
@@ -735,8 +736,12 @@ class App {
           this.saveSession(this.currentUser);
         }
       } else if (role === 'clean-student') {
+        const cleanDemoStudentId = 'student_release_fixture';
+        window.db.resetCleanDemoLearnerData(cleanDemoStudentId);
+        this.clearPracticeDrafts(cleanDemoStudentId);
+        this.resetLearnerSessionState();
         this.currentUser = {
-          id: 'student_release_fixture',
+          id: cleanDemoStudentId,
           name: 'New Learner',
           email: 'new-learner@example.invalid',
           role: 'student',
@@ -759,6 +764,44 @@ class App {
     } catch (err) {
       alert("Quick Login Error: " + err.message + "\nStack: " + err.stack);
     }
+  }
+
+  getPracticeDraftKey(objectiveId, studentId = this.currentUser?.id) {
+    if (!studentId || !objectiveId) return null;
+    return `try_practice_${studentId}_${objectiveId}`;
+  }
+
+  clearPracticeDrafts(studentId) {
+    if (studentId !== 'student_release_fixture' || typeof localStorage === 'undefined') return;
+    const prefix = `try_practice_${studentId}_`;
+    const keys = Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index))
+      .filter(key => key?.startsWith(prefix));
+    keys.forEach(key => localStorage.removeItem(key));
+  }
+
+  resetLearnerSessionState() {
+    this.activeTab = 'stud-dashboard';
+    this.activeObjectiveId = null;
+    this.quizQuestions = [];
+    this.quizRetryQuestions = null;
+    this.quizAnswers = {};
+    this.quizResults = null;
+    this.quizEvidenceSet = null;
+    this.numberSkillsSet = [];
+    this.numberSkillsAnswers = {};
+    this.numberSkillsCalculations = {};
+    this.numberSkillsEvidenceSet = null;
+    this.writtenAttempted = false;
+    this.writtenStage = 'plan';
+    this.scaffoldPoints = { p1: '', exp1: '', p2: '', exp2: '', apply: '' };
+    this.writtenResponseText = '';
+    this.examTransferStage = 'decode';
+    this.examTransferPlan = {};
+    this.examTransferResponse = '';
+    this.editorCode = '';
+    this.messageDraft = '';
+    this.selectedChatStudentId = null;
+    this.teacherMessageDraft = '';
   }
 
   async handleMicrosoftLogin(email, password) {
@@ -1498,7 +1541,8 @@ class App {
 
     const objectiveTeachingHtml = objectiveTeaching.length
       ? objectiveTeaching.map(item => {
-          const savedPractice = typeof localStorage !== 'undefined' ? (localStorage.getItem(`try_practice_${item.id}`) || '') : '';
+          const draftKey = this.getPracticeDraftKey(item.id);
+          const savedPractice = typeof localStorage !== 'undefined' && draftKey ? (localStorage.getItem(draftKey) || '') : '';
           const milestone = milestoneBySection.get(item.id);
           return `
           <article class="card" style="padding: 22px; border: 1px solid var(--border-color);" aria-labelledby="objective-${this.escapeHTML(item.id)}">
@@ -1729,7 +1773,8 @@ class App {
         if (textarea) {
           const val = textarea.value;
           if (typeof localStorage !== 'undefined') {
-            localStorage.setItem(`try_practice_${objId}`, val);
+            const draftKey = this.getPracticeDraftKey(objId);
+            if (draftKey) localStorage.setItem(draftKey, val);
           }
           if (statusDiv) {
             statusDiv.textContent = '✓ Response saved locally';

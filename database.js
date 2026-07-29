@@ -3860,6 +3860,17 @@ class LocalDB {
   getAuditLogs() { return this.cachedData.auditLogs; }
   getSettings() { return this.cachedData.settings; }
 
+  resetCleanDemoLearnerData(studentId) {
+    if (studentId !== 'student_release_fixture') {
+      throw new Error('Clean-demo reset is restricted to the dedicated fixture learner.');
+    }
+    this.cachedData.attempts = this.cachedData.attempts.filter(item => item.studentId !== studentId);
+    this.cachedData.programmingSubmissions = this.cachedData.programmingSubmissions.filter(item => item.studentId !== studentId);
+    this.cachedData.writtenSubmissions = this.cachedData.writtenSubmissions.filter(item => item.studentId !== studentId);
+    this.cachedData.students = this.cachedData.students.filter(item => item.id !== studentId);
+    this.saveData();
+  }
+
   // Modifiers
   updateStudent(studentId, updates) {
     const student = this.cachedData.students.find(s => s.id === studentId);
