@@ -811,6 +811,7 @@ tr:hover td {
     align-items: flex-start;
     flex-direction: column;
   }
+}
 /*
  * Readability guardrails
  *
@@ -1147,5 +1148,98 @@ body.dark-mode .badge-primary {
   .app-body {
     flex-direction: column;
     overflow: visible;
+  }
+}
+
+/* Narrow and zoomed layouts */
+.quiz-confidence-options {
+  flex-wrap: wrap;
+}
+
+.quiz-confidence-btn {
+  flex: 1 1 12rem;
+  white-space: normal;
+}
+
+.table-container:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  #main-panel [style*="grid-template-columns"]:not(.binary-bit-grid) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  #main-panel [style*="display: grid"] > *,
+  #main-panel [style*="display:grid"] > * {
+    min-width: 0;
+  }
+
+  #main-panel [style*="justify-content: space-between"],
+  #main-panel [style*="justify-content:space-between"],
+  .chat-input-area {
+    flex-wrap: wrap;
+  }
+
+  .chat-input-area input,
+  .chat-input-area textarea {
+    flex: 1 1 12rem;
+    min-width: 0;
+  }
+
+  #main-panel .btn[style*="min-width"] {
+    min-width: 0 !important;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-main,
+  .landing-section,
+  .hero-section {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  #main-panel [style*="minmax(280px"],
+  #main-panel [style*="minmax(300px"],
+  [style*="minmax(280px"],
+  [style*="minmax(300px"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  #main-panel .binary-bit-grid {
+    grid-template-columns: repeat(4, minmax(44px, 1fr)) !important;
+    width: 100%;
+  }
+
+  #main-panel .binary-bit-grid .binary-separator {
+    grid-column: 1 / -1;
+    min-height: 6px;
+  }
+
+  .quiz-confidence-btn {
+    flex-basis: 100%;
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .card:hover,
+  .modal,
+  .modal-content,
+  .dropdown-menu,
+  #student-profile-dropdown {
+    transform: none !important;
   }
 }

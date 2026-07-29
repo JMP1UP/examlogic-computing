@@ -223,6 +223,113 @@ describe('production browser startup', () => {
     expect(panel.innerHTML).toContain('A text file with 2,000 characters');
   });
 
+  test('focused guided learning leads with one section and defers broad navigation', () => {
+    const context = loadProductionScripts();
+    const panel = createPanel();
+    context.app.activeTopicId = 'topic_1_1';
+    context.app.activeObjectiveId = '1.1.1';
+
+    context.app.renderStudentLearn(panel);
+
+    expect(panel.innerHTML).toContain('Today’s section');
+    expect(panel.innerHTML).toContain('about 10 minutes');
+    expect(panel.innerHTML).toContain('Check this section (up to 3 questions)');
+    expect(panel.innerHTML).toContain('View full topic');
+    expect(panel.innerHTML).toMatch(/display:none;[^"]*gap: 10px/);
+  });
+
+  test('focused learning can return to the complete topic', () => {
+    const context = loadProductionScripts();
+    const viewFullTopicButton = {};
+    const panel = createPanel();
+    panel.querySelector = selector => selector === '#view-full-topic-btn' ? viewFullTopicButton : null;
+    context.app.activeTopicId = 'topic_1_1';
+    context.app.activeObjectiveId = '1.1.1';
+    context.app.focusMainContent = jest.fn();
+
+    context.app.renderStudentLearn(panel);
+    viewFullTopicButton.onclick();
+
+    expect(context.app.activeObjectiveId).toBe('all');
+    expect(panel.innerHTML).toContain('Learn each specification requirement');
+    expect(context.app.focusMainContent).toHaveBeenCalled();
+  });
+
+  test('completed recall binds every explicit next action without a runtime error', async () => {
+    const context = loadProductionScripts();
+    context.app.render = jest.fn();
+    await context.app.quickLogin('clean-student');
+    const mainPanel = { innerHTML: '', querySelector: () => null };
+    const continueButton = {};
+    const transferButton = {};
+    const retryButton = {};
+    const elements = {
+      'main-panel': mainPanel,
+      'quiz-continue-home-btn': continueButton,
+      'quiz-exam-transfer-btn': transferButton,
+      'quiz-retry-btn': retryButton
+    };
+    context.document.getElementById = id => elements[id] || null;
+    context.document.querySelector = () => ({ value: 'incorrect' });
+    context.document.querySelectorAll = () => [];
+    context.app.focusMainContent = jest.fn();
+    context.app.switchTab = jest.fn();
+    context.app.renderStudentRecall = jest.fn();
+    context.app.activeTopicId = 'topic_1_1';
+    context.app.quizQuestions = [{
+      id: 'retry_fixture',
+      type: 'mcq',
+      question: 'Which answer is correct?',
+      options: ['incorrect', 'correct'],
+      answer: 'correct',
+      explanation: 'Explanation',
+      retryHint: 'Compare the role of each option.'
+    }];
+    context.app.quizEvidenceSet = context.app.createEvidenceSet(
+      'spaced_theory',
+      context.app.activeTopicId,
+      context.app.quizQuestions
+    );
+
+    expect(() => context.app.gradeQuiz()).not.toThrow();
+    retryButton.onclick();
+    expect(context.app.renderStudentRecall).toHaveBeenCalledWith(mainPanel);
+    continueButton.onclick();
+    expect(context.app.switchTab).toHaveBeenCalledWith('stud-dashboard');
+    transferButton.onclick();
+    expect(context.app.switchTab).toHaveBeenCalledWith('stud-exam-transfer');
+  });
+
+  test('dashboard combines required workloads and aligns the suggested clean-learner duration', async () => {
+    const context = loadProductionScripts();
+    context.app.render = jest.fn();
+    await context.app.quickLogin('clean-student');
+    context.db.cachedData.assignments = [{
+      id: 'required_fixture',
+      title: 'Required check',
+      topicId: 'topic_1_1',
+      status: 'Required',
+      estimatedMinutes: 10
+    }];
+    context.db.cachedData.testPreps = [{
+      id: 'prep_fixture',
+      title: 'Test preparation',
+      status: 'Active',
+      weeklyMinutes: 15,
+      sessionMinutes: 10,
+      specificationPointIds: ['1.1.1'],
+      testDate: '2026-08-01'
+    }];
+    context.db.cachedData.supportSessions = [];
+    const panel = createPanel();
+
+    context.app.renderStudentDashboard(panel);
+
+    expect(panel.innerHTML).toContain('two required tasks (25 mins)');
+    expect(panel.innerHTML).toContain('one suggested 10-minute guided learning session');
+    expect(panel.innerHTML).not.toContain('3 of 5 test cases passed');
+  });
+
   test('renders every selectable topic and controls a missing-strand state', () => {
     const context = loadProductionScripts();
     const topicIds = context.db.getUnits()

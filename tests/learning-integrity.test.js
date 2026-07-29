@@ -487,6 +487,18 @@ describe('learning-record integrity', () => {
     expect(mainPanel.focus).not.toHaveBeenCalled();
   });
 
+  test('quiz results prioritise retry and keep confidence separate from navigation', () => {
+    const source = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+    const retryIndex = source.indexOf('id="quiz-retry-btn"');
+    const confidenceIndex = source.indexOf('Optional confidence reflection');
+
+    expect(retryIndex).toBeGreaterThan(-1);
+    expect(confidenceIndex).toBeGreaterThan(retryIndex);
+    expect(source).toContain('Confidence saved; your score is unchanged.');
+    expect(source).toContain('id="quiz-continue-home-btn"');
+    expect(source).not.toContain('id="exam-transfer-start-btn"');
+  });
+
   test('incorrect responses always retain a retry route', () => {
     const { app } = loadApp();
     const questions = [{ id: 'q1' }, { id: 'q2' }, { id: 'q3' }];

@@ -1124,6 +1124,17 @@ class App {
             this.switchTab(this.currentUser.role === 'student' ? 'stud-dashboard' : 'teach-overview');
         }
     }
+    this.enhanceScrollableRegions(mainPanel);
+  }
+
+  enhanceScrollableRegions(panel) {
+    panel?.querySelectorAll?.('.table-container').forEach((container, index) => {
+      container.setAttribute('tabindex', '0');
+      container.setAttribute('role', 'region');
+      if (!container.getAttribute('aria-label') && !container.getAttribute('aria-labelledby')) {
+        container.setAttribute('aria-label', `Scrollable data table ${index + 1}`);
+      }
+    });
   }
 
   getObjectiveCoverage() {
@@ -1234,16 +1245,18 @@ class App {
       .filter(a => a.status === 'Required' || a.status === 'Overdue')
       .reduce((total, a) => total + Number(a.estimatedMinutes || 10), 0);
     const testPrepMinutes = activeTestPreps.reduce((total, p) => total + Number(p.weeklyMinutes || 0), 0);
-    const requiredCount = activeTestPreps.length ? activeTestPreps.length : assignmentRequiredCount;
-    const requiredMinutes = activeTestPreps.length ? testPrepMinutes : assignmentRequiredMinutes;
+    const requiredCount = activeTestPreps.length + assignmentRequiredCount;
+    const requiredMinutes = testPrepMinutes + assignmentRequiredMinutes;
     
     const numberWords = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
     const requiredCountWord = numberWords[requiredCount] || requiredCount;
-    const greetingText = `You have ${requiredCountWord} required ${requiredCount === 1 ? 'task' : 'tasks'} (${requiredMinutes} mins) and one optional 5-minute activity.`;
-
     const greeting = this.getTimeBasedGreeting();
     const shortName = student.name.split(' ')[0];
     const hasDemonstratedBaseline = demonstratedProgress.ratio !== null;
+    const suggestedSession = hasDemonstratedBaseline
+      ? 'one optional 5-minute recall activity'
+      : 'one suggested 10-minute guided learning session';
+    const greetingText = `You have ${requiredCountWord} required ${requiredCount === 1 ? 'task' : 'tasks'} (${requiredMinutes} mins) and ${suggestedSession}.`;
 
     // Compute dominant task for "Do this now"
     let dominantTaskHtml = '';
@@ -1272,7 +1285,7 @@ class App {
         let naturalDate = this.formatDueDate(a.dueDate);
         let borderStyle = isOverdue ? 'border: 1.5px solid var(--coral); border-left: 5px solid var(--coral);' : 'border-left: 5px solid var(--teal);';
         let btnText = isProgramming ? 'Start programming' : 'Start check';
-        let progressStateText = isProgramming ? 'In progress — 3 of 5 test cases passed' : 'Not started';
+        let progressStateText = 'Not started';
         
         dominantTaskHtml = `
           <div class="card card-action" style="margin-bottom:24px; ${borderStyle} padding: 24px;">
@@ -1412,7 +1425,7 @@ class App {
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
           <div>
             <h1 style="margin-bottom: 6px; font-weight: 700;">${greeting}, ${shortName}</h1>
-            <p style="font-size:16px; color: var(--text-muted); margin: 0;">Ready for a quick Computing session?</p>
+            <p style="font-size:16px; color: var(--text-muted); margin: 0;">${greetingText}</p>
             <div style="margin-top: 8px; font-size: 14px; color: var(--text-muted); font-weight: 500;">
               Demonstrated performance: <strong style="color: var(--teal);">${demonstratedProgress.label}</strong>
             </div>
@@ -1463,7 +1476,9 @@ class App {
             <div class="card" style="margin-bottom:20px; padding:16px 20px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
               <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Computing workload</h3>
               <div style="font-weight: 700; font-size: 18px; color: var(--teal);">${requiredMinutes} minutes required</div>
-              <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">Optional retrieval: up to 5 minutes.</div>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">${hasDemonstratedBaseline
+                ? 'Optional retrieval: up to 5 minutes.'
+                : 'Suggested guided learning: 10 minutes.'}</div>
             </div>
           </div>
         </div>
@@ -1551,6 +1566,7 @@ class App {
     const objectiveTeaching = isFilteredObjective
       ? allObjectiveTeaching.filter(o => o.id === this.activeObjectiveId)
       : allObjectiveTeaching;
+    const focusedObjectiveTeaching = isFilteredObjective ? objectiveTeaching[0] : null;
 
     const totalCoreMins = allObjectiveTeaching.reduce((acc, item) => acc + (item.workload?.coreLearningMinutes || 10), 0);
     const milestoneBySection = new Map(this.getSectionMilestones().map(milestone => [milestone.id, milestone]));
@@ -1588,7 +1604,7 @@ class App {
               <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
                 <button type="button" class="btn btn-secondary btn-sm save-try-btn" data-obj-id="${item.id}">💾 Save response</button>
                 <button type="button" class="btn btn-secondary btn-sm toggle-guide-btn" data-obj-id="${item.id}">💡 Check worked solution</button>
-                <button type="button" class="btn btn-primary btn-sm goto-review-btn" data-spec-id="${item.id}">✍️ Practise in written answers &rarr;</button>
+                <button type="button" class="btn ${isFilteredObjective ? 'btn-secondary' : 'btn-primary'} btn-sm goto-review-btn" data-spec-id="${item.id}">✍️ ${isFilteredObjective ? 'Optional: practise a written answer' : 'Practise in written answers &rarr;'}</button>
               </div>
               <div id="try-guide-${item.id}" class="card" style="display: none; margin-top: 12px; padding: 14px; background: rgba(45, 156, 145, 0.08); border-left: 4px solid var(--teal);">
                 <strong style="color: var(--teal); font-size: 13px;">Guided Solution Reference:</strong>
@@ -1617,11 +1633,13 @@ class App {
         <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
           <div>
             <span class="badge badge-primary">GCSE Computer Science Specification &middot; 25Thirty Learning</span>
-            <h1 style="font-size: 28px; font-weight: 700; margin: 8px 0 4px 0;">Learn and review theory</h1>
-            <p style="font-size: 15px; color: var(--text-muted); margin: 0;">Comprehensive, specification-aligned revision guides, worked examples, and examiner tips.</p>
+            <h1 style="font-size: 28px; font-weight: 700; margin: 8px 0 4px 0;">${isFilteredObjective ? 'Today’s section' : 'Learn and review theory'}</h1>
+            <p style="font-size: 15px; color: var(--text-muted); margin: 0;">${isFilteredObjective
+              ? `${this.escapeHTML(focusedObjectiveTeaching?.scope || '')} · about ${focusedObjectiveTeaching?.workload?.coreLearningMinutes || 10} minutes`
+              : 'Comprehensive, specification-aligned revision guides, worked examples, and examiner tips.'}</p>
           </div>
           <!-- Quick Quiz & Copy Note CTAs -->
-          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <div style="${isFilteredObjective ? 'display:none;' : 'display:flex;'} gap: 10px; align-items: center; flex-wrap: wrap;">
             <button class="btn btn-secondary copy-theory-summary-btn" style="min-height: 44px; padding: 0 16px; font-weight: 600;">
               📋 Copy notes and terms
             </button>
@@ -1632,7 +1650,7 @@ class App {
         </div>
 
         <!-- Paper Selector Tabs -->
-        <div style="display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 12px;">
+        <div style="${isFilteredObjective ? 'display:none;' : 'display:flex;'} gap: 12px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 12px;">
           <button class="btn ${currentPaper === 'Paper 1' ? 'btn-primary' : 'btn-secondary'} paper-tab-btn" data-paper="Paper 1" style="border-radius: 8px; font-weight: 600;">
             💻 Paper 1: Computer Systems
           </button>
@@ -1642,7 +1660,7 @@ class App {
         </div>
 
         <!-- Topic Pills Navigation -->
-        <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 16px; margin-bottom: 24px;">
+        <div style="${isFilteredObjective ? 'display:none;' : 'display:flex;'} gap: 8px; overflow-x: auto; padding-bottom: 16px; margin-bottom: 24px;">
           ${(currentPaper === 'Paper 1' ? paper1Notes : paper2Notes).map(note => `
             <button class="btn ${note.topicId === activeNote.topicId ? 'btn-primary' : 'btn-secondary'} topic-pill-btn" data-topic-id="${note.topicId}" style="white-space: nowrap; font-size: 13px; padding: 6px 14px; border-radius: 20px; font-weight: 600;">
               ${note.code} ${note.title}
@@ -1651,7 +1669,7 @@ class App {
         </div>
 
         <!-- Active Topic Details Header -->
-        <div class="card" style="padding: 24px; margin-bottom: 24px; border-left: 5px solid var(--teal); background-color: var(--bg-card);">
+        <div class="card" style="${isFilteredObjective ? 'display:none;' : ''} padding: 24px; margin-bottom: 24px; border-left: 5px solid var(--teal); background-color: var(--bg-card);">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <span class="badge badge-primary" style="font-size: 13px;">${activeNote.code} &middot; ${activeNote.paper}</span>
@@ -1677,7 +1695,7 @@ class App {
         <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
             <h2 style="font-size: 21px; margin: 0;">Learn each specification requirement</h2>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+            <div style="${isFilteredObjective ? 'display:none;' : 'display:flex;'} gap: 6px; flex-wrap: wrap; align-items: center;">
               <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">View:</span>
               <button class="btn ${(!this.activeObjectiveId || this.activeObjectiveId === 'all') ? 'btn-primary' : 'btn-secondary'} objective-filter-btn" data-obj-id="all" style="padding: 4px 12px; font-size: 12px; border-radius: 14px;">
                 All (${allObjectiveTeaching.length})
@@ -1690,11 +1708,17 @@ class App {
             </div>
           </div>
           ${objectiveTeachingHtml}
+          ${isFilteredObjective ? `
+            <div style="display:flex; flex-wrap:wrap; gap:10px;">
+              <button class="btn btn-primary focused-objective-quiz-btn" data-topic-id="${activeNote.topicId}">Check this section (up to 3 questions)</button>
+              <button class="btn btn-secondary" id="view-full-topic-btn">View full topic</button>
+            </div>
+          ` : ''}
         </div>
 
         <!-- Extended topic notes -->
-        <h2 style="font-size: 21px; margin: 0 0 16px;">Extended topic notes</h2>
-        <div style="display: flex; flex-direction: column; gap: 24px; margin-bottom: 32px;">
+        <h2 style="${isFilteredObjective ? 'display:none;' : ''} font-size: 21px; margin: 0 0 16px;">Extended topic notes</h2>
+        <div style="${isFilteredObjective ? 'display:none;' : 'display:flex;'} flex-direction: column; gap: 24px; margin-bottom: 32px;">
           ${activeNote.sections.map(section => `
             <div class="card" style="padding: 24px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
               <h3 style="font-size: 19px; font-weight: 700; margin-bottom: 14px; color: var(--text-main); border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">
@@ -1722,7 +1746,7 @@ class App {
         </div>
 
         <!-- Key Terms & Exam Traps Bottom Cards -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+        <div style="${isFilteredObjective ? 'display:none;' : 'display:grid;'} grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
           <!-- Key Terms -->
           <div class="card" style="padding: 20px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
             <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--text-main);">🔑 Essential Topic Vocabulary</h3>
@@ -1741,7 +1765,7 @@ class App {
         </div>
 
         <!-- Bottom Call to Action -->
-        <div class="card" style="padding: 28px; text-align: center; background: linear-gradient(135deg, rgba(45, 156, 145, 0.12), rgba(7, 17, 31, 0.05)); border: 2px solid var(--teal);">
+        <div class="card" style="${isFilteredObjective ? 'display:none;' : ''} padding: 28px; text-align: center; background: linear-gradient(135deg, rgba(45, 156, 145, 0.12), rgba(7, 17, 31, 0.05)); border: 2px solid var(--teal);">
           <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Done reading? Test your knowledge now!</h3>
           <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px; max-width: 500px; margin-left: auto; margin-right: auto;">
             Reinforce what you just learned with a quick 5-minute retrieval check on <strong>${activeNote.title}</strong>.
@@ -1780,6 +1804,14 @@ class App {
         this.renderStudentLearn(panel);
       };
     });
+    const viewFullTopicButton = panel.querySelector('#view-full-topic-btn');
+    if (viewFullTopicButton) {
+      viewFullTopicButton.onclick = () => {
+        this.activeObjectiveId = 'all';
+        this.renderStudentLearn(panel);
+        this.focusMainContent();
+      };
+    }
     const objectiveEmptyBackButton = panel.querySelector('#objective-empty-back-btn');
     if (objectiveEmptyBackButton) {
       objectiveEmptyBackButton.onclick = () => {
@@ -1831,7 +1863,7 @@ class App {
       };
     });
 
-    panel.querySelectorAll('.start-topic-quiz-btn').forEach(btn => {
+    panel.querySelectorAll('.start-topic-quiz-btn, .focused-objective-quiz-btn').forEach(btn => {
       btn.onclick = () => {
         this.activeTopicId = btn.getAttribute('data-topic-id');
         this.switchTab('stud-recall');
@@ -2043,12 +2075,12 @@ class App {
                 <p style="font-size:15px; color: var(--text-main); font-weight:600; margin-bottom: 12px;">${q.question}</p>
                 
                 ${q.supportGrid ? `
-                  <div style="display: grid; grid-template-columns: repeat(4, 40px) 12px repeat(4, 40px); gap: 6px; margin-bottom: 8px; text-align: center; font-size:12px; align-items: center;">
+                  <div class="binary-bit-grid" style="display: grid; grid-template-columns: repeat(4, 40px) 12px repeat(4, 40px); gap: 6px; margin-bottom: 8px; text-align: center; font-size:12px; align-items: center;">
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">128</div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">64</div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">32</div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">16</div>
-                    <div></div>
+                    <div class="binary-separator" aria-hidden="true"></div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">8</div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">4</div>
                     <div style="background-color: var(--bg-main); padding: 4px; border: 1px solid var(--border-color); font-weight: 600; border-radius: 4px;">2</div>
@@ -2059,12 +2091,12 @@ class App {
                 <div class="form-group" style="margin: 0;">
                   ${q.inputType === 'binary' ? `
                     <div style="display: flex; gap: 8px; align-items: center;">
-                      <div style="display: grid; grid-template-columns: repeat(4, 40px) 12px repeat(4, 40px); gap: 6px; align-items: center;">
+                      <div class="binary-bit-grid" style="display: grid; grid-template-columns: repeat(4, 40px) 12px repeat(4, 40px); gap: 6px; align-items: center;">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="0" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="128 column" value="${(this.numberSkillsAnswers[idx] || '')[0] || ''}">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="1" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="64 column" value="${(this.numberSkillsAnswers[idx] || '')[1] || ''}">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="2" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="32 column" value="${(this.numberSkillsAnswers[idx] || '')[2] || ''}">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="3" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px; margin-right: 2px;" placeholder="0" aria-label="16 column" value="${(this.numberSkillsAnswers[idx] || '')[3] || ''}">
-                        <div style="text-align: center; color: var(--text-muted); font-weight: 700; font-size: 16px;">&middot;</div>
+                        <div class="binary-separator" aria-hidden="true" style="text-align: center; color: var(--text-muted); font-weight: 700; font-size: 16px;">&middot;</div>
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="4" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="8 column" value="${(this.numberSkillsAnswers[idx] || '')[4] || ''}">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="5" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="4 column" value="${(this.numberSkillsAnswers[idx] || '')[5] || ''}">
                         <input type="text" class="form-control num-ans-binary-input" data-idx="${idx}" data-char="6" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="2 column" value="${(this.numberSkillsAnswers[idx] || '')[6] || ''}">
@@ -2080,12 +2112,12 @@ class App {
                     </div>
                   ` : q.inputType === 'binary-overflow' ? `
                     <div style="display: flex; flex-direction: column; gap: 12px;">
-                      <div style="display: grid; grid-template-columns: repeat(4, 40px) 12px repeat(4, 40px); gap: 6px; align-items: center;">
+                      <div class="binary-bit-grid" style="display: grid; grid-template-columns: repeat(4, 40px) 12px repeat(4, 40px); gap: 6px; align-items: center;">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="0" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="128 column" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[0] || ''}">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="1" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="64 column" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[1] || ''}">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="2" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="32 column" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[2] || ''}">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="3" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px; margin-right: 2px;" placeholder="0" aria-label="16 column" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[3] || ''}">
-                        <div style="text-align: center; color: var(--text-muted); font-weight: 700; font-size: 16px;">&middot;</div>
+                        <div class="binary-separator" aria-hidden="true" style="text-align: center; color: var(--text-muted); font-weight: 700; font-size: 16px;">&middot;</div>
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="4" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="8 column" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[4] || ''}">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="5" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="4 column" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[5] || ''}">
                         <input type="text" class="form-control num-ans-binoverflow-input" data-idx="${idx}" data-char="6" maxlength="1" style="text-align: center; font-weight: 700; min-height: 40px; border-radius: 6px;" placeholder="0" aria-label="2 column" value="${(this.numberSkillsAnswers[idx] || '').split(' - ')[0]?.[6] || ''}">
@@ -2457,7 +2489,7 @@ class App {
         <p style="font-size: 15px; color: var(--text-muted); margin: 0;">Assessment-focused mixed sets, mock preparation and timed quiz work.</p>
       </div>
 
-      <div class="card" style="margin-bottom:20px; padding:14px;"><strong>${this.escapeHTML(activeTopic?.paper || 'GCSE')} · ${this.escapeHTML(activeTopic?.name || this.activeTopicId)} · ${this.quizQuestions.length} questions · about 5 minutes</strong><div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Complete this focused set, then return home for the next weakest or least-recently practised area.</div><button type="button" class="btn btn-secondary btn-sm" id="exam-transfer-start-btn" style="margin-top:10px;">Practise applying knowledge to an exam question</button></div>
+      <div class="card" style="margin-bottom:20px; padding:14px;"><strong>${this.escapeHTML(activeTopic?.paper || 'GCSE')} · ${this.escapeHTML(activeTopic?.name || this.activeTopicId)} · ${this.quizQuestions.length} questions · about 5 minutes</strong><div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Complete this focused set, then choose a clear next step from your results.</div></div>
       <form id="quiz-form">
         ${this.quizQuestions.map((q, idx) => {
           let fieldsHTML = '';
@@ -2508,8 +2540,6 @@ class App {
       </form>
     `;
 
-    const transferButton = document.getElementById('exam-transfer-start-btn');
-    if (transferButton) transferButton.onclick = () => this.switchTab('stud-exam-transfer');
     const qForm = document.getElementById('quiz-form');
     if (qForm) {
       qForm.onsubmit = (e) => {
@@ -2592,25 +2622,37 @@ class App {
       ${this.renderMilestoneAcknowledgement(newlySecuredMilestones)}
       <div>
         ${feedback}
+        <div class="quiz-result-actions" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:24px;">
+          ${incorrectQuestions.length ? '<button class="btn btn-primary" id="quiz-retry-btn">Retry incorrect questions</button>' : '<button class="btn btn-primary" id="quiz-continue-home-btn">Continue to Home</button>'}
+          ${incorrectQuestions.length ? '<button class="btn btn-secondary" id="quiz-continue-home-btn">Continue to Home</button>' : ''}
+          <button class="btn btn-secondary" id="quiz-exam-transfer-btn">Try an exam-style question</button>
+        </div>
         
         <div class="card" style="margin-top: 24px; padding: 24px; text-align: center;">
-          <h3 style="margin-bottom: 8px;">Self-assessment feedback</h3>
+          <h3 style="margin-bottom: 8px;">Optional confidence reflection</h3>
           <p style="font-size: 14px; margin-bottom: 16px;">Choose what best describes what you knew before feedback. This reflection is stored separately and does not change your score.</p>
-          <div style="display: flex; gap: 8px; justify-content: center;">
+          <div class="quiz-confidence-options" style="display: flex; gap: 8px; justify-content: center;">
             <button class="btn btn-secondary btn-sm quiz-confidence-btn" data-confidence="secure_before_feedback">I knew this securely before feedback</button>
             <button class="btn btn-secondary btn-sm quiz-confidence-btn" data-confidence="partial_before_feedback">I partly knew this before feedback</button>
             <button class="btn btn-secondary btn-sm quiz-confidence-btn" data-confidence="understood_after_feedback">I understood it only after feedback</button>
           </div>
+          <p id="quiz-confidence-status" role="status" aria-live="polite" style="margin:12px 0 0;"></p>
         </div>
-        ${incorrectQuestions.length ? '<button class="btn btn-primary" id="quiz-retry-btn">Retry incorrect questions</button>' : ''}
       </div>
     `);
 
     document.querySelectorAll('.quiz-confidence-btn').forEach(btn => {
       btn.onclick = () => {
-        if (this.recordQuizConfidence(quizAttempt, btn.getAttribute('data-confidence'))) this.switchTab('stud-dashboard');
+        if (this.recordQuizConfidence(quizAttempt, btn.getAttribute('data-confidence'))) {
+          const status = document.getElementById('quiz-confidence-status');
+          if (status) status.textContent = 'Confidence saved; your score is unchanged.';
+        }
       };
     });
+    const continueHomeButton = document.getElementById('quiz-continue-home-btn');
+    if (continueHomeButton) continueHomeButton.onclick = () => this.switchTab('stud-dashboard');
+    const examTransferButton = document.getElementById('quiz-exam-transfer-btn');
+    if (examTransferButton) examTransferButton.onclick = () => this.switchTab('stud-exam-transfer');
     const retryButton = document.getElementById('quiz-retry-btn');
     if (retryButton) retryButton.onclick = () => {
       this.quizRetryQuestions = incorrectQuestions;
@@ -5493,7 +5535,7 @@ class App {
           OCR Paper 2 Section B questions require exact Exam Reference Language (ERL) or clear pseudocode. Do not confuse Python keywords with ERL syntax!
         </p>
 
-        <div style="overflow-x: auto;">
+        <div class="table-container" tabindex="0" role="region" aria-label="Exam Reference Language syntax table" style="overflow-x: auto;">
           <table style="width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left;">
             <thead>
               <tr style="background: rgba(45, 156, 145, 0.12); border-bottom: 2px solid var(--border-color);">

@@ -87,4 +87,25 @@ describe('cross-page text readability', () => {
       expect(app).toContain(action)
     );
   });
+
+  test('narrow layouts and reduced-motion preferences have explicit safeguards', () => {
+    expect(css).toContain('#main-panel [style*="grid-template-columns"]');
+    expect(css).toContain('.binary-bit-grid');
+    expect(css).toContain('grid-template-columns: repeat(4, minmax(44px, 1fr)) !important');
+    expect(css).toContain('.quiz-confidence-options');
+    expect(css).toContain('@media (prefers-reduced-motion: reduce)');
+    expect(css).toContain('transition-duration: 0.01ms !important');
+    expect(css).toContain('transform: none !important');
+  });
+
+  test('the stylesheet has balanced rule and media braces', () => {
+    expect((css.match(/{/g) || []).length).toBe((css.match(/}/g) || []).length);
+  });
+
+  test('scrollable tables are promoted to named keyboard regions after render', () => {
+    expect(app).toContain("container.setAttribute('tabindex', '0')");
+    expect(app).toContain("container.setAttribute('role', 'region')");
+    expect(app).toContain('Scrollable data table');
+    expect(app).toContain('class="table-container" tabindex="0" role="region" aria-label="Exam Reference Language syntax table"');
+  });
 });

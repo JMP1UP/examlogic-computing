@@ -30,6 +30,9 @@ All notable changes to ExamLogic Computing are recorded here.
 - Labelled static teacher examples as demonstration narrative rather than calculated learner judgements.
 - Improved code-display typography, keyboard focus coverage and responsive pseudocode layout.
 - Added semantic quiz groups and labels, current-page navigation state, route/result focus management, live score announcements, scoped table headers and named recovery actions for unavailable content.
+- Made dense grid and action layouts reflow on narrow screens, provided keyboard-labelled scrolling table regions, and respected reduced-motion preferences.
+- Focused objective-level Learn journeys on one selected section and one primary checkpoint action while retaining an explicit route to the full topic.
+- Corrected dashboard workload wording to combine required assignments and test preparation, and separated retry, optional confidence reflection and onward navigation after recall.
 
 ### Tests
 - Added whole-specification traceability, workload, supported-practice, retired-content and application-route validation.
@@ -39,6 +42,7 @@ All notable changes to ExamLogic Computing are recorded here.
 - Added Learn-renderer behaviour coverage for objective teaching, worked examples and every selectable topic.
 - Added question-level retry, Progress presentation, adversarial definition-response, exhaustive recall-route/hint and clean-learner fixture coverage.
 - Added browser coverage for the selectable clean learner and integrity coverage for pseudocode awaiting review.
+- Added regression coverage for narrow-layout safeguards, reduced motion, scrolling table semantics, focused learning and explicit post-quiz choices.
 
 ## [Unreleased] - 2026-07-24
 
