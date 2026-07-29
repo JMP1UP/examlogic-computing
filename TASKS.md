@@ -2,7 +2,7 @@
 
 ## Now
 - [x] Add restrained section milestones derived only from demonstrated evidence.
-- [ ] Add sufficient specification-mapped assessment for `2.2.2` and `2.2.PY` before enabling their section checkpoints.
+- [ ] Add sufficient specification-mapped assessment for `1.2.4c`, `1.5.2`, `2.1.1`, `2.2.2` and `2.2.PY` before enabling their section checkpoints.
 - [x] Establish 25Thirty Learning design standards in `docs/design.md`.
 - [x] Document practice question and logic challenge user flows in `docs/user-flows.md`.
 - [x] Audit code display components for high contrast and monospaced font standards.
@@ -26,7 +26,7 @@
 - [ ] Consider broader student-interface redesign only after learning and data integrity are stable.
 - [ ] Replace strict pseudocode matching with a validated equivalence-marking policy; until then, non-matching meaningful submissions remain awaiting review.
 - [ ] Define a validated scheduling policy before confidence can influence revision timing.
-- [ ] Improve grouping precision only for future evidence; historical records without stable question IDs must remain visibly reduced-precision.
+- [x] Improve grouping and checkpoint precision only for future evidence; historical records without stable question IDs or focus/rule metadata remain visibly reduced-precision.
 
 ## Later
 - [ ] Add GCSE specification topic filter toggle.

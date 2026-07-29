@@ -47,7 +47,15 @@ function loadApplication() {
   return context;
 }
 
-function assessedAttempt({ id, activityId, questionIds, outcomes, date = '2026-07-29T09:00:00.000Z' }) {
+function assessedAttempt({
+  id,
+  activityId,
+  questionIds,
+  outcomes,
+  questionMetadata = {},
+  checkpointRuleVersions = {},
+  date = '2026-07-29T09:00:00.000Z'
+}) {
   const earned = outcomes.filter(Boolean).length;
   return {
     id,
@@ -61,7 +69,13 @@ function assessedAttempt({ id, activityId, questionIds, outcomes, date = '2026-0
     attemptSetId: `${activityId}:set`,
     originalQuestionIds: questionIds,
     originalDenominator: questionIds.length,
-    questionEvidence: questionIds.map((questionId, index) => ({ questionId, correct: outcomes[index] })),
+    questionEvidence: questionIds.map((questionId, index) => ({
+      questionId,
+      specificationPointId: questionMetadata[questionId]?.specificationPointId || null,
+      assessmentFocus: questionMetadata[questionId]?.assessmentFocus || null,
+      correct: outcomes[index]
+    })),
+    checkpointRuleVersions,
     score: `${earned}/${questionIds.length}`,
     date
   };
@@ -89,6 +103,13 @@ function cleanLearner() {
   };
 }
 
+function metadataFor(questions) {
+  return Object.fromEntries(questions.map(question => [question.id, {
+    specificationPointId: question.specificationPointId,
+    assessmentFocus: question.assessmentFocus
+  }]));
+}
+
 describe('evidence-backed section milestones', () => {
   test('labels and excludes checkpoints that lack enough mapped questions to be secured', () => {
     const { app } = loadApplication();
@@ -96,7 +117,7 @@ describe('evidence-backed section milestones', () => {
       .filter(item => !item.available)
       .map(item => item.id);
 
-    expect(unavailable).toEqual(['2.2.2', '2.2.PY']);
+    expect(unavailable).toEqual(['1.2.4c', '1.5.2', '2.1.1', '2.2.2', '2.2.PY']);
   });
 
   test('starts every curriculum section without inherited evidence', () => {
@@ -104,7 +125,7 @@ describe('evidence-backed section milestones', () => {
     const milestones = app.getSectionMilestones('stud_1');
 
     expect(milestones).toHaveLength(32);
-    expect(milestones.filter(item => item.available)).toHaveLength(30);
+    expect(milestones.filter(item => item.available)).toHaveLength(27);
     expect(milestones.filter(item => item.available).every(item => item.state === 'not_started')).toBe(true);
     expect(milestones.filter(item => !item.available).every(item => item.state === 'not_available')).toBe(true);
   });
@@ -117,7 +138,7 @@ describe('evidence-backed section milestones', () => {
     app.renderStudentDashboard(panel);
 
     expect(panel.innerHTML).toContain('Start guided learning');
-    expect(panel.innerHTML).toContain('0 of 30 available checkpoints');
+    expect(panel.innerHTML).toContain('0 of 27 available checkpoints');
     expect(panel.innerHTML).not.toContain('milestone-next-btn');
     expect(panel.innerHTML).not.toContain('last practised conversions three weeks ago');
   });
@@ -129,10 +150,10 @@ describe('evidence-backed section milestones', () => {
 
     app.renderStudentProgress(panel);
 
-    expect(panel.innerHTML).toContain('0 of 30 available section checkpoints');
-    expect(panel.innerHTML).toContain('2 curriculum sections are shown below but excluded');
+    expect(panel.innerHTML).toContain('0 of 27 available section checkpoints');
+    expect(panel.innerHTML).toContain('5 curriculum sections are shown below but excluded');
     expect((panel.innerHTML.match(/milestone-list-row/g) || [])).toHaveLength(32);
-    expect((panel.innerHTML.match(/Checkpoint unavailable/g) || [])).toHaveLength(2);
+    expect((panel.innerHTML.match(/Checkpoint unavailable/g) || [])).toHaveLength(5);
   });
 
   test('ignores page views, formative checks, awaiting-review work and reduced-precision history', () => {
@@ -152,14 +173,15 @@ describe('evidence-backed section milestones', () => {
     const questions = db.getQuestions().filter(question => question.specificationPointId === '2.2.3').slice(0, 3);
     expect(questions).toHaveLength(3);
     const questionIds = questions.map(question => question.id);
+    const questionMetadata = metadataFor(questions);
     db.cachedData.attempts.push(
-      assessedAttempt({ id: 'original', activityId: 'activity-one', questionIds, outcomes: [true, true, false] }),
-      assessedAttempt({ id: 'retry', activityId: 'activity-one', questionIds, outcomes: [true, true, true], date: '2026-07-29T10:00:00.000Z' })
+      assessedAttempt({ id: 'original', activityId: 'activity-one', questionIds, outcomes: [true, true, false], questionMetadata, checkpointRuleVersions: { '2.2.3': 1 } }),
+      assessedAttempt({ id: 'retry', activityId: 'activity-one', questionIds, outcomes: [true, true, true], questionMetadata, checkpointRuleVersions: { '2.2.3': 1 }, date: '2026-07-29T10:00:00.000Z' })
     );
 
     const milestone = app.getSectionMilestones('stud_1').find(item => item.id === '2.2.3');
     expect(milestone).toMatchObject({
-      state: 'checkpoint_secured',
+      state: 'practice_completed',
       evidenceSourceCount: 1,
       attemptedQuestionCount: 3,
       correctQuestionCount: 3
@@ -171,7 +193,7 @@ describe('evidence-backed section milestones', () => {
     const questions = db.getQuestions().filter(question => question.specificationPointId === '2.2.3').slice(0, 3);
     const questionIds = questions.map(question => question.id);
     db.cachedData.attempts.push(
-      assessedAttempt({ id: 'partial', activityId: 'activity-partial', questionIds, outcomes: [true, false, false] })
+      assessedAttempt({ id: 'partial', activityId: 'activity-partial', questionIds, outcomes: [true, false, false], questionMetadata: metadataFor(questions), checkpointRuleVersions: { '2.2.3': 1 } })
     );
 
     expect(app.getSectionMilestones('stud_1').find(item => item.id === '2.2.3')).toMatchObject({
@@ -184,14 +206,15 @@ describe('evidence-backed section milestones', () => {
 
   test('does not multiply evidence when the same activity is retried repeatedly', () => {
     const { app, db } = loadApplication();
-    const questionIds = db.getQuestions()
+    const questions = db.getQuestions()
       .filter(question => question.specificationPointId === '2.2.3')
-      .slice(0, 3)
-      .map(question => question.id);
+      .slice(0, 3);
+    const questionIds = questions.map(question => question.id);
+    const questionMetadata = metadataFor(questions);
     db.cachedData.attempts.push(
-      assessedAttempt({ id: 'first', activityId: 'one-activity', questionIds, outcomes: [true, true, false] }),
-      assessedAttempt({ id: 'second', activityId: 'one-activity', questionIds, outcomes: [true, false, true], date: '2026-07-29T10:00:00.000Z' }),
-      assessedAttempt({ id: 'third', activityId: 'one-activity', questionIds, outcomes: [true, true, false], date: '2026-07-29T11:00:00.000Z' })
+      assessedAttempt({ id: 'first', activityId: 'one-activity', questionIds, outcomes: [true, true, false], questionMetadata, checkpointRuleVersions: { '2.2.3': 1 } }),
+      assessedAttempt({ id: 'second', activityId: 'one-activity', questionIds, outcomes: [true, false, true], questionMetadata, checkpointRuleVersions: { '2.2.3': 1 }, date: '2026-07-29T10:00:00.000Z' }),
+      assessedAttempt({ id: 'third', activityId: 'one-activity', questionIds, outcomes: [true, true, false], questionMetadata, checkpointRuleVersions: { '2.2.3': 1 }, date: '2026-07-29T11:00:00.000Z' })
     );
 
     expect(app.getSectionMilestones('stud_1').find(item => item.id === '2.2.3')).toMatchObject({
@@ -204,19 +227,81 @@ describe('evidence-backed section milestones', () => {
 
   test('uses the newest outcome when separate activities contain the same questions', () => {
     const { app, db } = loadApplication();
-    const questionIds = db.getQuestions()
+    const questions = db.getQuestions()
       .filter(question => question.specificationPointId === '2.2.3')
-      .slice(0, 3)
-      .map(question => question.id);
+      .slice(0, 3);
+    const questionIds = questions.map(question => question.id);
+    const questionMetadata = metadataFor(questions);
     db.cachedData.attempts.push(
-      assessedAttempt({ id: 'newer', activityId: 'newer-activity', questionIds, outcomes: [false, true, true], date: '2026-07-29T11:00:00.000Z' }),
-      assessedAttempt({ id: 'older', activityId: 'older-activity', questionIds, outcomes: [true, true, true], date: '2026-07-29T09:00:00.000Z' })
+      assessedAttempt({ id: 'newer', activityId: 'newer-activity', questionIds, outcomes: [false, true, true], questionMetadata, checkpointRuleVersions: { '2.2.3': 1 }, date: '2026-07-29T11:00:00.000Z' }),
+      assessedAttempt({ id: 'older', activityId: 'older-activity', questionIds, outcomes: [true, true, true], questionMetadata, checkpointRuleVersions: { '2.2.3': 1 }, date: '2026-07-29T09:00:00.000Z' })
     );
 
     expect(app.getSectionMilestones('stud_1').find(item => item.id === '2.2.3')).toMatchObject({
       state: 'practice_completed',
       evidenceSourceCount: 2,
       correctQuestionCount: 2
+    });
+  });
+
+  test('does not mistake duplicate-concept question IDs for checkpoint breadth', () => {
+    const { app, db } = loadApplication();
+    const questions = ['diagnostic_1_1_1', 'q_1_1_b', 'q_1']
+      .map(id => db.getQuestions().find(question => question.id === id));
+    const questionIds = questions.map(question => question.id);
+    db.cachedData.attempts.push(assessedAttempt({
+      id: 'same-focus',
+      activityId: 'same-focus-activity',
+      questionIds,
+      outcomes: [true, true, true],
+      questionMetadata: metadataFor(questions),
+      checkpointRuleVersions: { '1.1.1': 1 }
+    }));
+
+    expect(app.getSectionMilestones('stud_1').find(item => item.id === '1.1.1')).toMatchObject({
+      state: 'practice_completed',
+      demonstratedFocuses: ['register-and-fetch-roles']
+    });
+  });
+
+  test('secures a checkpoint only after every versioned required focus is demonstrated', () => {
+    const { app, db } = loadApplication();
+    const questions = ['q_1_1_cpu_purpose', 'diagnostic_1_1_1', 'q_1_1_a']
+      .map(id => db.getQuestions().find(question => question.id === id));
+    const questionIds = questions.map(question => question.id);
+    db.cachedData.attempts.push(assessedAttempt({
+      id: 'breadth',
+      activityId: 'breadth-activity',
+      questionIds,
+      outcomes: [true, true, true],
+      questionMetadata: metadataFor(questions),
+      checkpointRuleVersions: { '1.1.1': 1 }
+    }));
+
+    expect(app.getSectionMilestones('stud_1').find(item => item.id === '1.1.1')).toMatchObject({
+      state: 'checkpoint_secured',
+      checkpointRuleVersion: 1,
+      remainingFocuses: []
+    });
+  });
+
+  test('does not reinterpret focus evidence under a missing or different rule version', () => {
+    const { app, db } = loadApplication();
+    const questions = ['q_1_1_cpu_purpose', 'diagnostic_1_1_1', 'q_1_1_a']
+      .map(id => db.getQuestions().find(question => question.id === id));
+    const questionIds = questions.map(question => question.id);
+    db.cachedData.attempts.push(assessedAttempt({
+      id: 'wrong-version',
+      activityId: 'wrong-version-activity',
+      questionIds,
+      outcomes: [true, true, true],
+      questionMetadata: metadataFor(questions),
+      checkpointRuleVersions: { '1.1.1': 99 }
+    }));
+
+    expect(app.getSectionMilestones('stud_1').find(item => item.id === '1.1.1')).toMatchObject({
+      state: 'practice_completed',
+      demonstratedFocuses: []
     });
   });
 });

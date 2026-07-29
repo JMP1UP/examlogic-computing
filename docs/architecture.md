@@ -42,11 +42,19 @@ continue to resolve to the retained canonical object with the original ID.
 
 New scored quiz and number-skills records use evidence version 2. Each original
 set has stable `activityId` and `attemptSetId` values, its original question IDs
-and denominator, and the latest outcome for every question. A partial retry
+and denominator, the latest outcome for every question, each question's
+specification section and assessment focus, and the applicable checkpoint-rule
+version. A partial retry
 writes a new snapshot for the same activity instead of creating reduced-
 denominator evidence. Schema-12 and earlier schema-13 attempts remain unchanged
 in storage; calculations identify records without versioned activity metadata
 as reduced-precision legacy evidence.
+
+Checkpoint eligibility is governed by an explicit versioned rule registry rather
+than raw question counts. Each rule lists the distinct assessment focuses that
+must all be demonstrated. New evidence snapshots the applicable rule version;
+older or mismatched evidence can remain visible and contribute to its supported
+score calculation, but cannot be treated as representative section breadth.
 
 The Progress evidence list groups version-2 assessed snapshots by `activityId`
 and presents only the latest snapshot as counted evidence. Earlier snapshots
@@ -89,4 +97,5 @@ Describe operational logs, alerts, metrics, privacy controls, and incident handl
 Curriculum completeness and teacher quality assurance still require qualified
 human review. Semantic/equivalence marking and any confidence-driven scheduling
 policy require separately validated designs. Historical evidence without stable
-question IDs remains visible with reduced precision rather than being rewritten.
+question IDs, focus metadata or checkpoint rule versions remains visible with
+reduced precision rather than being rewritten.

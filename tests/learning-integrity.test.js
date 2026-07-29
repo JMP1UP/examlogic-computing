@@ -254,6 +254,75 @@ describe('learning-record integrity', () => {
     expect(panel.innerHTML).toContain('Awaiting review');
   });
 
+  test('Progress labels pre-checkpoint version 2 evidence as reduced precision without rewriting it', () => {
+    const { app, database } = loadApp();
+    const attempt = {
+      id: 'pre_checkpoint_v2',
+      studentId: 'student_fixture',
+      type: 'spaced_theory',
+      topic: 'CPU architecture',
+      score: '2/3',
+      evidenceType: 'demonstrated',
+      evidenceVersion: 2,
+      activityId: 'activity_pre_checkpoint',
+      questionEvidence: [
+        { questionId: 'q_1_1_a', correct: true },
+        { questionId: 'q_1_1_b', correct: true },
+        { questionId: 'q_1_1_c', correct: false }
+      ],
+      date: '2026-07-01T12:00:00.000Z'
+    };
+    const original = JSON.parse(JSON.stringify(attempt));
+    app.currentUser = { id: 'student_fixture', role: 'student', achievements: [] };
+    database.getAttempts.mockReturnValue([attempt]);
+    database.getStudents.mockReturnValue([app.currentUser]);
+    database.getUnits.mockReturnValue([{ topics: [{ id: 'topic_1_1', name: 'Systems Architecture' }] }]);
+    const panel = { innerHTML: '' };
+
+    app.renderStudentProgress(panel);
+
+    expect(app.parseDemonstratedScore(attempt)).toMatchObject({
+      earned: 2,
+      available: 3,
+      precision: 'question-level'
+    });
+    expect(panel.innerHTML).toContain('Demonstrated · reduced-precision legacy');
+    expect(attempt).toEqual(original);
+  });
+
+  test('checkpoint precision requires a positive rule version for every represented section', () => {
+    const { app, database } = loadApp();
+    const mixedSectionAttempt = {
+      studentId: 'student_fixture',
+      type: 'spaced_theory',
+      topic: 'Mixed systems recall',
+      score: '2/2',
+      evidenceType: 'demonstrated',
+      date: '2026-07-02T12:00:00.000Z',
+      evidenceVersion: 2,
+      activityId: 'mixed_activity',
+      questionEvidence: [
+        { questionId: 'q1', specificationPointId: '1.1.1', assessmentFocus: 'cpu-component-roles', correct: true },
+        { questionId: 'q2', specificationPointId: '1.1.2', assessmentFocus: 'cache-performance', correct: true }
+      ],
+      checkpointRuleVersions: { '1.1.1': 1 }
+    };
+
+    expect(app.hasCheckpointPrecision(mixedSectionAttempt)).toBe(false);
+    app.currentUser = { id: 'student_fixture', role: 'student', achievements: [] };
+    database.getAttempts.mockReturnValue([mixedSectionAttempt]);
+    database.getStudents.mockReturnValue([app.currentUser]);
+    database.getUnits.mockReturnValue([{ topics: [{ id: 'topic_1_1', name: 'Systems Architecture' }] }]);
+    const panel = { innerHTML: '' };
+    app.renderStudentProgress(panel);
+    expect(panel.innerHTML).toContain('Demonstrated · reduced-precision legacy');
+
+    mixedSectionAttempt.checkpointRuleVersions['1.1.2'] = 1;
+    expect(app.hasCheckpointPrecision(mixedSectionAttempt)).toBe(true);
+    mixedSectionAttempt.checkpointRuleVersions['1.1.2'] = 0;
+    expect(app.hasCheckpointPrecision(mixedSectionAttempt)).toBe(false);
+  });
+
   test('rejects empty, placeholder and meaningless learner decisions', () => {
     const { app, database } = loadApp();
     const attempt = { id: 'attempt_fixture' };

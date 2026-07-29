@@ -174,6 +174,19 @@ class App {
     };
   }
 
+  hasCheckpointPrecision(attempt) {
+    const evidence = Array.isArray(attempt?.questionEvidence) ? attempt.questionEvidence : [];
+    const ruleVersions = attempt?.checkpointRuleVersions;
+    const representedSections = [...new Set(evidence.map(item => item.specificationPointId).filter(Boolean))];
+    return Number(attempt?.evidenceVersion) >= 2
+      && Boolean(attempt?.activityId)
+      && evidence.length > 0
+      && evidence.every(item => item.questionId && item.specificationPointId && item.assessmentFocus)
+      && ruleVersions
+      && representedSections.length > 0
+      && representedSections.every(sectionId => Number.isInteger(ruleVersions[sectionId]) && ruleVersions[sectionId] > 0);
+  }
+
   getDemonstratedMastery(attempts) {
     const evidence = this.getLatestDemonstratedAttempts(attempts);
     const earned = evidence.reduce((total, item) => total + item.score.earned, 0);
@@ -225,13 +238,7 @@ class App {
   getSectionMilestones(studentId = this.currentUser?.id) {
     const questions = window.db.getQuestions();
     const questionToSection = new Map(questions.map(question => [question.id, question.specificationPointId]));
-    const questionCountsBySection = new Map();
-    questions.forEach(question => {
-      questionCountsBySection.set(
-        question.specificationPointId,
-        (questionCountsBySection.get(question.specificationPointId) || 0) + 1
-      );
-    });
+    const checkpointRules = window.db.getCheckpointRules?.() || {};
     const sections = window.db.getUnits().flatMap(unit => (unit.topics || []).flatMap(topic =>
       (topic.objectives || []).map(objective => ({
         id: objective.id,
@@ -239,7 +246,8 @@ class App {
         topicId: topic.id,
         topicName: topic.name,
         paper: unit.paper,
-        available: (questionCountsBySection.get(objective.id) || 0) >= 2
+        available: Boolean(checkpointRules[objective.id]),
+        checkpointRule: checkpointRules[objective.id] || null
       }))
     ));
     const numberSkillSections = {
@@ -254,7 +262,8 @@ class App {
       label: section.available ? 'Not started' : 'Checkpoint unavailable',
       latestDate: null,
       evidenceSources: new Set(),
-      questionOutcomes: new Map()
+      questionOutcomes: new Map(),
+      focusOutcomes: new Map()
     }]));
     const sectionForQuestion = questionId => {
       if (questionToSection.has(questionId)) return questionToSection.get(questionId);
@@ -295,6 +304,18 @@ class App {
         milestone.label = 'Practice completed';
         milestone.evidenceSources.add(activityId);
         sectionOutcomes.forEach(outcome => milestone.questionOutcomes.set(outcome.questionId, outcome.correct === true));
+        const ruleVersion = attempt.checkpointRuleVersions?.[sectionId];
+        if (ruleVersion === milestone.checkpointRule.version) {
+          const byFocus = new Map();
+          sectionOutcomes.forEach(outcome => {
+            if (!outcome.assessmentFocus || outcome.specificationPointId !== sectionId) return;
+            if (!byFocus.has(outcome.assessmentFocus)) byFocus.set(outcome.assessmentFocus, []);
+            byFocus.get(outcome.assessmentFocus).push(outcome.correct === true);
+          });
+          byFocus.forEach((focusResults, focus) => {
+            milestone.focusOutcomes.set(focus, focusResults.every(Boolean));
+          });
+        }
         if (!milestone.latestDate || new Date(attempt.date) >= new Date(milestone.latestDate)) {
           milestone.latestDate = attempt.date;
         }
@@ -302,10 +323,11 @@ class App {
     });
 
     milestoneById.forEach(milestone => {
-      const outcomes = [...milestone.questionOutcomes.values()];
-      const correctCount = outcomes.filter(Boolean).length;
-      const ratio = outcomes.length ? correctCount / outcomes.length : 0;
-      if (correctCount >= 2 && ratio >= 0.8) {
+      if (!milestone.available) return;
+      const requiredFocuses = milestone.checkpointRule.requiredFocuses;
+      const passedFocuses = requiredFocuses.filter(focus => milestone.focusOutcomes.get(focus) === true);
+      const ratio = requiredFocuses.length ? passedFocuses.length / requiredFocuses.length : 0;
+      if (passedFocuses.length === requiredFocuses.length && ratio >= milestone.checkpointRule.minimumRatio) {
         milestone.state = 'checkpoint_secured';
         milestone.label = 'Checkpoint secured';
       }
@@ -316,8 +338,15 @@ class App {
       evidenceSourceCount: milestone.evidenceSources.size,
       correctQuestionCount: [...milestone.questionOutcomes.values()].filter(Boolean).length,
       attemptedQuestionCount: milestone.questionOutcomes.size,
+      checkpointRuleVersion: milestone.checkpointRule?.version || null,
+      demonstratedFocuses: [...milestone.focusOutcomes.entries()].filter(([, passed]) => passed).map(([focus]) => focus),
+      remainingFocuses: milestone.checkpointRule
+        ? milestone.checkpointRule.requiredFocuses.filter(focus => milestone.focusOutcomes.get(focus) !== true)
+        : [],
       evidenceSources: undefined,
-      questionOutcomes: undefined
+      questionOutcomes: undefined,
+      focusOutcomes: undefined,
+      checkpointRule: undefined
     }));
   }
 
@@ -369,22 +398,37 @@ class App {
       ? window.crypto.randomUUID()
       : `${Date.now()}_${++this.evidenceIdSequence}`;
     const attemptSetId = `${type}_set_${unique}`;
+    const checkpointRules = window.db.getCheckpointRules?.() || {};
     return {
       activityId: `${type}_activity_${unique}`,
       attemptSetId,
       topic,
       originalQuestionIds: questions.map(question => question.id),
       originalDenominator: questions.length,
+      questionMetadata: Object.fromEntries(questions.map(question => [question.id, {
+        specificationPointId: question.specificationPointId || null,
+        assessmentFocus: question.assessmentFocus || null
+      }])),
+      checkpointRuleVersions: Object.fromEntries([...new Set(questions.map(question => question.specificationPointId).filter(Boolean))]
+        .filter(sectionId => checkpointRules[sectionId])
+        .map(sectionId => [sectionId, checkpointRules[sectionId].version])),
       latestOutcomes: Object.fromEntries(questions.map(question => [question.id, false])),
       hasOriginalAttempt: false
     };
   }
 
   buildQuestionLevelAttempt(evidenceSet, attemptKind) {
-    const questionEvidence = evidenceSet.originalQuestionIds.map(questionId => ({
-      questionId,
-      correct: evidenceSet.latestOutcomes[questionId] === true
-    }));
+    const questionEvidence = evidenceSet.originalQuestionIds.map(questionId => {
+      const metadata = evidenceSet.questionMetadata?.[questionId];
+      return {
+        questionId,
+        ...(metadata?.specificationPointId && metadata?.assessmentFocus ? {
+          specificationPointId: metadata.specificationPointId,
+          assessmentFocus: metadata.assessmentFocus
+        } : {}),
+        correct: evidenceSet.latestOutcomes[questionId] === true
+      };
+    });
     const earned = questionEvidence.filter(item => item.correct).length;
     return {
       activityId: evidenceSet.activityId,
@@ -392,6 +436,7 @@ class App {
       originalQuestionIds: [...evidenceSet.originalQuestionIds],
       originalDenominator: evidenceSet.originalDenominator,
       questionEvidence,
+      checkpointRuleVersions: { ...(evidenceSet.checkpointRuleVersions || {}) },
       attemptKind,
       score: `${earned}/${evidenceSet.originalDenominator}`,
       evidenceVersion: 2,
@@ -2292,6 +2337,30 @@ class App {
   }
 
   // ==================== SPACED RETRIEVAL QUIZ ====================
+  selectObjectiveRecallQuestions(topicQuestions, objectiveId) {
+    const objectiveQuestions = topicQuestions.filter(question => question.specificationPointId === objectiveId);
+    const rule = (window.db.getCheckpointRules?.() || {})[objectiveId];
+    if (!rule) return objectiveQuestions.slice(0, 3);
+    const milestone = this.getSectionMilestones().find(item => item.id === objectiveId);
+    const demonstrated = new Set(milestone?.demonstratedFocuses || []);
+    const orderedFocuses = [
+      ...rule.requiredFocuses.filter(focus => !demonstrated.has(focus)),
+      ...rule.requiredFocuses.filter(focus => demonstrated.has(focus))
+    ];
+    const selected = [];
+    orderedFocuses.forEach(focus => {
+      if (selected.length >= 3) return;
+      const question = objectiveQuestions.find(candidate =>
+        candidate.assessmentFocus === focus && !selected.includes(candidate)
+      );
+      if (question) selected.push(question);
+    });
+    objectiveQuestions.forEach(question => {
+      if (selected.length < 3 && !selected.includes(question)) selected.push(question);
+    });
+    return selected.slice(0, 3);
+  }
+
   renderStudentRecall(panel) {
     const topicQuestions = window.db.getQuestions().filter(q => q.topicId === this.activeTopicId);
     const isRetry = Boolean(this.quizRetryQuestions);
@@ -2299,7 +2368,7 @@ class App {
     if (this.quizRetryQuestions) {
       selectedQuestions = this.quizRetryQuestions;
     } else if (this.activeObjectiveId && this.activeObjectiveId !== 'all') {
-      const matchingObjQuestions = topicQuestions.filter(q => q.specificationPointId === this.activeObjectiveId);
+      const matchingObjQuestions = this.selectObjectiveRecallQuestions(topicQuestions, this.activeObjectiveId);
       const otherQuestions = topicQuestions.filter(q => q.specificationPointId !== this.activeObjectiveId);
       selectedQuestions = [...matchingObjQuestions, ...otherQuestions].slice(0, 3);
     } else {
@@ -4133,7 +4202,7 @@ class App {
                     <td>${a.type}</td>
                     <td>${a.score}</td>
                     <td>${this.parseDemonstratedScore(a)
-                      ? (Number(a.evidenceVersion) >= 2 ? 'Demonstrated' : 'Demonstrated · reduced-precision legacy')
+                      ? (this.hasCheckpointPrecision(a) ? 'Demonstrated' : 'Demonstrated · reduced-precision legacy')
                       : a.completionStatus === 'awaiting_review' ? 'Awaiting review' : 'Formative or unassessed'}</td>
                     <td>${new Date(a.date).toLocaleDateString()}</td>
                   </tr>

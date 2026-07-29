@@ -88,6 +88,9 @@ describe('StudySpice local-data migrations', () => {
     expect(new Set(questionIds).size).toBe(questionIds.length);
     expect(reconciled.attempts).toEqual(stored.attempts);
     expect(reconciled.settings).toEqual(stored.settings);
+    expect(reconciled.questions.find(question => question.id === 'q_1_1_a').assessmentFocus)
+      .toBe('control-unit-coordination');
+    expect(reconciled.attempts.some(attempt => attempt.questionEvidence?.some(item => item.assessmentFocus))).toBe(false);
   });
 
   test('verifies an anonymised realistic schema 12 dataset before and after migration', () => {

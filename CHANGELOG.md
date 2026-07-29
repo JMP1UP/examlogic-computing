@@ -7,8 +7,9 @@ All notable changes to ExamLogic Computing are recorded here.
 ### Added
 - Added restrained, evidence-backed section milestones across Learn, Dashboard and Progress.
 - Added quiet checkpoint acknowledgement after qualifying assessed activities, without points, streaks, leaderboards or page-view rewards.
-- Added validation that formative work, awaiting-review work, legacy reduced-precision records and repeated retries cannot inflate section checkpoints.
-- Excluded two under-assessed sections from the achievable checkpoint denominator while keeping them visibly labelled, and routed new learners to guided teaching rather than unsupported recall.
+- Added versioned, focus-based checkpoint rules so only representative demonstrated evidence can secure a section; retries replace the latest outcome for the same activity and concept.
+- Added validation that formative work, awaiting-review work, legacy reduced-precision records, duplicate-concept questions and repeated retries cannot inflate section checkpoints.
+- Enabled checkpoints for 27 sufficiently assessed sections. Five under-assessed sections remain visible but excluded from the achievable denominator: `1.2.4c`, `1.5.2`, `2.1.1`, `2.2.2` and `2.2.PY`.
 
 ### Fixed
 - Replaced low-contrast yellow and reused accent foregrounds with WCAG AA text tokens, and raised small interface labels to a readable minimum across student, teacher, public and dark-mode views.

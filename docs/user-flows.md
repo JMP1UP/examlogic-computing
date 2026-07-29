@@ -15,7 +15,7 @@
 - **Decisions**: View hint, retry question, move to next topic.
 - **Error States**: Submission with empty response -> prompt student ("Please enter an answer before checking").
 - **Completion State**: Only assessed demonstrated performance updates completion and mastery. Model-answer views, confidence, formative definition checks and awaiting-review work remain visible but do not award credit.
-- **Section Milestones**: Learning pages show the current state beside each specification objective. Progress shows a syllabus-wide checkpoint summary and an expandable Paper 1/Paper 2 list. Sections without enough mapped assessment remain visible as `Checkpoint unavailable` but are excluded from the achievable total. The dashboard shows one restrained next section without competing with its primary task. Retry evidence is grouped by activity, so repeated attempts cannot multiply milestone evidence.
+- **Section Milestones**: Learning pages show the current state beside each specification objective. Progress shows a syllabus-wide checkpoint summary and an expandable Paper 1/Paper 2 list. A checkpoint is secured only when the learner demonstrates every required assessment focus in the section's current versioned rule. Retry outcomes replace earlier outcomes for the same activity and focus rather than multiplying evidence. Twenty-seven sections currently have representative rules; `1.2.4c`, `1.5.2`, `2.1.1`, `2.2.2` and `2.2.PY` remain visible as `Checkpoint unavailable` and are excluded from the achievable total. The dashboard shows one restrained next section without competing with its primary task.
 
 ## 2. Interactive Logic Challenge
 - **User**: Computer Science Student

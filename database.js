@@ -38,6 +38,114 @@ const curriculumDiagnosticQuestions = curriculumContent.map(item => {
 
 const DB_KEY = 'studyspice_db';
 
+const CHECKPOINT_RULES = {
+  '1.1.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['cpu-component-roles', 'register-and-fetch-roles', 'control-unit-coordination'] },
+  '1.1.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['multicore-limitations', 'cache-performance'] },
+  '1.1.3': { version: 1, minimumRatio: 0.8, requiredFocuses: ['embedded-context', 'embedded-characteristics'] },
+  '1.2.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['virtual-memory-use', 'ram-rom-properties'] },
+  '1.2.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['storage-context-choice', 'storage-technology-characteristics'] },
+  '1.2.3': { version: 1, minimumRatio: 0.8, requiredFocuses: ['bit-byte-conversion', 'storage-unit-order'] },
+  '1.2.4a': { version: 1, minimumRatio: 0.8, requiredFocuses: ['binary-conversion', 'binary-manipulation', 'binary-overflow'] },
+  '1.2.4b': { version: 1, minimumRatio: 0.8, requiredFocuses: ['character-set-capacity', 'character-encoding-range'] },
+  '1.2.4d': { version: 1, minimumRatio: 0.8, requiredFocuses: ['sampling-frequency', 'sound-file-size'] },
+  '1.2.5': { version: 1, minimumRatio: 0.8, requiredFocuses: ['lossless-context', 'compression-type'] },
+  '1.3.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['router-role', 'lan-wan-scope'] },
+  '1.3.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['protocol-purpose', 'layered-model', 'network-addressing'] },
+  '1.4.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['password-attack', 'social-engineering', 'injection-attack'] },
+  '1.4.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['vulnerability-testing', 'network-filtering'] },
+  '1.5.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['resource-management', 'device-management'] },
+  '1.6.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['electronic-waste', 'resource-extraction'] },
+  '1.6.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['computer-misuse-law', 'data-protection-law'] },
+  '2.1.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['trace-table-use', 'input-process-output', 'flowchart-representation'] },
+  '2.1.3': { version: 1, minimumRatio: 0.8, requiredFocuses: ['binary-search', 'bubble-sort', 'merge-sort'] },
+  '2.2.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['variables-and-constants', 'operators', 'control-structures'] },
+  '2.2.3': { version: 1, minimumRatio: 0.8, requiredFocuses: ['string-operations', 'sql-querying', 'subprograms', 'two-dimensional-arrays'] },
+  '2.2.ERL': { version: 1, minimumRatio: 0.8, requiredFocuses: ['language-separation', 'erl-control-structures', 'erl-string-operations'] },
+  '2.3.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['authentication', 'input-validation'] },
+  '2.3.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['test-data-selection', 'testing-process', 'error-types'] },
+  '2.4.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['logic-gate-behaviour', 'boolean-expression-evaluation'] },
+  '2.5.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['translator-purpose', 'compiler-interpreter', 'language-level'] },
+  '2.5.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['error-diagnostics', 'ide-facilities'] }
+};
+
+const QUESTION_FOCUS_GROUPS = [
+  ['register-and-fetch-roles', ['diagnostic_1_1_1', 'q_1_1_b', 'q_1', 'q_1_1_mdr']],
+  ['control-unit-coordination', ['q_1_1_a']],
+  ['cpu-component-roles', ['q_1_1_cpu_purpose', 'q_1_1_e']],
+  ['multicore-limitations', ['diagnostic_1_1_2']],
+  ['cache-performance', ['q_1_1_c', 'q_1_1_cache_performance']],
+  ['embedded-context', ['diagnostic_1_1_3']],
+  ['embedded-characteristics', ['q_1_1_d']],
+  ['virtual-memory-use', ['diagnostic_1_2_1', 'q_1_2_virtual_memory']],
+  ['ram-rom-properties', ['q_1_2_a', 'q_1_2_ram_rom_difference_alt', 'q_2', 'q_6']],
+  ['storage-context-choice', ['diagnostic_1_2_2', 'q_1_2_b']],
+  ['storage-technology-characteristics', ['q_1_2_c', 'q_1_2_e', 'q_3']],
+  ['bit-byte-conversion', ['diagnostic_1_2_3']],
+  ['storage-unit-order', ['q_1_2_d']],
+  ['binary-conversion', ['diagnostic_1_2_4a', 'q_1_3_a']],
+  ['binary-manipulation', ['q_1_3_b']],
+  ['binary-overflow', ['q_1_3_binary_overflow']],
+  ['character-set-capacity', ['diagnostic_1_2_4b']],
+  ['character-encoding-range', ['q_1_3_unicode']],
+  ['image-colour-depth', ['diagnostic_1_2_4c', 'q_1_3_image_size_effect']],
+  ['sampling-frequency', ['diagnostic_1_2_4d', 'q_1_3_sampling_rate']],
+  ['sound-file-size', ['q_1_3_c']],
+  ['lossless-context', ['diagnostic_1_2_5']],
+  ['compression-type', ['q_1_3_d']],
+  ['router-role', ['diagnostic_1_3_1', 'q_1_4_a', 'q_1_4_router_role_alt']],
+  ['lan-wan-scope', ['q_1_4_lan_wan']],
+  ['protocol-purpose', ['diagnostic_1_3_2', 'q_1_4_d']],
+  ['layered-model', ['q_1_4_b', 'q_1_4_layer_benefits']],
+  ['network-addressing', ['q_1_4_c', 'q_4']],
+  ['password-attack', ['diagnostic_1_4_1']],
+  ['social-engineering', ['q_1_5_a']],
+  ['injection-attack', ['q_1_5_b']],
+  ['vulnerability-testing', ['diagnostic_1_4_2']],
+  ['network-filtering', ['q_1_5_c', 'q_1_5_firewall_alt', 'q_1_5_d']],
+  ['resource-management', ['diagnostic_1_5_1', 'q_1_6_multitasking', 'q_1_6_d']],
+  ['device-management', ['q_1_6_a', 'q_1_6_b']],
+  ['disk-defragmentation', ['diagnostic_1_5_2', 'q_1_6_c']],
+  ['electronic-waste', ['diagnostic_1_6_1']],
+  ['resource-extraction', ['q_1_7_c']],
+  ['computer-misuse-law', ['diagnostic_1_6_2', 'q_1_7_a', 'q_1_7_b']],
+  ['data-protection-law', ['q_1_7_data_protection_act', 'q_1_7_d']],
+  ['abstraction', ['diagnostic_2_1_1', 'q_2_1_a']],
+  ['trace-table-use', ['diagnostic_2_1_2', 'priority_212_2']],
+  ['input-process-output', ['priority_212_1']],
+  ['flowchart-representation', ['priority_212_3', 'q_2_1_e']],
+  ['binary-search', ['diagnostic_2_1_3', 'q_2_1_b', 'q_5']],
+  ['bubble-sort', ['q_2_1_c']],
+  ['merge-sort', ['q_2_1_d']],
+  ['operators', ['diagnostic_2_2_1', 'priority_221_2', 'q_2_2_c', 'q_2_2_d']],
+  ['control-structures', ['priority_221_1', 'priority_221_3', 'q_2_2_b']],
+  ['variables-and-constants', ['q_2_2_a']],
+  ['data-types', ['diagnostic_2_2_2']],
+  ['sql-querying', ['diagnostic_2_2_3', 'priority_223_2']],
+  ['string-operations', ['priority_223_1']],
+  ['subprograms', ['priority_223_3']],
+  ['two-dimensional-arrays', ['priority_223_4']],
+  ['practical-programming', ['diagnostic_2_2_PY']],
+  ['language-separation', ['diagnostic_2_2_ERL']],
+  ['erl-control-structures', ['priority_erl_1', 'priority_erl_2', 'priority_erl_3']],
+  ['erl-string-operations', ['priority_erl_4']],
+  ['authentication', ['diagnostic_2_3_1']],
+  ['input-validation', ['q_2_3_a']],
+  ['test-data-selection', ['diagnostic_2_3_2', 'q_2_3_c', 'q_2_3_d']],
+  ['testing-process', ['priority_232_1', 'priority_232_3']],
+  ['error-types', ['priority_232_2', 'q_2_3_b']],
+  ['logic-gate-behaviour', ['diagnostic_2_4_1', 'q_2_4_e', 'q_2_4_a', 'q_2_4_b', 'q_2_4_d']],
+  ['boolean-expression-evaluation', ['q_2_4_c']],
+  ['translator-purpose', ['diagnostic_2_5_1']],
+  ['compiler-interpreter', ['q_2_5_e', 'q_2_5_a', 'q_2_5_b']],
+  ['language-level', ['q_2_5_c']],
+  ['error-diagnostics', ['diagnostic_2_5_2']],
+  ['ide-facilities', ['q_2_5_d']]
+];
+
+const QUESTION_ASSESSMENT_FOCUS = Object.fromEntries(
+  QUESTION_FOCUS_GROUPS.flatMap(([focus, questionIds]) => questionIds.map(questionId => [questionId, focus]))
+);
+
 const defaultDatabase = {
   schemaVersion: 13,
   curriculumContent,
@@ -3270,9 +3378,13 @@ function applyContentMappings(data) {
   return data;
 }
 
+defaultDatabase.questions.forEach(question => {
+  question.assessmentFocus = QUESTION_ASSESSMENT_FOCUS[question.id] || null;
+});
+
 applyContentMappings(defaultDatabase);
 
-function validateQuestionBank(data) {
+function validateQuestionBank(data, checkpointRules = CHECKPOINT_RULES) {
   const objectivesByTopic = new Map();
   const validSpecificationIds = new Set();
 
@@ -3305,6 +3417,32 @@ function validateQuestionBank(data) {
     if (mappedSpecification && mappedSpecification !== question.specificationPointId) {
       throw new Error(`Question ${question.id} has conflicting semantic specification mappings.`);
     }
+    if (question.retired !== true && (!question.assessmentFocus || typeof question.assessmentFocus !== 'string')) {
+      throw new Error(`Question ${question.id} requires a stable assessment focus.`);
+    }
+  });
+
+  Object.entries(checkpointRules).forEach(([sectionId, rule]) => {
+    if (!validSpecificationIds.has(sectionId)) {
+      throw new Error(`Checkpoint rule references unknown specification section ${sectionId}.`);
+    }
+    if (!Number.isInteger(rule.version) || rule.version < 1) {
+      throw new Error(`Checkpoint rule ${sectionId} requires a positive integer version.`);
+    }
+    if (typeof rule.minimumRatio !== 'number' || rule.minimumRatio <= 0 || rule.minimumRatio > 1) {
+      throw new Error(`Checkpoint rule ${sectionId} requires a minimum ratio above 0 and no greater than 1.`);
+    }
+    if (!Array.isArray(rule.requiredFocuses) || new Set(rule.requiredFocuses).size !== rule.requiredFocuses.length || rule.requiredFocuses.length < 2) {
+      throw new Error(`Checkpoint rule ${sectionId} requires distinct assessment focuses.`);
+    }
+    const liveFocuses = new Set((data.questions || [])
+      .filter(question => question.retired !== true && question.specificationPointId === sectionId)
+      .map(question => question.assessmentFocus));
+    rule.requiredFocuses.forEach(focus => {
+      if (!liveFocuses.has(focus)) {
+        throw new Error(`Checkpoint rule ${sectionId} requires unreachable focus ${focus}.`);
+      }
+    });
   });
 
   const normaliseGuidanceText = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -3509,6 +3647,7 @@ class LocalDB {
       ? this.cachedData.questions
       : this.cachedData.questions.filter(question => question.retired !== true);
   }
+  getCheckpointRules() { return CHECKPOINT_RULES; }
   getWrittenQuestions() { return this.cachedData.writtenQuestions; }
   getProgrammingChallenges() { return this.cachedData.programmingChallenges; }
   getAttempts() { return this.cachedData.attempts; }
@@ -3709,6 +3848,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     LocalDB,
     defaultDatabase,
+    CHECKPOINT_RULES,
     applyContentMappings,
     validateQuestionBank,
     migrateSchema12To13,

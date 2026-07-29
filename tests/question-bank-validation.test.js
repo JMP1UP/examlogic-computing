@@ -44,6 +44,34 @@ describe('question-bank identifier and mapping integrity', () => {
     expect(() => database.validateQuestionBank(semanticConflict)).toThrow(/semantic specification mappings/);
   });
 
+  test('requires stable assessment focuses on every live question', () => {
+    const malformed = JSON.parse(JSON.stringify(data));
+    delete malformed.questions.find(question => question.retired !== true).assessmentFocus;
+    expect(() => database.validateQuestionBank(malformed)).toThrow(/requires a stable assessment focus/);
+  });
+
+  test('rejects invalid or unreachable checkpoint focus rules', () => {
+    const missingVersion = JSON.parse(JSON.stringify(database.CHECKPOINT_RULES));
+    delete missingVersion['1.1.1'].version;
+    expect(() => database.validateQuestionBank(data, missingVersion)).toThrow(/positive integer version/);
+
+    const duplicateFocus = JSON.parse(JSON.stringify(database.CHECKPOINT_RULES));
+    duplicateFocus['1.1.1'].requiredFocuses = ['cpu-component-roles', 'cpu-component-roles'];
+    expect(() => database.validateQuestionBank(data, duplicateFocus)).toThrow(/distinct assessment focuses/);
+
+    const unreachable = JSON.parse(JSON.stringify(database.CHECKPOINT_RULES));
+    unreachable['1.1.1'].requiredFocuses.push('unreachable-focus');
+    expect(() => database.validateQuestionBank(data, unreachable)).toThrow(/requires unreachable focus/);
+  });
+
+  test('rejects checkpoint rules with an invalid minimum ratio', () => {
+    const rules = JSON.parse(JSON.stringify(database.CHECKPOINT_RULES));
+    rules['1.1.1'].minimumRatio = 1.1;
+
+    expect(() => database.validateQuestionBank(data, rules))
+      .toThrow(/requires a minimum ratio above 0 and no greater than 1/);
+  });
+
   test('keeps legacy duplicate IDs on renamed content for audit interpretation', () => {
     const renamed = data.questions.filter(item => item.legacyQuestionId);
     expect(renamed).toHaveLength(13);
