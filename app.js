@@ -2668,18 +2668,6 @@ class App {
           ${weeklyRhythmHtml}
           ${upcomingDatesHtml}
           ${myDeckHtml}
-
-          <details class="student-desk-details">
-            <summary>See progress and other desk details</summary>
-            <section class="student-signal-strip" aria-label="This week's study status">
-              <div class="student-signal student-signal--required"><span>Required</span><strong>${requiredMinutes} min</strong><small>this week</small></div>
-              <div class="student-signal"><span>Work that counts</span><strong>${demonstratedProgress.evidenceCount}</strong><small>checked ${demonstratedProgress.evidenceCount === 1 ? 'activity' : 'activities'}</small></div>
-              <div class="student-signal"><span>Latest checked work</span><strong>${this.escapeHTML(latestLevel)}</strong><small>from completed checks</small></div>
-            </section>
-            ${checkpointHtml}
-            ${earnedMarksHtml}
-            <div class="student-plan-drawer">${seeMoreHtml}</div>
-          </details>
         </div>
       </div>
     `;
