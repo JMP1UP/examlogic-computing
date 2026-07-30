@@ -3674,30 +3674,35 @@ class App {
           </div>
         </article>
       ` : card ? `
-        <article class="card" aria-labelledby="retrieval-card-term">
-          <span class="student-kicker">${this.retrievalDeckExtraMode ? 'Extra card' : `Card ${Math.min(this.retrievalDeckRatedCount + 1, this.retrievalDeckSessionTarget)} of ${this.retrievalDeckSessionTarget}`}</span>
-          <span class="badge badge-secondary">${this.escapeHTML(topics.find(topic => topic.id === card.topicId)?.name || 'Topic on your desk')}</span>
-          <h2 id="retrieval-card-term" style="margin-top:12px;">Explain: ${this.escapeHTML(card.term)}</h2>
-          <label for="retrieval-card-attempt"><strong>Scratchpad — optional</strong></label>
-          <textarea id="retrieval-card-attempt" class="form-control" rows="3" placeholder="Recall your answer mentally, or type notes here if you choose...">${this.escapeHTML(this.retrievalDeckAttempt)}</textarea>
-          <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
-            <button type="button" class="btn btn-primary" id="retrieval-reveal-btn" style="min-height: 44px; padding-inline: 24px;">Flip card</button>
-            <button type="button" class="btn btn-secondary" id="retrieval-pause-btn" style="min-height: 44px;">Pause and return to your plan</button>
+        <article class="card" aria-labelledby="retrieval-card-term" style="max-width: 680px; padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <span class="student-kicker">${this.retrievalDeckExtraMode ? 'Extra card' : `Card ${Math.min(this.retrievalDeckRatedCount + 1, this.retrievalDeckSessionTarget)} of ${this.retrievalDeckSessionTarget}`}</span>
+            <span class="badge badge-secondary">${this.escapeHTML(topics.find(topic => topic.id === card.topicId)?.name || 'Topic on your desk')}</span>
           </div>
-          <div id="retrieval-card-answer" tabindex="-1" ${this.retrievalDeckRevealed ? '' : 'hidden'} style="margin-top: 16px;">
-            <div class="card" style="background: var(--bg-main); border-left: 4px solid var(--teal);">
-              <strong style="color: var(--teal); display: block; margin-bottom: 6px;">Correct Answer</strong>
-              <p style="font-size: 15px; font-weight: 500; color: var(--navy); line-height: 1.5; margin: 0;">${this.escapeHTML(card.definition)}</p>
+          <input type="hidden" id="retrieval-card-attempt" value="${this.escapeHTML(this.retrievalDeckAttempt)}">
+          <h2 id="retrieval-card-term" style="font-size: 20px; font-weight: 700; color: var(--navy); margin: 0 0 16px 0;">Explain: ${this.escapeHTML(card.term)}</h2>
+
+          ${!this.retrievalDeckRevealed ? `
+            <div style="display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-primary btn-lg" id="retrieval-reveal-btn" style="min-height: 44px; padding-inline: 28px;">Flip card</button>
+              <button type="button" class="btn btn-secondary" id="retrieval-pause-btn" style="min-height: 44px;">Pause and return to your plan</button>
             </div>
-            <fieldset style="margin-top: 14px; border: none; padding: 0;">
-              <legend style="float: none; width: 100%; display: block; font-size: 14px; color: var(--navy); font-weight: 600; margin-bottom: 8px;"><strong>How did recall feel?</strong> Choose one to schedule this card:</legend>
-              <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;">
-                <button type="button" class="btn btn-secondary retrieval-rating-btn" data-rating="couldnt-recall" style="min-height: 40px;">Not yet</button>
-                <button type="button" class="btn btn-secondary retrieval-rating-btn" data-rating="difficult" style="min-height: 40px;">Needed effort</button>
-                <button type="button" class="btn btn-secondary retrieval-rating-btn" data-rating="secure" style="min-height: 40px;">Easy to recall</button>
+          ` : `
+            <div id="retrieval-card-answer" tabindex="-1" style="margin-top: 16px;">
+              <div class="card" style="background: var(--bg-main); border-left: 5px solid var(--teal); padding: 18px; margin-bottom: 16px;">
+                <strong style="color: var(--teal); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Answer</strong>
+                <p style="font-size: 16px; font-weight: 500; color: var(--navy); line-height: 1.5; margin: 0;">${this.escapeHTML(card.definition)}</p>
               </div>
-            </fieldset>
-          </div>
+              <fieldset style="border: none; padding: 0; margin: 0;">
+                <legend style="float: none; width: 100%; display: block; font-size: 14px; color: var(--navy); font-weight: 600; margin-bottom: 10px;"><strong>How did recall feel?</strong> Choose one to schedule this card:</legend>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                  <button type="button" class="btn btn-secondary retrieval-rating-btn" data-rating="couldnt-recall" style="min-height: 44px; flex: 1;">Not yet</button>
+                  <button type="button" class="btn btn-secondary retrieval-rating-btn" data-rating="difficult" style="min-height: 44px; flex: 1;">Needed effort</button>
+                  <button type="button" class="btn btn-secondary retrieval-rating-btn" data-rating="secure" style="min-height: 44px; flex: 1;">Easy to recall</button>
+                </div>
+              </fieldset>
+            </div>
+          `}
         </article>
       ` : `
         <div class="card" role="status"><h2>No flashcards on your desk yet</h2><p>Open Topics and add flashcards for something you have met at school. Adding cards does not mean you have mastered it.</p><button class="btn btn-primary" id="retrieval-topics-btn">Choose a topic</button><button class="btn btn-secondary" id="retrieval-home-btn">Back to Practice</button></div>
@@ -3706,8 +3711,6 @@ class App {
 
     const filter = panel.querySelector?.('#retrieval-topic-filter') || document.getElementById('retrieval-topic-filter');
     if (filter) filter.onchange = () => {
-      if (this.retrievalDeckAttempt.trim() && typeof window.confirm === 'function'
-        && !window.confirm('Changing topic will discard this unfinished answer. Continue?')) return;
       this.retrievalDeckTopicId = filter.value;
       this.resetRetrievalDeckSession();
       this.renderStudentRetrievalDeck(panel);
@@ -3716,7 +3719,6 @@ class App {
     if (attempt) attempt.oninput = () => { this.retrievalDeckAttempt = attempt.value; };
     const reveal = panel.querySelector?.('#retrieval-reveal-btn') || document.getElementById('retrieval-reveal-btn');
     if (reveal) reveal.onclick = () => {
-      this.retrievalDeckAttempt = attempt?.value.trim() || '';
       this.retrievalDeckRevealed = true;
       this.renderStudentRetrievalDeck(panel);
       (panel.querySelector?.('#retrieval-card-answer') || document.getElementById('retrieval-card-answer'))?.focus?.();
@@ -3725,7 +3727,7 @@ class App {
       button.onclick = () => {
         if (!this.recordRetrievalDeckRating(card, button.getAttribute('data-rating'))) return this.alert('Reveal the card first before choosing a rating.');
         this.renderStudentRetrievalDeck(panel);
-        panel.querySelector?.(this.retrievalDeckSessionComplete && !this.retrievalDeckExtraMode ? '#retrieval-session-back-btn' : '#retrieval-card-attempt')?.focus?.();
+        panel.querySelector?.(this.retrievalDeckSessionComplete && !this.retrievalDeckExtraMode ? '#retrieval-session-back-btn' : '#retrieval-reveal-btn')?.focus?.();
       };
     });
     const pause = panel.querySelector?.('#retrieval-pause-btn');
