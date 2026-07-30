@@ -2452,7 +2452,8 @@ body.dark-mode .app-container[data-user-role="student"] {
 
 .student-weekly-notebook {
   display: grid;
-  gap: 16px;
+  gap: 12px;
+  padding: 20px 22px;
   border-top: 4px solid var(--teal);
 }
 
@@ -2471,14 +2472,11 @@ body.dark-mode .app-container[data-user-role="student"] {
 }
 
 .student-weekly-notebook__count {
-  min-width: 64px;
-  padding: 8px 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
+  padding-top: 4px;
   color: var(--teal-text);
-  font-size: 18px;
-  font-weight: 800;
-  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .student-weekly-notebook__priority,
@@ -2499,6 +2497,7 @@ body.dark-mode .app-container[data-user-role="student"] {
 
 .student-weekly-notebook__tasks {
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin: 0;
   padding: 0;
@@ -2507,16 +2506,16 @@ body.dark-mode .app-container[data-user-role="student"] {
 
 .student-weekly-notebook__tasks li {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
+  gap: 6px 10px;
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--border-color);
+  background: var(--bg-main);
 }
 
 .student-weekly-notebook__tasks li[aria-current="step"] {
-  border-left: 4px solid var(--teal);
+  border-bottom-color: var(--teal);
 }
 
 .student-weekly-notebook__tasks small {
@@ -2533,12 +2532,43 @@ body.dark-mode .app-container[data-user-role="student"] {
 
 .student-weekly-notebook__progress,
 .student-weekly-notebook__done {
+  grid-column: 2;
   font-size: 14px;
   font-weight: 700;
 }
 
 .student-weekly-notebook__done {
   color: var(--green-text);
+}
+
+.student-weekly-notebook__tasks .btn {
+  grid-column: 2;
+  justify-self: start;
+  min-height: 36px;
+  padding: 6px 10px;
+}
+
+.student-desk-details {
+  border-top: 1px solid var(--student-rule);
+}
+
+.student-desk-details > summary {
+  padding: 16px 2px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.student-desk-details[open] > summary {
+  margin-bottom: 18px;
+}
+
+.student-desk-details .student-connected-checkpoint,
+.student-desk-details .student-earned-marks {
+  margin-top: 24px;
+}
+
+.student-desk-details .student-plan-drawer {
+  margin-top: 24px;
 }
 
 .student-practice-mode-grid {
@@ -2586,6 +2616,10 @@ body.dark-mode .app-container[data-user-role="student"] {
     display: grid;
   }
 
+  .student-weekly-notebook__tasks {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .student-weekly-notebook__tasks li {
     grid-template-columns: auto minmax(0, 1fr);
   }
@@ -2610,4 +2644,54 @@ body.dark-mode .app-container[data-user-role="student"] {
     width: 100%;
     min-height: 44px;
   }
+}
+.student-teaching-sequence {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.student-teaching-sequence section {
+  border-left: 3px solid var(--teal);
+  padding: 10px 14px;
+  background: rgba(45, 156, 145, 0.06);
+}
+
+.student-teaching-sequence h3,
+.student-teaching-sequence h4 {
+  margin: 0 0 5px;
+  font-size: 15px;
+}
+
+.student-teaching-sequence p {
+  margin: 0;
+  line-height: 1.65;
+}
+
+.student-prerequisite-note {
+  border-left: 4px solid var(--amber);
+}
+
+.student-prerequisite-note h2 {
+  font-size: 17px;
+  margin-bottom: 5px;
+}
+
+.student-prerequisite-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.student-method-practice {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.student-method-practice summary {
+  cursor: pointer;
+  font-weight: 700;
 }

@@ -777,7 +777,7 @@ class App {
       { id: 'programming', label: 'Practise programming', cadence: 'Once this week', done: programmingDone ? 1 : 0, target: 1, unit: 'session', minutes: 15, route: 'stud-programming' }
     ];
     if (examDueThisWeek) {
-      items.push({ id: 'exam', label: 'Practise an exam question', cadence: 'Once this fortnight', done: examSubmitted ? 1 : 0, target: 1, unit: 'answer', minutes: 10, route: 'stud-exam-transfer', awaitingReview: examSubmitted });
+      items.push({ id: 'exam', label: 'Submit an exam answer for review', cadence: 'Once this fortnight', done: examSubmitted ? 1 : 0, target: 1, unit: 'answer', minutes: 25, route: 'stud-exam-transfer', awaitingReview: examSubmitted });
     }
     const next = items.find(item => item.done < item.target) || null;
     return {
@@ -2374,18 +2374,20 @@ class App {
       </aside>
     `;
     const requiredTaskActive = hasActiveTestPrep || Boolean(dominantAssignment);
+    const deskSummary = this.getDeskTopicSummary(student);
+    const deskTopics = deskSummary.visible;
+    const hiddenDeskTopicCount = deskSummary.hiddenCount;
     const weeklyRhythmHtml = `
       <section class="card student-weekly-notebook" aria-labelledby="weekly-rhythm-heading">
         <header class="student-weekly-notebook__header">
           <div>
-            <span class="student-kicker">Weekly notebook &middot; resets each Monday</span>
-            <h2 id="weekly-rhythm-heading">My study tasks</h2>
-            <p>${practiceRhythm.completedCount} of ${practiceRhythm.items.length} tasks complete. About ${practiceRhythm.totalMinutes} minutes across the week.</p>
+            <span class="student-kicker">This week &middot; resets Monday</span>
+            <h2 id="weekly-rhythm-heading">My notebook</h2>
           </div>
-          <span class="student-weekly-notebook__count">${practiceRhythm.completedCount}/${practiceRhythm.items.length}</span>
+          <span class="student-weekly-notebook__count">${practiceRhythm.completedCount}/${practiceRhythm.items.length} done &middot; about ${practiceRhythm.totalMinutes} min</span>
         </header>
-        ${requiredTaskActive ? '<p class="student-weekly-notebook__priority"><strong>Required work comes first.</strong> Your notebook stays visible so you can see the rest of your week.</p>' : ''}
-        ${upcomingTestNotebook ? `
+        ${requiredTaskActive ? '<p class="student-weekly-notebook__priority"><strong>First:</strong> finish the required task above. These smaller tasks can be spread across the week.</p>' : ''}
+        ${upcomingTestNotebook && !hasActiveTestPrep ? `
           <aside class="student-notebook-test" aria-labelledby="upcoming-test-heading">
             <div>
               <span class="student-kicker">Upcoming test</span>
@@ -2415,29 +2417,26 @@ class App {
                 <span class="student-weekly-notebook__progress">${progressLabel}</span>
                 ${complete
                   ? '<span class="student-weekly-notebook__done">Complete</span>'
-                  : `<button type="button" class="btn btn-secondary btn-sm notebook-task-btn" data-activity-id="${this.escapeHTML(item.id)}" data-route="${this.escapeHTML(item.route)}">${requiredTaskActive ? 'Open' : current ? 'Start next' : 'Start'}</button>`}
+                  : `<button type="button" class="btn btn-secondary btn-sm notebook-task-btn" data-activity-id="${this.escapeHTML(item.id)}" data-route="${this.escapeHTML(item.id === 'retrieval' && !deskTopics.length ? 'stud-topics' : item.route)}">${item.id === 'retrieval' && !deskTopics.length ? 'Choose topics' : requiredTaskActive ? 'Open' : current ? 'Start next' : 'Start'}</button>`}
               </li>`;
           }).join('')}
         </ul>
-        <p class="student-weekly-notebook__note">Flashcards count on different days, so doing extra cards today cannot complete another day. Regular study builds your routine; only marked work changes Progress.</p>
+        <p class="student-weekly-notebook__note">Flashcards count on two different days. Only marked work changes Progress.</p>
         ${practiceRhythm.habitAchieved ? '<p><strong>Weekly habit complete.</strong> This recognises regular study, not mastery.</p>' : ''}
       </section>
     `;
-    const deskSummary = this.getDeskTopicSummary(student);
-    const deskTopics = deskSummary.visible;
-    const hiddenDeskTopicCount = deskSummary.hiddenCount;
-    const myDeckHtml = `
+    const myDeckHtml = deskTopics.length ? `
       <section class="card student-my-deck" aria-labelledby="my-deck-heading">
         <header class="student-my-deck__header">
           <div>
             <span class="student-kicker">My desk</span>
             <h2 id="my-deck-heading">Flashcards on your desk</h2>
             <p>The topics you have chosen to keep fresh alongside school.</p>
+            <p class="student-deck-scope-note">These cards cover key facts, not every skill or exam question in a section.</p>
           </div>
           <button type="button" class="btn btn-secondary" id="manage-deck-btn">Organise my topics</button>
         </header>
-        ${deskTopics.length ? `
-          <div class="student-my-deck__topics">
+        <div class="student-my-deck__topics">
             ${deskTopics.map(topic => `
               <article>
                 <div>
@@ -2452,17 +2451,10 @@ class App {
                 <button type="button" class="btn btn-primary deck-topic-review-btn" data-topic-id="${this.escapeHTML(topic.topicId)}" aria-label="Review ${this.escapeHTML(topic.topicName)} flashcards">Review flashcards</button>
               </article>
             `).join('')}
-          </div>
-          ${hiddenDeskTopicCount ? `<p class="student-my-deck__more">${hiddenDeskTopicCount} more ${hiddenDeskTopicCount === 1 ? 'topic is' : 'topics are'} on your desk. Use Organise my topics to see all of them.</p>` : ''}
-        ` : `
-          <div class="student-my-deck__empty">
-            <strong>Your desk is ready.</strong>
-            <p>Choose a topic you have met at school and add its flashcards when you are ready.</p>
-            <button type="button" class="btn btn-primary" id="empty-desk-topics-btn">Choose a topic</button>
-          </div>
-        `}
+        </div>
+        ${hiddenDeskTopicCount ? `<p class="student-my-deck__more">${hiddenDeskTopicCount} more ${hiddenDeskTopicCount === 1 ? 'topic is' : 'topics are'} on your desk. Use Organise my topics to see all of them.</p>` : ''}
       </section>
-    `;
+    ` : '';
 
     panel.innerHTML = `
       <div class="student-page student-dashboard">
@@ -2493,15 +2485,17 @@ class App {
           ${weeklyRhythmHtml}
           ${myDeckHtml}
 
-          <section class="student-signal-strip" aria-label="This week's study status">
-            <div class="student-signal student-signal--required"><span>Required</span><strong>${requiredMinutes} min</strong><small>this week</small></div>
-            <div class="student-signal"><span>Work that counts</span><strong>${demonstratedProgress.evidenceCount}</strong><small>checked ${demonstratedProgress.evidenceCount === 1 ? 'activity' : 'activities'}</small></div>
-            <div class="student-signal"><span>Latest checked work</span><strong>${this.escapeHTML(latestLevel)}</strong><small>from completed checks</small></div>
-          </section>
-
-          ${checkpointHtml}
-          ${earnedMarksHtml}
-          <div class="student-plan-drawer">${seeMoreHtml}</div>
+          <details class="student-desk-details">
+            <summary>See progress and other desk details</summary>
+            <section class="student-signal-strip" aria-label="This week's study status">
+              <div class="student-signal student-signal--required"><span>Required</span><strong>${requiredMinutes} min</strong><small>this week</small></div>
+              <div class="student-signal"><span>Work that counts</span><strong>${demonstratedProgress.evidenceCount}</strong><small>checked ${demonstratedProgress.evidenceCount === 1 ? 'activity' : 'activities'}</small></div>
+              <div class="student-signal"><span>Latest checked work</span><strong>${this.escapeHTML(latestLevel)}</strong><small>from completed checks</small></div>
+            </section>
+            ${checkpointHtml}
+            ${earnedMarksHtml}
+            <div class="student-plan-drawer">${seeMoreHtml}</div>
+          </details>
         </div>
       </div>
     `;
@@ -2777,7 +2771,7 @@ class App {
     const rhythm = this.getStudentPracticeRhythm();
     const modes = [
       { title: 'Flashcards', copy: 'Review three flashcards in about five minutes. Your choices schedule future cards.', route: 'stud-retrieval', time: 'About 5 minutes', outcome: 'Builds your study routine; it is not marked in Progress.' },
-      { title: 'Exam questions', copy: 'Apply one specification point in an exam-style response. Extended work waits for review.', route: 'stud-exam-transfer', time: 'About 6–12 minutes', outcome: 'A checked answer appears in Progress; longer answers wait for review.' },
+      { title: 'Exam questions', copy: 'Use guided support, then choose whether to submit a similar independent answer for review.', route: 'stud-exam-transfer', time: 'About 15–30 minutes with support; allow 5–10 minutes more for the independent answer', outcome: 'Guided self-checking is practice only. A submitted independent answer waits for review.' },
       { title: 'Number skills', copy: 'Complete a bounded calculation set and retry mistakes.', route: 'stud-practise', time: 'About 10 minutes', outcome: 'Your checked result appears in Progress.' },
       { title: 'Programming', copy: 'Continue one coding or pseudocode stage with tests or review.', route: 'stud-programming', time: 'About 15 minutes', outcome: 'Passed tests can count; other work waits for review.' }
     ];
@@ -2910,6 +2904,16 @@ class App {
               </div>
             </div>
             <p style="line-height: 1.7; margin: 14px 0;">${this.escapeHTML(item.explanation)}</p>
+            ${item.teachingSections?.length ? `
+              <div class="student-teaching-sequence" aria-label="Step-by-step teaching">
+                ${item.teachingSections.map(section => `
+                  <section>
+                    <h4>${this.escapeHTML(section.heading)}</h4>
+                    <p>${this.escapeHTML(section.body)}</p>
+                  </section>
+                `).join('')}
+              </div>
+            ` : ''}
             <div style="background: rgba(45, 156, 145, 0.08); border-left: 4px solid var(--teal); padding: 14px; border-radius: 0 8px 8px 0;">
               <strong>Worked example</strong>
               <p style="line-height: 1.6; margin: 6px 0 0;">${this.escapeHTML(item.workedExample)}</p>
@@ -2938,7 +2942,7 @@ class App {
               </div>
               <div id="try-status-${item.id}" style="font-size: 12px; color: var(--teal); margin-top: 6px; display: none; font-weight: 600;"></div>
             </div>
-            <p style="font-size: 13px; margin: 12px 0 0;"><strong>Reading and guided task:</strong> about ${item.workload.coreLearningMinutes} minutes. <strong>Optional quick recall:</strong> up to ${item.workload.retrievalMinutes} minutes; answer from memory.</p>
+            <p style="font-size: 13px; margin: 12px 0 0;"><strong>Reading:</strong> about ${item.workload.coreLearningMinutes} minutes. <strong>Extended guided practice:</strong> complete one clearly chosen step now, or allow 20-40 minutes for the whole multi-part task. <strong>Optional quick recall:</strong> up to ${item.workload.retrievalMinutes} minutes.</p>
             <p style="font-size: 13px; margin: 6px 0;"><strong>How this may appear in an OCR exam:</strong> ${item.assessmentModes.map(mode => this.escapeHTML(mode)).join(', ')}.</p>
             <p style="margin: 14px 0 8px;"><strong>A common mistake to avoid:</strong> ${this.escapeHTML(item.misconception)}</p>
             <div style="display: flex; flex-wrap: wrap; gap: 6px;" aria-label="Key terms">
@@ -3237,6 +3241,12 @@ class App {
   renderFocusedStudentLearning(panel, activeNote, content) {
     const task = this.getMatchingExamTransferTask(activeNote.topicId, content.id);
     const state = this.getLearnerObjectiveState(content.id);
+    const objectiveNames = new Map(window.db.getUnits()
+      .flatMap(unit => unit.topics)
+      .flatMap(topic => topic.objectives)
+      .map(objective => [objective.id, objective.name]));
+    const prerequisites = (content.prerequisiteSpecificationPointIds || [])
+      .map(id => ({ id, name: objectiveNames.get(id) || id }));
     const contextualTools = {
       '1.1.1': { id: 'fde-cycle', label: 'Open the fetch–decode–execute tool' },
       '1.2.4a': { id: 'binary-shift', label: 'Open the binary-shift tool' },
@@ -3253,13 +3263,37 @@ class App {
           <h1>${this.escapeHTML(content.scope)}</h1>
           <p>Read the explanation and worked example, then apply it in an exam question.</p>
         </header>
+        ${prerequisites.length ? `
+          <aside class="card student-prerequisite-note" aria-labelledby="useful-first-heading">
+            <h2 id="useful-first-heading">Useful first</h2>
+            <p>If any of these feel unfamiliar, review them before the exam question. You can continue with this topic if you are already confident.</p>
+            <div class="student-prerequisite-actions">
+              ${prerequisites.map(item => `<button type="button" class="btn btn-secondary btn-sm focused-prerequisite-btn" data-prerequisite-id="${this.escapeHTML(item.id)}">Review ${this.escapeHTML(item.id)} · ${this.escapeHTML(item.name)}</button>`).join('')}
+            </div>
+          </aside>
+        ` : ''}
         <article class="card student-learning-content">
           <h2>Review this section</h2>
           <p>${this.escapeHTML(content.explanation)}</p>
+          ${content.teachingSections?.length ? `
+            <div class="student-teaching-sequence" aria-label="Step-by-step teaching">
+              ${content.teachingSections.map(section => `
+                <section>
+                  <h3>${this.escapeHTML(section.heading)}</h3>
+                  <p>${this.escapeHTML(section.body)}</p>
+                </section>
+              `).join('')}
+            </div>
+          ` : ''}
           <aside class="student-worked-example">
             <h3>Worked example</h3>
             <p>${this.escapeHTML(content.workedExample)}</p>
           </aside>
+          <details class="student-method-practice">
+            <summary>Practise the method first</summary>
+            <p>${this.escapeHTML(content.supportedPractice)}</p>
+            <p><strong>Practice only:</strong> use paper or your own notes. This does not update Progress.</p>
+          </details>
           <p><strong>Common mistake:</strong> ${this.escapeHTML(content.misconception)}</p>
         </article>
         ${tool ? `<aside class="card student-context-tool"><h2>Useful tool</h2><p>Use this interactive tool if it helps you see the process.</p><button type="button" class="btn btn-secondary" id="focused-tool-btn">${tool.label}</button></aside>` : ''}
@@ -3279,6 +3313,15 @@ class App {
       this.examTransferPlan = {};
       this.examTransferResponse = '';
       this.switchTab('stud-exam-transfer');
+    });
+    panel.querySelectorAll('.focused-prerequisite-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        this.activeObjectiveId = button.getAttribute('data-prerequisite-id');
+        this.activeTopicId = window.db.getUnits()
+          .flatMap(unit => unit.topics)
+          .find(topic => topic.objectives.some(objective => objective.id === this.activeObjectiveId))?.id || this.activeTopicId;
+        this.render();
+      });
     });
     panel.querySelector('#focused-cover-btn')?.addEventListener('click', () => {
       const current = this.getLearnerObjectiveState(content.id);
@@ -3373,12 +3416,10 @@ class App {
     if (typeof this.testPrepOffset !== 'number') this.testPrepOffset = 0;
     if (this.testPrepOffset >= selected.length) this.testPrepOffset = 0;
 
-    const showAll = Boolean(this.showAllTestPrepPoints);
-    const sessionPoints = showAll ? selected : selected.slice(this.testPrepOffset, this.testPrepOffset + 3);
-    const minutesEach = Math.max(2, Math.floor(prep.sessionMinutes / Math.max(1, sessionPoints.length)));
-
-    const startIdx = showAll ? 1 : this.testPrepOffset + 1;
-    const endIdx = showAll ? selected.length : Math.min(this.testPrepOffset + 3, selected.length);
+    const sessionPoints = selected.slice(this.testPrepOffset, this.testPrepOffset + 1);
+    const minutesEach = Number(prep.sessionMinutes || 10);
+    const startIdx = this.testPrepOffset + 1;
+    const sessionsPerWeek = Math.max(1, Math.floor(Number(prep.weeklyMinutes || minutesEach) / minutesEach));
 
     panel.innerHTML = `
       <div class="student-route-header">
@@ -3390,16 +3431,13 @@ class App {
       <div class="card" style="margin-bottom:20px; border-left:5px solid var(--teal);">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <div>
-            <strong>Session sequence (Points ${startIdx}–${endIdx} of ${selected.length}):</strong> quick diagnostic → targeted support → exam transfer.
+            <strong>Session ${startIdx} of ${selected.length}:</strong> focus on one specification point, then use the available review or exam practice.
+            <div style="font-size:12px; color:var(--text-muted); margin-top:5px;">Plan: about ${sessionsPerWeek} ${sessionsPerWeek === 1 ? 'session' : 'sessions'} each week within the ${prep.weeklyMinutes}-minute limit.</div>
           </div>
-          ${selected.length > 3 ? `
+          ${selected.length > 1 ? `
             <div style="display:flex; gap:6px; align-items:center;">
-              ${!showAll ? `
-                <button type="button" class="btn btn-secondary btn-sm prep-prev-batch-btn" ${this.testPrepOffset === 0 ? 'disabled' : ''}>&larr; Prev</button>
-                <span style="font-size:12px; font-weight:600; color:var(--text-muted);">Batch ${Math.floor(this.testPrepOffset / 3) + 1} of ${Math.ceil(selected.length / 3)}</span>
-                <button type="button" class="btn btn-secondary btn-sm prep-next-batch-btn" ${this.testPrepOffset + 3 >= selected.length ? 'disabled' : ''}>Next &rarr;</button>
-              ` : ''}
-              <button type="button" class="btn btn-secondary btn-sm prep-toggle-all-btn">${showAll ? 'Show Batch View' : `Show All (${selected.length})`}</button>
+              <button type="button" class="btn btn-secondary btn-sm prep-prev-batch-btn" ${this.testPrepOffset === 0 ? 'disabled' : ''}>&larr; Previous point</button>
+              <button type="button" class="btn btn-secondary btn-sm prep-next-batch-btn" ${this.testPrepOffset + 1 >= selected.length ? 'disabled' : ''}>Next point &rarr;</button>
             </div>
           ` : ''}
         </div>
@@ -3409,7 +3447,22 @@ class App {
         ${sessionPoints.map((point, index) => {
           const isPython = point.id === '2.2.PY';
           const isPseudocode = point.id === '2.2.ERL';
-          const targetTab = isPython ? 'stud-programme' : isPseudocode ? 'stud-pseudocode' : 'stud-recall';
+          const examTask = this.getMatchingExamTransferTask(point.topicId, point.id);
+          const targetTab = isPython
+            ? 'stud-programme'
+            : isPseudocode
+              ? 'stud-pseudocode'
+              : examTask
+                ? 'stud-exam-transfer'
+                : 'stud-learn';
+          const actionLabel = isPython || isPseudocode
+            ? 'Practise'
+            : examTask
+              ? 'Try exam question'
+              : 'Review this section';
+          const activityLabel = examTask
+            ? `${examTask.marks}-mark exam-style question`
+            : 'Focused explanation and worked example';
           const support = this.getAdaptiveSupportLevel(point.name);
           const supportDescription = {
             Guided: 'Step-by-step guidance',
@@ -3418,8 +3471,8 @@ class App {
             Challenge: 'Challenge practice'
           }[support] || 'Hints available';
           return `<div class="card" style="display:flex; justify-content:space-between; gap:20px; align-items:center;">
-            <div><span class="badge badge-primary">${index === 0 ? 'Diagnostic' : index === sessionPoints.length - 1 ? 'Exam bridge' : 'Targeted practice'} · ${minutesEach} mins</span><h3 style="margin:8px 0 5px;">${point.id} ${point.name}</h3><p style="font-size:13px; color:var(--text-muted); margin:0;">${point.paper} · ${point.topicName} · ${supportDescription}</p></div>
-            <button class="btn btn-primary btn-sm prep-point-start-btn" aria-label="Start ${index === 0 ? 'diagnostic' : index === sessionPoints.length - 1 ? 'exam bridge' : 'targeted practice'}: ${point.id} ${point.name}" data-target-tab="${targetTab}" data-topic-id="${point.topicId}" data-spec-id="${point.id}">Start</button>
+            <div><span class="badge badge-primary">Plan point ${startIdx + index} · about ${minutesEach} mins</span><h3 style="margin:8px 0 5px;">${point.id} ${point.name}</h3><p style="font-size:13px; color:var(--text-muted); margin:0;">${point.paper} · ${point.topicName} · ${activityLabel} · ${supportDescription}</p></div>
+            <button class="btn btn-primary btn-sm prep-point-start-btn" aria-label="${actionLabel}: ${point.id} ${point.name}" data-target-tab="${targetTab}" data-topic-id="${point.topicId}" data-spec-id="${point.id}" data-exam-task-id="${this.escapeHTML(examTask?.id || '')}">${actionLabel}</button>
           </div>`;
         }).join('')}
       </div>
@@ -3429,13 +3482,20 @@ class App {
       this.activeTopicId = button.getAttribute('data-topic-id');
       const specId = button.getAttribute('data-spec-id');
       if (specId) this.activeObjectiveId = specId;
+      const examTaskId = button.getAttribute('data-exam-task-id');
+      if (examTaskId) {
+        this.activeExamTransferId = examTaskId;
+        this.examTransferStage = 'decode';
+        this.examTransferPlan = {};
+        this.examTransferResponse = '';
+      }
       this.switchTab(button.getAttribute('data-target-tab'));
     });
 
     const prevBatchBtn = panel.querySelector('.prep-prev-batch-btn');
     if (prevBatchBtn) {
       prevBatchBtn.onclick = () => {
-        this.testPrepOffset = Math.max(0, this.testPrepOffset - 3);
+        this.testPrepOffset = Math.max(0, this.testPrepOffset - 1);
         this.renderStudentTestPrep(panel);
       };
     }
@@ -3443,18 +3503,11 @@ class App {
     const nextBatchBtn = panel.querySelector('.prep-next-batch-btn');
     if (nextBatchBtn) {
       nextBatchBtn.onclick = () => {
-        this.testPrepOffset = Math.min(selected.length - 1, this.testPrepOffset + 3);
+        this.testPrepOffset = Math.min(selected.length - 1, this.testPrepOffset + 1);
         this.renderStudentTestPrep(panel);
       };
     }
 
-    const toggleAllBtn = panel.querySelector('.prep-toggle-all-btn');
-    if (toggleAllBtn) {
-      toggleAllBtn.onclick = () => {
-        this.showAllTestPrepPoints = !this.showAllTestPrepPoints;
-        this.renderStudentTestPrep(panel);
-      };
-    }
   }
 
   // ==================== LEARN ALONG ====================
@@ -4522,26 +4575,54 @@ class App {
     const task = tasks.find(item => item.id === this.activeExamTransferId) || tasks[0];
     const activeTopic = window.db.getUnits().flatMap(unit => unit.topics).find(topic => topic.id === task.topicId);
     const topicName = activeTopic ? activeTopic.name : '';
-    const stages = ['decode', 'plan', 'answer', 'check', 'retry'];
-    const stageIndex = stages.indexOf(this.examTransferStage);
-    const progress = ((stageIndex + 1) / stages.length) * 100;
+    const guidedStages = ['decode', 'plan', 'answer', 'check'];
+    const stageIndex = guidedStages.indexOf(this.examTransferStage);
+    const progress = this.examTransferStage === 'retry'
+      ? 100
+      : ((stageIndex + 1) / guidedStages.length) * 100;
     const plan = this.examTransferPlan;
-
-    // Helper for keyphrase detection
-    const scanKeyphrases = (text) => {
-      if (!text || !task.requiredElements) return 0;
-      const lower = text.toLowerCase();
-      return task.requiredElements.filter(req => {
-        const words = req.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-        return words.some(w => lower.includes(w));
-      }).length;
-    };
+    const isCalculation = task.responseForm === 'calculation' || task.responseForm === 'number-representation';
+    const guidedMinutes = task.minutes + Math.max(8, Math.round(task.minutes * 1.25));
+    const responseKind = isCalculation ? 'calculation'
+      : ['Write', 'Complete', 'Refine', 'Design'].includes(task.commandWord) ? 'constructed'
+        : ['Discuss', 'Evaluate'].includes(task.commandWord) || task.marks >= 8 ? 'extended'
+          : 'explanation';
+    const responseGuidance = {
+      calculation: {
+        planTitle: 'Plan your working',
+        planHelp: 'Set out the values, operation, conversion and unit you need:',
+        answerTitle: 'Show your working and answer',
+        answerHelp: 'Keep each stage visible and include the final unit.',
+        placeholder: 'Set out each calculation step and your final answer...'
+      },
+      constructed: {
+        planTitle: 'Plan the structure',
+        planHelp: 'Identify the required inputs, processing, outputs or test cases before constructing your response:',
+        answerTitle: 'Construct your response',
+        answerHelp: 'Use the notation or table structure requested in the question and check every path or test case.',
+        placeholder: 'Write the algorithm, completed trace or test plan here...'
+      },
+      extended: {
+        planTitle: 'Plan a balanced answer',
+        planHelp: 'Note the main arguments, scenario links and judgement your response needs:',
+        answerTitle: 'Write your extended answer',
+        answerHelp: 'Develop both sides where appropriate, apply each point to the scenario and finish with a justified conclusion.',
+        placeholder: 'Write your developed response and justified conclusion here...'
+      },
+      explanation: {
+        planTitle: 'Plan your explanation',
+        planHelp: 'Add the technical points and scenario links your answer needs:',
+        answerTitle: 'Write your answer',
+        answerHelp: 'Use accurate computing terms and explain how or why each point matters in this scenario.',
+        placeholder: 'Write your explanation here...'
+      }
+    }[responseKind];
 
     panel.innerHTML = `
       <div class="student-route-header">
-        <span class="student-mode-label">Exam preparation &middot; ${task.paper} &middot; ${task.marks} marks &middot; about ${task.minutes} minutes</span>
+        <span class="student-mode-label">Guided exam practice &middot; ${task.paper} &middot; ${task.marks} marks &middot; about ${guidedMinutes} minutes with support</span>
         <h1>Apply knowledge: ${topicName} (${task.specificationPointId})</h1>
-        <p>Work through Understand, Plan, Answer, Check and Retry. This practice does not create a score automatically; your final independent response is sent for review.</p>
+        <p>Understand, plan, answer and self-check one question. A similar independent retry is optional and takes about ${task.minutes} more minutes; only that independent response is sent for review.</p>
       </div>
 
       <div style="height:8px; background:var(--border-color); border-radius:4px; margin-bottom:20px; overflow:hidden;">
@@ -4549,16 +4630,19 @@ class App {
       </div>
 
       <div class="card" id="exam-transfer-question" tabindex="-1" style="margin-bottom:18px; border-left: 5px solid var(--teal); scroll-margin-top:12px;">
-        <label for="exam-transfer-task-select" style="font-weight:700;">Select Exam Question Scenario</label>
-        <select id="exam-transfer-task-select" class="form-control" style="margin-top:7px;">
-          ${tasks.map(item => `<option value="${item.id}" ${item.id === task.id ? 'selected' : ''}>${item.paper} &middot; ${item.specificationPointId} &middot; ${item.commandWord} (${item.marks} Marks)</option>`).join('')}
-        </select>
         <p style="font-size:16px; font-weight:600; margin:14px 0 0; line-height:1.5; color: var(--text-main);">${this.escapeHTML(task.question)}</p>
+        <details style="margin-top:14px;">
+          <summary style="cursor:pointer; font-weight:700;">Choose a different question</summary>
+          <label for="exam-transfer-task-select" class="sr-only">Exam question</label>
+          <select id="exam-transfer-task-select" class="form-control" style="margin-top:7px;">
+            ${tasks.map(item => `<option value="${item.id}" ${item.id === task.id ? 'selected' : ''}>${item.paper} &middot; ${item.specificationPointId} &middot; ${item.commandWord} (${item.marks} Marks)</option>`).join('')}
+          </select>
+        </details>
       </div>
 
       ${this.examTransferStage === 'decode' ? `
         <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 24px;">
-          <span class="badge badge-primary">Stage 1 of 5: Understand</span>
+          <span class="badge badge-primary">Stage 1 of 4: Understand</span>
           <h2 style="font-size:18px; margin-top:10px;">Work out what the question asks</h2>
           <div style="background: rgba(45, 156, 145, 0.08); padding: 14px; border-radius: 8px; border: 1px solid var(--teal); margin: 12px 0;">
             <strong style="color: var(--teal);">Command word: ${task.commandWord}</strong>
@@ -4573,13 +4657,13 @@ class App {
 
       ${this.examTransferStage === 'plan' ? `
         <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 24px;">
-          <span class="badge badge-primary">Stage 2 of 5: Plan</span>
-          <h2 style="font-size:18px; margin-top:10px;">Plan your main points</h2>
-          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Add a short note for each part your answer needs:</p>
+          <span class="badge badge-primary">Stage 2 of 4: Plan</span>
+          <h2 style="font-size:18px; margin-top:10px;">${responseGuidance.planTitle}</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">${responseGuidance.planHelp}</p>
           ${task.planningLabels.map((label, index) => `
             <div class="form-group" style="margin-bottom: 14px;">
-              <label for="transfer-plan-${index}" style="font-weight: 600; font-size: 13.5px;">Point ${index + 1}: ${this.escapeHTML(label)}</label>
-              <input id="transfer-plan-${index}" class="form-control" placeholder="Write key point or formula..." value="${this.escapeHTML(plan[index] || '')}">
+              <label for="transfer-plan-${index}" style="font-weight: 600; font-size: 13.5px;">${isCalculation ? 'Step' : 'Point'} ${index + 1}: ${this.escapeHTML(label)}</label>
+              <input id="transfer-plan-${index}" class="form-control" placeholder="${isCalculation ? 'Write the value, operation or unit...' : 'Write a key point...'}" value="${this.escapeHTML(plan[index] || '')}">
             </div>
           `).join('')}
           <div style="display: flex; gap: 10px; margin-top: 16px;">
@@ -4591,21 +4675,10 @@ class App {
 
       ${this.examTransferStage === 'answer' ? `
         <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 24px;">
-          <span class="badge badge-primary">Stage 3 of 5: Answer</span>
-          <h2 style="font-size:18px; margin-top:10px;">Write your full answer</h2>
-          <p style="font-size:13px; color:var(--text-muted); margin-bottom: 12px;">Aim for about ${Math.max(3, Math.round(task.minutes * 0.65))} minutes. Show working and use accurate computing terms.</p>
-          <textarea id="transfer-answer-response" class="form-control" rows="8" placeholder="Write your full extended response here...">${this.escapeHTML(this.examTransferResponse)}</textarea>
-          
-          <!-- Real-Time Scanner Badge -->
-          <div id="live-keyphrase-scanner" style="margin-top:14px; background:rgba(45, 156, 145, 0.08); border:1px solid var(--teal); border-radius: 8px; padding:12px 16px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 8px;">
-              <span style="font-size:13px; font-weight:700; color:var(--teal);">Useful terms found</span>
-              <span id="scanner-match-count" class="badge badge-primary" style="font-size: 12px;">
-                ${scanKeyphrases(this.examTransferResponse)} of ${task.requiredElements.length} suggested terms found
-              </span>
-            </div>
-            <p style="font-size:12px; color:var(--text-muted); margin:4px 0 0 0;">This checks for possible matching words only. It does not decide whether your explanation is correct or award a mark.</p>
-          </div>
+          <span class="badge badge-primary">Stage 3 of 4: Answer</span>
+          <h2 style="font-size:18px; margin-top:10px;">${responseGuidance.answerTitle}</h2>
+          <p style="font-size:13px; color:var(--text-muted); margin-bottom: 12px;">Aim for about ${Math.max(3, Math.round(task.minutes * 0.65))} minutes. ${responseGuidance.answerHelp}</p>
+          <textarea id="transfer-answer-response" class="form-control" rows="8" placeholder="${responseGuidance.placeholder}">${this.escapeHTML(this.examTransferResponse)}</textarea>
 
           <div style="display: flex; gap: 10px; margin-top:16px;">
             <button id="transfer-back-plan" class="btn btn-secondary">&larr; Back to Plan</button>
@@ -4616,9 +4689,9 @@ class App {
 
       ${this.examTransferStage === 'check' ? `
         <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 24px;">
-          <span class="badge badge-primary">Stage 4 of 5: Check</span>
-          <h2 style="font-size:18px; margin-top:10px;">Compare with the mark scheme</h2>
-          <p>A mark scheme lists points an examiner may credit. This check is for practice, not a final mark. Tick only what your answer actually explains.</p>
+          <span class="badge badge-primary">Stage 4 of 4: Check</span>
+          <h2 style="font-size:18px; margin-top:10px;">${isCalculation ? 'Check your method' : 'Compare with the mark scheme'}</h2>
+          <p>${isCalculation ? 'Check each stage of your working, including the conversion and final unit.' : 'A mark scheme lists points an examiner may credit. This check is for practice, not a final mark. Tick only what your answer actually explains.'}</p>
           <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
             ${task.requiredElements.map((element, index) => `
               <label style="display:flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-main); border-radius: 6px; border: 1px solid var(--border-color); font-size: 14px; cursor: pointer;">
@@ -4633,13 +4706,16 @@ class App {
               ${task.modelPlan.map(item => `<li>${this.escapeHTML(item)}</li>`).join('')}
             </ol>
           </details>
-          <button id="transfer-to-retry" class="btn btn-primary" style="margin-top:16px; min-height: 40px;">Next: Retry Similar Unassisted Question &rarr;</button>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:16px;">
+            <button id="transfer-finish-guided" class="btn btn-secondary" style="min-height:40px;">Finish and return to My desk</button>
+            <button id="transfer-to-retry" class="btn btn-primary" style="min-height:40px;">Optional: try a similar question &rarr;</button>
+          </div>
         </div>
       ` : ''}
 
       ${this.examTransferStage === 'retry' ? `
         <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 24px;">
-          <span class="badge badge-warning">Stage 5 of 5: Retry</span>
+          <span class="badge badge-warning">Optional independent question</span>
           <h2 style="font-size:18px; margin-top:10px;">Try a similar question without help</h2>
           <p style="font-size:16px; font-weight:600; color: var(--text-main); margin-bottom: 12px;">${this.escapeHTML(task.retryQuestion)}</p>
           <textarea id="transfer-retry-response" class="form-control" rows="8" placeholder="Write your answer without help here..."></textarea>
@@ -4651,25 +4727,22 @@ class App {
     const taskSelect = document.getElementById('exam-transfer-task-select');
     if (taskSelect) {
       taskSelect.onchange = () => {
+        const visibleDraft = document.getElementById('transfer-decode-response')?.value.trim()
+          || document.getElementById('transfer-answer-response')?.value.trim()
+          || document.getElementById('transfer-retry-response')?.value.trim();
+        const hasDraft = this.examTransferStage !== 'decode'
+          || Object.values(this.examTransferPlan || {}).some(Boolean)
+          || Boolean(this.examTransferResponse)
+          || Boolean(visibleDraft);
+        if (hasDraft && !window.confirm('You have unfinished work. Change question and discard it?')) {
+          taskSelect.value = task.id;
+          return;
+        }
         this.activeExamTransferId = taskSelect.value;
         this.examTransferStage = 'decode';
         this.examTransferPlan = {};
         this.examTransferResponse = '';
         this.renderStudentExamTransfer(panel);
-      };
-    }
-
-    // Real-time scanner input event listener on Stage 3
-    const answerTextarea = document.getElementById('transfer-answer-response');
-    if (answerTextarea) {
-      answerTextarea.oninput = () => {
-        const text = answerTextarea.value;
-        const matches = scanKeyphrases(text);
-        const badge = document.getElementById('scanner-match-count');
-        if (badge) {
-          badge.textContent = `${matches} of ${task.requiredElements.length} suggested terms found`;
-          badge.className = 'badge badge-primary';
-        }
       };
     }
 
@@ -4693,6 +4766,21 @@ class App {
       });
       this.examTransferStage = 'retry';
       this.renderStudentExamTransfer(panel);
+    });
+    bind('transfer-finish-guided', () => {
+      const evidenceCount = panel.querySelectorAll('.transfer-evidence-checkbox:checked').length;
+      window.db.addAttempt({
+        studentId: this.currentUser.id,
+        type: 'exam_transfer_self_check',
+        topic: task.specificationPointId,
+        score: `self-check ${evidenceCount}/${task.requiredElements.length}`,
+        supportStepsUsed: 3,
+        questionId: task.id,
+        evidenceType: 'self_assessment',
+        contributesToMastery: false
+      });
+      this.alert('Guided practice saved as self-review only. It does not change Progress. You can try an independent question later if you want evidence sent for review.');
+      this.switchTab('stud-dashboard');
     });
     bind('transfer-finish', () => {
       const retry = document.getElementById('transfer-retry-response').value.trim();

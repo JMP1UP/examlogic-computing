@@ -81,7 +81,7 @@ describe('User experience regression checks', () => {
     expect(app).toContain('<label for="predict-input"');
     expect(app).toContain('<label class="sr-only" for="python-editor">Python code editor</label>');
     expect(app).toContain('<label for="coding-explanation-response"');
-    expect(app).toContain('aria-label="Start ${index === 0');
+    expect(app).toContain('aria-label="${actionLabel}: ${point.id} ${point.name}"');
   });
 
   test('programming support preserves structured evidence and gates reflection on success', () => {

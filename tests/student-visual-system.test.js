@@ -84,11 +84,12 @@ describe('student Signal / Paste visual system', () => {
   });
 
   test('keeps formative and retry language honest and useful', () => {
-    expect(app).toContain('This practice does not create a score automatically; your final independent response is sent for review.');
+    expect(app).toContain('only that independent response is sent for review.');
     expect(app).toContain('Your latest result has been saved and may change the support shown in this skill.');
     expect(app).not.toContain('Your results have been logged for adaptive spaced practice scaffolding.');
     expect(app).toContain('<button class="btn btn-secondary" onclick="app.switchTab(\'stud-dashboard\')"');
-    expect(app).toContain('Work through Understand, Plan, Answer, Check and Retry.');
+    expect(app).toContain('Understand, plan, answer and self-check one question.');
+    expect(app).toContain('Finish and return to My desk');
     expect(app).toContain('teachingObjectiveIds.has(item.id)');
   });
 });

@@ -464,9 +464,12 @@ describe('production browser startup', () => {
 
     context.app.activeTopicId = 'topic_1_1';
     context.app.activeObjectiveId = '1.1.2';
-    expect(context.app.getMatchingExamTransferTask()).toBeNull();
+    expect(context.app.getMatchingExamTransferTask()).toMatchObject({
+      id: 'priority_transfer_112',
+      specificationPointId: '1.1.2'
+    });
     expect(context.app.getMatchingExamTransferTask(undefined, undefined, true)).toMatchObject({
-      id: 'transfer_5',
+      id: 'priority_transfer_112',
       topicId: 'topic_1_1'
     });
 
@@ -505,18 +508,40 @@ describe('production browser startup', () => {
 
     expect(labels).toEqual([
       'Paper 1:1.1.1',
+      'Paper 1:1.1.2',
+      'Paper 1:1.1.3',
       'Paper 1:1.2.1',
+      'Paper 1:1.2.2',
+      'Paper 1:1.2.3',
+      'Paper 1:1.2.3',
+      'Paper 1:1.2.4a',
+      'Paper 1:1.2.4a',
+      'Paper 1:1.2.4b',
       'Paper 1:1.2.4c',
+      'Paper 1:1.2.4d',
+      'Paper 1:1.2.5',
+      'Paper 1:1.3.1',
       'Paper 1:1.3.2',
+      'Paper 1:1.4.1',
+      'Paper 1:1.4.2',
+      'Paper 1:1.5.1',
+      'Paper 1:1.5.2',
       'Paper 1:1.6.1',
+      'Paper 1:1.6.2',
+      'Paper 2:2.1.1',
       'Paper 2:2.1.2',
       'Paper 2:2.1.3',
       'Paper 2:2.2.1',
+      'Paper 2:2.2.2',
       'Paper 2:2.2.3',
       'Paper 2:2.2.ERL',
+      'Paper 2:2.2.PY',
+      'Paper 2:2.3.1',
       'Paper 2:2.3.2',
       'Paper 2:2.3.2',
-      'Paper 2:2.5.1'
+      'Paper 2:2.4.1',
+      'Paper 2:2.5.1',
+      'Paper 2:2.5.2'
     ]);
   });
 
@@ -543,6 +568,64 @@ describe('production browser startup', () => {
     expect(question.scrollIntoView).toHaveBeenCalledTimes(5);
     expect(stage.focus).toHaveBeenCalledTimes(5);
     expect(stage.focus).toHaveBeenLastCalledWith({ preventScroll: true });
+  });
+
+  test('guided exam practice makes the retry optional and protects unfinished work', () => {
+    const context = loadProductionScripts();
+    const panel = createPanel();
+    context.app.currentUser = context.db.getStudents()[0];
+    context.app.activeExamTransferId = 'priority_transfer_112';
+    context.app.examTransferStage = 'check';
+
+    context.app.renderStudentExamTransfer(panel);
+
+    expect(panel.innerHTML).toContain('Guided exam practice');
+    expect(panel.innerHTML).toContain('similar independent retry is optional');
+    expect(panel.innerHTML).toContain('Stage 4 of 4: Check');
+    expect(panel.innerHTML).toContain('Finish and return to My desk');
+    expect(panel.innerHTML).toContain('Optional: try a similar question');
+    expect(panel.innerHTML).not.toContain('Stage 5 of 5');
+    expect(panel.innerHTML).toContain('Choose a different question');
+    expect(fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8'))
+      .toContain('You have unfinished work. Change question and discard it?');
+  });
+
+  test('focused learning surfaces useful prerequisites without blocking the current topic', () => {
+    const context = loadProductionScripts();
+    const panel = createPanel();
+    context.app.activeTopicId = 'topic_1_3';
+    context.app.activeObjectiveId = '1.2.4a';
+
+    context.app.renderStudentLearn(panel);
+
+    expect(panel.innerHTML).toContain('Useful first');
+    expect(panel.innerHTML).toContain('Review 1.2.3');
+    expect(panel.innerHTML).toContain('You can continue with this topic');
+    expect(panel.innerHTML).toContain('Practise the method first');
+    expect(panel.innerHTML).toContain('Try a 5-mark exam question');
+  });
+
+  test('calculation exam tasks use method-and-unit scaffolding rather than keyword scanning', () => {
+    const context = loadProductionScripts();
+    const panel = createPanel();
+    context.app.currentUser = context.db.getStudents()[0];
+    context.app.activeExamTransferId = 'priority_transfer_123';
+
+    context.app.examTransferStage = 'plan';
+    context.app.renderStudentExamTransfer(panel);
+    expect(panel.innerHTML).toContain('Plan your working');
+    expect(panel.innerHTML).toContain('Step 1:');
+
+    context.app.examTransferStage = 'answer';
+    context.app.renderStudentExamTransfer(panel);
+    expect(panel.innerHTML).toContain('Show your working and answer');
+    expect(panel.innerHTML).toContain('include the final unit');
+    expect(panel.innerHTML).not.toContain('Useful terms found');
+
+    context.app.examTransferStage = 'check';
+    context.app.renderStudentExamTransfer(panel);
+    expect(panel.innerHTML).toContain('Check your method');
+    expect(panel.innerHTML).toContain('conversion and final unit');
   });
 
   test('dashboard combines required workloads and aligns the suggested clean-learner duration', async () => {
@@ -572,10 +655,9 @@ describe('production browser startup', () => {
 
     expect(panel.innerHTML).toContain('two required tasks · 25 minutes');
     expect(panel.innerHTML).toContain('Required work takes priority');
-    expect(panel.innerHTML).toContain('Upcoming test');
     expect(panel.innerHTML).toContain('Test preparation');
-    expect(panel.innerHTML).toContain('1.1.1');
-    expect(panel.innerHTML).toContain('Open test plan');
+    expect(panel.innerHTML).not.toContain('Upcoming test');
+    expect(panel.innerHTML).not.toContain('Open test plan');
     expect(panel.innerHTML).not.toContain('3 of 5 test cases passed');
   });
 
@@ -586,15 +668,48 @@ describe('production browser startup', () => {
 
     context.app.renderStudentDashboard(panel);
 
-    expect(panel.innerHTML).toContain('Weekly notebook &middot; resets each Monday');
-    expect(panel.innerHTML).toContain('My study tasks');
-    expect(panel.innerHTML).toContain('Required work comes first.');
+    expect(panel.innerHTML).toContain('This week &middot; resets Monday');
+    expect(panel.innerHTML).toContain('My notebook');
+    expect(panel.innerHTML).toContain('<strong>First:</strong> finish the required task above.');
     expect(panel.innerHTML).toContain('Review flashcards');
     expect(panel.innerHTML).toContain('On 2 different days');
-    expect(panel.innerHTML.indexOf('My study tasks')).toBeLessThan(
-      panel.innerHTML.indexOf('Flashcards on your desk')
-    );
+    expect(panel.innerHTML).toContain('Choose topics');
+    expect(panel.innerHTML).not.toContain('Flashcards on your desk');
+    expect(panel.innerHTML).toContain('<details class="student-desk-details">');
     expect(panel.innerHTML).not.toContain('id="weekly-rhythm-next"');
+  });
+
+  test('test preparation does not present a short recall quiz as exam practice', () => {
+    const context = loadProductionScripts();
+    const panel = createPanel();
+    context.app.currentUser = context.db.getStudents()[0];
+    context.db.cachedData.testPreps = [{
+      id: 'prep_exam_route',
+      title: 'Data Representation Check',
+      status: 'Active',
+      sessionMinutes: 10,
+      weeklyMinutes: 20,
+      testDate: '2026-08-05',
+      specificationPointIds: ['1.2.2', '1.2.4c']
+    }];
+    context.app.activeTestPrepId = 'prep_exam_route';
+
+    context.app.renderStudentTestPrep(panel);
+
+    expect(panel.innerHTML).toContain('Session 1 of 2');
+    expect(panel.innerHTML).toContain('focus on one specification point');
+    expect(panel.innerHTML).toContain('Try exam question');
+    expect(panel.innerHTML).toContain('data-target-tab="stud-exam-transfer"');
+    expect(panel.innerHTML).toContain('data-exam-task-id="priority_transfer_122"');
+    expect(panel.innerHTML).not.toContain('1.2.4c Data storage: images');
+    expect(panel.innerHTML).not.toContain('data-target-tab="stud-recall"');
+
+    context.app.testPrepOffset = 1;
+    context.app.renderStudentTestPrep(panel);
+
+    expect(panel.innerHTML).toContain('Try exam question');
+    expect(panel.innerHTML).toContain('data-target-tab="stud-exam-transfer"');
+    expect(panel.innerHTML).not.toContain('data-target-tab="stud-recall"');
   });
 
   test('pause and real route re-entry preserve the active recall session', () => {

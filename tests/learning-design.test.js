@@ -102,7 +102,8 @@ describe('GCSE learning design', () => {
   test('teaches transfer into original exam-style questions one step at a time', () => {
     expect(databaseSource).toContain('examTransferTasks: [');
     expect(databaseSource).toContain("specificationPointId: '1.2.4c'");
-    expect(appSource).toContain("const stages = ['decode', 'plan', 'answer', 'check', 'retry']");
+    expect(appSource).toContain("const guidedStages = ['decode', 'plan', 'answer', 'check']");
+    expect(appSource).toContain('Optional independent question');
     expect(appSource).toContain('This check is for practice, not a final mark');
     expect(appSource).toContain("type: 'exam_transfer_retry'");
   });

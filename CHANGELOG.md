@@ -5,6 +5,42 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Added explicitly specification-mapped starter flashcards for every curriculum
+  strand, plus a small prerequisite graph for routes that depend on earlier
+  knowledge.
+- Deepened all systems-and-storage teaching from `1.1.1` through `1.2.5`,
+  strengthened their flashcard decks and added original exam-transfer tasks for
+  CPU performance, embedded systems, contextual secondary storage and
+  compression.
+- Completed the same structured teaching, flashcard and exam-transfer baseline
+  for the remaining Paper 1 strands covering networks, security, system
+  software, impacts, legislation and licensing.
+- Extended the baseline across every Paper 2 strand, keeping practical Python,
+  OCR Exam Reference Language, algorithm design, testing and logic as distinct
+  assessed routes rather than combining their evidence.
+- Added sequenced teaching blocks for networks, computational thinking,
+  additional programming techniques and practical Python.
+- Kept retry questions on the same assessed construct as their original exam
+  task, and introduced calculation, constructed-response, explanation and
+  extended-response guidance.
+
+- Tidied My desk around one required task and one compact weekly notebook:
+  duplicate test information and empty flashcard panels are suppressed, while
+  detailed progress remains available in a single collapsed section.
+- Corrected test-preparation actions so mapped exam-style questions open the
+  exact question, while points without one open focused section review rather
+  than presenting a short recall quiz as exam revision.
+- Made test-preparation workload realistic by showing one specification point
+  per session within the teacher's weekly limit.
+- Corrected an exam retry that changed from primary to secondary storage, and
+  brought search and translator tasks back to required J277 depth and balanced
+  markability.
+- Added a copyright-safe OCR assessment-reference index and excluded the local
+  source library from version control and deployment.
+- Added separate, original and method-aware exam-transfer tasks for units,
+  number representation, character encoding and sound representation, providing
+  one mapped route for each Data Representation test-plan point without
+  combining evidence.
 - Added a weekly notebook to My desk with directly linked flashcard,
   number-systems, programming and exam-question tasks. Flashcards must be
   reviewed on different days, so one long session cannot complete the week.
@@ -48,6 +84,18 @@ All notable changes to ExamLogic Computing are recorded here.
 - Enabled checkpoints for 27 sufficiently assessed sections. Five under-assessed sections remain visible but excluded from the achievable denominator: `1.2.4c`, `1.5.2`, `2.1.1`, `2.2.2` and `2.2.PY`.
 
 ### Fixed
+- Made prerequisites visible as optional review links, removed unjustified
+  dependencies for compression and Boolean logic, and added a practice bridge
+  before focused exam work.
+- Made guided exam-practice workload honest, made the second independent answer
+  optional and protected unfinished drafts when changing question.
+- Separated binary-shift data loss from binary-addition overflow, added a
+  dedicated addition task and added text-file-size assessment plus explicit
+  `1.2.3` links for image and sound calculations.
+- Corrected ASCII guidance, RAM/ROM markability and the IDE task's assessed
+  facilities; added missing random-number and programming-syntax teaching.
+- Removed the exam-answer keyword counter; pupils now receive response-specific
+  structural guidance without a misleading proxy for answer quality.
 - Added an evidence-safe weekly practice rhythm: two separate recall days, weekly Number and Programming, and a fortnightly exam answer, with awaiting-review work separated from attainment and no carried backlog.
 - Added a covered-topic recall deck with attempt-before-reveal, bounded distinct-card sessions, pause/resume, scheduling-only ratings and due dates that cannot inflate mastery or weekly engagement before session completion.
 - Prevented focused section checks from filling their question set with other objectives, and linked focused Learn sections to matched exam application where available.

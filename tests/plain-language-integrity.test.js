@@ -16,10 +16,10 @@ describe('pupil-facing plain-language integrity', () => {
     expect(curriculumSource).not.toContain('Refactor it into named subprograms');
   });
 
-  test('explains the keyword check without presenting it as marking', () => {
-    expect(appSource).toContain('suggested terms found');
-    expect(appSource).toContain('It does not decide whether your explanation is correct or award a mark.');
-    expect(appSource).not.toContain("matches === task.requiredElements.length ? 'badge badge-success'");
+  test('does not present keyword matching as answer quality or marking', () => {
+    expect(appSource).not.toContain('suggested terms found');
+    expect(appSource).not.toContain('live-keyphrase-scanner');
+    expect(appSource).not.toContain('scanKeyphrases');
   });
 
   test('uses accurate defensive-design and testing guidance', () => {
@@ -44,7 +44,8 @@ describe('pupil-facing plain-language integrity', () => {
     expect(appSource).not.toContain('Spaced Theory Check');
     expect(databaseSource).not.toContain('Spaced Theory Check');
     expect(appSource).toContain('Quick recall completed');
-    expect(appSource).toContain('Understand, Plan, Answer, Check and Retry');
+    expect(appSource).toContain('Understand, plan, answer and self-check one question.');
+    expect(appSource).toContain('Optional independent question');
     expect(appSource).not.toContain('Decode, Plan, Answer, Check and Retry');
   });
 

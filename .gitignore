@@ -1,4 +1,7 @@
 resources/*.pdf
+# Local copyrighted curriculum and assessment references. These inform audits
+# but must not be committed or deployed with the application.
+resources/past papers/
 node_modules/
 .DS_Store
 dist/
