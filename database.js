@@ -8,6 +8,9 @@ const curriculumContent = typeof module !== 'undefined' && module.exports
 const priorityAssessments = typeof module !== 'undefined' && module.exports
   ? require('./priority-assessments')
   : root.StudySpiceContent?.priorityAssessments;
+const examinerKnowledge = typeof module !== 'undefined' && module.exports
+  ? require('./curriculum-examiner-knowledge')
+  : root.StudySpiceContent?.examinerKnowledge;
 
 if (!curriculumContent || !priorityAssessments) {
   throw new Error('StudySpice curriculum content must load before the database.');
@@ -3890,6 +3893,27 @@ class LocalDB {
     this.readOnly = false;
     this.recoveryState = null;
     this.loadData();
+  }
+
+  getExaminerInsights(strandId) {
+    if (examinerKnowledge && typeof examinerKnowledge.getExaminerInsights === 'function') {
+      return examinerKnowledge.getExaminerInsights(strandId);
+    }
+    return null;
+  }
+
+  getCommandWordRubric(commandWord) {
+    if (examinerKnowledge && typeof examinerKnowledge.getCommandWordRubric === 'function') {
+      return examinerKnowledge.getCommandWordRubric(commandWord);
+    }
+    return null;
+  }
+
+  generateBlueprintQuestion(strandId, seed = 1) {
+    if (examinerKnowledge && typeof examinerKnowledge.generateBlueprintQuestion === 'function') {
+      return examinerKnowledge.generateBlueprintQuestion(strandId, seed);
+    }
+    return null;
   }
 
   loadData() {
