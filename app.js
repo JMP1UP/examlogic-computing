@@ -3119,7 +3119,7 @@ class App {
       this.testBuilderConfig = {
         paperType: 'paper1',
         questionCount: 10,
-        selectedTopicCodes: null
+        selectedStrandIds: null
       };
     }
     const config = this.testBuilderConfig;
@@ -3128,9 +3128,10 @@ class App {
     const paper2Units = units.filter(u => u.paper.includes('Paper 2'));
     const activeUnits = config.paperType === 'paper1' ? paper1Units : config.paperType === 'paper2' ? paper2Units : units;
     const allActiveTopics = activeUnits.flatMap(u => u.topics);
+    const allActiveStrands = allActiveTopics.flatMap(t => t.objectives);
 
-    if (!config.selectedTopicCodes || config.lastPaperType !== config.paperType) {
-      config.selectedTopicCodes = allActiveTopics.map(t => t.code);
+    if (!config.selectedStrandIds || config.lastPaperType !== config.paperType) {
+      config.selectedStrandIds = allActiveStrands.map(s => s.id);
       config.lastPaperType = config.paperType;
     }
 
@@ -3139,7 +3140,7 @@ class App {
         <header class="student-route-header" style="margin-bottom: 24px;">
           <span class="student-mode-label">Practice &middot; Mock Test Builder</span>
           <h1 style="font-size: 28px; font-weight: 800; margin: 6px 0;">Custom Exam Test Builder</h1>
-          <p style="font-size: 15px; color: var(--text-muted);">Build a tailored mock exam from OCR past papers & specification questions. Choose your topics and length.</p>
+          <p style="font-size: 15px; color: var(--text-muted);">Build a tailored mock exam from OCR past papers & specification questions. Choose your topics, strands, and test length.</p>
         </header>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; align-items: start;">
@@ -3198,23 +3199,39 @@ class App {
           </div>
 
           <div class="card" style="padding: 24px; background: rgba(0,0,0,0.01);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-              <h3 style="font-size: 16px; font-weight: 700; margin: 0;">3. Filter Specific Topics (${config.selectedTopicCodes.length}/${allActiveTopics.length})</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <h3 style="font-size: 16px; font-weight: 700; margin: 0;">3. Filter Strands & Substrands (${config.selectedStrandIds.length}/${allActiveStrands.length})</h3>
               <button type="button" id="toggle-all-topics-btn" class="btn btn-link" style="font-size: 12px; padding: 0;">
-                ${config.selectedTopicCodes.length === allActiveTopics.length ? 'Deselect all' : 'Select all'}
+                ${config.selectedStrandIds.length === allActiveStrands.length ? 'Deselect all' : 'Select all'}
               </button>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
               ${allActiveTopics.map(t => {
-                const isSelected = config.selectedTopicCodes.includes(t.code);
+                const topicStrandIds = t.objectives.map(o => o.id);
+                const selectedCount = topicStrandIds.filter(id => config.selectedStrandIds.includes(id)).length;
+                const isAllSelected = selectedCount === topicStrandIds.length;
                 return `
-                  <label style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: ${isSelected ? 'var(--bg-card)' : 'rgba(0,0,0,0.02)'}; border-radius: 6px; border: 1px solid var(--border-color); font-size: 13px; cursor: pointer;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                      <input type="checkbox" class="topic-select-checkbox" data-topic-code="${t.code}" ${isSelected ? 'checked' : ''}>
-                      <span><strong>${t.code}</strong> ${t.name}</span>
+                  <details open style="border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-card); padding: 10px 14px;">
+                    <summary style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 14px; font-weight: 700; color: var(--text-main);">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" class="topic-parent-checkbox" data-topic-code="${t.code}" ${isAllSelected ? 'checked' : ''} onclick="event.stopPropagation();">
+                        <span><strong>${t.code}</strong> ${this.escapeHTML(t.name)}</span>
+                      </div>
+                      <span class="badge ${selectedCount > 0 ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px;">${selectedCount}/${t.objectives.length} strands</span>
+                    </summary>
+                    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border-color); padding-left: 24px;">
+                      ${t.objectives.map(obj => {
+                        const isStrandChecked = config.selectedStrandIds.includes(obj.id);
+                        return `
+                          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; padding: 3px 0;">
+                            <input type="checkbox" class="strand-select-checkbox" data-strand-id="${obj.id}" data-topic-code="${t.code}" ${isStrandChecked ? 'checked' : ''}>
+                            <strong style="color: var(--teal); font-size: 12px;">${obj.id}</strong>
+                            <span style="color: var(--text-main); font-weight: 500;">${this.escapeHTML(obj.name)}</span>
+                          </label>
+                        `;
+                      }).join('')}
                     </div>
-                    <span class="badge badge-secondary" style="font-size: 11px;">${t.objectives.length} strands</span>
-                  </label>
+                  </details>
                 `;
               }).join('')}
             </div>
@@ -3226,7 +3243,7 @@ class App {
     panel.querySelectorAll('input[name="builder-paper"]').forEach(radio => {
       radio.onchange = () => {
         config.paperType = radio.value;
-        config.selectedTopicCodes = null;
+        config.selectedStrandIds = null;
         this.renderStudentTestBuilder(panel);
       };
     });
@@ -3236,22 +3253,37 @@ class App {
         this.renderStudentTestBuilder(panel);
       };
     });
-    panel.querySelectorAll('.topic-select-checkbox').forEach(cb => {
-      cb.onchange = () => {
+    panel.querySelectorAll('.topic-parent-checkbox').forEach(cb => {
+      cb.onchange = (e) => {
+        e.stopPropagation();
         const code = cb.dataset.topicCode;
+        const topic = allActiveTopics.find(t => t.code === code);
+        if (!topic) return;
+        const strandIds = topic.objectives.map(o => o.id);
         if (cb.checked) {
-          if (!config.selectedTopicCodes.includes(code)) config.selectedTopicCodes.push(code);
+          strandIds.forEach(id => { if (!config.selectedStrandIds.includes(id)) config.selectedStrandIds.push(id); });
         } else {
-          config.selectedTopicCodes = config.selectedTopicCodes.filter(c => c !== code);
+          config.selectedStrandIds = config.selectedStrandIds.filter(id => !strandIds.includes(id));
+        }
+        this.renderStudentTestBuilder(panel);
+      };
+    });
+    panel.querySelectorAll('.strand-select-checkbox').forEach(cb => {
+      cb.onchange = () => {
+        const id = cb.dataset.strandId;
+        if (cb.checked) {
+          if (!config.selectedStrandIds.includes(id)) config.selectedStrandIds.push(id);
+        } else {
+          config.selectedStrandIds = config.selectedStrandIds.filter(s => s !== id);
         }
         this.renderStudentTestBuilder(panel);
       };
     });
     panel.querySelector('#toggle-all-topics-btn')?.addEventListener('click', () => {
-      if (config.selectedTopicCodes.length === allActiveTopics.length) {
-        config.selectedTopicCodes = [];
+      if (config.selectedStrandIds.length === allActiveStrands.length) {
+        config.selectedStrandIds = [];
       } else {
-        config.selectedTopicCodes = allActiveTopics.map(t => t.code);
+        config.selectedStrandIds = allActiveStrands.map(s => s.id);
       }
       this.renderStudentTestBuilder(panel);
     });
@@ -3262,7 +3294,8 @@ class App {
           config.questionCount,
           window.db.getCurriculumContent(),
           [],
-          window.StudySpiceContent.examinerKnowledge
+          window.StudySpiceContent.examinerKnowledge,
+          config.selectedStrandIds
         );
         this.currentTestSession = session;
         this.activeExamTransferId = session.questions[0]?.id || 'mixed_q_1';

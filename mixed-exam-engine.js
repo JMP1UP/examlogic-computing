@@ -10,13 +10,15 @@
   'use strict';
 
   return {
-    createMixedExamSession(paperType = 'all', questionCount = 10, curriculumContent = [], priorityAssessments = [], examinerKnowledge = null) {
+    createMixedExamSession(paperType = 'all', questionCount = 10, curriculumContent = [], priorityAssessments = [], examinerKnowledge = null, selectedStrandIds = null) {
       const selected = [];
       const paper1Strands = ['1.1.1', '1.1.2', '1.1.3', '1.2.1', '1.2.2', '1.2.3', '1.2.4a', '1.2.4b', '1.2.4c', '1.2.4d', '1.2.5', '1.3.1', '1.3.2', '1.4.1', '1.4.2', '1.5.1', '1.5.2', '1.6.1', '1.6.2'];
       const paper2Strands = ['2.1.1', '2.1.2', '2.1.3', '2.2.1', '2.2.2', '2.2.3', '2.2.PY', '2.2.ERL', '2.3.1', '2.3.2', '2.4.1', '2.5.1', '2.5.2'];
 
       let pool = curriculumContent;
-      if (paperType === 'paper1') {
+      if (Array.isArray(selectedStrandIds) && selectedStrandIds.length > 0) {
+        pool = curriculumContent.filter(item => selectedStrandIds.includes(item.id));
+      } else if (paperType === 'paper1') {
         pool = curriculumContent.filter(item => paper1Strands.includes(item.id));
       } else if (paperType === 'paper2') {
         pool = curriculumContent.filter(item => paper2Strands.includes(item.id));
