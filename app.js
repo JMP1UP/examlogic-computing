@@ -2147,8 +2147,8 @@ class App {
       ? 'one optional 5-minute recall activity'
       : 'one suggested 10-minute guided learning session';
     const greetingText = requiredCount > 0
-      ? `You have ${requiredCountWord} required ${requiredCount === 1 ? 'task' : 'tasks'} (${requiredMinutes} mins). Complete required work before choosing optional study.`
-      : `You have no required tasks and ${suggestedSession}.`;
+      ? `You have ${requiredCountWord} priority ${requiredCount === 1 ? 'task' : 'tasks'} set by your teacher (${requiredMinutes} mins).`
+      : `You have no priority tasks and ${suggestedSession}.`;
 
     // Compute dominant task for "Do this now"
     let dominantTaskHtml = '';
@@ -2161,7 +2161,7 @@ class App {
       const prep = activeTestPreps[0];
       dominantTask = {
         kind: 'Test preparation',
-        label: 'Required',
+        label: 'Priority Task',
         title: prep.title,
         meta: [`${prep.specificationPointIds.length} specification points`, this.formatDueDate(prep.testDate).replace('Due ', 'Test ')],
         description: 'Your plan adapts each specification point separately. Optional recommendations are reduced while this plan is active.',
@@ -2177,10 +2177,10 @@ class App {
         dominantAssignment = a;
         dominantTask = {
           kind: 'Assignment',
-          label: a.status,
+          label: a.status === 'Overdue' ? 'Overdue Task' : 'Priority Task',
           title: a.title,
           meta: [this.formatDueDate(a.dueDate), a.title.toLowerCase().includes('programming') ? 'Programming task' : 'Knowledge check'],
-          description: a.status === 'Overdue' ? 'This required assignment is overdue. Complete it before optional revision.' : 'Complete this required assignment before optional revision.',
+          description: a.status === 'Overdue' ? 'This task is overdue. Complete it before optional revision.' : 'Complete this task set by your teacher before optional revision.',
           actionLabel: a.title.toLowerCase().includes('programming') ? 'Start programming' : 'Start check',
           actionMinutes: Number(a.estimatedMinutes || 10),
           actionClass: 'start-assignment-btn',
@@ -2313,7 +2313,6 @@ class App {
                         <div style="font-size: 13px; font-weight: 500; color: var(--text-main);">${p}</div>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                           <span style="font-size: 11px; color: var(--text-muted);">Suggested by your saved revision priorities</span>
-                          <button class="btn btn-secondary btn-sm worth-revisiting-btn" data-topic-id="${topicId}" data-target-tab="${targetTab}" style="font-size: 10px; min-height: 24px; padding: 2px 8px;">${btnLabel}</button>
                         </div>
                       </div>
                     `;
@@ -2321,7 +2320,7 @@ class App {
                 </div>
               </div>
 
-              <!-- Recent Progress -->
+              <!-- Recent progress -->
               <div class="card card-progress" style="padding: 20px; background-color: var(--bg-card); border: 1px solid var(--border-color);">
                 <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">Recent progress</h3>
                 <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin: 0;">
@@ -2594,43 +2593,47 @@ class App {
     const totalCardCount = deskSummary.totalCardCount;
     const totalDueCount = deskSummary.totalDueCount;
     const myDeckHtml = deskTopics.length ? `
-      <section class="card student-my-deck" aria-labelledby="my-deck-heading">
-        <header class="student-my-deck__header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+      <section class="card student-my-deck" aria-labelledby="my-deck-heading" style="padding: 24px; border-top: 5px solid var(--teal); background: var(--bg-card); border-radius: 12px; margin-bottom: 20px;">
+        <header class="student-my-deck__header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
           <div>
-            <span class="student-kicker">My desk</span>
-            <h2 id="my-deck-heading">Flashcards on your desk</h2>
-            <p>The topics you have chosen to keep fresh alongside school.</p>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
-              <span class="badge ${totalDueCount > 0 ? 'badge-primary' : 'badge-success'}" style="font-size: 13px; padding: 6px 12px; font-weight: 600;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+              <span style="font-size: 18px;">🎴</span>
+              <span class="student-kicker" style="font-weight: 700; color: var(--teal); text-transform: uppercase; font-size: 11px;">My desk</span>
+            </div>
+            <h2 id="my-deck-heading" style="margin: 0 0 4px 0; font-size: 20px; font-weight: 800;">Flashcards on your desk</h2>
+            <p style="margin: 0; color: var(--text-muted); font-size: 14px;">The topics you have chosen to keep fresh alongside school.</p>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+              <span class="badge ${totalDueCount > 0 ? 'badge-primary' : 'badge-success'}" style="font-size: 12px; padding: 4px 10px; font-weight: 600;">
                 ${totalDueCount > 0 ? `⚡ ${totalDueCount} ${totalDueCount === 1 ? 'card' : 'cards'} ready for review` : `✓ All cards up to date`}
               </span>
-              <span class="badge badge-secondary" style="font-size: 13px; padding: 6px 12px; font-weight: 600;">
+              <span class="badge badge-secondary" style="font-size: 12px; padding: 4px 10px; font-weight: 600;">
                 🎴 ${totalCardCount} total ${totalCardCount === 1 ? 'card' : 'cards'} on desk
               </span>
             </div>
           </div>
-          <button type="button" class="btn btn-secondary" id="manage-deck-btn">Organise my topics</button>
+          <button type="button" class="btn btn-secondary" id="manage-deck-btn" style="font-size: 13px; min-height: 38px;">Organise my topics</button>
         </header>
-        <div class="student-my-deck__topics">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
             ${deskTopics.map(topic => `
-              <article>
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
-                  <h3>${this.escapeHTML(topic.topicName)}</h3>
+              <article style="display: flex; flex-direction: column; justify-content: space-between; gap: 12px; padding: 16px; border: 1px solid var(--border-color); border-left: 5px solid var(--teal); border-radius: 10px; background: rgba(0,0,0,0.01);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                  <div>
+                    <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: var(--text-main); line-height: 1.3;">${this.escapeHTML(topic.topicName)}</h3>
+                    <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">${topic.dueCount} of ${topic.cards.length} cards due right now</span>
+                  </div>
                   <span class="badge ${topic.dueCount > 0 ? 'badge-primary' : 'badge-success'}" style="font-size: 11px; white-space: nowrap;">
                     ${topic.dueCount > 0 ? `⚡ ${topic.dueCount} due` : `✓ Up to date`}
                   </span>
                 </div>
-                <p><strong>${topic.dueCount}</strong> of <strong>${topic.cards.length}</strong> ${topic.cards.length === 1 ? 'card' : 'cards'} due right now</p>
-                <div class="student-my-deck__strength">
-                  <span>Your card confidence</span>
-                  <strong>${this.escapeHTML(topic.strength)}</strong>
-                  <small>${topic.ratedCount ? `Based on what you told us after ${topic.ratedCount} ${topic.ratedCount === 1 ? 'card' : 'cards'} — not an exam result` : 'Not rated yet — tell us after reviewing a card'}</small>
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.03); padding: 8px 12px; border-radius: 6px; font-size: 12px;">
+                  <span style="color: var(--text-muted);">Card confidence:</span>
+                  <strong style="color: var(--text-main); font-weight: 700;">${this.escapeHTML(topic.strength)}</strong>
                 </div>
-                <button type="button" class="btn btn-primary deck-topic-review-btn" data-topic-id="${this.escapeHTML(topic.topicId)}" aria-label="Review ${this.escapeHTML(topic.topicName)} flashcards">Review flashcards</button>
+                <button type="button" class="btn btn-primary deck-topic-review-btn" data-topic-id="${this.escapeHTML(topic.topicId)}" style="width: 100%; min-height: 38px; font-weight: 600;" aria-label="Review ${this.escapeHTML(topic.topicName)} flashcards">Review flashcards</button>
               </article>
             `).join('')}
         </div>
-        ${hiddenDeskTopicCount ? `<p class="student-my-deck__more">${hiddenDeskTopicCount} more ${hiddenDeskTopicCount === 1 ? 'topic is' : 'topics are'} on your desk (${deskSummary.allTopicsCount} topics total). Use Organise my topics to see all of them.</p>` : ''}
+        ${hiddenDeskTopicCount ? `<p class="student-my-deck__more" style="margin-top: 14px; font-size: 13px; color: var(--text-muted);">${hiddenDeskTopicCount} more ${hiddenDeskTopicCount === 1 ? 'topic is' : 'topics are'} on your desk (${deskSummary.allTopicsCount} topics total). Use Organise my topics to see all of them.</p>` : ''}
       </section>
     ` : '';
 
@@ -2660,11 +2663,11 @@ class App {
 
         <div class="student-dashboard__flow">
           ${dominantTaskHtml}
+          ${myDeckHtml}
 
           <div class="student-desk-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; align-items: start;">
             <!-- Left Main Column: Revision Desk (Flashcards + Notebook) -->
             <div style="display: flex; flex-direction: column; gap: 20px;">
-              ${myDeckHtml}
               ${weeklyRhythmHtml}
             </div>
 
