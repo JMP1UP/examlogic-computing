@@ -2918,10 +2918,10 @@ class App {
   renderStudentPracticeHub(panel) {
     const rhythm = this.getStudentPracticeRhythm();
     const modes = [
-      { title: 'Flashcards', copy: 'Quick recall checks to strengthen your memory.', route: 'stud-retrieval', time: '5 mins' },
-      { title: 'Exam questions', copy: 'Guided & independent practice for OCR GCSE questions.', route: 'stud-exam-transfer', time: '15 mins' },
-      { title: 'Number skills', copy: 'Storage, binary addition, and calculation practice.', route: 'stud-practise', time: '10 mins' },
-      { title: 'Programming', copy: 'Python coding tasks and pseudocode challenges.', route: 'stud-programming', time: '15 mins' }
+      { title: 'Flashcards', copy: 'Quick recall checks to strengthen your memory.', route: 'stud-retrieval', time: '5 mins', icon: '🎴', color: '#2D9C91', bgGrad: 'rgba(45, 156, 145, 0.05)' },
+      { title: 'Exam questions', copy: 'Guided & independent practice for OCR GCSE questions.', route: 'stud-exam-transfer', time: '15 mins', icon: '📝', color: '#E11D48', bgGrad: 'rgba(225, 29, 72, 0.05)' },
+      { title: 'Number skills', copy: 'Storage, binary addition, and calculation practice.', route: 'stud-practise', time: '10 mins', icon: '🔢', color: '#D97706', bgGrad: 'rgba(217, 119, 6, 0.05)' },
+      { title: 'Programming', copy: 'Python coding tasks and pseudocode challenges.', route: 'stud-programming', time: '15 mins', icon: '💻', color: '#7C3AED', bgGrad: 'rgba(124, 58, 237, 0.05)' }
     ];
     const recommended = rhythm.next || { label: 'Choose one useful practice mode', route: 'stud-retrieval', minutes: 5 };
     panel.innerHTML = `
@@ -2931,23 +2931,31 @@ class App {
           <h1>Choose how to practise</h1>
           <p>Pick an activity to test your memory or practice exam skills.</p>
         </header>
-        <section class="card student-recommended-practice" aria-labelledby="recommended-practice-title" style="padding: 20px; border-left: 4px solid var(--teal);">
-          <span class="student-kicker">Recommended now</span>
-          <h2 id="recommended-practice-title" style="margin: 4px 0 6px 0;">${this.escapeHTML(recommended.label)}</h2>
-          <p style="margin-bottom: 14px; color: var(--text-muted);">⏱ ~${recommended.minutes} mins &middot; Focused activity for your study plan</p>
-          <button type="button" class="btn btn-primary" id="recommended-practice-btn">Start recommended activity</button>
+
+        <section class="card student-recommended-practice" aria-labelledby="recommended-practice-title" style="padding: 24px; border-left: 6px solid var(--teal); background: linear-gradient(135deg, rgba(45, 156, 145, 0.08) 0%, rgba(245, 158, 11, 0.06) 100%); border-radius: 12px; margin-bottom: 24px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="font-size: 18px;">⚡</span>
+            <span class="student-kicker" style="font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 0.05em; font-size: 12px;">Recommended now</span>
+          </div>
+          <h2 id="recommended-practice-title" style="margin: 4px 0 6px 0; font-size: 22px; font-weight: 800; color: var(--text-main);">${this.escapeHTML(recommended.label)}</h2>
+          <p style="margin-bottom: 16px; color: var(--text-muted); font-size: 14px;">⏱ ~${recommended.minutes} mins &middot; Your next step for today's study plan</p>
+          <button type="button" class="btn btn-primary" id="recommended-practice-btn" style="min-height: 42px; padding: 10px 24px; font-size: 15px; font-weight: 600;">Start recommended activity</button>
         </section>
-        <div class="student-practice-mode-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 20px;">
+
+        <div class="student-practice-mode-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px;">
           ${modes.map(mode => `
-            <article class="card student-practice-mode" style="padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+            <article class="card student-practice-mode" style="padding: 22px; display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid ${mode.color}; background: ${mode.bgGrad}; border-radius: 12px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
               <div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                  <h2 style="margin: 0; font-size: 18px;">${mode.title}</h2>
-                  <span class="badge badge-secondary" style="font-size: 11px;">⏱ ${mode.time}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 22px;">${mode.icon}</span>
+                    <h2 style="margin: 0; font-size: 18px; font-weight: 700;">${mode.title}</h2>
+                  </div>
+                  <span class="badge badge-secondary" style="font-size: 11px; font-weight: 600;">⏱ ${mode.time}</span>
                 </div>
-                <p style="margin: 0 0 16px 0; color: var(--text-muted); font-size: 14px;">${mode.copy}</p>
+                <p style="margin: 0 0 20px 0; color: var(--text-muted); font-size: 14px; line-height: 1.4;">${mode.copy}</p>
               </div>
-              <button type="button" class="btn btn-secondary practice-hub-btn" data-target="${mode.route}" style="width: 100%;">Start ${mode.title.toLowerCase()}</button>
+              <button type="button" class="btn btn-primary practice-hub-btn" data-target="${mode.route}" style="width: 100%; background: ${mode.color}; border-color: ${mode.color}; color: white; font-weight: 600; min-height: 40px;">Start ${mode.title.toLowerCase()}</button>
             </article>`).join('')}
         </div>
         <p style="margin-top: 24px;"><button type="button" class="btn btn-link" id="practice-desk-btn">Back to My desk</button></p>
