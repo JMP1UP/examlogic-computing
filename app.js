@@ -76,7 +76,7 @@ class App {
     this.retrievalDeckExtraMode = false;
     this.retrievalDeckSessionId = null;
     this.retrievalDeckSeenCardIds = [];
-    this.retrievalDeckSessionTarget = 3;
+    this.retrievalDeckSessionTarget = 10;
     this.evidenceIdSequence = 0;
 
     // Written answers scaffold state
@@ -1136,7 +1136,9 @@ class App {
     if (!this.retrievalDeckExtraMode) {
       this.retrievalDeckSeenCardIds.push(card.id);
       this.retrievalDeckRatedCount += 1;
-      this.retrievalDeckSessionComplete = this.retrievalDeckRatedCount >= this.retrievalDeckSessionTarget;
+      const deckCards = this.getRetrievalDeckCards();
+      const effectiveTarget = deckCards.length > 0 ? Math.min(this.retrievalDeckSessionTarget, deckCards.length) : Math.min(this.retrievalDeckSessionTarget, 3);
+      this.retrievalDeckSessionComplete = this.retrievalDeckRatedCount >= effectiveTarget;
       if (this.retrievalDeckSessionComplete) {
         window.db.addAttempt({
           studentId: this.currentUser.id,
@@ -1164,7 +1166,7 @@ class App {
     this.retrievalDeckExtraMode = false;
     this.retrievalDeckSessionId = null;
     this.retrievalDeckSeenCardIds = [];
-    this.retrievalDeckSessionTarget = 3;
+    this.retrievalDeckSessionTarget = 10;
   }
 
   getStableOptionOrder(question, activityId) {
@@ -3642,7 +3644,7 @@ class App {
       this.retrievalDeckSessionId = `retrieval_${this.currentUser.id}_${Date.now()}_${this.evidenceIdSequence++}`;
     }
     if (this.retrievalDeckRatedCount === 0) {
-      this.retrievalDeckSessionTarget = Math.min(3, new Set(availableCards.map(item => item.id)).size);
+      this.retrievalDeckSessionTarget = Math.min(10, new Set(availableCards.map(item => item.id)).size || 10);
     }
     const unseenCards = availableCards.filter(item => !this.retrievalDeckSeenCardIds.includes(item.id));
     const cardPool = this.retrievalDeckExtraMode ? availableCards : unseenCards;
@@ -3661,16 +3663,17 @@ class App {
           <option value="all">All topics on your desk</option>
           ${topics.filter(topic => eligibleTopics.has(topic.id)).map(topic => `<option value="${this.escapeHTML(topic.id)}" ${topic.id === this.retrievalDeckTopicId ? 'selected' : ''}>${this.escapeHTML(topic.name)}</option>`).join('')}
         </select>
-        <p id="retrieval-filter-status" style="font-size:12px; color:var(--text-muted); margin:8px 0 0;">${this.retrievalDeckRatedCount > 0 ? 'Topic is fixed until this short session is complete. Pausing preserves your place.' : `${dueCards.length} ${dueCards.length === 1 ? 'card is' : 'cards are'} ready to practise now.`}</p>
+        <p id="retrieval-filter-status" style="font-size:12px; color:var(--text-muted); margin:8px 0 0;">${this.retrievalDeckRatedCount > 0 ? 'Topic is fixed until this short session is complete. Pausing preserves your place.' : dueCards.length ? `${dueCards.length} ${dueCards.length === 1 ? 'card is' : 'cards are'} ready to practise now.` : `All cards up to date!`}</p>
       </div>
       ${showCompletion ? `
-        <article class="card" role="status">
-          <span class="student-mode-label">Recall activity complete</span>
-          <h2>You rated ${this.retrievalDeckSessionTarget} ${this.retrievalDeckSessionTarget === 1 ? 'card' : 'cards'}</h2>
-          <p>This completes one activity in your study routine. Flashcards are not marked in Progress.</p>
-          <div style="display:flex; flex-wrap:wrap; gap:8px;">
-            <button type="button" class="btn btn-primary" id="retrieval-session-back-btn">Back to your plan</button>
-            <button type="button" class="btn btn-secondary" id="retrieval-extra-btn">Continue with extra cards</button>
+        <article class="card" role="status" style="max-width: 680px; padding: 28px; text-align: center; margin: 0 auto;">
+          <div style="font-size: 32px; margin-bottom: 8px;">🎉</div>
+          <span class="student-mode-label" style="display: inline-block; margin-bottom: 6px;">Section review complete</span>
+          <h2 style="font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 8px;">You're all up to date!</h2>
+          <p style="font-size: 15px; color: var(--text-main); line-height: 1.5; margin-bottom: 20px;">You reviewed ${this.retrievalDeckRatedCount} ${this.retrievalDeckRatedCount === 1 ? 'card' : 'cards'} in this session. Cards have been scheduled based on how easy you found recall.</p>
+          <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;">
+            <button type="button" class="btn btn-primary" id="retrieval-session-back-btn" style="min-height: 44px; padding-inline: 24px;">Return to My desk</button>
+            <button type="button" class="btn btn-secondary" id="retrieval-extra-btn" style="min-height: 44px;">Repeat review / extra cards</button>
           </div>
         </article>
       ` : card ? `
@@ -3705,7 +3708,15 @@ class App {
           `}
         </article>
       ` : `
-        <div class="card" role="status"><h2>No flashcards on your desk yet</h2><p>Open Topics and add flashcards for something you have met at school. Adding cards does not mean you have mastered it.</p><button class="btn btn-primary" id="retrieval-topics-btn">Choose a topic</button><button class="btn btn-secondary" id="retrieval-home-btn">Back to Practice</button></div>
+        <article class="card" role="status" style="max-width: 680px; padding: 28px; text-align: center; margin: 0 auto;">
+          <div style="font-size: 32px; margin-bottom: 8px;">✨</div>
+          <h2 style="font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 8px;">You're all up to date!</h2>
+          <p style="font-size: 15px; color: var(--text-main); line-height: 1.5; margin-bottom: 20px;">No flashcards are due for review right now in this topic.</p>
+          <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;">
+            <button class="btn btn-primary" id="retrieval-home-btn" style="min-height: 44px;">Return to My desk</button>
+            <button class="btn btn-secondary" id="retrieval-topics-btn" style="min-height: 44px;">Choose another topic</button>
+          </div>
+        </article>
       `}
     `;
 
@@ -3745,7 +3756,7 @@ class App {
       this.renderStudentRetrievalDeck(panel);
     };
     const home = panel.querySelector?.('#retrieval-home-btn') || document.getElementById('retrieval-home-btn');
-    if (home) home.onclick = () => this.switchTab('stud-practice');
+    if (home) home.onclick = () => this.switchTab('stud-dashboard');
     const topicsButton = panel.querySelector?.('#retrieval-topics-btn') || document.getElementById('retrieval-topics-btn');
     if (topicsButton) topicsButton.onclick = () => this.switchTab('stud-topics');
   }

@@ -200,10 +200,9 @@ describe('weekly practice rhythm', () => {
 
     app.renderStudentRetrievalDeck(panel);
 
-    expect(panel.innerHTML).toContain('You rated 3 cards');
-    expect(panel.innerHTML).toContain('Flashcards are not marked in Progress');
-    expect(panel.innerHTML).toContain('Back to your plan');
-    expect(panel.innerHTML).toContain('Continue with extra cards');
+    expect(panel.innerHTML).toContain("You're all up to date!");
+    expect(panel.innerHTML).toContain('You reviewed 3 cards');
+    expect(panel.innerHTML).toContain('Return to My desk');
   });
 
   test('one or two scheduling ratings cannot create a weekly retrieval day', () => {
