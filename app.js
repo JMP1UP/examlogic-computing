@@ -6642,6 +6642,7 @@ class App {
       return `
         <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:14px; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
           <div style="display: flex; align-items: center; gap: 8px;">
+            ${topic.code ? `<span class="badge badge-secondary" style="font-size: 11px; font-weight: 700;">OCR ${this.escapeHTML(topic.code)}</span>` : ''}
             <span style="font-weight: 600; color: var(--text-main);">${this.escapeHTML(topic.name)}</span>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
