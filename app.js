@@ -4121,9 +4121,11 @@ class App {
       <div>
         ${feedbackHTML}
         ${incorrectQuestions.length ? '<button class="btn btn-primary" id="retry-number-skills-btn" style="margin-top:16px;">Retry incorrect questions</button>' : ''}
-        <button class="btn btn-secondary" onclick="app.switchTab('stud-dashboard')" style="margin-top: 16px;">Back to dashboard</button>
+        <button class="btn btn-secondary" id="practise-results-back-btn" style="margin-top: 16px;">Back to My desk</button>
       </div>
     `);
+    const backButton = document.getElementById('practise-results-back-btn');
+    if (backButton) backButton.onclick = () => this.switchTab('stud-dashboard');
     const retryButton = document.getElementById('retry-number-skills-btn');
     if (retryButton) retryButton.onclick = () => {
       this.numberSkillsSet = incorrectQuestions;
@@ -4407,7 +4409,7 @@ class App {
         <button class="btn btn-secondary ${this.activeSimTool === 'algorithms' ? 'student-selected-control' : ''} sim-tool-btn" data-tool="algorithms">📊 Search & Sort Trace</button>
         <button class="btn btn-secondary ${this.activeSimTool === 'file-size-calc' ? 'student-selected-control' : ''} sim-tool-btn" data-tool="file-size-calc">📐 File Size Math</button>
       </div>
-      <div class="student-mini-brief" role="note"><strong>Your short task</strong><span>${this.escapeHTML(simulatorBriefs[this.activeSimTool])}</span><button type="button" class="btn btn-secondary" onclick="app.switchTab('stud-topics')">Finish and return to Topics</button></div>
+      <div class="student-mini-brief" role="note"><strong>Your short task</strong><span>${this.escapeHTML(simulatorBriefs[this.activeSimTool])}</span><button type="button" class="btn btn-secondary" id="sim-finish-topics-btn">Finish and return to Topics</button></div>
 
       ${this.activeSimTool === 'binary-shift' ? `
         <div class="card" style="padding:24px;">
@@ -4636,7 +4638,10 @@ class App {
       ` : ''}
     `;
 
+    const bind = (id, action) => { const el = document.getElementById(id); if (el) el.onclick = action; };
+
     // Tool Switch Event Listeners
+    bind('sim-finish-topics-btn', () => this.switchTab('stud-topics'));
     panel.querySelectorAll('.sim-tool-btn').forEach(btn => {
       btn.onclick = () => {
         this.activeSimTool = btn.getAttribute('data-tool');
@@ -4652,8 +4657,6 @@ class App {
         this.renderStudentSimulators(panel);
       };
     });
-
-    const bind = (id, action) => { const el = document.getElementById(id); if (el) el.onclick = action; };
     bind('shift-left-1', () => { this.binaryBits.shift(); this.binaryBits.push(0); this.renderStudentSimulators(panel); });
     bind('shift-left-2', () => { this.binaryBits.shift(); this.binaryBits.shift(); this.binaryBits.push(0); this.binaryBits.push(0); this.renderStudentSimulators(panel); });
     bind('shift-right-1', () => { this.binaryBits.pop(); this.binaryBits.unshift(0); this.renderStudentSimulators(panel); });
@@ -6307,7 +6310,7 @@ class App {
                       <h4 style="font-size: 15px; margin: 0 0 2px 0; font-weight: 600; color: var(--text-main);">Routine data synchronization</h4>
                       <span style="font-size: 12px; color: var(--text-muted);">Sync coordinator data and logs</span>
                     </div>
-                    <button class="btn btn-secondary btn-sm" onclick="location.reload()" style="min-height: 36px;">Sync now</button>
+                    <button class="btn btn-secondary btn-sm" id="teacher-sync-now-btn" style="min-height: 36px;">Sync now</button>
                   </div>
                 </div>
 
@@ -6329,7 +6332,7 @@ class App {
                         No verified completion or accuracy summary is available for this demo assignment.
                       </div>
                     </div>
-                    <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-assign')" style="min-height: 36px;">View results</button>
+                    <button class="btn btn-secondary btn-sm" data-route="teach-assign" style="min-height: 36px;">View results</button>
                   </div>
                   <!-- Mini Progress Bar -->
                   <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
@@ -6344,7 +6347,7 @@ class App {
                         No verified completion or accuracy summary is available for this demo assignment.
                       </div>
                     </div>
-                    <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-programming')" style="min-height: 36px;">View results</button>
+                    <button class="btn btn-secondary btn-sm" data-route="teach-programming" style="min-height: 36px;">View results</button>
                   </div>
                   <!-- Mini Progress Bar -->
                   <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
@@ -6374,7 +6377,7 @@ class App {
                       <td style="padding: 12px 16px; color: var(--text-muted);">Required task overdue</td>
                       <td style="padding: 12px 16px; color: var(--text-muted);">5 days ago</td>
                       <td style="padding: 12px 16px; text-align: right;">
-                        <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-messages')" style="padding: 4px 8px; font-size: 12px; min-height: 28px;">Message</button>
+                        <button class="btn btn-secondary btn-sm" data-route="teach-messages" style="padding: 4px 8px; font-size: 12px; min-height: 28px;">Message</button>
                       </td>
                     </tr>
                     <tr style="border-bottom: 1px solid var(--border-color);">
@@ -6382,7 +6385,7 @@ class App {
                       <td style="padding: 12px 16px; color: var(--text-muted);">Low score on file calculations</td>
                       <td style="padding: 12px 16px; color: var(--text-muted);">Yesterday</td>
                       <td style="padding: 12px 16px; text-align: right;">
-                        <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-assign')" style="padding: 4px 8px; font-size: 12px; min-height: 28px;">Assign practice</button>
+                        <button class="btn btn-secondary btn-sm" data-route="teach-assign" style="padding: 4px 8px; font-size: 12px; min-height: 28px;">Assign practice</button>
                       </td>
                     </tr>
                     <tr>
@@ -6390,7 +6393,7 @@ class App {
                       <td style="padding: 12px 16px; color: var(--text-muted);">Programming task awaiting review</td>
                       <td style="padding: 12px 16px; color: var(--text-muted);">Today</td>
                       <td style="padding: 12px 16px; text-align: right;">
-                        <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-programming')" style="padding: 4px 8px; font-size: 12px; min-height: 28px;">Review</button>
+                        <button class="btn btn-secondary btn-sm" data-route="teach-programming" style="padding: 4px 8px; font-size: 12px; min-height: 28px;">Review</button>
                       </td>
                     </tr>
                   </tbody>
@@ -6411,8 +6414,8 @@ class App {
                   <div style="font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px;">No verified class-level misconception count is available.</div>
                   <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 12px 0;">Confusion between storage notation and hexadecimal values.</p>
                   <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-written')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">View</button>
-                    <button class="btn btn-primary btn-sm" onclick="app.switchTab('teach-assign')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">Assign practice</button>
+                    <button class="btn btn-secondary btn-sm" data-route="teach-written" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">View</button>
+                    <button class="btn btn-primary btn-sm" data-route="teach-assign" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">Assign practice</button>
                   </div>
                 </div>
                 <div>
@@ -6420,8 +6423,8 @@ class App {
                   <div style="font-size: 13px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px;">No verified class-level misconception count is available.</div>
                   <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 12px 0;">Mixing decimal units (KB, divide by 1,000) with binary units (KiB, divide by 1,024) without stating the convention.</p>
                   <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-secondary btn-sm" onclick="app.switchTab('teach-written')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">View</button>
-                    <button class="btn btn-primary btn-sm" onclick="app.switchTab('teach-assign')" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">Assign practice</button>
+                    <button class="btn btn-secondary btn-sm" data-route="teach-written" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">View</button>
+                    <button class="btn btn-primary btn-sm" data-route="teach-assign" style="font-size: 11px; min-height: 28px; padding: 2px 10px;">Assign practice</button>
                   </div>
                 </div>
               </div>
@@ -6524,6 +6527,14 @@ class App {
       }
       this.switchTab('teach-messages');
     };
+    panel.querySelectorAll('[data-route]').forEach(btn => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        this.switchTab(btn.getAttribute('data-route'));
+      };
+    });
+    const syncNowBtn = panel.querySelector('#teacher-sync-now-btn');
+    if (syncNowBtn) syncNowBtn.onclick = () => location.reload();
     panel.querySelectorAll('.teacher-overview-profile-btn').forEach(button => {
       button.onclick = () => {
         const studentId = button.getAttribute('data-student-id');
