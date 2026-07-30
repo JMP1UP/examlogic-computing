@@ -572,19 +572,25 @@ describe('production browser startup', () => {
 
     expect(panel.innerHTML).toContain('two required tasks · 25 minutes');
     expect(panel.innerHTML).toContain('Required work takes priority');
+    expect(panel.innerHTML).toContain('Upcoming test');
+    expect(panel.innerHTML).toContain('Test preparation');
+    expect(panel.innerHTML).toContain('1.1.1');
+    expect(panel.innerHTML).toContain('Open test plan');
     expect(panel.innerHTML).not.toContain('3 of 5 test cases passed');
   });
 
-  test('required work remains the only true dashboard next action', () => {
+  test('required work remains dominant while the weekly notebook stays visible', () => {
     const context = loadProductionScripts();
     const panel = createPanel();
     context.app.currentUser = context.db.getStudents()[0];
 
     context.app.renderStudentDashboard(panel);
 
-    expect(panel.innerHTML).toContain('Weekly study rhythm &middot; paused');
-    expect(panel.innerHTML).toContain('Recommended study resumes after required work');
-    expect(panel.innerHTML).not.toContain('planned activities complete');
+    expect(panel.innerHTML).toContain('Weekly notebook &middot; resets each Monday');
+    expect(panel.innerHTML).toContain('My study tasks');
+    expect(panel.innerHTML).toContain('Required work comes first.');
+    expect(panel.innerHTML).toContain('Review flashcards');
+    expect(panel.innerHTML).toContain('On 2 different days');
     expect(panel.innerHTML).not.toContain('id="weekly-rhythm-next"');
   });
 
