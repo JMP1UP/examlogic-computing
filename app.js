@@ -3041,12 +3041,12 @@ class App {
   renderStudentPracticeHub(panel) {
     const rhythm = this.getStudentPracticeRhythm();
     const modes = [
-      { title: 'Flashcards', copy: 'Quick recall checks to strengthen your memory.', route: 'stud-retrieval', time: '5 mins', icon: '🎴', color: '#2D9C91', bgGrad: 'rgba(45, 156, 145, 0.05)' },
-      { title: 'Exam questions', copy: 'Guided & independent practice for OCR GCSE questions.', route: 'stud-exam-transfer', time: '15 mins', icon: '📝', color: '#E11D48', bgGrad: 'rgba(225, 29, 72, 0.05)' },
-      { title: 'Essay & Discuss (8 marks)', copy: 'Practise 8-mark OCR extended response questions (Ethics, Legal, Tech impacts).', route: 'stud-essay-practice', time: '15 mins', icon: '✍️', color: '#8B5CF6', bgGrad: 'rgba(139, 92, 246, 0.05)' },
-      { title: 'Custom test builder', copy: 'Build a custom mock test by paper or topic from OCR past papers.', route: 'stud-test-builder', time: '15–45 mins', icon: '📋', color: '#0284C7', bgGrad: 'rgba(2, 132, 199, 0.05)' },
-      { title: 'Number skills', copy: 'Storage, binary addition, and calculation practice.', route: 'stud-practise', time: '10 mins', icon: '🔢', color: '#D97706', bgGrad: 'rgba(217, 119, 6, 0.05)' },
-      { title: 'Programming', copy: 'Python coding tasks and pseudocode challenges.', route: 'stud-programming', time: '15 mins', icon: '💻', color: '#7C3AED', bgGrad: 'rgba(124, 58, 237, 0.05)' }
+      { title: 'Flashcards', btnLabel: 'Start flashcards', copy: 'Quick recall checks to strengthen your memory.', route: 'stud-retrieval', time: '5 mins', icon: '🎴', color: '#2D9C91', bgGrad: 'rgba(45, 156, 145, 0.05)' },
+      { title: 'Exam questions', btnLabel: 'Start exam questions', copy: 'Guided & independent practice for OCR GCSE questions.', route: 'stud-exam-transfer', time: '15 mins', icon: '📝', color: '#07111F', bgGrad: 'rgba(7, 17, 31, 0.04)' },
+      { title: 'Essay & Discuss (8 marks)', btnLabel: 'Start essay practice', copy: 'Practise 8-mark OCR extended response questions (Ethics, Legal, Tech impacts).', route: 'stud-essay-practice', time: '15 mins', icon: '✍️', color: '#8B5CF6', bgGrad: 'rgba(139, 92, 246, 0.05)' },
+      { title: 'Custom test builder', btnLabel: 'Start test builder', copy: 'Build a custom mock test by paper or topic from OCR past papers.', route: 'stud-test-builder', time: '15–45 mins', icon: '📋', color: '#0284C7', bgGrad: 'rgba(2, 132, 199, 0.05)' },
+      { title: 'Number skills', btnLabel: 'Start number skills', copy: 'Storage, binary addition, and calculation practice.', route: 'stud-practise', time: '10 mins', icon: '🔢', color: '#D97706', bgGrad: 'rgba(217, 119, 6, 0.05)' },
+      { title: 'Programming', btnLabel: 'Start programming', copy: 'Python coding tasks and pseudocode challenges.', route: 'stud-programming', time: '15 mins', icon: '💻', color: '#7C3AED', bgGrad: 'rgba(124, 58, 237, 0.05)' }
     ];
     const recommended = rhythm.next || { label: 'Choose one useful practice mode', route: 'stud-retrieval', minutes: 5 };
     panel.innerHTML = `
@@ -3067,20 +3067,20 @@ class App {
           <button type="button" class="btn btn-primary" id="recommended-practice-btn" style="min-height: 42px; padding: 10px 24px; font-size: 15px; font-weight: 600;">Start recommended activity</button>
         </section>
 
-        <div class="student-practice-mode-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px;">
+        <div class="student-practice-mode-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
           ${modes.map(mode => `
-            <article class="card student-practice-mode" style="padding: 22px; display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid ${mode.color}; background: ${mode.bgGrad}; border-radius: 12px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+            <article class="card student-practice-mode" style="padding: 22px; display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid ${mode.color}; background: #FFFFFF; border-radius: 12px; box-shadow: 0 4px 12px rgba(7, 17, 31, 0.04); transition: transform 0.2s ease, box-shadow 0.2s ease;">
               <div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 12px;">
                   <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 22px;">${mode.icon}</span>
-                    <h2 style="margin: 0; font-size: 18px; font-weight: 700;">${mode.title}</h2>
+                    <h2 style="margin: 0; font-size: 17px; font-weight: 700; color: var(--text-main); line-height: 1.25;">${mode.title}</h2>
                   </div>
-                  <span class="badge badge-secondary" style="font-size: 11px; font-weight: 600;">⏱ ${mode.time}</span>
+                  <span class="badge badge-secondary" style="font-size: 11px; font-weight: 600; white-space: nowrap; flex-shrink: 0;">⏱ ${mode.time}</span>
                 </div>
-                <p style="margin: 0 0 20px 0; color: var(--text-muted); font-size: 14px; line-height: 1.4;">${mode.copy}</p>
+                <p style="margin: 0 0 20px 0; color: var(--text-muted); font-size: 14px; line-height: 1.45;">${mode.copy}</p>
               </div>
-              <button type="button" class="btn btn-primary practice-hub-btn" data-target="${mode.route}" style="width: 100%; background: ${mode.color}; border-color: ${mode.color}; color: white; font-weight: 600; min-height: 40px;">Start ${mode.title.toLowerCase()}</button>
+              <button type="button" class="btn btn-primary practice-hub-btn" data-target="${mode.route}" style="width: 100%; background: ${mode.color}; border-color: ${mode.color}; color: white; font-weight: 700; min-height: 42px;">${mode.btnLabel}</button>
             </article>`).join('')}
         </div>
         <p style="margin-top: 24px;"><button type="button" class="btn btn-link" id="practice-desk-btn">Back to My desk</button></p>
