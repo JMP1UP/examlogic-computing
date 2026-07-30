@@ -3916,6 +3916,20 @@ class LocalDB {
     return null;
   }
 
+  getKeyTermsBySpecPoint(specificationPointId) {
+    if (examinerKnowledge && typeof examinerKnowledge.getKeyTermsBySpecPoint === 'function') {
+      return examinerKnowledge.getKeyTermsBySpecPoint(specificationPointId);
+    }
+    return [];
+  }
+
+  getFlashcardsByStrand(strandId) {
+    if (examinerKnowledge && typeof examinerKnowledge.getFlashcardsByStrand === 'function') {
+      return examinerKnowledge.getFlashcardsByStrand(strandId);
+    }
+    return [];
+  }
+
   loadData() {
     let parsedRaw = null;
     let migratedData = null;

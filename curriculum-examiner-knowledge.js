@@ -1,4 +1,4 @@
-// Original Examiner Intelligence, Misconception Matrix, Command Rubrics and Parametric Question Blueprints for OCR GCSE Computer Science J277.
+// Original Examiner Intelligence, Misconception Matrix, Command Rubrics, Spec-Mapped Key Terms Glossary and Parametric Question Blueprints for OCR GCSE Computer Science J277.
 (function initialiseExaminerKnowledge(root, factory) {
   const knowledge = factory();
   if (typeof module !== 'undefined' && module.exports) module.exports = knowledge;
@@ -439,6 +439,459 @@
     }
   };
 
+  const glossaryKeyTerms = [
+    {
+      strandId: '1.1.1',
+      specificationPointId: '1.1.1',
+      term: 'CPU (Central Processing Unit)',
+      definition: 'The main electronic component in a computer that fetches, decodes, and executes instructions.',
+      flashcard: {
+        front: 'What is the Central Processing Unit (CPU)?',
+        back: 'The primary electronic component that carries out instructions by running the fetch-decode-execute cycle.'
+      }
+    },
+    {
+      strandId: '1.1.1',
+      specificationPointId: '1.1.1',
+      term: 'Control Unit (CU)',
+      definition: 'The CPU component that coordinates processor operations, manages the fetch-execute cycle, and sends control signals.',
+      flashcard: {
+        front: 'What is the function of the Control Unit (CU)?',
+        back: 'It coordinates CPU operations, manages the fetch-execute cycle, and sends control signals to hardware.'
+      }
+    },
+    {
+      strandId: '1.1.1',
+      specificationPointId: '1.1.1',
+      term: 'Arithmetic Logic Unit (ALU)',
+      definition: 'The CPU component that performs arithmetic calculations (addition/subtraction) and logical operations (AND/OR/NOT).',
+      flashcard: {
+        front: 'What does the Arithmetic Logic Unit (ALU) do?',
+        back: 'It executes mathematical calculations and binary logical comparisons.'
+      }
+    },
+    {
+      strandId: '1.1.1',
+      specificationPointId: '1.1.1',
+      term: 'Memory Address Register (MAR)',
+      definition: 'A register that holds the RAM memory address currently being read from or written to.',
+      flashcard: {
+        front: 'What does the Memory Address Register (MAR) store?',
+        back: 'The RAM memory location address currently being accessed by the CPU.'
+      }
+    },
+    {
+      strandId: '1.1.1',
+      specificationPointId: '1.1.1',
+      term: 'Memory Data Register (MDR)',
+      definition: 'A register that holds the actual data or instruction fetched from or to be written to memory.',
+      flashcard: {
+        front: 'What is stored in the Memory Data Register (MDR)?',
+        back: 'The actual data or instruction retrieved from RAM or queued to be written to RAM.'
+      }
+    },
+    {
+      strandId: '1.1.1',
+      specificationPointId: '1.1.1',
+      term: 'Program Counter (PC)',
+      definition: 'A register that holds the memory address of the next instruction to be fetched.',
+      flashcard: {
+        front: 'What is the role of the Program Counter (PC)?',
+        back: 'It holds the RAM address of the next instruction waiting to be fetched.'
+      }
+    },
+    {
+      strandId: '1.1.1',
+      specificationPointId: '1.1.1',
+      term: 'Accumulator (ACC)',
+      definition: 'A register that holds the intermediate results of calculations performed by the ALU.',
+      flashcard: {
+        front: 'What is the Accumulator used for?',
+        back: 'It temporarily stores the immediate output/results produced by ALU operations.'
+      }
+    },
+    {
+      strandId: '1.1.2',
+      specificationPointId: '1.1.2',
+      term: 'Clock Speed',
+      definition: 'The number of fetch-decode-execute cycles a CPU can perform per second, measured in Hertz (Hz) or Gigahertz (GHz).',
+      flashcard: {
+        front: 'Define Clock Speed.',
+        back: 'The frequency of fetch-execute cycles per second (GHz). Higher clock speed allows more instructions per second.'
+      }
+    },
+    {
+      strandId: '1.1.2',
+      specificationPointId: '1.1.2',
+      term: 'Cache Memory',
+      definition: 'High-speed SRAM located near/on the CPU that stores frequently accessed instructions and data.',
+      flashcard: {
+        front: 'Why does larger Cache Memory improve CPU performance?',
+        back: 'It stores frequently used data/instructions closer to the CPU, reducing slow data fetches from main RAM.'
+      }
+    },
+    {
+      strandId: '1.1.3',
+      specificationPointId: '1.1.3',
+      term: 'Embedded System',
+      definition: 'A computer system built into a larger mechanical/electrical device to perform a dedicated function.',
+      flashcard: {
+        front: 'What is an Embedded System?',
+        back: 'A specialized computer system built into a larger device (e.g. washing machine) designed for one specific task.'
+      }
+    },
+    {
+      strandId: '1.2.1',
+      specificationPointId: '1.2.1',
+      term: 'RAM (Random Access Memory)',
+      definition: 'Volatile main memory storing active programs and data currently processed by the CPU.',
+      flashcard: {
+        front: 'What is RAM and is it volatile?',
+        back: 'Random Access Memory stores open applications and data. It is volatile (loses contents when powered off).'
+      }
+    },
+    {
+      strandId: '1.2.1',
+      specificationPointId: '1.2.1',
+      term: 'ROM (Read Only Memory)',
+      definition: 'Non-volatile memory storing non-modifiable boot instructions (BIOS/firmware).',
+      flashcard: {
+        front: 'What is ROM used for?',
+        back: 'Non-volatile memory that permanently holds startup instructions needed to boot the computer.'
+      }
+    },
+    {
+      strandId: '1.2.1',
+      specificationPointId: '1.2.1',
+      term: 'Virtual Memory',
+      definition: 'A section of secondary storage used as temporary overflow memory when RAM is full.',
+      flashcard: {
+        front: 'How does Virtual Memory work?',
+        back: 'When physical RAM is full, the OS moves inactive pages of data to secondary storage, returning them when needed.'
+      }
+    },
+    {
+      strandId: '1.2.2',
+      specificationPointId: '1.2.2',
+      term: 'Secondary Storage',
+      definition: 'Non-volatile long-term storage used to retain files, operating systems, and programs when power is off.',
+      flashcard: {
+        front: 'Why is Secondary Storage necessary?',
+        back: 'It provides non-volatile permanent storage for programs and data when the computer is turned off.'
+      }
+    },
+    {
+      strandId: '1.2.3',
+      specificationPointId: '1.2.3',
+      term: 'Bit',
+      definition: 'The smallest unit of digital data, representing a single binary value of 0 or 1.',
+      flashcard: {
+        front: 'What is a Bit?',
+        back: 'A single binary digit (0 or 1).'
+      }
+    },
+    {
+      strandId: '1.2.3',
+      specificationPointId: '1.2.3',
+      term: 'Byte',
+      definition: 'A unit of digital data consisting of 8 bits.',
+      flashcard: {
+        front: 'How many bits are in 1 Byte?',
+        back: '8 bits = 1 Byte.'
+      }
+    },
+    {
+      strandId: '1.2.4a',
+      specificationPointId: '1.2.4',
+      term: 'Hexadecimal',
+      definition: 'A base-16 number system using digits 0-9 and letters A-F (where A=10 and F=15).',
+      flashcard: {
+        front: 'What is Hexadecimal?',
+        back: 'Base-16 notation (0-9, A-F) used to make long binary numbers shorter and easier for humans to read.'
+      }
+    },
+    {
+      strandId: '1.2.4b',
+      specificationPointId: '1.2.4',
+      term: 'ASCII',
+      definition: 'American Standard Code for Information Interchange; a 7/8-bit character set representing 128-256 characters.',
+      flashcard: {
+        front: 'What is ASCII?',
+        back: 'A character encoding standard using 7 or 8 bits per character, supporting English letters and basic symbols.'
+      }
+    },
+    {
+      strandId: '1.2.4b',
+      specificationPointId: '1.2.4',
+      term: 'Unicode',
+      definition: 'A 16/32-bit character set capable of representing characters and symbols across all global languages.',
+      flashcard: {
+        front: 'Why is Unicode preferred over ASCII for international applications?',
+        back: 'Unicode uses 16 or 32 bits per character, supporting thousands of global alphabets and emojis.'
+      }
+    },
+    {
+      strandId: '1.2.4c',
+      specificationPointId: '1.2.4',
+      term: 'Pixel',
+      definition: 'The smallest individual picture element in a grid-based bitmap image.',
+      flashcard: {
+        front: 'What is a Pixel?',
+        back: 'A single dot or picture element in a digital bitmap image.'
+      }
+    },
+    {
+      strandId: '1.2.4c',
+      specificationPointId: '1.2.4',
+      term: 'Colour Depth',
+      definition: 'The number of binary bits allocated to represent the colour of each individual pixel.',
+      flashcard: {
+        front: 'What is Colour Depth?',
+        back: 'The number of bits per pixel in a bitmap image. Higher colour depth allows more unique colours.'
+      }
+    },
+    {
+      strandId: '1.2.4d',
+      specificationPointId: '1.2.4',
+      term: 'Sample Rate',
+      definition: 'The number of audio amplitude samples recorded per second, measured in Hertz (Hz).',
+      flashcard: {
+        front: 'Define Sample Rate in audio recording.',
+        back: 'The frequency (Hz) at which sound amplitude is measured per second.'
+      }
+    },
+    {
+      strandId: '1.2.5',
+      specificationPointId: '1.2.5',
+      term: 'Lossy Compression',
+      definition: 'A compression method that permanently discards non-essential data to significantly reduce file size.',
+      flashcard: {
+        front: 'What is Lossy Compression?',
+        back: 'A method that permanently removes data to achieve smaller file sizes (used for media like MP3/JPEG).'
+      }
+    },
+    {
+      strandId: '1.2.5',
+      specificationPointId: '1.2.5',
+      term: 'Lossless Compression',
+      definition: 'A compression method that reduces file size without losing any original data, allowing exact reconstruction.',
+      flashcard: {
+        front: 'What is Lossless Compression?',
+        back: 'A method that compresses data without discarding any information (essential for code and text documents).'
+      }
+    },
+    {
+      strandId: '1.3.1',
+      specificationPointId: '1.3.1',
+      term: 'LAN (Local Area Network)',
+      definition: 'A network covering a small geographical site (e.g. school/office) using private cabling and hardware.',
+      flashcard: {
+        front: 'Define Local Area Network (LAN).',
+        back: 'A network spanning a single geographic site using infrastructure owned by the organization.'
+      }
+    },
+    {
+      strandId: '1.3.1',
+      specificationPointId: '1.3.1',
+      term: 'WAN (Wide Area Network)',
+      definition: 'A network connecting LANs across wide geographical locations using external telecommunication infrastructure.',
+      flashcard: {
+        front: 'Define Wide Area Network (WAN).',
+        back: 'A network connecting geographically separate sites over shared or leased telecommunication lines.'
+      }
+    },
+    {
+      strandId: '1.3.2',
+      specificationPointId: '1.3.2',
+      term: 'Protocol',
+      definition: 'An agreed set of rules governing how data is transmitted and received across a network.',
+      flashcard: {
+        front: 'What is a Network Protocol?',
+        back: 'A set of agreed rules for data formatting, transmission, and error checking between devices.'
+      }
+    },
+    {
+      strandId: '1.4.1',
+      specificationPointId: '1.4.1',
+      term: 'Social Engineering',
+      definition: 'Manipulating individuals into disclosing confidential information or performing security errors.',
+      flashcard: {
+        front: 'What is Social Engineering?',
+        back: 'Tricking humans into granting unauthorized access or revealing sensitive security credentials (e.g. phishing).'
+      }
+    },
+    {
+      strandId: '1.4.2',
+      specificationPointId: '1.4.2',
+      term: 'Firewall',
+      definition: 'Software or hardware that monitors and filters incoming/outgoing network packets against security rules.',
+      flashcard: {
+        front: 'What is the function of a Firewall?',
+        back: 'It inspects network traffic packets and blocks unauthorized data transmissions based on security rules.'
+      }
+    },
+    {
+      strandId: '1.5.1',
+      specificationPointId: '1.5.1',
+      term: 'Operating System (OS)',
+      definition: 'System software managing computer hardware, memory allocation, process scheduling, user interfaces, and file storage.',
+      flashcard: {
+        front: 'What is the main role of an Operating System?',
+        back: 'To manage system hardware, allocate RAM, control process execution, handle files, and provide a user interface.'
+      }
+    },
+    {
+      strandId: '1.5.2',
+      specificationPointId: '1.5.2',
+      term: 'Defragmentation',
+      definition: 'Reorganizing fragmented file sectors on a magnetic hard disk so related file data is stored contiguously.',
+      flashcard: {
+        front: 'Why is Defragmentation performed on magnetic HDDs?',
+        back: 'It groups file segments together, reducing drive read-head movement and speeding up file access times.'
+      }
+    },
+    {
+      strandId: '1.6.1',
+      specificationPointId: '1.6.1',
+      term: 'E-waste (Electronic Waste)',
+      definition: 'Discarded electronic equipment containing toxic metals that pose environmental hazards if dumped in landfill.',
+      flashcard: {
+        front: 'What environmental concern is associated with E-waste?',
+        back: 'Toxic heavy metals (e.g. lead, mercury) leaching into soil and water supplies when devices are improperly landfilled.'
+      }
+    },
+    {
+      strandId: '1.6.2',
+      specificationPointId: '1.6.1',
+      term: 'Computer Misuse Act (CMA)',
+      definition: 'UK legislation criminalizing unauthorized access to computer material, hacking, and virus creation.',
+      flashcard: {
+        front: 'What offences are covered under the Computer Misuse Act?',
+        back: 'Unauthorized access to files/systems, unauthorized access with intent to commit a crime, and unauthorized alteration of data.'
+      }
+    },
+    {
+      strandId: '2.1.1',
+      specificationPointId: '2.1.1',
+      term: 'Abstraction',
+      definition: 'Removing unnecessary details from a problem to focus only on the essential features required to solve it.',
+      flashcard: {
+        front: 'Define Abstraction in computational thinking.',
+        back: 'Filtering out non-essential detail so you can focus on the core information relevant to the solution.'
+      }
+    },
+    {
+      strandId: '2.1.1',
+      specificationPointId: '2.1.1',
+      term: 'Decomposition',
+      definition: 'Breaking down a complex problem into smaller, manageable sub-problems that can be analyzed and solved individually.',
+      flashcard: {
+        front: 'Define Decomposition.',
+        back: 'Splitting a complex problem into smaller, simpler sub-problems that are easier to understand and code.'
+      }
+    },
+    {
+      strandId: '2.1.2',
+      specificationPointId: '2.1.2',
+      term: 'Trace Table',
+      definition: 'A technique used to test algorithms step-by-step to track variable values and output states during execution.',
+      flashcard: {
+        front: 'What is a Trace Table used for?',
+        back: 'To manually step through an algorithm line-by-line, recording how variable values change at each step.'
+      }
+    },
+    {
+      strandId: '2.1.3',
+      specificationPointId: '2.1.3',
+      term: 'Binary Search',
+      definition: 'An efficient search algorithm that repeatedly divides a sorted list in half to find a target value.',
+      flashcard: {
+        front: 'What pre-condition is required before performing a Binary Search?',
+        back: 'The data list must be sorted into ascending or descending order.'
+      }
+    },
+    {
+      strandId: '2.2.1',
+      specificationPointId: '2.2.1',
+      term: 'Iteration',
+      definition: 'A control structure that repeats a sequence of statements (loops: FOR, WHILE, DO UNTIL).',
+      flashcard: {
+        front: 'What is Iteration in programming?',
+        back: 'Repeating a block of code multiple times using a loop structure.'
+      }
+    },
+    {
+      strandId: '2.2.2',
+      specificationPointId: '2.2.2',
+      term: 'Casting',
+      definition: 'Converting a value from one data type to another (e.g. converting string "42" to integer 42).',
+      flashcard: {
+        front: 'What is Data Type Casting?',
+        back: 'Explicitly converting a variable or value from one data type to another (e.g. int("15")).'
+      }
+    },
+    {
+      strandId: '2.2.3',
+      specificationPointId: '2.2.3',
+      term: 'Function',
+      definition: 'A reusable subprogram that takes parameters, performs a task, and returns a value to the caller.',
+      flashcard: {
+        front: 'What distinguishes a Function from a Procedure?',
+        back: 'A Function returns a value using a RETURN statement, whereas a Procedure does not return a value.'
+      }
+    },
+    {
+      strandId: '2.3.1',
+      specificationPointId: '2.3.1',
+      term: 'Input Validation',
+      definition: 'Automated checks ensuring user input meets specific rules (e.g. length check, range check) before processing.',
+      flashcard: {
+        front: 'What is Input Validation?',
+        back: 'Checking input data against validation rules to ensure it is sensible and acceptable before processing.'
+      }
+    },
+    {
+      strandId: '2.3.2',
+      specificationPointId: '2.3.2',
+      term: 'Boundary Test Data',
+      definition: 'Test values selected at the extreme minimum and maximum limits of acceptable input data.',
+      flashcard: {
+        front: 'Give an example of Boundary Test Data for an age limit of 11 to 18.',
+        back: 'Test values 11 and 18 (the exact edge values allowed by the validation rule).'
+      }
+    },
+    {
+      strandId: '2.4.1',
+      specificationPointId: '2.4.1',
+      term: 'Truth Table',
+      definition: 'A mathematical table showing all possible input combinations for a logic circuit and their resulting outputs.',
+      flashcard: {
+        front: 'What is a Truth Table?',
+        back: 'A table listing every possible binary input combination (0s and 1s) and the corresponding output.'
+      }
+    },
+    {
+      strandId: '2.5.1',
+      specificationPointId: '2.5.1',
+      term: 'Compiler',
+      definition: 'A translator that converts high-level source code into machine code all at once before execution.',
+      flashcard: {
+        front: 'How does a Compiler translate code?',
+        back: 'It translates the entire source code into an executable machine code file prior to running.'
+      }
+    },
+    {
+      strandId: '2.5.2',
+      specificationPointId: '2.5.2',
+      term: 'IDE (Integrated Development Environment)',
+      definition: 'Software providing comprehensive tools for programming, including editor, debugger, and build automation.',
+      flashcard: {
+        front: 'List three core features of an IDE.',
+        back: 'Code editor (with syntax highlighting), stepping debugger, and translator/run facilities.'
+      }
+    }
+  ];
+
   const blueprintGenerators = {
     '1.2.3': function generateStorageCalculation(seed) {
       const width = 800 + (seed % 5) * 200;
@@ -508,6 +961,7 @@
   return {
     misconceptions,
     commandRubrics,
+    glossaryKeyTerms,
     blueprintGenerators,
 
     getExaminerInsights(strandId) {
@@ -526,6 +980,16 @@
 
     getCommandWordRubric(commandWord) {
       return commandRubrics[commandWord] || commandRubrics['Explain'];
+    },
+
+    getKeyTermsBySpecPoint(specificationPointId) {
+      return glossaryKeyTerms.filter(item => item.specificationPointId === specificationPointId || item.strandId === specificationPointId);
+    },
+
+    getFlashcardsByStrand(strandId) {
+      return glossaryKeyTerms
+        .filter(item => item.strandId === strandId || item.specificationPointId === strandId)
+        .map(item => item.flashcard);
     },
 
     generateBlueprintQuestion(strandId, seed = 1) {

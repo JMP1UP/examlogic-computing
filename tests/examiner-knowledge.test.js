@@ -62,10 +62,27 @@ describe('Curriculum Knowledge Base & Examiner Intelligence', () => {
     expect(qLogic.truthTable).toHaveLength(4);
   });
 
+  test('provides spec-mapped key terms and flashcards for curriculum strands', () => {
+    const terms111 = examinerKnowledge.getKeyTermsBySpecPoint('1.1.1');
+    expect(terms111.length).toBeGreaterThan(3);
+    terms111.forEach(t => {
+      expect(t.term).toBeTruthy();
+      expect(t.definition).toBeTruthy();
+      expect(t.specificationPointId).toBe('1.1.1');
+      expect(t.flashcard.front).toBeTruthy();
+      expect(t.flashcard.back).toBeTruthy();
+    });
+
+    const flashcards111 = examinerKnowledge.getFlashcardsByStrand('1.1.1');
+    expect(flashcards111.length).toBe(terms111.length);
+  });
+
   test('integrates cleanly into LocalDB instance', () => {
     const db = global.window.db;
     expect(db.getExaminerInsights('1.1.1')).toBeDefined();
     expect(db.getCommandWordRubric('Explain')).toBeDefined();
     expect(db.generateBlueprintQuestion('1.2.3', 10)).not.toBeNull();
+    expect(db.getKeyTermsBySpecPoint('1.1.1').length).toBeGreaterThan(0);
+    expect(db.getFlashcardsByStrand('1.1.1').length).toBeGreaterThan(0);
   });
 });
