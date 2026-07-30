@@ -5074,7 +5074,6 @@ class App {
           </div>
         </div>
       ` : ''}
-      ` : ''}
 
       ${this.activeSimTool === 'algorithms' ? `
         <div class="card" style="padding:24px;">
