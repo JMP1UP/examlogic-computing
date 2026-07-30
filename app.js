@@ -901,6 +901,60 @@ class App {
     return new Set(this.getEligibleRecallCards(student).map(item => item.card.topicId));
   }
 
+  getRecallDeckOverview(student = this.currentUser, now = new Date()) {
+    const topics = new Map(window.db.getUnits().flatMap(unit =>
+      unit.topics.map(topic => [topic.id, topic])
+    ));
+    const latestByCard = new Map();
+    window.db.getAttempts()
+      .filter(item => item.studentId === student?.id
+        && ['retrieval_rating', 'retrieval_deck_extra'].includes(item.type))
+      .sort((left, right) => new Date(right.date) - new Date(left.date))
+      .forEach(item => {
+        if (!latestByCard.has(item.questionId)) latestByCard.set(item.questionId, item);
+      });
+    const groups = new Map();
+    this.getEligibleRecallCards(student).forEach(({ card }) => {
+      if (!groups.has(card.topicId)) {
+        const topic = topics.get(card.topicId);
+        groups.set(card.topicId, {
+          topicId: card.topicId,
+          topicName: topic?.name || 'Saved topic',
+          cards: []
+        });
+      }
+      groups.get(card.topicId).cards.push(card);
+    });
+    const ratingValues = { 'couldnt-recall': 0, difficult: 1, secure: 2 };
+    return [...groups.values()].map(group => {
+      const ratings = group.cards.map(card => latestByCard.get(card.id)).filter(Boolean);
+      const average = ratings.length
+        ? ratings.reduce((sum, item) => sum + (ratingValues[item.selfRating] ?? 0), 0) / ratings.length
+        : null;
+      const strength = average === null
+        ? 'Not rated yet'
+        : average < 0.5
+          ? 'Needs another look'
+          : average < 1.5
+            ? 'Getting there'
+            : 'Feels secure';
+      const dueCount = group.cards.filter(card => {
+        const latest = latestByCard.get(card.id);
+        return !latest?.dueDate || new Date(latest.dueDate) <= now;
+      }).length;
+      return { ...group, strength, ratedCount: ratings.length, dueCount };
+    });
+  }
+
+  getDeskTopicSummary(student = this.currentUser, now = new Date(), limit = 3) {
+    const allTopics = this.getRecallDeckOverview(student, now)
+      .sort((left, right) => right.dueCount - left.dueCount || left.topicName.localeCompare(right.topicName));
+    return {
+      visible: allTopics.slice(0, limit),
+      hiddenCount: Math.max(0, allTopics.length - limit)
+    };
+  }
+
   getRetrievalDeckCards(student = this.currentUser, now = new Date()) {
     const ratings = window.db.getAttempts().filter(item =>
       item.studentId === student?.id && ['retrieval_rating', 'retrieval_deck_extra'].includes(item.type)
@@ -1672,7 +1726,7 @@ class App {
     if (this.currentUser.role === 'student') {
       const activeParent = this.getStudentRouteParent();
       const links = [
-        { id: 'stud-dashboard', label: 'Home', icon: SVG_ICONS.home },
+        { id: 'stud-dashboard', label: 'My desk', icon: SVG_ICONS.home },
         { id: 'stud-topics', label: 'Topics', icon: SVG_ICONS.learn },
         { id: 'stud-practice', label: 'Practice', icon: SVG_ICONS.practise },
         { id: 'stud-progress', label: 'Progress', icon: SVG_ICONS.progress },
@@ -1806,7 +1860,7 @@ class App {
           this.renderStudentRouteRecovery(mainPanel);
           break;
         }
-        mainPanel.innerHTML = `<div class="card" role="status"><h1>Screen not found</h1><p>This route is unavailable. Return to the appropriate home screen and choose another task.</p><button class="btn btn-secondary" id="unknown-route-back-btn">Back to Home</button></div>`;
+        mainPanel.innerHTML = `<div class="card" role="status"><h1>Screen not found</h1><p>This route is unavailable. Return to My desk and choose another task.</p><button class="btn btn-secondary" id="unknown-route-back-btn">Back to My desk</button></div>`;
         const unknownRouteBackButton = document.getElementById('unknown-route-back-btn');
         if (unknownRouteBackButton) {
           unknownRouteBackButton.onclick = () =>
@@ -2282,7 +2336,7 @@ class App {
         <span class="student-kicker">Study habit &middot; resets each Monday</span>
         <h2 id="weekly-rhythm-heading">Your Computing rhythm</h2>
         <p>${practiceRhythm.completedCount} of ${practiceRhythm.items.length} planned activities complete. About ${practiceRhythm.totalMinutes} minutes across the week.</p>
-        <p>Study activities record regular practice. Progress and attainment change only through checked evidence.</p>
+        <p>Regular study builds your routine. Only marked work changes Progress.</p>
         <ul style="list-style:none; padding:0; display:grid; gap:8px;">
           ${practiceRhythm.items.map(item => `<li ${!requiredTaskActive && practiceRhythm.next?.id === item.id ? 'aria-current="step"' : ''} style="display:flex; justify-content:space-between; gap:12px;"><span>${item.done >= item.target ? 'Done' : practiceRhythm.next?.id === item.id ? (requiredTaskActive ? 'After required work' : 'Up next') : 'Planned'} &middot; ${this.escapeHTML(item.label)}</span><strong>${item.done}/${item.target}</strong></li>`).join('')}
         </ul>
@@ -2290,12 +2344,52 @@ class App {
         ${practiceRhythm.next ? `<button type="button" class="btn btn-secondary" id="weekly-rhythm-next" data-activity-id="${this.escapeHTML(practiceRhythm.next.id)}" data-route="${this.escapeHTML(practiceRhythm.next.route)}">Next: ${this.escapeHTML(practiceRhythm.next.label)} &middot; ${practiceRhythm.next.minutes} min</button>` : '<p><strong>Weekly plan complete.</strong> A new plan begins next Monday; unfinished optional study does not become overdue.</p>'}
       </section>
     `;
+    const deskSummary = this.getDeskTopicSummary(student);
+    const deskTopics = deskSummary.visible;
+    const hiddenDeskTopicCount = deskSummary.hiddenCount;
+    const myDeckHtml = `
+      <section class="card student-my-deck" aria-labelledby="my-deck-heading">
+        <header class="student-my-deck__header">
+          <div>
+            <span class="student-kicker">My desk</span>
+            <h2 id="my-deck-heading">Flashcards on your desk</h2>
+            <p>The topics you have chosen to keep fresh alongside school.</p>
+          </div>
+          <button type="button" class="btn btn-secondary" id="manage-deck-btn">Organise my topics</button>
+        </header>
+        ${deskTopics.length ? `
+          <div class="student-my-deck__topics">
+            ${deskTopics.map(topic => `
+              <article>
+                <div>
+                  <h3>${this.escapeHTML(topic.topicName)}</h3>
+                  <p>${topic.cards.length} ${topic.cards.length === 1 ? 'card' : 'cards'} · ${topic.dueCount} ready to review</p>
+                </div>
+                <div class="student-my-deck__strength">
+                  <span>Your card confidence</span>
+                  <strong>${this.escapeHTML(topic.strength)}</strong>
+                  <small>${topic.ratedCount ? `Based on what you told us after ${topic.ratedCount} ${topic.ratedCount === 1 ? 'card' : 'cards'} — not an exam result` : 'Not rated yet — tell us after reviewing a card'}</small>
+                </div>
+                <button type="button" class="btn btn-primary deck-topic-review-btn" data-topic-id="${this.escapeHTML(topic.topicId)}" aria-label="Review ${this.escapeHTML(topic.topicName)} flashcards">Review flashcards</button>
+              </article>
+            `).join('')}
+          </div>
+          ${hiddenDeskTopicCount ? `<p class="student-my-deck__more">${hiddenDeskTopicCount} more ${hiddenDeskTopicCount === 1 ? 'topic is' : 'topics are'} on your desk. Use Organise my topics to see all of them.</p>` : ''}
+        ` : `
+          <div class="student-my-deck__empty">
+            <strong>Your desk is ready.</strong>
+            <p>Choose a topic you have met at school and add its flashcards when you are ready.</p>
+            <button type="button" class="btn btn-primary" id="empty-desk-topics-btn">Choose a topic</button>
+          </div>
+        `}
+      </section>
+    `;
 
     panel.innerHTML = `
       <div class="student-page student-dashboard">
         <header class="student-brief">
           <div class="student-brief__copy">
-            <span class="student-kicker">Weekly brief / ${dashboardDate}</span>
+            <span class="student-kicker">My desk / ${dashboardDate}</span>
             <h1>${greeting}, ${shortName}</h1>
             <p class="student-brief__workload">
               <strong>${requiredCountWord} required ${requiredCount === 1 ? 'task' : 'tasks'} · ${requiredMinutes} minutes</strong>
@@ -2317,6 +2411,7 @@ class App {
 
         <div class="student-dashboard__flow">
           ${dominantTaskHtml}
+          ${myDeckHtml}
 
           <section class="student-signal-strip" aria-label="This week's study status">
             <div class="student-signal student-signal--required"><span>Required</span><strong>${requiredMinutes} min</strong><small>this week</small></div>
@@ -2336,6 +2431,14 @@ class App {
       btn.onclick = () => {
         this.activeTopicId = btn.getAttribute('data-topic-id');
         this.switchTab('stud-learn');
+      };
+    });
+    panel.querySelector('#manage-deck-btn')?.addEventListener('click', () => this.switchTab('stud-topics'));
+    panel.querySelector('#empty-desk-topics-btn')?.addEventListener('click', () => this.switchTab('stud-topics'));
+    panel.querySelectorAll('.deck-topic-review-btn').forEach(button => {
+      button.onclick = () => {
+        this.retrievalDeckTopicId = button.dataset.topicId;
+        this.switchTab('stud-recall');
       };
     });
     panel.querySelectorAll('.test-prep-start-btn').forEach(btn => {
@@ -2423,7 +2526,7 @@ class App {
         <h1>This page is not available</h1>
         <p>The activity may have moved. Choose a safe place to continue.</p>
         <div class="student-action-row">
-          <button type="button" class="btn btn-primary" data-recovery-route="stud-dashboard">Go to Home</button>
+          <button type="button" class="btn btn-primary" data-recovery-route="stud-dashboard">Go to My desk</button>
           <button type="button" class="btn btn-secondary" data-recovery-route="stud-topics">Open Topics</button>
         </div>
       </section>`;
@@ -2453,11 +2556,6 @@ class App {
   renderStudentTopics(panel, restore = {}) {
     const milestoneBySection = new Map(this.getSectionMilestones().map(item => [item.id, item]));
     const contentIds = new Set(window.db.getCurriculumContent().map(item => item.id));
-    const stateLabels = {
-      not_covered: 'Not covered yet',
-      learning: 'Learning now',
-      covered: 'Covered — cards added'
-    };
     const paperHtml = window.db.getUnits().map((unit, unitIndex) => `
       <details class="student-topic-paper" data-disclosure-id="paper-${unitIndex}" ${unitIndex === 0 ? 'open' : ''}>
         <summary>${this.escapeHTML(unit.paper)}: ${this.escapeHTML(unit.title)}</summary>
@@ -2471,31 +2569,40 @@ class App {
                 const cardsActive = saved?.cardState !== 'paused';
                 const milestone = milestoneBySection.get(objective.id);
                 const checked = milestone?.state === 'checkpoint_secured'
-                  ? 'Section goal met'
+                  ? 'Goal met'
                   : milestone?.state === 'practice_completed'
-                    ? 'Checked practice started'
-                    : 'No checked work yet';
+                    ? 'Checked practice underway'
+                    : 'No checked result yet';
                 const task = this.getMatchingExamTransferTask(topic.id, objective.id);
                 const available = contentIds.has(objective.id);
-                const primaryLabel = state === 'covered' ? 'Review section' : state === 'learning' ? 'Continue learning' : 'Start learning';
+                const inDeck = state === 'covered' && cardsActive;
+                const deckStatus = inDeck
+                  ? `On your desk · ${this.escapeHTML(this.getObjectiveRecallConfidence(objective.id))}`
+                  : state === 'covered'
+                    ? 'Cards paused'
+                    : 'Not on your desk';
+                const reviewLabel = state === 'learning' ? 'Continue refresher' : 'Review topic';
                 return `
                   <article class="student-objective-card" aria-labelledby="objective-name-${this.escapeHTML(objective.id)}">
                     <div>
                       <h3 id="objective-name-${this.escapeHTML(objective.id)}">${this.escapeHTML(objective.id)} · ${this.escapeHTML(objective.name)}</h3>
-                      <dl class="student-objective-status">
-                        <div><dt>Study state</dt><dd>${stateLabels[state]}</dd></div>
-                        <div><dt>Recall confidence</dt><dd>${this.escapeHTML(this.getObjectiveRecallConfidence(objective.id))}</dd></div>
-                        <div><dt>Checked work</dt><dd>${checked}</dd></div>
-                      </dl>
+                      <p class="student-objective-next"><strong>${deckStatus}</strong></p>
                     </div>
                     <div class="student-objective-actions">
-                      <button type="button" class="btn btn-primary objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="${primaryLabel}: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}" ${available ? '' : 'disabled'}>${available ? primaryLabel : 'Learning unavailable'}</button>
+                      ${inDeck
+                        ? `<button type="button" class="btn btn-primary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" aria-label="Review topic flashcards: ${this.escapeHTML(topic.code)} ${this.escapeHTML(topic.name)}">Review topic flashcards</button>`
+                        : `<button type="button" class="btn btn-primary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="${state === 'covered' ? 'Add flashcards again' : 'Add flashcards to my desk'}: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">${state === 'covered' ? 'Add flashcards again' : 'Add flashcards to my desk'}</button>`}
+                      <button type="button" class="btn btn-secondary objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="${reviewLabel}: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}" ${available ? '' : 'disabled'}>${available ? reviewLabel : 'Refresher unavailable'}</button>
                       <details>
-                        <summary aria-label="More options for ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">More options</summary>
+                        <summary aria-label="More choices and progress for ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">More choices and progress</summary>
+                        <dl class="student-objective-status">
+                          <div><dt>Flashcards</dt><dd>${deckStatus}</dd></div>
+                          <div><dt>Checked questions</dt><dd>${checked}</dd></div>
+                        </dl>
                         <div class="student-action-row">
-                          <button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="${state === 'covered' ? (cardsActive ? 'Pause recall cards' : 'Add recall cards again') : 'Mark as covered and add cards'}: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">${state === 'covered' ? (cardsActive ? 'Pause recall cards' : 'Add recall cards again') : 'Mark as covered and add cards'}</button>
-                          ${task ? `<button type="button" class="btn btn-secondary objective-exam-btn" data-task-id="${this.escapeHTML(task.id)}" aria-label="Try matching exam question: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">Try matching exam question</button>` : ''}
-                          <button type="button" class="btn btn-secondary objective-progress-btn" aria-label="View checked progress: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">View checked progress</button>
+                          ${inDeck ? `<button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="Pause flashcards: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">Pause these flashcards</button>` : ''}
+                          ${task ? `<button type="button" class="btn btn-secondary objective-exam-btn" data-task-id="${this.escapeHTML(task.id)}" aria-label="Try a checked question: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">Try a checked question</button>` : ''}
+                          <button type="button" class="btn btn-secondary objective-progress-btn" aria-label="See my progress: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">See my progress</button>
                         </div>
                       </details>
                     </div>
@@ -2510,23 +2617,35 @@ class App {
         <header class="student-route-header">
           <span class="student-mode-label">OCR specification</span>
           <h1>Computer Science topics</h1>
-          <p>See what you have covered, choose what to learn and manage your recall cards.</p>
+          <p>Organise the topics you study alongside your lessons at school.</p>
         </header>
         <aside class="card student-status-explainer">
-          <strong>Three different signals</strong>
-          <p>Covered means you have studied this section and added its cards. It does not mean mastered. Checked questions show what you can do. Recall confidence is based on recent card ratings.</p>
+          <strong>Choose what belongs on your desk</strong>
+          <p>Met it at school? Add its flashcards now. Need a reminder? Review the topic first. Your card choices help schedule future practice; checked questions are shown separately in Progress.</p>
         </aside>
-        <p class="sr-only" id="topics-state-announcement" aria-live="polite">${this.escapeHTML(restore.announcement || '')}</p>
+        <p class="sr-only" id="topics-state-announcement" role="status" aria-live="polite" aria-atomic="true"></p>
         <div class="student-topic-papers">${paperHtml}</div>
       </div>`;
     const openIds = restore.openIds || [];
     panel.querySelectorAll('details[data-disclosure-id]').forEach(detail => {
       if (openIds.includes(detail.dataset.disclosureId)) detail.open = true;
     });
+    const stateAnnouncement = panel.querySelector('#topics-state-announcement');
+    if (stateAnnouncement && restore.announcement) {
+      setTimeout(() => {
+        stateAnnouncement.textContent = restore.announcement;
+      }, 0);
+    }
     const captureOpenIds = () => [...panel.querySelectorAll('details[data-disclosure-id][open]')]
       .map(detail => detail.dataset.disclosureId);
     panel.querySelectorAll('.objective-learn-btn').forEach(button => {
       button.onclick = () => this.openObjectiveLearning(button.dataset.topicId, button.dataset.objectiveId);
+    });
+    panel.querySelectorAll('.objective-recall-btn').forEach(button => {
+      button.onclick = () => {
+        this.retrievalDeckTopicId = button.dataset.topicId;
+        this.switchTab('stud-recall');
+      };
     });
     panel.querySelectorAll('.objective-cover-btn').forEach(button => {
       button.onclick = () => {
@@ -2536,10 +2655,10 @@ class App {
         if (current?.state === 'covered') {
           const nextCardState = current.cardState === 'paused' ? 'active' : 'paused';
           this.updateLearnerObjectiveState(objectiveId, 'covered', nextCardState);
-          announcement = `${objectiveId} recall cards ${nextCardState === 'active' ? 'added' : 'paused'}.`;
+          announcement = `${objectiveId} flashcards ${nextCardState === 'active' ? 'added' : 'paused'}.`;
         } else {
           this.updateLearnerObjectiveState(objectiveId, 'covered', 'active');
-          announcement = `${objectiveId} marked covered and recall cards added.`;
+          announcement = `${objectiveId} flashcards added to your desk.`;
         }
         this.renderStudentTopics(panel, {
           openIds: captureOpenIds(),
@@ -2562,17 +2681,19 @@ class App {
       button.onclick = () => this.switchTab('stud-progress');
     });
     if (restore.focusObjectiveId) {
-      panel.querySelector(`.objective-cover-btn[data-objective-id="${restore.focusObjectiveId}"]`)?.focus?.();
+      const heading = panel.querySelector(`#objective-name-${restore.focusObjectiveId}`);
+      const objectiveCard = heading?.closest?.('.student-objective-card');
+      objectiveCard?.querySelector?.('.objective-recall-btn, .objective-cover-btn, .objective-learn-btn')?.focus?.();
     }
   }
 
   renderStudentPracticeHub(panel) {
     const rhythm = this.getStudentPracticeRhythm();
     const modes = [
-      { title: 'Recall cards', copy: 'Recall three cards in about five minutes. Ratings schedule cards only and contribute to study rhythm.', route: 'stud-retrieval', time: 'About 5 minutes', evidence: 'Study rhythm' },
-      { title: 'Exam questions', copy: 'Apply one specification point in an exam-style response. Extended work waits for review.', route: 'stud-exam-transfer', time: 'About 6–12 minutes', evidence: 'Checked or awaiting review' },
-      { title: 'Number skills', copy: 'Complete a bounded calculation set and retry mistakes.', route: 'stud-practise', time: 'About 10 minutes', evidence: 'Checked work' },
-      { title: 'Programming', copy: 'Continue one coding or pseudocode stage with tests or review.', route: 'stud-programming', time: 'About 15 minutes', evidence: 'Tests or awaiting review' }
+      { title: 'Flashcards', copy: 'Review three flashcards in about five minutes. Your choices schedule future cards.', route: 'stud-retrieval', time: 'About 5 minutes', outcome: 'Builds your study routine; it is not marked in Progress.' },
+      { title: 'Exam questions', copy: 'Apply one specification point in an exam-style response. Extended work waits for review.', route: 'stud-exam-transfer', time: 'About 6–12 minutes', outcome: 'A checked answer appears in Progress; longer answers wait for review.' },
+      { title: 'Number skills', copy: 'Complete a bounded calculation set and retry mistakes.', route: 'stud-practise', time: 'About 10 minutes', outcome: 'Your checked result appears in Progress.' },
+      { title: 'Programming', copy: 'Continue one coding or pseudocode stage with tests or review.', route: 'stud-programming', time: 'About 15 minutes', outcome: 'Passed tests can count; other work waits for review.' }
     ];
     const recommended = rhythm.next || { label: 'Choose one useful practice mode', route: 'stud-retrieval', minutes: 5 };
     panel.innerHTML = `
@@ -2580,12 +2701,12 @@ class App {
         <header class="student-route-header">
           <span class="student-mode-label">Practice</span>
           <h1>Choose how to practise</h1>
-          <p>Use recall to remember knowledge and checked work to demonstrate what you can do.</p>
+          <p>Use flashcards to remember knowledge and checked work to demonstrate what you can do. A checked activity is marked by StudySpice or reviewed by your teacher and can appear in Progress.</p>
         </header>
         <section class="card student-recommended-practice" aria-labelledby="recommended-practice-title">
           <span class="student-kicker">Recommended now</span>
           <h2 id="recommended-practice-title">${this.escapeHTML(recommended.label)}</h2>
-          <p>About ${recommended.minutes} minutes. Complete one focused activity, then return to Home for your next step.</p>
+          <p>About ${recommended.minutes} minutes. Complete one focused activity, then return to My desk for your next step.</p>
           <button type="button" class="btn btn-primary" id="recommended-practice-btn">Continue recommended activity</button>
         </section>
         <div class="student-practice-mode-grid">
@@ -2593,10 +2714,11 @@ class App {
             <article class="card student-practice-mode">
               <h2>${mode.title}</h2>
               <p>${mode.copy}</p>
-              <p><strong>Time:</strong> ${mode.time}<br><strong>Records:</strong> ${mode.evidence}</p>
+              <p><strong>Time:</strong> ${mode.time}<br>${mode.outcome}</p>
               <button type="button" class="btn btn-secondary practice-hub-btn" data-target="${mode.route}">Start ${mode.title.toLowerCase()}</button>
             </article>`).join('')}
         </div>
+        <p><button type="button" class="btn btn-link" id="practice-desk-btn">Back to My desk</button></p>
       </div>`;
     panel.querySelector('#recommended-practice-btn').onclick = () => {
       if (recommended.route === 'stud-exam-transfer') this.startStudentExamPractice();
@@ -2608,6 +2730,7 @@ class App {
         else this.switchTab(button.dataset.target);
       };
     });
+    panel.querySelector('#practice-desk-btn')?.addEventListener('click', () => this.switchTab('stud-dashboard'));
   }
 
   startStudentExamPractice() {
@@ -2639,8 +2762,8 @@ class App {
     if (!activeNote) {
       panel.innerHTML = `
         <div class="card" role="status">
-          <h1>Learning content unavailable</h1>
-          <p>This learning section is not available right now. Return to Topics and choose another section.</p>
+          <h1>Topic review unavailable</h1>
+          <p>This topic review is not available right now. Return to Topics and choose another section.</p>
           <button class="btn btn-secondary" id="learn-empty-back-btn">Back to Topics</button>
         </div>
       `;
@@ -2738,7 +2861,7 @@ class App {
           </article>
           `;
         }).join('')
-      : '<div class="card" role="status"><h2>Learning content unavailable</h2><p>This section has no teaching content to display right now. Return to Learn and choose another section.</p><button class="btn btn-secondary" id="objective-empty-back-btn">Back to Learn</button></div>';
+      : '<div class="card" role="status"><h2>Topic review unavailable</h2><p>This section has no review content to display right now. Return to Topics and choose another section.</p><button class="btn btn-secondary" id="objective-empty-back-btn">Back to Topics</button></div>';
 
     // Group notes by paper
     const paper1Notes = theoryNotes.filter(n => n.paper === 'Paper 1');
@@ -3045,7 +3168,7 @@ class App {
           <p>Read the explanation and worked example, then apply it in an exam question.</p>
         </header>
         <article class="card student-learning-content">
-          <h2>Learn this section</h2>
+          <h2>Review this section</h2>
           <p>${this.escapeHTML(content.explanation)}</p>
           <aside class="student-worked-example">
             <h3>Worked example</h3>
@@ -3056,11 +3179,11 @@ class App {
         ${tool ? `<aside class="card student-context-tool"><h2>Useful tool</h2><p>Use this interactive tool if it helps you see the process.</p><button type="button" class="btn btn-secondary" id="focused-tool-btn">${tool.label}</button></aside>` : ''}
         <aside class="card student-evidence-note">
           <strong>What counts?</strong>
-          <p>Reading helps you prepare but does not update Progress. Checked exam work shows what you can do. Marking this covered adds its recall cards; it does not mean mastered.</p>
+          <p>Reading helps you prepare but does not update Progress. Checked exam work shows what you can do. Adding flashcards to your desk does not mean you have mastered the topic.</p>
         </aside>
         <div class="student-focused-actions">
           ${task ? `<button type="button" class="btn btn-primary" id="focused-exam-btn">Try a ${task.marks}-mark exam question</button>` : '<p role="status"><strong>No exact exam question is available for this section yet.</strong> Review the section or choose another topic.</p>'}
-          <button type="button" class="btn btn-secondary" id="focused-cover-btn">${state?.state === 'covered' ? (state.cardState === 'paused' ? 'Add recall cards again' : 'Pause recall cards') : 'Mark as covered and add recall cards'}</button>
+          <button type="button" class="btn btn-secondary" id="focused-cover-btn">${state?.state === 'covered' ? (state.cardState === 'paused' ? 'Add flashcards to my desk' : 'Pause these flashcards') : 'Add flashcards to my desk'}</button>
           <button type="button" class="btn btn-link" id="focused-topics-btn">Back to Topics</button>
         </div>
       </div>`;
@@ -3274,14 +3397,14 @@ class App {
 
     panel.innerHTML = `
       <div class="student-route-header">
-        <span class="student-mode-label">Recall deck &middot; about 5 minutes</span>
-        <h1>Recall what you have covered</h1>
-        <p>Try the prompt before revealing the answer. Your rating changes when the card returns; it does not change attainment or Progress.</p>
+        <span class="student-mode-label">Flashcards &middot; about 5 minutes</span>
+        <h1>Review flashcards on your desk</h1>
+        <p>Try the prompt before revealing the answer. Your choice changes when the card returns; flashcards are not marked in Progress.</p>
       </div>
       <div class="card" style="margin-bottom:18px;">
         <label for="retrieval-topic-filter"><strong>Topic</strong></label>
         <select id="retrieval-topic-filter" class="form-control" style="max-width:420px; margin-top:6px;" ${this.retrievalDeckRatedCount > 0 ? 'disabled aria-describedby="retrieval-filter-status"' : ''}>
-          <option value="all">All covered topics</option>
+          <option value="all">All topics on your desk</option>
           ${topics.filter(topic => eligibleTopics.has(topic.id)).map(topic => `<option value="${this.escapeHTML(topic.id)}" ${topic.id === this.retrievalDeckTopicId ? 'selected' : ''}>${this.escapeHTML(topic.name)}</option>`).join('')}
         </select>
         <p id="retrieval-filter-status" style="font-size:12px; color:var(--text-muted); margin:8px 0 0;">${this.retrievalDeckRatedCount > 0 ? 'Topic is fixed until this short session is complete. Pausing preserves your place.' : `${dueCards.length} ${dueCards.length === 1 ? 'card is' : 'cards are'} ready to practise now.`}</p>
@@ -3290,7 +3413,7 @@ class App {
         <article class="card" role="status">
           <span class="student-mode-label">Recall activity complete</span>
           <h2>You rated ${this.retrievalDeckSessionTarget} ${this.retrievalDeckSessionTarget === 1 ? 'card' : 'cards'}</h2>
-          <p>This completes one study activity for today. It records engagement only and does not change attainment or Progress.</p>
+          <p>This completes one activity in your study routine. Flashcards are not marked in Progress.</p>
           <div style="display:flex; flex-wrap:wrap; gap:8px;">
             <button type="button" class="btn btn-primary" id="retrieval-session-back-btn">Back to your plan</button>
             <button type="button" class="btn btn-secondary" id="retrieval-extra-btn">Continue with extra cards</button>
@@ -3299,7 +3422,7 @@ class App {
       ` : card ? `
         <article class="card" aria-labelledby="retrieval-card-term">
           <span class="student-kicker">${this.retrievalDeckExtraMode ? 'Extra card' : `Card ${Math.min(this.retrievalDeckRatedCount + 1, this.retrievalDeckSessionTarget)} of ${this.retrievalDeckSessionTarget}`}</span>
-          <span class="badge badge-secondary">${this.escapeHTML(topics.find(topic => topic.id === card.topicId)?.name || 'Covered topic')}</span>
+          <span class="badge badge-secondary">${this.escapeHTML(topics.find(topic => topic.id === card.topicId)?.name || 'Topic on your desk')}</span>
           <h2 id="retrieval-card-term" style="margin-top:12px;">Explain: ${this.escapeHTML(card.term)}</h2>
           <label for="retrieval-card-attempt"><strong>Your answer first</strong></label>
           <textarea id="retrieval-card-attempt" class="form-control" rows="4" placeholder="Write what you can remember...">${this.escapeHTML(this.retrievalDeckAttempt)}</textarea>
@@ -3318,7 +3441,7 @@ class App {
           </div>
         </article>
       ` : `
-        <div class="card" role="status"><h2>No active recall cards yet</h2><p>Open Topics and mark a section as covered to add its available cards. Covered does not mean mastered.</p><button class="btn btn-primary" id="retrieval-topics-btn">Open Topics</button><button class="btn btn-secondary" id="retrieval-home-btn">Back to Practice</button></div>
+        <div class="card" role="status"><h2>No flashcards on your desk yet</h2><p>Open Topics and add flashcards for something you have met at school. Adding cards does not mean you have mastered it.</p><button class="btn btn-primary" id="retrieval-topics-btn">Choose a topic</button><button class="btn btn-secondary" id="retrieval-home-btn">Back to Practice</button></div>
       `}
     `;
 
@@ -3788,8 +3911,8 @@ class App {
       panel.innerHTML = `
         <div class="card" role="status">
           <h1>Recall questions unavailable</h1>
-          <p>This topic has no recall questions to display. Return Home and choose a different learning task.</p>
-          <button class="btn btn-secondary" id="empty-quiz-back-btn">Back to Home</button>
+          <p>This topic has no recall questions to display. Return to My desk and choose a different study task.</p>
+          <button class="btn btn-secondary" id="empty-quiz-back-btn">Back to My desk</button>
         </div>
       `;
       const backBtn = panel.querySelector?.('#empty-quiz-back-btn') || document.getElementById('empty-quiz-back-btn');
@@ -3940,8 +4063,8 @@ class App {
       <div>
         ${feedback}
         <div class="quiz-result-actions" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:24px;">
-          ${incorrectQuestions.length ? '<button class="btn btn-primary" id="quiz-retry-btn">Retry incorrect questions</button>' : '<button class="btn btn-primary" id="quiz-continue-home-btn">Continue to Home</button>'}
-          ${incorrectQuestions.length ? '<button class="btn btn-secondary" id="quiz-continue-home-btn">Continue to Home</button>' : ''}
+          ${incorrectQuestions.length ? '<button class="btn btn-primary" id="quiz-retry-btn">Retry incorrect questions</button>' : '<button class="btn btn-primary" id="quiz-continue-home-btn">Continue to My desk</button>'}
+          ${incorrectQuestions.length ? '<button class="btn btn-secondary" id="quiz-continue-home-btn">Continue to My desk</button>' : ''}
           ${matchingExamTransfer ? '<button class="btn btn-secondary" id="quiz-exam-transfer-btn">Try an exam-style question for this section</button>' : ''}
         </div>
         
@@ -5484,7 +5607,7 @@ class App {
         <div class="card" role="status">
           <h1>Teacher messaging unavailable</h1>
           <p>Your assigned Computing contact could not be confirmed, so no message has been sent. Ask your school to check your class assignment.</p>
-          <button type="button" class="btn btn-secondary" id="messages-unavailable-home">Back to Home</button>
+          <button type="button" class="btn btn-secondary" id="messages-unavailable-home">Back to My desk</button>
         </div>
       `;
       panel.querySelector?.('#messages-unavailable-home')?.addEventListener('click', () => this.switchTab('stud-dashboard'));
@@ -5532,7 +5655,7 @@ class App {
           <button class="btn btn-primary" id="chat-send-btn">Send</button>
         </div>
       </div>
-      <p><button type="button" class="btn btn-secondary" id="messages-home-btn">Back to Home</button></p>
+      <p><button type="button" class="btn btn-secondary" id="messages-home-btn">Back to My desk</button></p>
     `;
     panel.querySelector?.('#messages-home-btn')?.addEventListener('click', () => this.switchTab('stud-dashboard'));
 
@@ -5627,7 +5750,7 @@ class App {
               </div>
               <span class="milestone-evidence-detail">${this.escapeHTML(evidenceSummary)}</span>
               ${item.state !== 'checkpoint_secured' && teachingObjectiveIds.has(item.id)
-                ? `<button type="button" class="progress-learn-link progress-learn-section" data-objective-id="${this.escapeHTML(item.id)}">Learn this section</button>`
+                ? `<button type="button" class="progress-learn-link progress-learn-section" data-objective-id="${this.escapeHTML(item.id)}">Review this section</button>`
                 : item.state !== 'checkpoint_secured' ? '<span class="milestone-evidence-detail">Learning route unavailable for this section.</span>' : ''}
             </div>
           `;
@@ -5648,7 +5771,7 @@ class App {
       <div class="student-route-header">
         <span class="student-mode-label">Your learning record</span>
         <h1>Your progress and achievements</h1>
-        <p>See what your checked work shows, then choose a section to learn or practise next.</p>
+        <p>See what your checked work shows, then choose a section to review or practise next.</p>
       </div>
 
       ${nextProgressMilestone ? `
@@ -5657,7 +5780,7 @@ class App {
             <strong id="progress-next-heading">What to work on next</strong>
             <p>${this.escapeHTML(nextProgressMilestone.id)} · ${this.escapeHTML(nextProgressMilestone.name)}</p>
           </div>
-          <button type="button" class="btn btn-primary progress-learn-section" data-objective-id="${this.escapeHTML(nextProgressMilestone.id)}">Learn this section</button>
+          <button type="button" class="btn btn-primary progress-learn-section" data-objective-id="${this.escapeHTML(nextProgressMilestone.id)}">Review this section</button>
         </section>
       ` : ''}
 
@@ -5727,6 +5850,11 @@ class App {
 
         <div>${this.renderStudentAchievementPanel(student)}</div>
       </div>
+      <aside class="card student-progress-desk-link">
+        <h2>Choose what to study next</h2>
+        <p>Progress shows checked work. Your flashcards are organised separately on My desk.</p>
+        <button type="button" class="btn btn-secondary" id="progress-topics-btn">Choose topics for my desk</button>
+      </aside>
     `;
     (panel.querySelectorAll ? panel.querySelectorAll('.progress-learn-section') : []).forEach(button => {
       button.onclick = () => {
@@ -5734,7 +5862,7 @@ class App {
         const topic = window.db.getUnits().flatMap(unit => unit.topics).find(item => item.objectives.some(objective => objective.id === objectiveId));
         const teachingAvailable = (window.db.getCurriculumContent?.() || []).some(item => item.id === objectiveId);
         if (!topic || !teachingAvailable) {
-          panel.innerHTML = '<div class="card" role="status"><h1>Learning content unavailable</h1><p>This section does not currently have a valid learning view.</p><button class="btn btn-secondary" id="progress-learning-back">Back to Progress</button></div>';
+          panel.innerHTML = '<div class="card" role="status"><h1>Topic review unavailable</h1><p>This section does not currently have a valid review view.</p><button class="btn btn-secondary" id="progress-learning-back">Back to Progress</button></div>';
           panel.querySelector?.('#progress-learning-back')?.addEventListener('click', () => this.renderStudentProgress(panel));
           this.focusMainContent();
           return;
@@ -5750,6 +5878,7 @@ class App {
         button.onclick = () => this.openAchievementRoute(achievementId, panel);
       }
     });
+    panel.querySelector?.('#progress-topics-btn')?.addEventListener('click', () => this.switchTab('stud-topics'));
   }
 
   // ==================== TEACHER OVERVIEW ====================

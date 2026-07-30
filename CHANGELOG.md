@@ -5,6 +5,10 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Reframed the student start page as My desk, with selected flashcard topics,
+  cards ready and clearly labelled self-rated card confidence.
+- Let learners add topics met at school straight to their desk or independently
+  open a refresher, without implying StudySpice must teach the topic first.
 - Replaced the nine-item student sidebar with five clear destinations: Home,
   Topics, Practice, Progress and Messages, while retaining every existing
   activity through parent-route mapping.

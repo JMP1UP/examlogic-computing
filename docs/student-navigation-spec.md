@@ -17,7 +17,7 @@ The interface must make four things clear on every student screen:
 
 The student sidebar contains exactly five top-level destinations:
 
-1. **Home**
+1. **My desk**
 2. **Topics**
 3. **Practice**
 4. **Progress**
@@ -32,7 +32,7 @@ sidebar label.
 | Existing capability | New parent destination |
 |---|---|
 | Learn and objective teaching | Topics |
-| Recall deck | Practice > Recall cards |
+| Flashcards | Practice > Flashcards |
 | Exam preparation and written answers | Practice > Exam questions |
 | Number practice | Practice > Number skills |
 | Programming and pseudocode | Practice > Programming |
@@ -43,61 +43,62 @@ sidebar label.
 Existing internal route identifiers remain valid. A route-parent helper maps
 every nested or legacy student route to the correct top-level navigation item.
 Unknown or unavailable routes show a controlled recovery state with links to
-Home and Topics.
+My desk and Topics.
 
-## Home
+## My desk
 
-Home presents one recommended next action.
+My desk is the pupil's personal Computing study space alongside school. It
+presents one recommended next action and the topics whose flashcards the pupil
+has chosen to keep fresh.
 
 - Required teacher work takes priority.
 - Without required work, the next weekly-rhythm activity is primary.
 - The full weekly plan is secondary and may be collapsed.
 - Engagement and checked performance remain separate.
-- Home does not contain a grid of alternative pathways.
+- **Flashcards on your desk** shows at most three active topics, due topics
+  first, plus the hidden-topic count and an **Organise my topics** route.
+- **Your card confidence** is based only on the pupil's latest self-rating for
+  each card and is explicitly not an exam grade.
+- My desk does not contain a grid of alternative pathways.
 
 Orientation copy:
 
 - **Purpose:** Continue the most useful task in your plan.
 - **Evidence label:** `Checked work`, `Study rhythm`, `Awaiting review` or
   `Practice only`.
-- **Next:** Return to Home after the task for the next recommendation.
+- **Next:** Return to My desk after the task for the next recommendation.
 
 ## Topics: OCR specification control centre
 
 The page heading is **Computer Science topics** with the supporting copy:
 
-> See what you have covered, choose what to learn and manage your recall cards.
+> Organise the topics you study alongside your lessons at school.
 
 Paper 1 and Paper 2 contain topic groups, and topic groups contain specification
 objectives. At narrow widths these are native, keyboard-operable disclosures.
 There is no horizontal topic scroller.
 
-Each objective presents three separate states:
+Each objective shows whether its flashcards are on the pupil's desk. Adding cards
+and opening a refresher are independent actions: StudySpice must not assume the
+topic was taught inside the product.
 
-- **Study state:** `Not covered yet`, `Learning now`, or
-  `Covered — cards added`.
-- **Recall confidence:** derived only from recent card ratings.
-- **Checked work:** derived only from assessed or reviewed evidence.
+The permanent explanation gives the workflow:
 
-The permanent explanation is:
-
-> Covered means you have studied this section and added its cards. It does not
-> mean mastered. Checked questions show what you can do.
+> Met it at school? Add its flashcards now. Need a reminder? Review the topic
+> first. Your card choices guide future retrieval practice; checked
+> questions are recorded separately in Progress.
 
 ### Objective actions
 
-Every objective has one primary action:
+Every objective offers two direct study choices:
 
-- Not covered yet: **Start learning**
-- Learning now: **Continue learning**
-- Covered: **Review section**
+- cards not active: **Add flashcards to my desk** and **Review topic**;
+- cards active: **Review topic flashcards** and **Review topic**. The flashcard
+  action currently opens the whole topic set, so its label must not imply an
+  objective-only filter.
 
-Secondary actions are contained in the expanded objective:
-
-- Mark as covered and add cards
-- Pause cards
-- Try a matching exam question
-- View checked progress
+Pausing cards, trying a checked question and opening Progress sit under
+**More choices and progress**.
 
 Pausing cards never erases ratings or recall history. An exam action appears
 only when an exact specification-point mapping exists.
@@ -141,7 +142,7 @@ The screen contains:
 2. worked example;
 3. relevant contextual tool, when available;
 4. primary action: **Try an exam question**;
-5. secondary action: **Mark as covered and add recall cards**;
+5. secondary action: **Add flashcards to my desk**;
 6. text link: **Back to Topics**.
 
 The screen states that reading does not update Progress. Generic topic quizzes,
@@ -153,8 +154,8 @@ primary completion routes.
 Practice begins with one **Recommended now** activity, followed by four plain
 mode cards:
 
-1. **Recall cards** — three cards, about five minutes; contributes to study
-   rhythm, while ratings schedule cards only.
+1. **Flashcards** — three flashcards, about five minutes; builds the study
+   routine but is not marked in Progress, while choices schedule cards only.
 2. **Exam questions** — one question with a stated mark value and duration;
    deterministic work is checked, other work awaits review.
 3. **Number skills** — a bounded calculation set with checked results.
@@ -188,7 +189,7 @@ remain available in disclosures.
 ## Messages
 
 Messages remain a separate destination. The page states that messages do not
-affect Progress and provides a clear return to Home.
+affect Progress and provides a clear return to My desk.
 
 ## Navigation and accessibility
 
@@ -211,7 +212,7 @@ affect Progress and provides a clear return to Home.
 
 - Missing curriculum: explain the unavailable section and return to Topics.
 - No exact exam question: do not fall back; offer Review section and Topics.
-- No active cards: offer Open Topics and explain how to mark a section covered.
+- No active cards: offer Topics and explain how to add flashcards to My desk.
 - No due cards: state that nothing is due and offer optional review or Practice.
 - No checked evidence: state `No checked work yet` and offer an exact exam
   question where available.
@@ -219,14 +220,14 @@ affect Progress and provides a clear return to Home.
 
 ## Acceptance criteria
 
-1. Student navigation contains exactly Home, Topics, Practice, Progress and
+1. Student navigation contains exactly My desk, Topics, Practice, Progress and
    Messages; teacher navigation is unchanged.
 2. Every legacy student route resolves and highlights one of those five
    parents.
-3. Home has one primary next action.
-4. A pupil can find an objective, understand its three separate statuses and
-   begin learning without additional explanation.
-5. Marking an objective covered adds eligible cards without changing mastery.
+3. My desk has one primary next action and a concise view of flashcard topics.
+4. A pupil can find an objective and independently choose to add its flashcards
+   or review its content without additional explanation.
+5. Adding flashcards changes neither checked evidence nor mastery.
 6. Pausing cards preserves rating and scheduling history.
 7. Focused learning has one primary exam action and no competing topic chooser.
 8. Practice exposes exactly four named modes and retains every existing
@@ -235,7 +236,7 @@ affect Progress and provides a clear return to Home.
 10. Ratings affect scheduling and recall confidence only.
 11. Existing attempts, submissions, assignments, settings and progress remain
     unchanged by any persistence upgrade.
-12. Empty states always provide Home, Topics or Practice recovery.
+12. Empty states always provide My desk, Topics or Practice recovery.
 13. Keyboard-only and screen-reader users can complete every core journey.
 14. At 320px and 200% zoom, no primary action or question is clipped.
 15. Behavioural tests execute navigation and data effects rather than merely

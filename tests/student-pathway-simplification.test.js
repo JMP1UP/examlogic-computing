@@ -184,16 +184,58 @@ describe('student pathway simplification', () => {
     expect(app.getObjectiveRecallConfidence('1.1.1')).toBe('Usually recalled');
   });
 
-  test('Topics presents study, recall and checked work as separate statuses', () => {
+  test('Topics lets a pupil add class-covered cards without opening a refresher first', () => {
     const { app } = loadApp();
     app.getSectionMilestones = jest.fn(() => []);
     const target = panel();
     app.renderStudentTopics(target);
     expect(target.innerHTML).toContain('Computer Science topics');
-    expect(target.innerHTML).toContain('Study state');
-    expect(target.innerHTML).toContain('Recall confidence');
-    expect(target.innerHTML).toContain('Checked work');
-    expect(target.innerHTML).toContain('Covered means you have studied');
+    expect(target.innerHTML).toContain('Met it at school? Add its flashcards now.');
+    expect(target.innerHTML).toContain('Add flashcards to my desk');
+    expect(target.innerHTML).toContain('Review topic');
+    expect(target.innerHTML).toContain('More choices and progress');
+    expect(target.innerHTML).not.toContain('Learn it first');
+  });
+
+  test('My desk groups active deck cards and labels strength as recall', () => {
+    const { app, data } = loadApp();
+    app.updateLearnerObjectiveState('1.1.1', 'covered', 'active');
+    data.attempts.push({
+      id: 'rating_1',
+      studentId: 'student_1',
+      type: 'retrieval_rating',
+      topic: 'topic_1_1',
+      questionId: 'term_cpu',
+      selfRating: 'secure',
+      date: '2026-07-30T10:00:00.000Z',
+      dueDate: '2026-08-06T10:00:00.000Z'
+    });
+
+    expect(app.getRecallDeckOverview(data.students[0], new Date('2026-07-30T12:00:00.000Z'))).toEqual([expect.objectContaining({
+      topicId: 'topic_1_1',
+      topicName: 'Systems Architecture',
+      strength: 'Feels secure',
+      ratedCount: 1,
+      dueCount: 0
+    })]);
+  });
+
+  test('My desk limits topics to three and puts due topics first', () => {
+    const { app } = loadApp();
+    app.getRecallDeckOverview = jest.fn(() => [
+      { topicName: 'C', dueCount: 0 },
+      { topicName: 'D', dueCount: 2 },
+      { topicName: 'A', dueCount: 3 },
+      { topicName: 'B', dueCount: 1 }
+    ]);
+    expect(app.getDeskTopicSummary()).toEqual({
+      visible: [
+        { topicName: 'A', dueCount: 3 },
+        { topicName: 'D', dueCount: 2 },
+        { topicName: 'B', dueCount: 1 }
+      ],
+      hiddenCount: 1
+    });
   });
 
   test('focused learning has an exact exam action and no topic chooser or generic check', () => {
@@ -252,11 +294,16 @@ describe('student pathway simplification', () => {
   });
 
   test('deck change preserves disclosures, restores focus and announces the result', () => {
+    jest.useFakeTimers();
     const { app } = loadApp();
     app.getSectionMilestones = jest.fn(() => []);
     const paper = { dataset: { disclosureId: 'paper-0' }, open: true };
     const topic = { dataset: { disclosureId: 'topic-topic_1_1' }, open: true };
     const cover = { dataset: { objectiveId: '1.1.1' }, focus: jest.fn() };
+    const visibleRecallAction = { focus: jest.fn() };
+    const objectiveCard = { querySelector: jest.fn(() => visibleRecallAction) };
+    const heading = { closest: jest.fn(() => objectiveCard) };
+    const announcement = { textContent: '' };
     const target = {
       innerHTML: '',
       querySelectorAll: jest.fn(selector => {
@@ -265,15 +312,22 @@ describe('student pathway simplification', () => {
         if (selector === '.objective-cover-btn') return [cover];
         return [];
       }),
-      querySelector: jest.fn(selector =>
-        selector.includes('.objective-cover-btn[data-objective-id="1.1.1"]') ? cover : null
-      )
+      querySelector: jest.fn(selector => {
+        if (selector === '#objective-name-1.1.1') return heading;
+        if (selector === '#topics-state-announcement') return announcement;
+        return null;
+      })
     };
     app.renderStudentTopics(target);
     cover.onclick();
     expect(paper.open).toBe(true);
     expect(topic.open).toBe(true);
-    expect(cover.focus).toHaveBeenCalled();
-    expect(target.innerHTML).toContain('1.1.1 marked covered and recall cards added.');
+    expect(visibleRecallAction.focus).toHaveBeenCalled();
+    expect(objectiveCard.querySelector).toHaveBeenCalledWith('.objective-recall-btn, .objective-cover-btn, .objective-learn-btn');
+    expect(announcement.textContent).toBe('');
+    jest.runOnlyPendingTimers();
+    expect(announcement.textContent).toBe('1.1.1 flashcards added to your desk.');
+    expect(target.innerHTML).toContain('role="status" aria-live="polite" aria-atomic="true"');
+    jest.useRealTimers();
   });
 });

@@ -72,7 +72,7 @@ describe('student Signal / Paste visual system', () => {
   });
 
   test('gives literal next-step and availability information', () => {
-    expect(app).toContain('Learn this section');
+    expect(app).toContain('Review this section');
     expect(app).toContain("this.activeObjectiveId = objectiveId");
     expect(app).toContain('Messages monitored');
     expect(app).toContain('a reply may not be immediate');
