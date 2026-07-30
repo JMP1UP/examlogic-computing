@@ -2753,15 +2753,20 @@ class App {
                     : 'Not on your desk';
                 const reviewLabel = state === 'learning' ? 'Continue refresher' : 'Review topic';
                 return `
-                  <article class="student-objective-card" aria-labelledby="objective-name-${this.escapeHTML(objective.id)}">
+                  <article class="student-objective-card ${inDeck ? 'student-objective-card--in-deck' : 'student-objective-card--not-in-deck'}" aria-labelledby="objective-name-${this.escapeHTML(objective.id)}">
                     <div>
-                      <h3 id="objective-name-${this.escapeHTML(objective.id)}">${this.escapeHTML(objective.id)} · ${this.escapeHTML(objective.name)}</h3>
+                      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
+                        <h3 id="objective-name-${this.escapeHTML(objective.id)}" style="margin: 0;">${this.escapeHTML(objective.id)} &middot; ${this.escapeHTML(objective.name)}</h3>
+                        <span class="badge ${inDeck ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px; white-space: nowrap;">
+                          ${inDeck ? '🎴 On your desk' : state === 'covered' ? '⏸ Cards paused' : 'Not on desk'}
+                        </span>
+                      </div>
                       <p class="student-objective-next"><strong>${deckStatus}</strong></p>
                     </div>
                     <div class="student-objective-actions">
                       ${inDeck
                         ? `<button type="button" class="btn btn-primary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="Review topic flashcards: ${this.escapeHTML(topic.code)} ${this.escapeHTML(topic.name)}">Review topic flashcards</button>`
-                        : `<button type="button" class="btn btn-primary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="${state === 'covered' ? 'Add flashcards again' : 'Add flashcards to my desk'}: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">${state === 'covered' ? 'Add flashcards again' : 'Add flashcards to my desk'}</button>`}
+                        : `<button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="${state === 'covered' ? 'Add flashcards again' : 'Add flashcards to my desk'}: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">${state === 'covered' ? '+ Add flashcards again' : '+ Add flashcards to my desk'}</button>`}
                       <button type="button" class="btn btn-secondary objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="${reviewLabel}: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}" ${available ? '' : 'disabled'}>${available ? reviewLabel : 'Refresher unavailable'}</button>
                       <details>
                         <summary aria-label="More choices and progress for ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">More choices and progress</summary>
