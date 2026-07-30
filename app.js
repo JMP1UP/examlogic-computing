@@ -6201,78 +6201,74 @@ class App {
 
     panel.innerHTML = `
       <div class="student-route-header">
-        <span class="student-mode-label">Your learning record</span>
-        <h1>Your progress and achievements</h1>
-        <p>See what your checked work shows, then choose a section to review or practise next.</p>
+        <span class="student-mode-label">Learning Overview</span>
+        <h1>Your progress</h1>
+        <p>Track your checked practice, see your strong topics, and choose what to focus on next.</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px;">
+        <div class="card" style="padding: 20px; text-align: center; border-top: 4px solid var(--teal);">
+          <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">Overall Readiness</div>
+          <div style="font-size: 32px; font-weight: 800; color: var(--teal);">${milestonePercent}%</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">${securedCount} of ${availableMilestones.length || 32} section goals met</div>
+        </div>
+        <div class="card" style="padding: 20px; text-align: center; border-top: 4px solid var(--teal);">
+          <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">Paper 1 (Systems)</div>
+          <div style="font-size: 32px; font-weight: 800; color: var(--text-main);">${milestones.filter(m => m.paper === 'Paper 1' && m.state === 'checkpoint_secured').length} / ${milestones.filter(m => m.paper === 'Paper 1').length || 19}</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Computer Systems</div>
+        </div>
+        <div class="card" style="padding: 20px; text-align: center; border-top: 4px solid var(--teal);">
+          <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">Paper 2 (Algorithms)</div>
+          <div style="font-size: 32px; font-weight: 800; color: var(--text-main);">${milestones.filter(m => m.paper === 'Paper 2' && m.state === 'checkpoint_secured').length} / ${milestones.filter(m => m.paper === 'Paper 2').length || 13}</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Computational Thinking</div>
+        </div>
       </div>
 
       ${nextProgressMilestone ? `
-        <section class="student-start-panel" aria-labelledby="progress-next-heading">
+        <div class="card" style="padding: 24px; margin-bottom: 32px; border-left: 5px solid var(--teal); background: var(--bg-card); display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
           <div>
-            <strong id="progress-next-heading">What to work on next</strong>
-            <p>${this.escapeHTML(nextProgressMilestone.id)} · ${this.escapeHTML(nextProgressMilestone.name)}</p>
+            <span class="badge badge-primary" style="margin-bottom: 8px;">Recommended Next Step</span>
+            <h2 style="font-size: 20px; font-weight: 700; margin: 4px 0;">${this.escapeHTML(nextProgressMilestone.name)}</h2>
+            <p style="font-size: 14px; color: var(--text-muted); margin: 0;">Focus on this section to build your readiness.</p>
           </div>
-          <button type="button" class="btn btn-primary progress-learn-section" data-objective-id="${this.escapeHTML(nextProgressMilestone.id)}">Review this section</button>
-        </section>
+          <button type="button" class="btn btn-primary progress-learn-section" data-objective-id="${this.escapeHTML(nextProgressMilestone.id)}" style="min-height: 44px; padding: 12px 24px;">Practise this topic</button>
+        </div>
       ` : ''}
-
-      <section class="card milestone-summary-card" aria-labelledby="section-milestone-heading">
-        <div class="milestone-summary-heading">
-          <div>
-            <h2 id="section-milestone-heading">Section progress</h2>
-            <p>${securedCount} of ${availableMilestones.length} available section goals met · ${practicedCount} with checked practice in progress</p>
-          </div>
-          <strong>${securedCount}/${availableMilestones.length}</strong>
-        </div>
-        <div class="milestone-progress" role="progressbar" aria-label="Available section goals met" aria-valuemin="0" aria-valuemax="${availableMilestones.length}" aria-valuenow="${securedCount}">
-          <span style="width:${milestonePercent}%"></span>
-        </div>
-        <p class="milestone-empty-state">Checked practice is an activity that StudySpice has marked. A section goal is met only when checked work covers each part included in the current section check. The topic results below show your latest checked work; they do not claim that you will remember it permanently.</p>
-        ${securedCount === 0 && practicedCount === 0 ? '<p class="milestone-empty-state">No section progress yet. Complete a checked activity to start.</p>' : ''}
-        ${unavailableCount ? `<p class="milestone-empty-state">${unavailableCount} curriculum ${unavailableCount === 1 ? 'section is' : 'sections are'} shown below but not included in this total until enough suitable questions are available.</p>` : ''}
-        <details class="milestone-details">
-          <summary>View all sections</summary>
-          ${milestoneGroups}
-        </details>
-      </section>
 
       <div class="student-progress-layout">
         <div>
-          <h2 style="font-size:20px; margin-bottom:16px;">Latest checked results by topic</h2>
+          <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 16px; color: var(--text-main);">Topic Status</h2>
           
-          <div class="card" style="margin-bottom:32px;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-weight:600;">
-              <span>Latest checked result</span>
-              <span>Only the latest completed check for each activity counts</span>
-            </div>
-            
-            <div style="display:flex; flex-direction:column; gap:12px;">
+          <div class="card" style="margin-bottom: 32px; padding: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 14px;">
               ${topicMasteryHtml}
             </div>
           </div>
 
-          <h2 style="font-size:20px; margin-bottom:16px;">Recent activities</h2>
-          <div class="table-container" style="margin-bottom:32px;">
-            <table>
+          <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 16px; color: var(--text-main);">Recent Activities</h2>
+          <div class="table-container" style="margin-bottom: 32px;">
+            <table style="width: 100%;">
               <thead>
                 <tr>
                   <th scope="col">Topic</th>
-                  <th scope="col">Type</th>
+                  <th scope="col">Activity</th>
                   <th scope="col">Score</th>
-                  <th scope="col">Does this count?</th>
+                  <th scope="col">Status</th>
                   <th scope="col">Date</th>
                 </tr>
               </thead>
               <tbody>
-                ${displayedAttempts.map(a => `
+                ${displayedAttempts.slice(0, 10).map(a => `
                   <tr>
-                    <td>${this.escapeHTML(topicLabels.get(a.topic) || a.topic || 'General activity')}</td>
+                    <td style="font-weight: 600;">${this.escapeHTML(topicLabels.get(a.topic) || a.topic || 'General activity')}</td>
                     <td>${this.escapeHTML(activityTypeLabels[a.type] || String(a.type || 'Activity').replaceAll('_', ' '))}</td>
-                    <td>${a.score}</td>
-                    <td>${this.parseDemonstratedScore(a)
-                      ? (this.hasCheckpointPrecision(a) ? 'Included as your latest checked result' : 'Older result — included in the topic result, but cannot meet a section goal')
-                      : a.completionStatus === 'awaiting_review' ? 'Waiting for teacher review — does not count yet' : 'Practice only — does not count towards Progress'}</td>
-                    <td>${new Date(a.date).toLocaleDateString()}</td>
+                    <td><strong style="color: var(--teal);">${a.score}</strong></td>
+                    <td>
+                      <span class="badge ${a.completionStatus === 'completed' || a.score > 0 ? 'badge-success' : 'badge-primary'}">
+                        ${a.completionStatus === 'awaiting_review' ? 'Awaiting Review' : 'Completed'}
+                      </span>
+                    </td>
+                    <td style="color: var(--text-muted); font-size: 13px;">${new Date(a.date).toLocaleDateString()}</td>
                   </tr>
                 `).join('')}
               </tbody>
