@@ -3422,6 +3422,161 @@ class App {
     return true;
   }
 
+  getObjectiveDiagramSvg(strandId) {
+    if (['1.1.1', '1.1.2'].includes(strandId)) {
+      return `
+        <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h4 style="color: #2D9C91; font-size: 15px; margin: 0; font-weight: 700;">📊 Von Neumann CPU Architecture Diagram</h4>
+            <span class="badge badge-primary" style="font-size: 11px;">OCR 1.1 Specification Diagram</span>
+          </div>
+          <svg viewBox="0 0 740 320" style="width: 100%; height: auto; font-family: Inter, sans-serif;">
+            <rect x="30" y="40" width="300" height="110" rx="8" fill="#1E293B" stroke="#2D9C91" stroke-width="2"/>
+            <text x="180" y="70" fill="#6EE7D8" font-size="14" font-weight="bold" text-anchor="middle">Control Unit (CU)</text>
+            <text x="180" y="92" fill="#94A3B8" font-size="11" text-anchor="middle">Decodes instructions &amp; sends control signals</text>
+            <text x="180" y="122" fill="#FCD34D" font-size="12" font-weight="600" text-anchor="middle">Registers: PC | MAR | MDR | ACC</text>
+
+            <rect x="30" y="175" width="300" height="110" rx="8" fill="#1E293B" stroke="#3B82F6" stroke-width="2"/>
+            <text x="180" y="205" fill="#60A5FA" font-size="14" font-weight="bold" text-anchor="middle">Arithmetic Logic Unit (ALU)</text>
+            <text x="180" y="228" fill="#94A3B8" font-size="11" text-anchor="middle">Performs arithmetic (+ - * /) &amp; logic (AND OR NOT)</text>
+            <text x="180" y="258" fill="#93C5FD" font-size="11" text-anchor="middle">Accumulator (ACC) holds immediate results</text>
+
+            <line x1="330" y1="95" x2="470" y2="95" stroke="#F59E0B" stroke-width="3" stroke-dasharray="6,4"/>
+            <text x="400" y="85" fill="#FCD34D" font-size="11" font-weight="bold" text-anchor="middle">Control Bus</text>
+
+            <line x1="330" y1="230" x2="470" y2="230" stroke="#10B981" stroke-width="3"/>
+            <text x="400" y="220" fill="#6EE7B7" font-size="11" font-weight="bold" text-anchor="middle">Data Bus</text>
+
+            <line x1="330" y1="160" x2="470" y2="160" stroke="#EC4899" stroke-width="3"/>
+            <text x="400" y="150" fill="#F472B6" font-size="11" font-weight="bold" text-anchor="middle">Address Bus</text>
+
+            <rect x="470" y="40" width="240" height="245" rx="8" fill="#0F172A" stroke="#8B5CF6" stroke-width="2"/>
+            <text x="590" y="72" fill="#C4B5FD" font-size="15" font-weight="bold" text-anchor="middle">Main Memory (RAM)</text>
+            <rect x="490" y="92" width="200" height="34" rx="4" fill="#1E293B" stroke="#475569"/>
+            <text x="590" y="113" fill="#E2E8F0" font-size="11" text-anchor="middle">Addr 0x01: PC Fetch [Instruction]</text>
+            <rect x="490" y="138" width="200" height="34" rx="4" fill="#1E293B" stroke="#475569"/>
+            <text x="590" y="159" fill="#E2E8F0" font-size="11" text-anchor="middle">Addr 0x02: MAR [Memory Address]</text>
+            <rect x="490" y="184" width="200" height="34" rx="4" fill="#1E293B" stroke="#475569"/>
+            <text x="590" y="205" fill="#E2E8F0" font-size="11" text-anchor="middle">Addr 0x03: MDR [Data Buffer]</text>
+            <rect x="490" y="230" width="200" height="34" rx="4" fill="#1E293B" stroke="#475569"/>
+            <text x="590" y="251" fill="#E2E8F0" font-size="11" text-anchor="middle">Cache L1 / L2 / L3 Speed Layer</text>
+          </svg>
+        </div>
+      `;
+    }
+    if (['1.2.1', '1.2.2'].includes(strandId)) {
+      return `
+        <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h4 style="color: #2D9C91; font-size: 15px; margin: 0; font-weight: 700;">📊 Memory &amp; Storage Pyramid (Speed vs Capacity)</h4>
+            <span class="badge badge-primary" style="font-size: 11px;">OCR 1.2 Storage Pyramid</span>
+          </div>
+          <svg viewBox="0 0 700 280" style="width: 100%; height: auto; font-family: Inter, sans-serif;">
+            <polygon points="350,20 180,260 520,260" fill="none" stroke="#2D9C91" stroke-width="2"/>
+            <polygon points="350,20 310,80 390,80" fill="#EF4444" opacity="0.85"/>
+            <text x="350" y="60" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">CPU Registers (Fastest / Tiny)</text>
+            <polygon points="310,80 270,140 430,140 390,80" fill="#F59E0B" opacity="0.85"/>
+            <text x="350" y="115" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">Cache Memory (L1, L2, L3)</text>
+            <polygon points="270,140 220,200 480,200 430,140" fill="#3B82F6" opacity="0.85"/>
+            <text x="350" y="175" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">RAM (Main Memory - Volatile)</text>
+            <polygon points="220,200 180,260 520,260 480,200" fill="#10B981" opacity="0.85"/>
+            <text x="350" y="235" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">Secondary Storage (SSD / HDD - Non-Volatile)</text>
+            <text x="80" y="40" fill="#EF4444" font-size="12" font-weight="bold">⚡ High Speed</text>
+            <text x="80" y="240" fill="#10B981" font-size="12" font-weight="bold">💾 High Capacity</text>
+          </svg>
+        </div>
+      `;
+    }
+    if (['1.3.1', '1.3.2'].includes(strandId)) {
+      return `
+        <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h4 style="color: #2D9C91; font-size: 15px; margin: 0; font-weight: 700;">📊 Network Topologies (Star vs Mesh Topology)</h4>
+            <span class="badge badge-primary" style="font-size: 11px;">OCR 1.3 Networks Diagram</span>
+          </div>
+          <svg viewBox="0 0 740 260" style="width: 100%; height: auto; font-family: Inter, sans-serif;">
+            <g transform="translate(40, 20)">
+              <text x="150" y="25" fill="#6EE7D8" font-size="14" font-weight="bold" text-anchor="middle">Star Topology</text>
+              <circle cx="150" cy="130" r="28" fill="#0284C7" stroke="#38BDF8" stroke-width="2"/>
+              <text x="150" y="134" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">SWITCH</text>
+              <line x1="150" y1="102" x2="150" y2="55" stroke="#94A3B8" stroke-width="2"/>
+              <rect x="130" y="35" width="40" height="24" rx="4" fill="#1E293B" stroke="#94A3B8"/>
+              <text x="150" y="51" fill="#E2E8F0" font-size="10" text-anchor="middle">PC A</text>
+              <line x1="178" y1="130" x2="230" y2="130" stroke="#94A3B8" stroke-width="2"/>
+              <rect x="230" y="118" width="40" height="24" rx="4" fill="#1E293B" stroke="#94A3B8"/>
+              <text x="250" y="134" fill="#E2E8F0" font-size="10" text-anchor="middle">PC B</text>
+              <line x1="150" y1="158" x2="150" y2="205" stroke="#94A3B8" stroke-width="2"/>
+              <rect x="130" y="205" width="40" height="24" rx="4" fill="#1E293B" stroke="#94A3B8"/>
+              <text x="150" y="221" fill="#E2E8F0" font-size="10" text-anchor="middle">Server</text>
+              <line x1="122" y1="130" x2="70" y2="130" stroke="#94A3B8" stroke-width="2"/>
+              <rect x="30" y="118" width="40" height="24" rx="4" fill="#1E293B" stroke="#94A3B8"/>
+              <text x="50" y="134" fill="#E2E8F0" font-size="10" text-anchor="middle">Printer</text>
+            </g>
+            <g transform="translate(420, 20)">
+              <text x="150" y="25" fill="#C4B5FD" font-size="14" font-weight="bold" text-anchor="middle">Full Mesh Topology</text>
+              <line x1="70" y1="65" x2="230" y2="65" stroke="#8B5CF6" stroke-width="2"/>
+              <line x1="70" y1="65" x2="70" y2="195" stroke="#8B5CF6" stroke-width="2"/>
+              <line x1="70" y1="65" x2="230" y2="195" stroke="#8B5CF6" stroke-width="2"/>
+              <line x1="230" y1="65" x2="70" y2="195" stroke="#8B5CF6" stroke-width="2"/>
+              <line x1="230" y1="65" x2="230" y2="195" stroke="#8B5CF6" stroke-width="2"/>
+              <line x1="70" y1="195" x2="230" y2="195" stroke="#8B5CF6" stroke-width="2"/>
+              <circle cx="70" cy="65" r="20" fill="#6D28D9"/>
+              <text x="70" y="69" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">Node 1</text>
+              <circle cx="230" cy="65" r="20" fill="#6D28D9"/>
+              <text x="230" y="69" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">Node 2</text>
+              <circle cx="70" cy="195" r="20" fill="#6D28D9"/>
+              <text x="70" y="199" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">Node 3</text>
+              <circle cx="230" cy="195" r="20" fill="#6D28D9"/>
+              <text x="230" y="199" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">Node 4</text>
+            </g>
+          </svg>
+        </div>
+      `;
+    }
+    if (['2.3.1', '2.3.2'].includes(strandId)) {
+      return `
+        <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h4 style="color: #2D9C91; font-size: 15px; margin: 0; font-weight: 700;">⚡ Logic Circuit &amp; Gate Symbols (AND, OR, NOT)</h4>
+            <span class="badge badge-primary" style="font-size: 11px;">OCR 2.3 Logic Gates</span>
+          </div>
+          <svg viewBox="0 0 740 220" style="width: 100%; height: auto; font-family: Inter, sans-serif;">
+            <g transform="translate(30, 30)">
+              <text x="80" y="20" fill="#6EE7D8" font-size="13" font-weight="bold" text-anchor="middle">AND Gate (A ∧ B)</text>
+              <path d="M 40 40 L 80 40 C 110 40 110 90 80 90 L 40 90 Z" fill="#1E293B" stroke="#2D9C91" stroke-width="2"/>
+              <line x1="10" y1="50" x2="40" y2="50" stroke="#10B981" stroke-width="2"/>
+              <text x="5" y="54" fill="#10B981" font-size="10" font-weight="bold">A</text>
+              <line x1="10" y1="80" x2="40" y2="80" stroke="#10B981" stroke-width="2"/>
+              <text x="5" y="84" fill="#10B981" font-size="10" font-weight="bold">B</text>
+              <line x1="105" y1="65" x2="140" y2="65" stroke="#10B981" stroke-width="2"/>
+              <text x="145" y="69" fill="#6EE7D8" font-size="10" font-weight="bold">Q</text>
+            </g>
+            <g transform="translate(270, 30)">
+              <text x="80" y="20" fill="#FCD34D" font-size="13" font-weight="bold" text-anchor="middle">OR Gate (A ∨ B)</text>
+              <path d="M 40 40 Q 60 65 40 90 Q 90 90 110 65 Q 90 40 40 40 Z" fill="#1E293B" stroke="#F59E0B" stroke-width="2"/>
+              <line x1="10" y1="50" x2="45" y2="50" stroke="#F59E0B" stroke-width="2"/>
+              <text x="5" y="54" fill="#F59E0B" font-size="10" font-weight="bold">A</text>
+              <line x1="10" y1="80" x2="45" y2="80" stroke="#F59E0B" stroke-width="2"/>
+              <text x="5" y="84" fill="#F59E0B" font-size="10" font-weight="bold">B</text>
+              <line x1="110" y1="65" x2="140" y2="65" stroke="#F59E0B" stroke-width="2"/>
+              <text x="145" y="69" fill="#FCD34D" font-size="10" font-weight="bold">Q</text>
+            </g>
+            <g transform="translate(510, 30)">
+              <text x="80" y="20" fill="#F472B6" font-size="13" font-weight="bold" text-anchor="middle">NOT Gate (¬A)</text>
+              <polygon points="40,40 100,65 40,90" fill="#1E293B" stroke="#EC4899" stroke-width="2"/>
+              <circle cx="106" cy="65" r="5" fill="#1E293B" stroke="#EC4899" stroke-width="2"/>
+              <line x1="10" y1="65" x2="40" y2="65" stroke="#EC4899" stroke-width="2"/>
+              <text x="5" y="69" fill="#EC4899" font-size="10" font-weight="bold">A</text>
+              <line x1="111" y1="65" x2="140" y2="65" stroke="#EC4899" stroke-width="2"/>
+              <text x="145" y="69" fill="#F472B6" font-size="10" font-weight="bold">Q</text>
+            </g>
+          </svg>
+        </div>
+      `;
+    }
+    return '';
+  }
+
   // ==================== STUDENT LEARN THEORY HUB ====================
   renderStudentLearn(panel) {
     const theoryNotes = window.db.getTheoryNotes();
@@ -3491,6 +3646,7 @@ class App {
               </div>
             </div>
             <p style="line-height: 1.7; margin: 14px 0;">${this.escapeHTML(item.explanation)}</p>
+            ${this.getObjectiveDiagramSvg(item.id)}
             ${item.teachingSections?.length ? `
               <div class="student-teaching-sequence" aria-label="Step-by-step teaching">
                 ${item.teachingSections.map(section => `
