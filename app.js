@@ -5197,7 +5197,7 @@ class App {
           <div class="code-editor-panel">
             <div class="editor-header">
               <span style="font-family:monospace; font-size:12px; color: #94A3B8;">main.py</span>
-              <button class="btn btn-primary btn-sm" id="run-code-btn" style="background-color: var(--green); min-height: 36px; padding: 0 16px;">▶ Run code</button>
+              <button class="btn btn-primary btn-sm" id="run-code-btn" style="background-color: var(--green); color: #FFFFFF !important; font-weight: 600; min-height: 36px; padding: 0 16px;">▶ Run code</button>
             </div>
             <label class="sr-only" for="python-editor">Python code editor</label>
             <textarea id="python-editor" class="code-input" rows="16" style="font-family: monospace; font-size: 14px; padding: 12px; width: 100%; border: 1px solid var(--border-color); border-radius: 0 0 8px 8px; resize: vertical;">${this.editorCode}</textarea>
@@ -5243,12 +5243,13 @@ class App {
               ${challenge.testCases.map((tc, tcIdx) => {
                 const evidence = this.lastProgrammingEvidence[tcIdx];
                 const outcome = !evidence ? 'Not run' : evidence.passed ? 'Passed' : `Failed — ${evidence.error}`;
-                const evidenceColour = !evidence ? 'var(--border-color)' : evidence.passed ? 'var(--green)' : 'var(--red)';
+                const evidenceColour = !evidence ? 'var(--slate)' : evidence.passed ? 'var(--green)' : 'var(--red)';
+                const borderColour = !evidence ? 'var(--border-color)' : evidence.passed ? 'var(--green)' : 'var(--red)';
                 return `
-                <div class="test-case-item" id="tc-card-${tcIdx}" style="padding: 10px; border-radius: 6px; background-color: var(--bg-main); border: 1px solid ${evidenceColour};">
+                <div class="test-case-item" id="tc-card-${tcIdx}" style="padding: 10px; border-radius: 6px; background-color: var(--bg-main); border: 1px solid ${borderColour};">
                   <strong>Test Case ${tcIdx + 1} ${tc.input ? '(Input: ' + tc.input + ')' : ''}</strong><br>
                   Expected: <code>${this.escapeHTML(tc.expected)}</code><br>
-                  Outcome: <code id="tc-outcome-${tcIdx}" style="color:${evidenceColour};">${this.escapeHTML(outcome)}</code>
+                  Outcome: <code id="tc-outcome-${tcIdx}" style="color:${evidenceColour}; font-weight:600;">${this.escapeHTML(outcome)}</code>
                 </div>
               `;}).join('')}
             </div>
@@ -5295,7 +5296,7 @@ class App {
       <div style="margin-bottom: 24px;">
         <span class="badge badge-primary">Level ${challenge.level}: ${challenge.concept}</span>
         <h1 style="margin-top: 8px;">💻 Programming: ${challenge.title}</h1>
-        <p style="font-size:15px; color: var(--text-muted);">${challenge.instructions}</p>
+        <p style="font-size: 16px; font-weight: 500; color: var(--navy); margin-top: 6px; line-height: 1.5;">${challenge.instructions}</p>
       </div>
 
       <div style="display: grid; grid-template-columns: 260px 1.25fr 0.75fr; gap: 24px;">
