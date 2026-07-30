@@ -2518,6 +2518,9 @@ class App {
         details: 'Live Teacher Support'
       });
     });
+    if (upcomingEvents.length === 0) {
+      upcomingEvents.push(
+        { title: 'OCR GCSE Paper 1: Computer Systems', dateLabel: 'May 2027', type: 'Final Exam', icon: '🎓', tagClass: 'badge-primary', details: 'OCR GCSE Exam · 1h 30m' },
         { title: 'OCR GCSE Paper 2: Computational Thinking', dateLabel: 'June 2027', type: 'Final Exam', icon: '💻', tagClass: 'badge-primary', details: 'OCR GCSE Exam · 1h 30m' }
       );
     }
