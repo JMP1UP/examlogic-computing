@@ -1869,8 +1869,7 @@ class App {
       const links = [
         { id: 'stud-dashboard', label: 'My desk', icon: SVG_ICONS.home },
         { id: 'stud-topics', label: 'Topics', icon: SVG_ICONS.learn },
-        { id: 'stud-practice', label: 'Practice', icon: SVG_ICONS.practise },
-        { id: 'stud-messages', label: 'Messages', icon: SVG_ICONS.messages }
+        { id: 'stud-practice', label: 'Practice', icon: SVG_ICONS.practise }
       ];
       links.forEach((link, index) => {
         const li = document.createElement('li');
