@@ -5,6 +5,17 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Replaced the nine-item student sidebar with five clear destinations: Home,
+  Topics, Practice, Progress and Messages, while retaining every existing
+  activity through parent-route mapping.
+- Added a student Topics control centre that separates learner-declared coverage,
+  recall confidence and checked work, with learner-owned recall-card controls
+  that do not alter classroom settings or evidence.
+- Made recall-card eligibility genuinely objective-scoped where explicit or
+  uniquely traceable metadata exists, while retaining honest legacy topic-level
+  handling for ambiguous cards and preserving all rating history.
+- Added a four-mode Practice hub and a focused objective-learning route with one
+  exact exam-question action and contextual tools.
 - Added a restrained Progress badge collection with earned, previously earned and `Not earned yet` states, exact evidence requirements and direct activity routes.
 - Added stable internal achievement identifiers while preserving existing schema-13 learner records and stored badge names.
 - Bound programming awards to the exact tested code snapshot so editing after a successful test run requires the learner to run the tests again.

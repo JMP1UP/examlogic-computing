@@ -2275,3 +2275,150 @@ body.dark-mode .app-container[data-user-role="student"] {
     transform: none !important;
   }
 }
+/* Student pathway: Topics, Practice and focused learning */
+.student-topic-papers,
+.student-objective-list,
+.student-practice-mode-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.student-topic-paper,
+.student-topic-group {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-card);
+}
+
+.student-topic-paper > summary,
+.student-topic-group > summary {
+  min-height: 44px;
+  padding: 14px 16px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.student-topic-group {
+  margin: 0 16px 16px;
+}
+
+.student-objective-list {
+  padding: 0 16px 16px;
+}
+
+.student-objective-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, auto);
+  gap: 20px;
+  padding: 18px;
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--teal);
+  border-radius: 8px;
+}
+
+.student-objective-card h3,
+.student-practice-mode h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.student-objective-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin: 0;
+}
+
+.student-objective-status div {
+  min-width: 150px;
+}
+
+.student-objective-status dt {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.student-objective-status dd {
+  margin: 3px 0 0;
+}
+
+.student-objective-actions,
+.student-focused-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.student-objective-actions summary {
+  min-height: 44px;
+  padding: 10px 0;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.student-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.student-status-explainer,
+.student-recommended-practice,
+.student-learning-content,
+.student-context-tool,
+.student-evidence-note {
+  margin-bottom: 20px;
+}
+
+.student-practice-mode-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.student-practice-mode {
+  display: flex;
+  flex-direction: column;
+}
+
+.student-practice-mode .btn {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.student-worked-example {
+  margin: 18px 0;
+  padding: 16px;
+  border-left: 4px solid var(--teal);
+  background: rgba(45, 156, 145, 0.08);
+}
+
+.student-topics-page p,
+.student-practice-hub p,
+.student-focused-learning p,
+.student-recovery p {
+  font-size: max(16px, 1rem);
+  line-height: 1.6;
+}
+
+@media (max-width: 700px) {
+  .student-objective-card,
+  .student-practice-mode-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .student-topic-group {
+    margin-inline: 8px;
+  }
+
+  .student-objective-list {
+    padding-inline: 8px;
+  }
+
+  .student-objective-card .btn,
+  .student-focused-actions .btn,
+  .student-recovery .btn {
+    width: 100%;
+    min-height: 44px;
+  }
+}

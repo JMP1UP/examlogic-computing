@@ -215,7 +215,7 @@ describe('weekly practice rhythm', () => {
     elements['#retrieval-card-attempt'].oninput();
     elements['#retrieval-pause-btn'].onclick();
     expect(app.retrievalDeckAttempt).toBe('CPU');
-    expect(app.switchTab).toHaveBeenCalledWith('stud-dashboard');
+    expect(app.switchTab).toHaveBeenCalledWith('stud-practice');
 
     elements['#retrieval-reveal-btn'].onclick();
     expect(elements['#retrieval-card-answer'].focus).toHaveBeenCalled();
