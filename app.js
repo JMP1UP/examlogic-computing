@@ -6958,16 +6958,45 @@ class App {
         </div>
       </div>
 
-      ${nextProgressMilestone ? `
-        <div class="card" style="padding: 24px; margin-bottom: 32px; border-left: 5px solid var(--teal); background: var(--bg-card); display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
-          <div>
-            <span class="badge badge-primary" style="margin-bottom: 8px;">Recommended Next Step</span>
-            <h2 style="font-size: 20px; font-weight: 700; margin: 4px 0;">${this.escapeHTML(nextProgressMilestone.name)}</h2>
-            <p style="font-size: 14px; color: var(--text-muted); margin: 0;">Focus on this section to build your readiness.</p>
+        <div class="card" style="padding: 22px; margin-bottom: 32px; border-top: 4px solid var(--teal); background: var(--bg-card);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div>
+              <span style="font-size: 11px; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 0.5px;">Mastery Showcase</span>
+              <h2 style="font-size: 19px; font-weight: 800; margin: 2px 0 0 0; color: var(--text-main);">🏆 Your Specification Badges</h2>
+            </div>
+            <span class="badge badge-primary" style="font-size: 12px; padding: 4px 10px;">${milestones.filter(m => m.state === 'checkpoint_secured').length} Badges Secured</span>
           </div>
-          <button type="button" class="btn btn-primary progress-learn-section" data-objective-id="${this.escapeHTML(nextProgressMilestone.id)}" style="min-height: 44px; padding: 12px 24px;">Practise this topic</button>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px;">
+            <div style="padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(45, 156, 145, 0.04); display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 24px;">📄</span>
+              <div>
+                <strong style="display: block; font-size: 13px; color: var(--text-main);">Paper 1 Systems Master</strong>
+                <span style="font-size: 11px; color: var(--text-muted);">${milestones.filter(m => m.paper === 'Paper 1' && m.state === 'checkpoint_secured').length}/19 Strands Met</span>
+              </div>
+            </div>
+            <div style="padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(45, 156, 145, 0.04); display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 24px;">💻</span>
+              <div>
+                <strong style="display: block; font-size: 13px; color: var(--text-main);">Paper 2 Logic Ace</strong>
+                <span style="font-size: 11px; color: var(--text-muted);">${milestones.filter(m => m.paper === 'Paper 2' && m.state === 'checkpoint_secured').length}/13 Strands Met</span>
+              </div>
+            </div>
+            <div style="padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(45, 156, 145, 0.04); display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 24px;">🧠</span>
+              <div>
+                <strong style="display: block; font-size: 13px; color: var(--text-main);">Memory Recall Champion</strong>
+                <span style="font-size: 11px; color: var(--text-muted);">Active Deck Streak</span>
+              </div>
+            </div>
+            <div style="padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(45, 156, 145, 0.04); display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 24px;">✍️</span>
+              <div>
+                <strong style="display: block; font-size: 13px; color: var(--text-main);">8-Mark Essay Specialist</strong>
+                <span style="font-size: 11px; color: var(--text-muted);">OCR Extended Writing</span>
+              </div>
+            </div>
+          </div>
         </div>
-      ` : ''}
 
       <div class="student-progress-layout">
         <div>
