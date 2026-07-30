@@ -2831,7 +2831,11 @@ class App {
       button.onclick = () => this.switchTab('stud-progress');
     });
     if (restore.focusObjectiveId) {
-      const heading = panel.querySelector(`#objective-name-${restore.focusObjectiveId}`);
+      let heading = null;
+      try { heading = panel.querySelector(`[id="objective-name-${restore.focusObjectiveId}"]`); } catch (e) {}
+      if (!heading) {
+        try { heading = panel.querySelector(`#objective-name-${restore.focusObjectiveId}`); } catch (e) {}
+      }
       const objectiveCard = heading?.closest?.('.student-objective-card');
       objectiveCard?.querySelector?.('.objective-recall-btn, .objective-cover-btn, .objective-learn-btn')?.focus?.();
     }
@@ -3243,8 +3247,8 @@ class App {
     panel.querySelectorAll('.save-try-btn').forEach(btn => {
       btn.onclick = () => {
         const objId = btn.getAttribute('data-obj-id');
-        const textarea = panel.querySelector(`#try-input-${objId}`);
-        const statusDiv = panel.querySelector(`#try-status-${objId}`);
+        const textarea = panel.querySelector(`[id="try-input-${objId}"]`);
+        const statusDiv = panel.querySelector(`[id="try-status-${objId}"]`);
         if (textarea) {
           const val = textarea.value;
           if (typeof localStorage !== 'undefined') {
@@ -3263,7 +3267,7 @@ class App {
     panel.querySelectorAll('.toggle-guide-btn').forEach(btn => {
       btn.onclick = () => {
         const objId = btn.getAttribute('data-obj-id');
-        const guideDiv = panel.querySelector(`#try-guide-${objId}`);
+        const guideDiv = panel.querySelector(`[id="try-guide-${objId}"]`);
         if (guideDiv) {
           guideDiv.style.display = guideDiv.style.display === 'none' ? 'block' : 'none';
         }
