@@ -3520,9 +3520,9 @@ class App {
           ${content.teachingSections?.length ? `
             <div class="student-teaching-sequence" aria-label="Step-by-step teaching">
               ${content.teachingSections.map(section => `
-                <section>
-                  <h3>${this.escapeHTML(section.heading)}</h3>
-                  <p>${this.escapeHTML(section.body)}</p>
+                <section style="margin-bottom: 24px;">
+                  <h3 style="font-size: 16px; font-weight: 700; color: var(--teal); margin: 16px 0 8px 0;">${this.escapeHTML(section.heading)}</h3>
+                  ${section.html ? section.html : `<p>${this.escapeHTML(section.body)}</p>`}
                 </section>
               `).join('')}
             </div>

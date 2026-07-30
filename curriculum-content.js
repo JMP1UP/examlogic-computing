@@ -496,8 +496,187 @@
       { heading: 'Test data and errors', body: 'Normal data is valid and typical; boundary data is at an accepted limit; invalid data is outside the permitted rules; erroneous data has the wrong type or cannot be processed as expected. Syntax errors break language rules, while logic errors allow the program to run but produce an incorrect result.' }
     ],
     '2.4.1': [
-      { heading: 'Individual logic gates', body: 'AND outputs true only when all its inputs are true. OR outputs true when at least one input is true. NOT reverses one input. Learn each symbol and truth table, then connect the gate behaviour to a statement such as an alarm, access rule or control condition.' },
-      { heading: 'Combined logic', body: 'For a combined diagram or Boolean expression, work through one gate at a time and record each intermediate output. Brackets and diagram connections determine the order. To design a circuit, translate each part of the written rule into gates and test every possible input combination.' }
+      {
+        heading: '1. Standard Logic Gate Symbols & Rules',
+        body: 'AND outputs 1 only when both inputs are 1. OR outputs 1 when at least one input is 1. NOT inverts its single input (0 -> 1, 1 -> 0).',
+        html: `
+          <p style="margin-bottom: 16px;">Logic gates are the fundamental building blocks of digital circuits. Study the standard symbols and rules for AND, OR, and NOT gates below:</p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <!-- AND Gate Card -->
+            <div style="padding: 16px; border: 1px solid var(--border-color); border-top: 4px solid var(--teal); border-radius: 10px; background: var(--bg-card); text-align: center;">
+              <h4 style="margin: 0 0 8px 0; font-size: 16px; color: var(--text-main);">AND Gate</h4>
+              <svg width="140" height="70" viewBox="0 0 140 70" style="margin: 0 auto; display: block;" aria-label="AND logic gate diagram">
+                <line x1="10" y1="20" x2="40" y2="20" stroke="#2D9C91" stroke-width="3"/>
+                <text x="5" y="24" font-size="12" font-weight="700" fill="#07111F">A</text>
+                <line x1="10" y1="50" x2="40" y2="50" stroke="#2D9C91" stroke-width="3"/>
+                <text x="5" y="54" font-size="12" font-weight="700" fill="#07111F">B</text>
+                <path d="M 40 10 L 65 10 A 25 25 0 0 1 65 60 L 40 60 Z" fill="#FAF8F2" stroke="#07111F" stroke-width="3"/>
+                <text x="48" y="39" font-size="11" font-weight="800" fill="#2D9C91">AND</text>
+                <line x1="90" y1="35" x2="125" y2="35" stroke="#2D9C91" stroke-width="3"/>
+                <text x="128" y="39" font-size="12" font-weight="700" fill="#07111F">Q</text>
+              </svg>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 8px;"><strong>Rule:</strong> Output = 1 ONLY if BOTH A = 1 AND B = 1.</div>
+            </div>
+
+            <!-- OR Gate Card -->
+            <div style="padding: 16px; border: 1px solid var(--border-color); border-top: 4px solid var(--teal); border-radius: 10px; background: var(--bg-card); text-align: center;">
+              <h4 style="margin: 0 0 8px 0; font-size: 16px; color: var(--text-main);">OR Gate</h4>
+              <svg width="140" height="70" viewBox="0 0 140 70" style="margin: 0 auto; display: block;" aria-label="OR logic gate diagram">
+                <line x1="10" y1="20" x2="42" y2="20" stroke="#2D9C91" stroke-width="3"/>
+                <text x="5" y="24" font-size="12" font-weight="700" fill="#07111F">A</text>
+                <line x1="10" y1="50" x2="42" y2="50" stroke="#2D9C91" stroke-width="3"/>
+                <text x="5" y="54" font-size="12" font-weight="700" fill="#07111F">B</text>
+                <path d="M 40 10 Q 55 35 40 60 Q 75 60 90 35 Q 75 10 40 10 Z" fill="#FAF8F2" stroke="#07111F" stroke-width="3"/>
+                <text x="54" y="39" font-size="11" font-weight="800" fill="#2D9C91">OR</text>
+                <line x1="90" y1="35" x2="125" y2="35" stroke="#2D9C91" stroke-width="3"/>
+                <text x="128" y="39" font-size="12" font-weight="700" fill="#07111F">Q</text>
+              </svg>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 8px;"><strong>Rule:</strong> Output = 1 if AT LEAST ONE input is 1.</div>
+            </div>
+
+            <!-- NOT Gate Card -->
+            <div style="padding: 16px; border: 1px solid var(--border-color); border-top: 4px solid var(--teal); border-radius: 10px; background: var(--bg-card); text-align: center;">
+              <h4 style="margin: 0 0 8px 0; font-size: 16px; color: var(--text-main);">NOT Gate (Inverter)</h4>
+              <svg width="140" height="70" viewBox="0 0 140 70" style="margin: 0 auto; display: block;" aria-label="NOT logic gate diagram">
+                <line x1="10" y1="35" x2="40" y2="35" stroke="#2D9C91" stroke-width="3"/>
+                <text x="5" y="39" font-size="12" font-weight="700" fill="#07111F">A</text>
+                <path d="M 40 15 L 80 35 L 40 55 Z" fill="#FAF8F2" stroke="#07111F" stroke-width="3"/>
+                <circle cx="85" cy="35" r="5" fill="#FAF8F2" stroke="#07111F" stroke-width="2"/>
+                <text x="45" y="39" font-size="10" font-weight="800" fill="#2D9C91">NOT</text>
+                <line x1="90" y1="35" x2="125" y2="35" stroke="#2D9C91" stroke-width="3"/>
+                <text x="128" y="39" font-size="12" font-weight="700" fill="#07111F">Q</text>
+              </svg>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 8px;"><strong>Rule:</strong> Inverts input (0 -> 1, 1 -> 0).</div>
+            </div>
+          </div>
+        `
+      },
+      {
+        heading: '2. Standard Gate Truth Tables',
+        body: 'A truth table lists all possible binary input combinations (0 and 1) and the resulting output for each gate.',
+        html: `
+          <p style="margin-bottom: 12px;">Truth tables document the complete input-to-output mapping for any logic circuit:</p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <!-- AND Truth Table -->
+            <div>
+              <h5 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 700; color: var(--teal);">AND Truth Table</h5>
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; border: 1px solid var(--border-color);">
+                <thead>
+                  <tr style="background: var(--teal); color: #fff; font-weight: 700;">
+                    <th style="padding: 6px; border: 1px solid var(--border-color);">Input A</th>
+                    <th style="padding: 6px; border: 1px solid var(--border-color);">Input B</th>
+                    <th style="padding: 6px; border: 1px solid var(--border-color);">A AND B</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 700;">0</td></tr>
+                  <tr><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 700;">0</td></tr>
+                  <tr><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 700;">0</td></tr>
+                  <tr style="background: rgba(45, 156, 145, 0.1);"><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 800; color: var(--teal);">1</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- OR Truth Table -->
+            <div>
+              <h5 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 700; color: var(--teal);">OR Truth Table</h5>
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; border: 1px solid var(--border-color);">
+                <thead>
+                  <tr style="background: var(--teal); color: #fff; font-weight: 700;">
+                    <th style="padding: 6px; border: 1px solid var(--border-color);">Input A</th>
+                    <th style="padding: 6px; border: 1px solid var(--border-color);">Input B</th>
+                    <th style="padding: 6px; border: 1px solid var(--border-color);">A OR B</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 700;">0</td></tr>
+                  <tr style="background: rgba(45, 156, 145, 0.05);"><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 800; color: var(--teal);">1</td></tr>
+                  <tr style="background: rgba(45, 156, 145, 0.05);"><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 800; color: var(--teal);">1</td></tr>
+                  <tr style="background: rgba(45, 156, 145, 0.1);"><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 800; color: var(--teal);">1</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- NOT Truth Table -->
+            <div>
+              <h5 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 700; color: var(--teal);">NOT Truth Table</h5>
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; border: 1px solid var(--border-color);">
+                <thead>
+                  <tr style="background: var(--teal); color: #fff; font-weight: 700;">
+                    <th style="padding: 6px; border: 1px solid var(--border-color);">Input A</th>
+                    <th style="padding: 6px; border: 1px solid var(--border-color);">NOT A</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="background: rgba(45, 156, 145, 0.05);"><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 800; color: var(--teal);">1</td></tr>
+                  <tr><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 700;">0</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `
+      },
+      {
+        heading: '3. Evaluating Combined Logic Circuits',
+        body: 'For combined circuits (e.g. (A AND B) OR NOT C), evaluate gate-by-gate, recording intermediate outputs first.',
+        html: `
+          <p style="margin-bottom: 12px;">In OCR GCSE exams, you will evaluate multi-gate circuits step-by-step. Work through one gate at a time from left to right:</p>
+          
+          <div style="padding: 16px; border: 1px solid var(--border-color); border-radius: 10px; background: rgba(0,0,0,0.01); margin-bottom: 16px;">
+            <h5 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; color: var(--teal);">Combined Circuit Diagram: (A AND B) OR NOT C</h5>
+            <svg width="340" height="120" viewBox="0 0 340 120" style="margin: 0 auto; display: block; max-width: 100%;" aria-label="Combined logic circuit diagram">
+              <line x1="10" y1="20" x2="50" y2="20" stroke="#2D9C91" stroke-width="2"/>
+              <text x="2" y="24" font-size="12" font-weight="700" fill="#07111F">A</text>
+              <line x1="10" y1="50" x2="50" y2="50" stroke="#2D9C91" stroke-width="2"/>
+              <text x="2" y="54" font-size="12" font-weight="700" fill="#07111F">B</text>
+              <path d="M 50 10 L 75 10 A 25 25 0 0 1 75 60 L 50 60 Z" fill="#FAF8F2" stroke="#07111F" stroke-width="2"/>
+              <text x="56" y="39" font-size="11" font-weight="800" fill="#2D9C91">AND</text>
+              <line x1="100" y1="35" x2="180" y2="35" stroke="#2D9C91" stroke-width="2"/>
+              <text x="110" y="28" font-size="11" font-weight="700" fill="#2D9C91">X = A AND B</text>
+
+              <line x1="10" y1="95" x2="50" y2="95" stroke="#2D9C91" stroke-width="2"/>
+              <text x="2" y="99" font-size="12" font-weight="700" fill="#07111F">C</text>
+              <path d="M 50 80 L 85 95 L 50 110 Z" fill="#FAF8F2" stroke="#07111F" stroke-width="2"/>
+              <circle cx="90" cy="95" r="4" fill="#FAF8F2" stroke="#07111F" stroke-width="2"/>
+              <text x="54" y="99" font-size="10" font-weight="800" fill="#2D9C91">NOT</text>
+              <line x1="94" y1="95" x2="180" y2="75" stroke="#2D9C91" stroke-width="2"/>
+              <text x="110" y="105" font-size="11" font-weight="700" fill="#2D9C91">Y = NOT C</text>
+
+              <path d="M 180 25 Q 195 55 180 85 Q 220 85 240 55 Q 220 25 180 25 Z" fill="#FAF8F2" stroke="#07111F" stroke-width="2"/>
+              <text x="195" y="59" font-size="12" font-weight="800" fill="#2D9C91">OR</text>
+
+              <line x1="240" y1="55" x2="310" y2="55" stroke="#2D9C91" stroke-width="3"/>
+              <text x="315" y="59" font-size="13" font-weight="800" fill="#07111F">Q</text>
+            </svg>
+          </div>
+
+          <h5 style="margin: 16px 0 8px 0; font-size: 14px; font-weight: 700; color: var(--teal);">Complete Combined Truth Table</h5>
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; border: 1px solid var(--border-color);">
+              <thead>
+                <tr style="background: var(--teal); color: #fff; font-weight: 700;">
+                  <th style="padding: 6px; border: 1px solid var(--border-color);">A</th>
+                  <th style="padding: 6px; border: 1px solid var(--border-color);">B</th>
+                  <th style="padding: 6px; border: 1px solid var(--border-color);">C</th>
+                  <th style="padding: 6px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.15);">X (A AND B)</th>
+                  <th style="padding: 6px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.15);">Y (NOT C)</th>
+                  <th style="padding: 6px; border: 1px solid var(--border-color);">Output Q (X OR Y)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 800; color: var(--teal);">1</td></tr>
+                <tr><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 700;">0</td></tr>
+                <tr><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 800; color: var(--teal);">1</td></tr>
+                <tr><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 700;">0</td></tr>
+                <tr><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 800; color: var(--teal);">1</td></tr>
+                <tr><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 700;">0</td></tr>
+                <tr style="background: rgba(45, 156, 145, 0.08);"><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 700;">1</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 700;">1</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 800; color: var(--teal);">1</td></tr>
+                <tr style="background: rgba(45, 156, 145, 0.08);"><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color);">1</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 700;">1</td><td style="padding: 4px; border: 1px solid var(--border-color);">0</td><td style="padding: 4px; border: 1px solid var(--border-color); font-weight: 800; color: var(--teal);">1</td></tr>
+              </tbody>
+            </table>
+          </div>
+        `
+      }
     ],
     '2.5.1': [
       { heading: 'Language levels and translators', body: 'High-level languages are designed to be readable and portable, while low-level languages are closely related to processor instructions and hardware. A processor cannot directly execute high-level source code, so a translator converts it into machine code.' },
