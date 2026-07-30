@@ -2582,7 +2582,7 @@ class App {
       button.onclick = () => {
         this.activeTopicId = button.dataset.topicId;
         this.retrievalDeckTopicId = button.dataset.topicId;
-        this.switchTab('stud-recall');
+        this.switchTab('stud-retrieval');
       };
     });
     panel.querySelectorAll('.test-prep-start-btn').forEach(btn => {
@@ -2797,7 +2797,7 @@ class App {
         this.activeTopicId = button.dataset.topicId;
         this.activeObjectiveId = button.dataset.objectiveId || 'all';
         this.retrievalDeckTopicId = button.dataset.topicId;
-        this.switchTab('stud-recall');
+        this.switchTab('stud-retrieval');
       };
     });
     panel.querySelectorAll('.objective-cover-btn').forEach(button => {
@@ -5305,7 +5305,7 @@ class App {
       <div style="margin-bottom: 24px;">
         <span class="badge badge-primary">Level ${challenge.level}: ${challenge.concept}</span>
         <h1 style="margin-top: 8px;">💻 Programming: ${challenge.title}</h1>
-        <p style="font-size: 16px; font-weight: 500; color: var(--navy); margin-top: 6px; line-height: 1.5;">${challenge.instructions}</p>
+        <p style="font-size: 16px; font-weight: 600; color: var(--text-main); margin-top: 6px; line-height: 1.5;">${challenge.instructions}</p>
       </div>
 
       <div style="display: grid; grid-template-columns: 260px 1.25fr 0.75fr; gap: 24px;">
