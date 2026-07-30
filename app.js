@@ -3212,7 +3212,7 @@ class App {
                   <details open style="border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-card); padding: 10px 14px;">
                     <summary style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 14px; font-weight: 700; color: var(--text-main);">
                       <div style="display: flex; align-items: center; gap: 8px;">
-                        <input type="checkbox" class="topic-parent-checkbox" data-topic-code="${t.code}" ${isAllSelected ? 'checked' : ''} onclick="event.stopPropagation();">
+                        <input type="checkbox" class="topic-parent-checkbox" data-topic-code="${t.code}" ${isAllSelected ? 'checked' : ''}>
                         <span><strong>${t.code}</strong> ${this.escapeHTML(t.name)}</span>
                       </div>
                       <span class="badge ${selectedCount > 0 ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px;">${selectedCount}/${t.objectives.length} strands</span>
@@ -3252,6 +3252,7 @@ class App {
       };
     });
     panel.querySelectorAll('.topic-parent-checkbox').forEach(cb => {
+      cb.onclick = (e) => { e.stopPropagation(); };
       cb.onchange = (e) => {
         e.stopPropagation();
         const code = cb.dataset.topicCode;
