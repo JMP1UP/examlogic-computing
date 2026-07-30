@@ -3034,7 +3034,7 @@ class App {
         const task = window.db.getExamTransferTasks().find(item => item.id === this.activeExamTransferId);
         this.activeTopicId = task.topicId;
         this.activeObjectiveId = task.specificationPointId;
-        this.examTransferStage = 'decode';
+        this.examTransferStage = 'answer';
         this.switchTab('stud-exam-transfer');
       };
     });
@@ -3445,7 +3445,7 @@ class App {
     this.activeExamTransferId = task.id;
     this.activeTopicId = task.topicId;
     this.activeObjectiveId = task.specificationPointId;
-    this.examTransferStage = 'decode';
+    this.examTransferStage = 'answer';
     this.examTransferPlan = {};
     this.examTransferResponse = '';
     this.switchTab('stud-exam-transfer');
@@ -4092,7 +4092,7 @@ class App {
       </div>`;
     panel.querySelector('#focused-exam-btn')?.addEventListener('click', () => {
       this.activeExamTransferId = task.id;
-      this.examTransferStage = 'decode';
+      this.examTransferStage = 'answer';
       this.examTransferPlan = {};
       this.examTransferResponse = '';
       this.switchTab('stud-exam-transfer');
@@ -4284,7 +4284,7 @@ class App {
       const examTaskId = button.getAttribute('data-exam-task-id');
       if (examTaskId) {
         this.activeExamTransferId = examTaskId;
-        this.examTransferStage = 'decode';
+        this.examTransferStage = 'answer';
         this.examTransferPlan = {};
         this.examTransferResponse = '';
       }
@@ -4309,7 +4309,7 @@ class App {
       this.activeTopicId = task.topicId;
       this.activeObjectiveId = target.specificationPointId;
       this.activeExamTransferId = task.id;
-      this.examTransferStage = 'decode';
+      this.examTransferStage = 'answer';
       this.switchTab('stud-exam-transfer');
     });
 
