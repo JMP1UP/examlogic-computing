@@ -463,9 +463,10 @@ class App {
   }
 
   getDisplayedEvidenceAttempts(attempts) {
+    const meaningfulAttempts = attempts.filter(a => a.type !== 'retrieval_rating');
     const latestVersionedByActivity = new Map();
     const retainedRecords = [];
-    attempts.forEach((attempt, index) => {
+    meaningfulAttempts.forEach((attempt, index) => {
       const time = Date.parse(attempt.date || '') || index;
       const isVersionedActivity = Number(attempt.evidenceVersion) >= 2
         && attempt.activityId
@@ -479,9 +480,22 @@ class App {
         latestVersionedByActivity.set(attempt.activityId, { attempt, time, index });
       }
     });
-    return [...retainedRecords, ...latestVersionedByActivity.values()]
-      .sort((left, right) => left.time - right.time || left.index - right.index)
+    const sorted = [...retainedRecords, ...latestVersionedByActivity.values()]
+      .sort((left, right) => right.time - left.time || right.index - left.index)
       .map(item => item.attempt);
+
+    // Deduplicate consecutive identical entries on the same date
+    const unique = [];
+    const seenKeys = new Set();
+    for (const item of sorted) {
+      const dateStr = new Date(item.date).toLocaleDateString();
+      const key = `${item.topic}_${item.type}_${dateStr}_${item.score}`;
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key);
+        unique.push(item);
+      }
+    }
+    return unique;
   }
 
   getSectionMilestones(studentId = this.currentUser?.id) {
@@ -6309,38 +6323,44 @@ class App {
 
           <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 16px; color: var(--text-main);">Recent Activities</h2>
           <div class="table-container" style="margin-bottom: 32px;">
-            <table style="width: 100%;">
-              <thead>
-                <tr>
-                  <th scope="col">Topic</th>
-                  <th scope="col">Activity</th>
-                  <th scope="col">Score</th>
-                  <th scope="col">Status</th>
-                  <th scope="col">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${displayedAttempts.slice(0, 10).map(a => {
-                  const scoreText = a.score === 'engagement only' || String(a.score).includes('engagement')
-                    ? '<span style="color: var(--text-muted); font-size: 12px; font-weight: 500;">Practice</span>'
-                    : `<strong style="color: var(--teal);">${a.score}</strong>`;
-                  const activityText = activityTypeLabels[a.type] || String(a.type || 'Activity').replaceAll('_', ' ');
-                  return `
-                    <tr>
-                      <td style="font-weight: 600;">${this.escapeHTML(topicLabels.get(a.topic) || a.topic || 'General activity')}</td>
-                      <td>${this.escapeHTML(activityText)}</td>
-                      <td>${scoreText}</td>
-                      <td>
-                        <span class="badge ${a.completionStatus === 'completed' || a.score > 0 ? 'badge-success' : 'badge-primary'}">
-                          ${a.completionStatus === 'awaiting_review' ? 'Awaiting Review' : 'Completed'}
-                        </span>
-                      </td>
-                      <td style="color: var(--text-muted); font-size: 13px;">${new Date(a.date).toLocaleDateString()}</td>
-                    </tr>
-                  `;
-                }).join('')}
-              </tbody>
-            </table>
+            ${displayedAttempts.length ? `
+              <table style="width: 100%;">
+                <thead>
+                  <tr>
+                    <th scope="col">Topic</th>
+                    <th scope="col">Activity</th>
+                    <th scope="col">Score</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${displayedAttempts.slice(0, 6).map(a => {
+                    const scoreText = a.score === 'engagement only' || String(a.score).includes('engagement')
+                      ? '<span style="color: var(--text-muted); font-size: 12px; font-weight: 500;">Completed</span>'
+                      : `<strong style="color: var(--teal);">${a.score}</strong>`;
+                    const activityText = activityTypeLabels[a.type] || String(a.type || 'Activity').replaceAll('_', ' ');
+                    return `
+                      <tr>
+                        <td style="font-weight: 600;">${this.escapeHTML(topicLabels.get(a.topic) || a.topic || 'General activity')}</td>
+                        <td>${this.escapeHTML(activityText)}</td>
+                        <td>${scoreText}</td>
+                        <td>
+                          <span class="badge ${a.completionStatus === 'awaiting_review' ? 'badge-primary' : 'badge-success'}">
+                            ${a.completionStatus === 'awaiting_review' ? 'Awaiting Review' : 'Completed'}
+                          </span>
+                        </td>
+                        <td style="color: var(--text-muted); font-size: 13px;">${new Date(a.date).toLocaleDateString()}</td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            ` : `
+              <div class="card" style="padding: 20px; text-align: center; color: var(--text-muted);">
+                <p style="margin: 0;">Completed checked activities and exam tasks will appear here in your activity log.</p>
+              </div>
+            `}
           </div>
         </div>
 
