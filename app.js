@@ -5519,6 +5519,39 @@ class App {
     return String(value ?? '').replace(/\r\n/g, '\n').split('\n').map(line => line.trimEnd()).join('\n').trim();
   }
 
+  formatPythonErrorForPupil(errorStr) {
+    if (!errorStr) return '';
+    let str = String(errorStr).trim();
+
+    // Strip pyodide / CPython internal framework stack frames
+    if (str.includes('Traceback (most recent call last):')) {
+      const lines = str.split('\n');
+      const filtered = lines.filter(line => {
+        const trimmed = line.trim();
+        return !trimmed.includes('_pyodide') &&
+               !trimmed.includes('/lib/python') &&
+               !trimmed.includes('eval_code_async') &&
+               !trimmed.includes('eval(self.code');
+      });
+      str = filtered.join('\n').trim();
+    }
+
+    // Format SyntaxError / IndentationError
+    const syntaxMatch = str.match(/(SyntaxError|IndentationError):\s*(.*?)(?:\(detected at line (\d+)\)|\(line (\d+)\)|$)/i);
+    if (syntaxMatch) {
+      const type = syntaxMatch[1];
+      const msg = syntaxMatch[2].trim();
+      const line = syntaxMatch[3] || syntaxMatch[4];
+      return line ? `${type} on line ${line}: ${msg}` : `${type}: ${msg}`;
+    }
+
+    // Clean up standard exception tracebacks
+    str = str.replace(/^Traceback \(most recent call last\):\s*/i, '');
+    str = str.replace(/File "student_code\.py", line (\d+)(?:, in <module>)?/gi, 'Line $1');
+
+    return str.trim();
+  }
+
   async runPythonCodeSandbox(challenge) {
     const runBtn = document.getElementById('run-code-btn');
     const status = document.getElementById('python-runtime-status');
@@ -5540,13 +5573,14 @@ class App {
         const tc = challenge.testCases[idx];
         const actual = this.normaliseProgramOutput(result.output);
         const expected = this.normaliseProgramOutput(tc.expected);
-        const errorDetail = result.error || (actual === expected ? '' : `Expected “${expected}” but your program printed “${actual || '(nothing)'}”.`);
+        const cleanErr = this.formatPythonErrorForPupil(result.error);
+        const errorDetail = cleanErr || (actual === expected ? '' : `Expected “${expected}” but your program printed “${actual || '(nothing)'}”.`);
         const passed = !errorDetail && actual === expected;
         const outcomeText = document.getElementById(`tc-outcome-${idx}`);
         const card = document.getElementById(`tc-card-${idx}`);
         allPassed = allPassed && passed;
         if (outcomeText) {
-          outcomeText.textContent = passed ? `Passed (printed: ${actual})` : `Failed — ${errorDetail}${result.line ? ` (line ${result.line})` : ''}`;
+          outcomeText.textContent = passed ? `Passed (printed: ${actual})` : `Failed — ${errorDetail}`;
           outcomeText.style.color = passed ? 'var(--green)' : 'var(--red)';
         }
         if (card) card.style.borderColor = passed ? 'var(--green)' : 'var(--red)';
@@ -5559,7 +5593,12 @@ class App {
         allPassed
       };
       if (status) status.textContent = 'Python runtime: run complete';
-      if (consoleOutput) consoleOutput.textContent = results.map((result, idx) => `Test ${idx + 1}:\n${result.output || result.error || '(no output)'}`).join('\n\n');
+      if (consoleOutput) {
+        consoleOutput.textContent = results.map((result, idx) => {
+          const cleanErr = this.formatPythonErrorForPupil(result.error);
+          return `Test ${idx + 1}:\n${result.output || cleanErr || '(no output)'}`;
+        }).join('\n\n');
+      }
       if (submitBtn) submitBtn.disabled = !allPassed;
       this.alert(allPassed ? 'Success: All test cases passed! You can now submit your solution.' : 'Some test cases failed. Use the test results, support steps or tutor to decide what to change.');
     } catch (error) {

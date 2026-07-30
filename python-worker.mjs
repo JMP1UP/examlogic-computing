@@ -21,18 +21,6 @@ _source = ${JSON.stringify(code)}
 _challenge = ${JSON.stringify(challengeId)}
 _test = ${JSON.stringify(testCase)}
 
-class _BlockedCode(Exception):
-    pass
-
-_tree = ast.parse(_source, filename="student_code.py", mode="exec")
-for _node in ast.walk(_tree):
-    if isinstance(_node, (ast.Import, ast.ImportFrom, ast.Global, ast.Nonlocal)):
-        raise _BlockedCode("Imports and global namespace access are not available in this GCSE practice runner.")
-    if isinstance(_node, ast.Attribute) and str(_node.attr).startswith("__"):
-        raise _BlockedCode("Double-underscore attributes are not available in this practice runner.")
-    if isinstance(_node, ast.Name) and _node.id in {"eval", "exec", "compile", "__import__", "globals", "locals", "vars", "breakpoint"}:
-        raise _BlockedCode("That advanced operation is not available in this GCSE practice runner.")
-
 _inputs = iter([str(value) for value in _test.get("inputs", [])])
 def _input(prompt=""):
     try:
@@ -59,6 +47,15 @@ _namespace = {"__builtins__": _safe_builtins, "__name__": "__main__"}
 _stdout = io.StringIO()
 _stderr = io.StringIO()
 try:
+    _tree = ast.parse(_source, filename="student_code.py", mode="exec")
+    for _node in ast.walk(_tree):
+        if isinstance(_node, (ast.Import, ast.ImportFrom, ast.Global, ast.Nonlocal)):
+            raise _BlockedCode("Imports and global namespace access are not available in this GCSE practice runner.")
+        if isinstance(_node, ast.Attribute) and str(_node.attr).startswith("__"):
+            raise _BlockedCode("Double-underscore attributes are not available in this practice runner.")
+        if isinstance(_node, ast.Name) and _node.id in {"eval", "exec", "compile", "__import__", "globals", "locals", "vars", "breakpoint"}:
+            raise _BlockedCode("That advanced operation is not available in this GCSE practice runner.")
+
     _old_stdout, _old_stderr = __import__("sys").stdout, __import__("sys").stderr
     __import__("sys").stdout, __import__("sys").stderr = _stdout, _stderr
     exec(compile(_tree, "student_code.py", "exec"), _namespace, _namespace)
@@ -72,6 +69,8 @@ try:
             raise NameError(f"Define a function named {_function_name}.")
         print(_namespace[_function_name](*_test.get("functionArgs", [])))
     _result = {"output": _stdout.getvalue().strip(), "error": _stderr.getvalue().strip()}
+except SyntaxError as _err:
+    _result = {"output": "", "error": f"SyntaxError on line {_err.lineno}: {_err.msg}", "line": _err.lineno}
 except Exception as _error:
     _trace = traceback.TracebackException.from_exception(_error)
     _line = next((_frame.lineno for _frame in reversed(list(_trace.stack)) if _frame.filename == "student_code.py"), None)
