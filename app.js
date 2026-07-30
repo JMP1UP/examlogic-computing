@@ -2732,10 +2732,21 @@ class App {
           <h2 style="font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0;">${this.escapeHTML(unit.paper)}: ${this.escapeHTML(unit.title)}</h2>
           <span class="badge badge-primary">${unit.topics.reduce((acc, t) => acc + t.objectives.length, 0)} strands</span>
         </div>
+
+        <!-- Table Grid Header -->
+        <div class="student-topic-grid-header" style="display: grid; grid-template-columns: 55px minmax(180px, 1fr) 110px 130px 110px 75px 190px; gap: 12px; padding: 8px 16px; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
+          <div>Code</div>
+          <div>Topic Strand</div>
+          <div>Desk State</div>
+          <div>Confidence</div>
+          <div>Mastery</div>
+          <div style="text-align: right;">Last Checked</div>
+          <div style="text-align: right;">Actions</div>
+        </div>
         
         ${unit.topics.map(topic => `
           <div class="student-open-topic-group" style="margin-bottom: 20px;">
-            <h3 style="font-size: 15px; font-weight: 700; color: var(--teal); margin: 12px 0 8px 4px;">${this.escapeHTML(topic.code)} ${this.escapeHTML(topic.name)}</h3>
+            <h3 style="font-size: 15px; font-weight: 700; color: var(--teal); margin: 16px 0 8px 4px; padding-bottom: 4px; border-bottom: 1px solid var(--border-color);">${this.escapeHTML(topic.code)} ${this.escapeHTML(topic.name)}</h3>
             <div class="student-objective-open-list" style="display: flex; flex-direction: column; gap: 6px;">
               ${topic.objectives.map(objective => {
                 const saved = this.getLearnerObjectiveState(objective.id);
@@ -2744,19 +2755,20 @@ class App {
                 const milestone = milestoneBySection.get(objective.id);
                 const inDeck = state === 'covered' && cardsActive;
                 const confidence = this.getObjectiveRecallConfidence(objective.id);
+                const task = this.getMatchingExamTransferTask(topic.id, objective.id);
                 
-                let confidenceBadge = '<span class="badge badge-secondary" style="font-size: 11px;">⚪ Not rated</span>';
+                let confidenceBadge = `<span class="badge badge-secondary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer;" title="Click to practice recall">⚪ Not rated</span>`;
                 if (confidence === 'Consistently recalled') {
-                  confidenceBadge = '<span class="badge badge-success" style="font-size: 11px;">🟢 High Confidence</span>';
-                } else if (confidence === 'Needs review') {
-                  confidenceBadge = '<span class="badge badge-warning" style="font-size: 11px;">🟡 Needs Review</span>';
+                  confidenceBadge = `<span class="badge badge-success objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer;" title="High confidence score - Click to review">🟢 High Confidence</span>`;
+                } else if (confidence === 'Needs review' || (inDeck && state === 'covered')) {
+                  confidenceBadge = `<span class="badge badge-warning objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; border: 1px solid var(--coral);" title="Review due! Click to practice">🔔 Review Due</span>`;
                 }
 
                 let masteryBadge = '<span class="badge badge-secondary" style="font-size: 11px;">⭕ New</span>';
                 if (milestone?.state === 'checkpoint_secured') {
-                  masteryBadge = '<span class="badge badge-success" style="font-size: 11px;">🎯 Goal Met</span>';
+                  masteryBadge = `<span class="badge badge-success ${task ? 'objective-exam-btn' : ''}" ${task ? `data-task-id="${this.escapeHTML(task.id)}"` : ''} style="font-size: 11px; ${task ? 'cursor: pointer;' : ''}" title="Goal met - Click to review exam task">🎯 Goal Met</span>`;
                 } else if (milestone?.state === 'practice_completed') {
-                  masteryBadge = '<span class="badge badge-warning" style="font-size: 11px;">⏳ Practising</span>';
+                  masteryBadge = `<span class="badge badge-warning ${task ? 'objective-exam-btn' : ''}" ${task ? `data-task-id="${this.escapeHTML(task.id)}"` : ''} style="font-size: 11px; ${task ? 'cursor: pointer;' : ''}" title="Practising - Click to try exam task">⏳ Practising</span>`;
                 }
 
                 const lastDate = milestone?.latestDate ? new Date(milestone.latestDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Not yet';
@@ -2764,23 +2776,23 @@ class App {
                 const reviewLabel = state === 'learning' ? 'Continue' : 'Review';
 
                 return `
-                  <div class="student-topic-flat-row" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 8px; background: ${inDeck ? 'rgba(45, 156, 145, 0.04)' : 'var(--bg-card)'}; border-left: 4px solid ${inDeck ? 'var(--teal)' : 'var(--border-color)'}; flex-wrap: wrap;">
+                  <div class="student-topic-grid-row" style="display: grid; grid-template-columns: 55px minmax(180px, 1fr) 110px 130px 110px 75px 190px; align-items: center; gap: 12px; padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 8px; background: ${inDeck ? 'rgba(45, 156, 145, 0.04)' : 'var(--bg-card)'}; border-left: 4px solid ${inDeck ? 'var(--teal)' : 'var(--border-color)'};">
                     
-                    <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 260px;">
-                      <strong style="font-size: 14px; font-weight: 700; min-width: 50px; color: var(--text-main);">${this.escapeHTML(objective.id)}</strong>
-                      <span style="font-size: 14px; font-weight: 600; color: var(--text-main);">${this.escapeHTML(objective.name)}</span>
-                    </div>
+                    <strong style="font-size: 14px; font-weight: 700; color: var(--text-main);">${this.escapeHTML(objective.id)}</strong>
+                    <span style="font-size: 14px; font-weight: 600; color: var(--text-main); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${this.escapeHTML(objective.name)}</span>
 
-                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                      <span class="badge ${inDeck ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px;">
-                        ${inDeck ? '🎴 In Deck' : '➕ Not on desk'}
+                    <div>
+                      <span class="badge ${inDeck ? 'badge-primary' : 'badge-secondary'} objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer;" title="Click to toggle desk inclusion">
+                        ${inDeck ? '🎴 In Deck' : '➕ Add to desk'}
                       </span>
-                      ${confidenceBadge}
-                      ${masteryBadge}
-                      <span style="font-size: 12px; color: var(--text-muted); font-weight: 500; min-width: 60px; text-align: right;">${lastDate}</span>
                     </div>
 
-                    <div style="display: flex; align-items: center; gap: 8px;">
+                    <div>${confidenceBadge}</div>
+                    <div>${masteryBadge}</div>
+                    
+                    <div style="font-size: 12px; color: var(--text-muted); font-weight: 500; text-align: right;">${lastDate}</div>
+
+                    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
                       ${inDeck
                         ? `<button type="button" class="btn btn-primary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px;">Review cards</button>`
                         : `<button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px;">+ Add to desk</button>`}
@@ -2802,10 +2814,16 @@ class App {
           <h1>Computer Science topics</h1>
           <p>Organise the topics you study alongside your lessons at school.</p>
         </header>
-        <aside class="card student-status-explainer" style="margin-bottom: 24px;">
-          <strong>Choose what belongs on your desk</strong>
-          <p>Met it at school? Add its flashcards now. Need a reminder? Review the topic first. Your card choices help schedule future practice; checked questions are shown separately in Progress.</p>
+        
+        <aside class="card student-status-explainer" style="margin-bottom: 24px; padding: 18px; border-left: 4px solid var(--teal);">
+          <h2 style="font-size: 16px; font-weight: 700; margin: 0 0 8px 0;">Understanding Your Topic Indicators</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; font-size: 13px; color: var(--text-muted);">
+            <div><strong style="color: var(--text-main);">🎴 Desk State:</strong> Topic added to your active practice desk for spaced retrieval. Click badge to toggle.</div>
+            <div><strong style="color: var(--text-main);">🟢 Confidence:</strong> Calculated automatically from your last 3 flashcard & recall scores. Click badge to review.</div>
+            <div><strong style="color: var(--text-main);">🎯 Mastery Goal:</strong> Earned when checked practice verifies all specification checkpoints. Click badge to practise.</div>
+          </div>
         </aside>
+
         <p class="sr-only" id="topics-state-announcement" role="status" aria-live="polite" aria-atomic="true"></p>
         <div class="student-topic-papers">${paperHtml}</div>
       </div>`;
