@@ -2580,6 +2580,7 @@ class App {
     panel.querySelector('#empty-desk-topics-btn')?.addEventListener('click', () => this.switchTab('stud-topics'));
     panel.querySelectorAll('.deck-topic-review-btn').forEach(button => {
       button.onclick = () => {
+        this.activeTopicId = button.dataset.topicId;
         this.retrievalDeckTopicId = button.dataset.topicId;
         this.switchTab('stud-recall');
       };
@@ -2740,7 +2741,7 @@ class App {
                     </div>
                     <div class="student-objective-actions">
                       ${inDeck
-                        ? `<button type="button" class="btn btn-primary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" aria-label="Review topic flashcards: ${this.escapeHTML(topic.code)} ${this.escapeHTML(topic.name)}">Review topic flashcards</button>`
+                        ? `<button type="button" class="btn btn-primary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="Review topic flashcards: ${this.escapeHTML(topic.code)} ${this.escapeHTML(topic.name)}">Review topic flashcards</button>`
                         : `<button type="button" class="btn btn-primary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="${state === 'covered' ? 'Add flashcards again' : 'Add flashcards to my desk'}: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">${state === 'covered' ? 'Add flashcards again' : 'Add flashcards to my desk'}</button>`}
                       <button type="button" class="btn btn-secondary objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="${reviewLabel}: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}" ${available ? '' : 'disabled'}>${available ? reviewLabel : 'Refresher unavailable'}</button>
                       <details>
@@ -2793,6 +2794,8 @@ class App {
     });
     panel.querySelectorAll('.objective-recall-btn').forEach(button => {
       button.onclick = () => {
+        this.activeTopicId = button.dataset.topicId;
+        this.activeObjectiveId = button.dataset.objectiveId || 'all';
         this.retrievalDeckTopicId = button.dataset.topicId;
         this.switchTab('stud-recall');
       };
@@ -4131,6 +4134,9 @@ class App {
 
   // ==================== SPACED RETRIEVAL QUIZ ====================
   renderStudentRecall(panel) {
+    if (this.retrievalDeckTopicId && this.retrievalDeckTopicId !== 'all') {
+      this.activeTopicId = this.retrievalDeckTopicId;
+    }
     const topicQuestions = window.db.getQuestions().filter(q => q.topicId === this.activeTopicId);
     const isRetry = Boolean(this.quizRetryQuestions);
     let selectedQuestions = [];
