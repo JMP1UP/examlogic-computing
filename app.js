@@ -1784,7 +1784,7 @@ class App {
       'stud-written': 'stud-practice',
       'stud-test-prep': 'stud-practice',
       'stud-exam-transfer': 'stud-practice',
-      'stud-progress': 'stud-progress',
+      'stud-progress': 'stud-dashboard',
       'stud-messages': 'stud-messages'
     };
     return parents[tabId] || null;
@@ -1870,7 +1870,6 @@ class App {
         { id: 'stud-dashboard', label: 'My desk', icon: SVG_ICONS.home },
         { id: 'stud-topics', label: 'Topics', icon: SVG_ICONS.learn },
         { id: 'stud-practice', label: 'Practice', icon: SVG_ICONS.practise },
-        { id: 'stud-progress', label: 'Progress', icon: SVG_ICONS.progress },
         { id: 'stud-messages', label: 'Messages', icon: SVG_ICONS.messages }
       ];
       links.forEach((link, index) => {
