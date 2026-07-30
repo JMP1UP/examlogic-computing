@@ -2512,31 +2512,31 @@ class App {
         details: 'Live Teacher Support'
       });
     });
-    if (upcomingEvents.length === 0) {
-      upcomingEvents.push(
-        { title: 'OCR GCSE Paper 1: Computer Systems', dateLabel: 'May 2027', type: 'Final Exam', icon: '🎓', tagClass: 'badge-primary', details: 'OCR GCSE Exam · 1h 30m' },
         { title: 'OCR GCSE Paper 2: Computational Thinking', dateLabel: 'June 2027', type: 'Final Exam', icon: '💻', tagClass: 'badge-primary', details: 'OCR GCSE Exam · 1h 30m' }
       );
     }
 
     const upcomingDatesHtml = `
-      <section class="card student-upcoming-dates" aria-labelledby="upcoming-dates-heading" style="padding: 22px; border-top: 5px solid var(--teal); background: var(--bg-card); border-radius: 12px; margin-bottom: 20px;">
-        <header style="margin-bottom: 16px;">
-          <span class="student-kicker" style="font-weight: 700; color: var(--teal); text-transform: uppercase; font-size: 11px;">Key Milestones</span>
-          <h2 id="upcoming-dates-heading" style="margin: 2px 0 0 0; font-size: 18px; font-weight: 700;">📅 Upcoming dates</h2>
+      <section class="card student-upcoming-dates" aria-labelledby="upcoming-dates-heading" style="padding: 22px; border-top: 5px solid #07111F; background: var(--bg-card); border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(7, 17, 31, 0.04);">
+        <header style="margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+            <span style="font-size: 18px;">📅</span>
+            <span class="student-kicker" style="font-weight: 700; color: #07111F; text-transform: uppercase; font-size: 11px;">Desk Calendar</span>
+          </div>
+          <h2 id="upcoming-dates-heading" style="margin: 0; font-size: 18px; font-weight: 800; color: var(--text-main);">Upcoming dates</h2>
         </header>
         <div style="display: flex; flex-direction: column; gap: 10px;">
           ${upcomingEvents.map(evt => `
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 14px; background: rgba(0,0,0,0.02); border-radius: 8px; border: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(7, 17, 31, 0.02); border-radius: 8px; border: 1px solid var(--border-color); border-left: 4px solid #07111F;">
               <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 18px;">${evt.icon}</span>
                 <div>
                   <strong style="font-size: 14px; color: var(--text-main); display: block;">${this.escapeHTML(evt.title)}</strong>
-                  <span style="font-size: 12px; color: var(--text-muted);">${this.escapeHTML(evt.details)}</span>
+                  <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">${this.escapeHTML(evt.details)}</span>
                 </div>
               </div>
               <div style="text-align: right;">
-                <span class="badge ${evt.tagClass}" style="font-size: 12px; font-weight: 700; padding: 4px 10px;">${this.escapeHTML(evt.dateLabel)}</span>
+                <span class="badge ${evt.tagClass}" style="font-size: 12px; font-weight: 700; padding: 4px 10px; letter-spacing: 0.02em;">${this.escapeHTML(evt.dateLabel)}</span>
               </div>
             </div>
           `).join('')}
@@ -2545,18 +2545,18 @@ class App {
     `;
 
     const weeklyRhythmHtml = `
-      <section class="card student-weekly-notebook" aria-labelledby="weekly-rhythm-heading" style="padding: 24px; border-top: 5px solid var(--teal); background: linear-gradient(180deg, rgba(250, 248, 242, 0.6) 0%, rgba(255, 255, 255, 1) 100%); border-radius: 12px; margin-bottom: 20px;">
-        <header class="student-weekly-notebook__header">
+      <section class="card student-weekly-notebook" aria-labelledby="weekly-rhythm-heading" style="padding: 24px; border-top: 5px solid #D97706; border-left: 6px solid #D97706; background: linear-gradient(180deg, #FFFDF8 0%, #FFFFFF 100%); border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.05);">
+        <header class="student-weekly-notebook__header" style="border-bottom: 1px dashed var(--border-color); padding-bottom: 12px; margin-bottom: 14px;">
           <div>
             <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
               <span style="font-size: 18px;">📓</span>
-              <span class="student-kicker" style="font-weight: 700; color: var(--teal); text-transform: uppercase; font-size: 11px;">This week &middot; resets Monday</span>
+              <span class="student-kicker" style="font-weight: 700; color: #D97706; text-transform: uppercase; font-size: 11px;">Spiral Notebook &middot; resets Monday</span>
             </div>
-            <h2 id="weekly-rhythm-heading" style="margin: 0; font-size: 20px; font-weight: 800;">My notebook</h2>
+            <h2 id="weekly-rhythm-heading" style="margin: 0; font-size: 20px; font-weight: 800; color: var(--text-main);">My notebook</h2>
           </div>
-          <span class="student-weekly-notebook__count" style="font-weight: 700; color: var(--teal); background: rgba(45, 156, 145, 0.1); padding: 4px 10px; border-radius: 12px; font-size: 12px;">${practiceRhythm.completedCount}/${practiceRhythm.items.length} done &middot; ~${practiceRhythm.totalMinutes} min</span>
+          <span class="student-weekly-notebook__count" style="font-weight: 700; color: #D97706; background: rgba(217, 119, 6, 0.1); padding: 4px 10px; border-radius: 12px; font-size: 12px;">${practiceRhythm.completedCount}/${practiceRhythm.items.length} done &middot; ~${practiceRhythm.totalMinutes} min</span>
         </header>
-        ${requiredTaskActive ? '<p class="student-weekly-notebook__priority"><strong>First:</strong> finish the required task above. These smaller tasks can be spread across the week.</p>' : ''}
+        ${requiredTaskActive ? '<p class="student-weekly-notebook__priority" style="font-size: 13px; color: var(--text-muted); margin: 0 0 14px 0;"><strong>First:</strong> complete your teacher assignment or test prep above. These smaller tasks can be spread across the week.</p>' : ''}
         ${upcomingTestNotebook && !hasActiveTestPrep ? `
           <aside class="student-notebook-test" aria-labelledby="upcoming-test-heading">
             <div>
@@ -2591,21 +2591,21 @@ class App {
               </li>`;
           }).join('')}
         </ul>
-        <p class="student-weekly-notebook__note">Flashcards count on two different days. Only marked work changes Progress.</p>
-        ${practiceRhythm.habitAchieved ? '<p><strong>Weekly habit complete.</strong> This recognises regular study, not mastery.</p>' : ''}
+        <p class="student-weekly-notebook__note" style="margin-top: 14px; font-size: 12px; color: var(--text-muted);">Flashcards count on two different days. Only marked work changes Progress.</p>
+        ${practiceRhythm.habitAchieved ? '<p style="font-size: 12px; color: var(--green-text); margin-top: 6px;"><strong>Weekly habit complete.</strong> This recognises regular study, not mastery.</p>' : ''}
       </section>
     `;
     const totalCardCount = deskSummary.totalCardCount;
     const totalDueCount = deskSummary.totalDueCount;
     const myDeckHtml = deskTopics.length ? `
-      <section class="card student-my-deck" aria-labelledby="my-deck-heading" style="padding: 24px; border-top: 5px solid var(--teal); background: var(--bg-card); border-radius: 12px; margin-bottom: 20px;">
-        <header class="student-my-deck__header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+      <section class="card student-my-deck" aria-labelledby="my-deck-heading" style="padding: 24px; border-top: 5px solid #E11D48; background: linear-gradient(180deg, rgba(225, 29, 72, 0.03) 0%, rgba(255, 255, 255, 1) 100%); border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 14px rgba(225, 29, 72, 0.05);">
+        <header class="student-my-deck__header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 18px;">
           <div>
             <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
               <span style="font-size: 18px;">🎴</span>
-              <span class="student-kicker" style="font-weight: 700; color: var(--teal); text-transform: uppercase; font-size: 11px;">My desk</span>
+              <span class="student-kicker" style="font-weight: 700; color: #E11D48; text-transform: uppercase; font-size: 11px;">Flashcard Deck Box</span>
             </div>
-            <h2 id="my-deck-heading" style="margin: 0 0 4px 0; font-size: 20px; font-weight: 800;">Flashcards on your desk</h2>
+            <h2 id="my-deck-heading" style="margin: 0 0 4px 0; font-size: 20px; font-weight: 800; color: var(--text-main);">Flashcards on your desk</h2>
             <p style="margin: 0; color: var(--text-muted); font-size: 14px;">The topics you have chosen to keep fresh alongside school.</p>
             <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
               <span class="badge ${totalDueCount > 0 ? 'badge-primary' : 'badge-success'}" style="font-size: 12px; padding: 4px 10px; font-weight: 600;">
@@ -2620,9 +2620,10 @@ class App {
         </header>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
             ${deskTopics.map(topic => `
-              <article style="display: flex; flex-direction: column; justify-content: space-between; gap: 12px; padding: 16px; border: 1px solid var(--border-color); border-left: 5px solid var(--teal); border-radius: 10px; background: rgba(0,0,0,0.01);">
+              <article style="display: flex; flex-direction: column; justify-content: space-between; gap: 12px; padding: 16px; border: 1px solid rgba(225, 29, 72, 0.2); border-left: 5px solid #E11D48; border-radius: 10px; background: #FFFFFF; box-shadow: 0 3px 10px rgba(7, 17, 31, 0.04);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
                   <div>
+                    <div style="font-size: 10px; font-weight: 700; color: #E11D48; text-transform: uppercase; margin-bottom: 2px;">🎴 Revision Card</div>
                     <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: var(--text-main); line-height: 1.3;">${this.escapeHTML(topic.topicName)}</h3>
                     <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">${topic.dueCount} of ${topic.cards.length} cards due right now</span>
                   </div>
@@ -2630,11 +2631,11 @@ class App {
                     ${topic.dueCount > 0 ? `⚡ ${topic.dueCount} due` : `✓ Up to date`}
                   </span>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.03); padding: 8px 12px; border-radius: 6px; font-size: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(225, 29, 72, 0.04); padding: 8px 12px; border-radius: 6px; font-size: 12px;">
                   <span style="color: var(--text-muted);">Card confidence:</span>
                   <strong style="color: var(--text-main); font-weight: 700;">${this.escapeHTML(topic.strength)}</strong>
                 </div>
-                <button type="button" class="btn btn-primary deck-topic-review-btn" data-topic-id="${this.escapeHTML(topic.topicId)}" style="width: 100%; min-height: 38px; font-weight: 600;" aria-label="Review ${this.escapeHTML(topic.topicName)} flashcards">Review flashcards</button>
+                <button type="button" class="btn btn-primary deck-topic-review-btn" data-topic-id="${this.escapeHTML(topic.topicId)}" style="width: 100%; min-height: 38px; font-weight: 600; background: #E11D48; border-color: #E11D48;" aria-label="Review ${this.escapeHTML(topic.topicName)} flashcards">Review flashcards</button>
               </article>
             `).join('')}
         </div>
