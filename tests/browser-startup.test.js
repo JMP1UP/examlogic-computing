@@ -591,6 +591,9 @@ describe('production browser startup', () => {
     expect(panel.innerHTML).toContain('Required work comes first.');
     expect(panel.innerHTML).toContain('Review flashcards');
     expect(panel.innerHTML).toContain('On 2 different days');
+    expect(panel.innerHTML.indexOf('My study tasks')).toBeLessThan(
+      panel.innerHTML.indexOf('Flashcards on your desk')
+    );
     expect(panel.innerHTML).not.toContain('id="weekly-rhythm-next"');
   });
 
