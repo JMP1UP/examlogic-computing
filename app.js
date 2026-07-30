@@ -3083,7 +3083,7 @@ class App {
           <button type="button" class="btn btn-primary" id="recommended-practice-btn" style="min-height: 42px; padding: 10px 24px; font-size: 15px; font-weight: 600;">Start recommended activity</button>
         </section>
 
-        <div class="student-practice-mode-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 22px;">
+        <div class="student-practice-mode-grid">
           ${modes.map(mode => `
             <article class="card student-practice-mode" style="padding: 22px; display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid ${mode.color}; background: #FFFFFF; border-radius: 12px; box-shadow: 0 4px 12px rgba(7, 17, 31, 0.04); transition: transform 0.2s ease, box-shadow 0.2s ease;">
               <div>
