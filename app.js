@@ -2900,10 +2900,10 @@ class App {
   renderStudentPracticeHub(panel) {
     const rhythm = this.getStudentPracticeRhythm();
     const modes = [
-      { title: 'Flashcards', copy: 'Review three flashcards in about five minutes. Your choices schedule future cards.', route: 'stud-retrieval', time: 'About 5 minutes', outcome: 'Builds your study routine; it is not marked in Progress.' },
-      { title: 'Exam questions', copy: 'Use guided support, then choose whether to submit a similar independent answer for review.', route: 'stud-exam-transfer', time: 'About 15–30 minutes with support; allow 5–10 minutes more for the independent answer', outcome: 'Guided self-checking is practice only. A submitted independent answer waits for review.' },
-      { title: 'Number skills', copy: 'Complete a bounded calculation set and retry mistakes.', route: 'stud-practise', time: 'About 10 minutes', outcome: 'Your checked result appears in Progress.' },
-      { title: 'Programming', copy: 'Continue one coding or pseudocode stage with tests or review.', route: 'stud-programming', time: 'About 15 minutes', outcome: 'Passed tests can count; other work waits for review.' }
+      { title: 'Flashcards', copy: 'Quick recall checks to strengthen your memory.', route: 'stud-retrieval', time: '5 mins' },
+      { title: 'Exam questions', copy: 'Guided & independent practice for OCR GCSE questions.', route: 'stud-exam-transfer', time: '15 mins' },
+      { title: 'Number skills', copy: 'Storage, binary addition, and calculation practice.', route: 'stud-practise', time: '10 mins' },
+      { title: 'Programming', copy: 'Python coding tasks and pseudocode challenges.', route: 'stud-programming', time: '15 mins' }
     ];
     const recommended = rhythm.next || { label: 'Choose one useful practice mode', route: 'stud-retrieval', minutes: 5 };
     panel.innerHTML = `
@@ -2911,24 +2911,28 @@ class App {
         <header class="student-route-header">
           <span class="student-mode-label">Practice</span>
           <h1>Choose how to practise</h1>
-          <p>Use flashcards to remember knowledge and checked work to demonstrate what you can do. A checked activity is marked by StudySpice or reviewed by your teacher and can appear in Progress.</p>
+          <p>Pick an activity to test your memory or practice exam skills.</p>
         </header>
-        <section class="card student-recommended-practice" aria-labelledby="recommended-practice-title">
+        <section class="card student-recommended-practice" aria-labelledby="recommended-practice-title" style="padding: 20px; border-left: 4px solid var(--teal);">
           <span class="student-kicker">Recommended now</span>
-          <h2 id="recommended-practice-title">${this.escapeHTML(recommended.label)}</h2>
-          <p>About ${recommended.minutes} minutes. Complete one focused activity, then return to My desk for your next step.</p>
-          <button type="button" class="btn btn-primary" id="recommended-practice-btn">Continue recommended activity</button>
+          <h2 id="recommended-practice-title" style="margin: 4px 0 6px 0;">${this.escapeHTML(recommended.label)}</h2>
+          <p style="margin-bottom: 14px; color: var(--text-muted);">⏱ ~${recommended.minutes} mins &middot; Focused activity for your study plan</p>
+          <button type="button" class="btn btn-primary" id="recommended-practice-btn">Start recommended activity</button>
         </section>
-        <div class="student-practice-mode-grid">
+        <div class="student-practice-mode-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 20px;">
           ${modes.map(mode => `
-            <article class="card student-practice-mode">
-              <h2>${mode.title}</h2>
-              <p>${mode.copy}</p>
-              <p><strong>Time:</strong> ${mode.time}<br>${mode.outcome}</p>
-              <button type="button" class="btn btn-secondary practice-hub-btn" data-target="${mode.route}">Start ${mode.title.toLowerCase()}</button>
+            <article class="card student-practice-mode" style="padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <h2 style="margin: 0; font-size: 18px;">${mode.title}</h2>
+                  <span class="badge badge-secondary" style="font-size: 11px;">⏱ ${mode.time}</span>
+                </div>
+                <p style="margin: 0 0 16px 0; color: var(--text-muted); font-size: 14px;">${mode.copy}</p>
+              </div>
+              <button type="button" class="btn btn-secondary practice-hub-btn" data-target="${mode.route}" style="width: 100%;">Start ${mode.title.toLowerCase()}</button>
             </article>`).join('')}
         </div>
-        <p><button type="button" class="btn btn-link" id="practice-desk-btn">Back to My desk</button></p>
+        <p style="margin-top: 24px;"><button type="button" class="btn btn-link" id="practice-desk-btn">Back to My desk</button></p>
       </div>`;
     panel.querySelector('#recommended-practice-btn').onclick = () => {
       if (recommended.route === 'stud-exam-transfer') this.startStudentExamPractice();
