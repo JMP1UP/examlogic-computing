@@ -2490,6 +2490,7 @@ class App {
 
         <div class="student-dashboard__flow">
           ${dominantTaskHtml}
+          ${weeklyRhythmHtml}
           ${myDeckHtml}
 
           <section class="student-signal-strip" aria-label="This week's study status">
@@ -2499,7 +2500,6 @@ class App {
           </section>
 
           ${checkpointHtml}
-          ${weeklyRhythmHtml}
           ${earnedMarksHtml}
           <div class="student-plan-drawer">${seeMoreHtml}</div>
         </div>
