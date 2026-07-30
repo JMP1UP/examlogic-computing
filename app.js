@@ -2950,14 +2950,17 @@ class App {
           <p>Organise the topics you study alongside your lessons at school.</p>
         </header>
         
-        <aside class="card student-status-explainer" style="margin-bottom: 20px; padding: 14px 18px; border-left: 4px solid var(--teal);">
-          <h2 style="font-size: 15px; font-weight: 700; margin: 0 0 6px 0;">How Your Topic Progress Works</h2>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 13px; color: var(--text-muted);">
-            <div><strong style="color: var(--text-main);">1. My Desk:</strong> Click <strong>+ Add to desk</strong> on any topic to add its flashcards to your daily retrieval practice.</div>
-            <div><strong style="color: var(--text-main);">2. Memory Score:</strong> Click <strong>🎴 Cards</strong> to practice retrieval. Complete card sessions to turn memory 🟢 <strong>Strong</strong>.</div>
-            <div><strong style="color: var(--text-main);">3. Exam Goal:</strong> Complete checked GCSE exam questions in Progress to earn your 🎯 <strong>Met</strong> badge. <strong>Last Done</strong> shows your last practice date.</div>
+        <details class="card student-status-explainer" style="margin-bottom: 20px; padding: 12px 18px; border-left: 4px solid var(--teal); background: var(--bg-card); border-radius: 8px;">
+          <summary style="font-size: 14px; font-weight: 700; color: var(--text-main); cursor: pointer; display: flex; align-items: center; gap: 8px;">
+            <span>💡 How topic progress works</span>
+            <span style="font-size: 12px; font-weight: 500; color: var(--text-muted);">(click for 3-step guide)</span>
+          </summary>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; font-size: 13px; color: var(--text-muted); margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
+            <div><strong style="color: var(--text-main);">1. My Desk:</strong> Click <strong>+ Add to desk</strong> to practice daily.</div>
+            <div><strong style="color: var(--text-main);">2. Memory Score:</strong> Review cards to build 🟢 <strong>Strong</strong> recall.</div>
+            <div><strong style="color: var(--text-main);">3. Exam Goal:</strong> Complete exam questions to earn 🎯 <strong>Met</strong> badges.</div>
           </div>
-        </aside>
+        </details>
 
         <p class="sr-only" id="topics-state-announcement" role="status" aria-live="polite" aria-atomic="true"></p>
         ${paperTabNavHtml}
