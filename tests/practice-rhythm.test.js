@@ -193,8 +193,14 @@ describe('weekly practice rhythm', () => {
   test('one-card session preserves a draft on pause and moves focus after reveal and completion', () => {
     const { app, data } = loadApp();
     data.controls.topic_1_1 = 'teaching';
-    data.units.push({ topics: [{ id: 'topic_1_1', name: 'Systems' }] });
-    data.keyTerms.push({ id: 'cpu', topicId: 'topic_1_1', term: 'CPU', definition: 'Processes instructions' });
+    data.units.push({ topics: [{ id: 'topic_1_1', name: 'Systems', objectives: [{ id: '1.1.1', name: 'CPU architecture' }] }] });
+    data.keyTerms.push({ id: 'cpu', topicId: 'topic_1_1', specificationPointId: '1.1.1', term: 'CPU', definition: 'Processes instructions' });
+    app.currentUser.learnerObjectiveStates = [{
+      studentId: 'student_1',
+      specificationPointId: '1.1.1',
+      state: 'covered',
+      cardState: 'active'
+    }];
     const elements = {
       '#retrieval-topic-filter': { value: 'all' },
       '#retrieval-card-attempt': { value: 'CPU', focus: jest.fn() },
