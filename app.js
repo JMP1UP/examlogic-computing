@@ -2823,7 +2823,26 @@ class App {
   renderStudentTopics(panel, restore = {}) {
     const milestoneBySection = new Map(this.getSectionMilestones().map(item => [item.id, item]));
     const contentIds = new Set(window.db.getCurriculumContent().map(item => item.id));
-    const paperHtml = window.db.getUnits().map((unit, unitIndex) => `
+    const activePaperTab = this.activeTopicsPaperTab || 'paper1';
+    
+    const allUnits = window.db.getUnits();
+    const visibleUnits = allUnits.filter((unit, idx) => {
+      if (activePaperTab === 'paper1') return unit.paper.includes('Paper 1') || idx === 0;
+      return unit.paper.includes('Paper 2') || idx === 1;
+    });
+
+    const paperTabNavHtml = `
+      <nav class="student-topics-tabs" aria-label="OCR Papers" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; flex-wrap: wrap;">
+        <button type="button" class="btn ${activePaperTab === 'paper1' ? 'btn-primary' : 'btn-secondary'} topics-paper-tab" data-paper="paper1" style="font-weight: 700; font-size: 14px; padding: 10px 20px; min-height: 42px;">
+          📄 Paper 1: Computer Systems (19 strands)
+        </button>
+        <button type="button" class="btn ${activePaperTab === 'paper2' ? 'btn-primary' : 'btn-secondary'} topics-paper-tab" data-paper="paper2" style="font-weight: 700; font-size: 14px; padding: 10px 20px; min-height: 42px;">
+          💻 Paper 2: Computational Thinking & Programming (17 strands)
+        </button>
+      </nav>
+    `;
+
+    const paperHtml = visibleUnits.map((unit) => `
       <div class="student-open-paper-section" style="margin-bottom: 32px;">
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: var(--bg-card); border-bottom: 3px solid var(--teal); border-radius: 8px 8px 0 0; margin-bottom: 16px;">
           <h2 style="font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0;">${this.escapeHTML(unit.paper)}: ${this.escapeHTML(unit.title)}</h2>
@@ -2932,6 +2951,7 @@ class App {
         </aside>
 
         <p class="sr-only" id="topics-state-announcement" role="status" aria-live="polite" aria-atomic="true"></p>
+        ${paperTabNavHtml}
         <div class="student-topic-papers">${paperHtml}</div>
       </div>`;
     const openIds = [];
@@ -2944,6 +2964,12 @@ class App {
         stateAnnouncement.textContent = restore.announcement;
       }, 0);
     }
+    panel.querySelectorAll('.topics-paper-tab').forEach(btn => {
+      btn.onclick = () => {
+        this.activeTopicsPaperTab = btn.dataset.paper;
+        this.renderStudentTopics(panel);
+      };
+    });
     const captureOpenIds = () => [];
     panel.querySelectorAll('.objective-learn-btn').forEach(button => {
       button.onclick = () => this.openObjectiveLearning(button.dataset.topicId, button.dataset.objectiveId);
