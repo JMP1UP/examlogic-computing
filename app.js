@@ -1064,9 +1064,14 @@ class App {
   getDeskTopicSummary(student = this.currentUser, now = new Date(), limit = 3) {
     const allTopics = this.getRecallDeckOverview(student, now)
       .sort((left, right) => right.dueCount - left.dueCount || left.topicName.localeCompare(right.topicName));
+    const totalCardCount = allTopics.reduce((sum, item) => sum + (item.cards?.length || 0), 0);
+    const totalDueCount = allTopics.reduce((sum, item) => sum + (item.dueCount || 0), 0);
     return {
       visible: allTopics.slice(0, limit),
-      hiddenCount: Math.max(0, allTopics.length - limit)
+      hiddenCount: Math.max(0, allTopics.length - limit),
+      totalCardCount,
+      totalDueCount,
+      allTopicsCount: allTopics.length
     };
   }
 
@@ -2497,24 +2502,36 @@ class App {
         ${practiceRhythm.habitAchieved ? '<p><strong>Weekly habit complete.</strong> This recognises regular study, not mastery.</p>' : ''}
       </section>
     `;
+    const totalCardCount = deskSummary.totalCardCount;
+    const totalDueCount = deskSummary.totalDueCount;
     const myDeckHtml = deskTopics.length ? `
       <section class="card student-my-deck" aria-labelledby="my-deck-heading">
-        <header class="student-my-deck__header">
+        <header class="student-my-deck__header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
           <div>
             <span class="student-kicker">My desk</span>
             <h2 id="my-deck-heading">Flashcards on your desk</h2>
             <p>The topics you have chosen to keep fresh alongside school.</p>
-            <p class="student-deck-scope-note">These cards cover key facts, not every skill or exam question in a section.</p>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+              <span class="badge ${totalDueCount > 0 ? 'badge-primary' : 'badge-success'}" style="font-size: 13px; padding: 6px 12px; font-weight: 600;">
+                ${totalDueCount > 0 ? `⚡ ${totalDueCount} ${totalDueCount === 1 ? 'card' : 'cards'} ready for review` : `✓ All cards up to date`}
+              </span>
+              <span class="badge badge-secondary" style="font-size: 13px; padding: 6px 12px; font-weight: 600;">
+                🎴 ${totalCardCount} total ${totalCardCount === 1 ? 'card' : 'cards'} on desk
+              </span>
+            </div>
           </div>
           <button type="button" class="btn btn-secondary" id="manage-deck-btn">Organise my topics</button>
         </header>
         <div class="student-my-deck__topics">
             ${deskTopics.map(topic => `
               <article>
-                <div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
                   <h3>${this.escapeHTML(topic.topicName)}</h3>
-                  <p>${topic.cards.length} ${topic.cards.length === 1 ? 'card' : 'cards'} · ${topic.dueCount} ready to review</p>
+                  <span class="badge ${topic.dueCount > 0 ? 'badge-primary' : 'badge-success'}" style="font-size: 11px; white-space: nowrap;">
+                    ${topic.dueCount > 0 ? `⚡ ${topic.dueCount} due` : `✓ Up to date`}
+                  </span>
                 </div>
+                <p><strong>${topic.dueCount}</strong> of <strong>${topic.cards.length}</strong> ${topic.cards.length === 1 ? 'card' : 'cards'} due right now</p>
                 <div class="student-my-deck__strength">
                   <span>Your card confidence</span>
                   <strong>${this.escapeHTML(topic.strength)}</strong>
@@ -2524,7 +2541,7 @@ class App {
               </article>
             `).join('')}
         </div>
-        ${hiddenDeskTopicCount ? `<p class="student-my-deck__more">${hiddenDeskTopicCount} more ${hiddenDeskTopicCount === 1 ? 'topic is' : 'topics are'} on your desk. Use Organise my topics to see all of them.</p>` : ''}
+        ${hiddenDeskTopicCount ? `<p class="student-my-deck__more">${hiddenDeskTopicCount} more ${hiddenDeskTopicCount === 1 ? 'topic is' : 'topics are'} on your desk (${deskSummary.allTopicsCount} topics total). Use Organise my topics to see all of them.</p>` : ''}
       </section>
     ` : '';
 

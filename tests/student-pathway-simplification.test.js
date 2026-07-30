@@ -248,7 +248,10 @@ describe('student pathway simplification', () => {
         { topicName: 'D', dueCount: 2 },
         { topicName: 'B', dueCount: 1 }
       ],
-      hiddenCount: 1
+      hiddenCount: 1,
+      totalCardCount: 0,
+      totalDueCount: 6,
+      allTopicsCount: 4
     });
   });
 
