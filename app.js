@@ -2840,7 +2840,11 @@ class App {
         
         ${unit.topics.map(topic => `
           <div class="student-open-topic-group" style="margin-bottom: 20px;">
-            <h3 style="font-size: 14px; font-weight: 700; color: var(--teal); margin: 14px 0 6px 4px; padding-bottom: 4px; border-bottom: 1px solid var(--border-color);">${this.escapeHTML(topic.code)} ${this.escapeHTML(topic.name)}</h3>
+            <h3 style="font-size: 14px; font-weight: 700; color: var(--teal); margin: 14px 0 6px 4px; padding-bottom: 4px; border-bottom: 1px solid var(--border-color);">
+              <button type="button" class="btn-link objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(topic.objectives[0]?.id || '')}" style="text-decoration: none; color: inherit; font-weight: 700; text-align: left; padding: 0; border: none; background: none; cursor: pointer;" title="Click to view notes for ${this.escapeHTML(topic.name)}">
+                ${this.escapeHTML(topic.code)} ${this.escapeHTML(topic.name)}
+              </button>
+            </h3>
             
             <table style="width: 100%; border-collapse: separate; border-spacing: 0 4px; font-size: 13px;">
               <thead>
@@ -2883,8 +2887,10 @@ class App {
                   return `
                     <tr style="height: 38px; background: ${inDeck ? 'rgba(45, 156, 145, 0.04)' : 'var(--bg-card)'}; border: 1px solid var(--border-color); border-left: 4px solid ${inDeck ? 'var(--teal)' : 'var(--border-color)'};">
                       <td style="padding: 6px 8px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        <strong style="margin-right: 6px; color: var(--text-muted); font-size: 13px;">${this.escapeHTML(objective.id)}</strong>
-                        ${this.escapeHTML(objective.name)}
+                        <button type="button" class="btn-link objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="text-decoration: none; color: inherit; font-weight: 600; text-align: left; padding: 0; border: none; background: none; cursor: pointer; ${available ? '' : 'opacity: 0.6;'}" title="Click to view notes for ${this.escapeHTML(objective.name)}">
+                          <strong style="margin-right: 6px; color: var(--teal); font-size: 13px;">${this.escapeHTML(objective.id)}</strong>
+                          <span style="color: var(--text-main); font-weight: 700; border-bottom: 1px dashed var(--teal);">${this.escapeHTML(objective.name)}</span>
+                        </button>
                       </td>
                       <td style="padding: 6px 4px; text-align: center;">${confidenceBadge}</td>
                       <td style="padding: 6px 4px; text-align: center;">${masteryBadge}</td>
