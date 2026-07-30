@@ -6277,14 +6277,28 @@ class App {
         </details>
       `;
     }).join('');
-    const topicMasteryHtml = window.db.getUnits().flatMap(unit => unit.topics).map(topic => {
+    const allTopics = window.db.getUnits().flatMap(unit => unit.topics);
+    const activeTopics = allTopics.filter(topic => {
+      const topicAttempts = attempts.filter(attempt => this.attemptMatchesTopic(attempt, topic));
+      return topicAttempts.length > 0;
+    });
+    const topicMasteryHtml = (activeTopics.length ? activeTopics : allTopics.slice(0, 5)).map(topic => {
       const topicAttempts = attempts.filter(attempt => this.attemptMatchesTopic(attempt, topic));
       const mastery = this.getDemonstratedMastery(topicAttempts);
       const isNotStarted = mastery.ratio === null;
       const badgeClass = isNotStarted ? 'badge-secondary' : mastery.ratio >= 0.85 ? 'badge-success' : mastery.ratio >= 0.6 ? 'badge-warning' : 'badge-primary';
       const badgeText = isNotStarted ? 'Not Started' : mastery.label;
-      const detail = isNotStarted ? '' : `<span style="display:block; font-size:11px; color:var(--text-muted); text-align:right;">${mastery.earned}/${mastery.available} passed</span>`;
-      return `<div style="display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:14px; padding: 6px 0; border-bottom: 1px dashed var(--border-color);"><span>${this.escapeHTML(topic.name)}</span><span style="text-align:right;"><span class="badge ${badgeClass}">${badgeText}</span>${detail}</span></div>`;
+      const detail = isNotStarted ? '' : `<span style="font-size:11px; color:var(--text-muted);">${mastery.earned}/${mastery.available} passed</span>`;
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:14px; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-weight: 600; color: var(--text-main);">${this.escapeHTML(topic.name)}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            ${detail}
+            <span class="badge ${badgeClass}">${badgeText}</span>
+          </div>
+        </div>`;
     }).join('');
 
     panel.innerHTML = `
@@ -6325,7 +6339,10 @@ class App {
 
       <div class="student-progress-layout">
         <div>
-          <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 16px; color: var(--text-main);">Topic Status</h2>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="font-size: 20px; font-weight: 700; color: var(--text-main); margin: 0;">Active Topic Status</h2>
+            <button type="button" class="btn btn-link" id="goto-topics-btn" style="font-size: 13px; font-weight: 600;">View full specification →</button>
+          </div>
           
           <div class="card" style="margin-bottom: 32px; padding: 20px;">
             <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -6401,6 +6418,7 @@ class App {
         button.onclick = () => this.openAchievementRoute(achievementId, panel);
       }
     });
+    panel.querySelector?.('#goto-topics-btn')?.addEventListener('click', () => this.switchTab('stud-topics'));
   }
 
   // ==================== TEACHER OVERVIEW ====================
