@@ -2859,7 +2859,7 @@ class App {
         </div>
 
         <!-- Table Grid Header -->
-        <div class="student-topic-grid-header" style="display: grid; grid-template-columns: 55px minmax(180px, 1fr) 110px 130px 110px 75px 190px; gap: 12px; padding: 8px 16px; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
+        <div class="student-topic-grid-header" style="display: grid; grid-template-columns: 55px minmax(180px, 1fr) 110px 130px 110px 75px 220px; gap: 12px; padding: 8px 16px; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
           <div>Code</div>
           <div>Topic Strand</div>
           <div>Desk State</div>
@@ -2884,7 +2884,7 @@ class App {
                   <th scope="col" style="padding: 0 8px; text-align: center; width: 90px;">Memory</th>
                   <th scope="col" style="padding: 0 8px; text-align: center; width: 90px;">Exam Goal</th>
                   <th scope="col" style="padding: 0 8px; text-align: center; width: 70px;">Last Done</th>
-                  <th scope="col" style="padding: 0 8px; text-align: right; width: 190px;">Actions</th>
+                  <th scope="col" style="padding: 0 8px; text-align: right; width: 220px;">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -2926,7 +2926,7 @@ class App {
                       <td style="padding: 6px 4px; text-align: center;">${confidenceBadge}</td>
                       <td style="padding: 6px 4px; text-align: center;">${masteryBadge}</td>
                       <td style="padding: 6px 4px; text-align: center; font-size: 12px; color: var(--text-muted); font-weight: 500; white-space: nowrap;">${lastDate}</td>
-                      <td style="padding: 6px 8px; text-align: right; white-space: nowrap;">
+                      <td style="padding: 6px 10px; text-align: right; white-space: nowrap; min-width: 220px;">
                         ${inDeck
                           ? `<button type="button" class="btn btn-primary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 4px 10px; font-size: 12px; min-height: 32px;">🎴 Cards</button>`
                           : `<button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 4px 10px; font-size: 12px; min-height: 32px;">+ Add to desk</button>`}
