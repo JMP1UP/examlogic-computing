@@ -111,17 +111,18 @@ progress, and older pupil records require no migration. The stored pupil record
 is the source of truth after session reload; the smaller session identity is not
 used as persistence.
 
-One recall-eligibility pipeline serves both flashcard selection and topic
-filters. The student interface frames the selected topics as **Flashcards on
-your desk**; this is presentation language only and does not combine
-self-rated recall with checked evidence.
+Personal flashcard selection and legacy availability are deliberately separate.
+**Flashcards on your desk**, its topic filters and personal flashcard sessions
+use only explicit active `learnerObjectiveStates`. Classroom controls and
+legacy inferred coverage remain readable for compatibility but never silently
+place content on a pupil's personal desk. This does not combine self-rated
+recall with checked evidence.
 Cards use an explicit `specificationPointId` where present. A legacy topic-only
 card is mapped to an objective only when its term occurs in exactly one
 curriculum objective inside that same topic. Ambiguous cards retain honest
-`legacy_topic` behavior and are available only through legacy teacher/topic
-coverage. An explicit pupil objective choice overrides legacy topic coverage
-for cards mapped to that objective; pausing never deletes ratings or scheduling
-history.
+`legacy_topic` metadata and historical interpretation, but cannot enter the
+personal desk without a safe objective mapping. Pausing never deletes ratings
+or scheduling history.
 
 ## APIs and integrations
 

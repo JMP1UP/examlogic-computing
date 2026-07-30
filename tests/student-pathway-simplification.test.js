@@ -149,6 +149,20 @@ describe('student pathway simplification', () => {
     });
   });
 
+  test('classroom availability does not silently place flashcards on the personal desk', () => {
+    const { app } = loadApp();
+
+    expect(app.getEligibleRecallCards().map(item => item.card.id)).toEqual(['term_cpu']);
+    expect(app.getPersonalDeskFlashcards()).toEqual([]);
+    expect(app.getPersonalDeskTopics().size).toBe(0);
+    expect(app.getRecallDeckOverview()).toEqual([]);
+    expect(app.getRetrievalDeckCards()).toEqual([]);
+
+    app.updateLearnerObjectiveState('1.1.1', 'covered', 'active');
+    expect(app.getPersonalDeskFlashcards().map(item => item.card.id)).toEqual(['term_cpu']);
+    expect([...app.getPersonalDeskTopics()]).toEqual(['topic_1_1']);
+  });
+
   test('pausing cards preserves retrieval history and confidence remains separate', () => {
     const { app, data } = loadApp();
     data.attempts.push({

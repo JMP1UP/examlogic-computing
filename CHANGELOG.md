@@ -5,6 +5,8 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Made personal desk membership explicit: classroom and legacy availability no
+  longer silently place flashcards on My desk or in its personal sessions.
 - Reframed the student start page as My desk, with selected flashcard topics,
   cards ready and clearly labelled self-rated card confidence.
 - Let learners add topics met at school straight to their desk or independently

@@ -116,7 +116,9 @@ evidence. Store learner-owned objective controls using:
 - source.
 
 Legacy topic-level inferred coverage remains readable but is not silently
-rewritten as an objective-level pupil choice.
+rewritten as an objective-level pupil choice or displayed as being on the
+personal desk. Only an explicit active pupil choice can add mapped flashcards
+to My desk and its flashcard sessions.
 
 ### Recall confidence
 

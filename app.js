@@ -901,6 +901,20 @@ class App {
     return new Set(this.getEligibleRecallCards(student).map(item => item.card.topicId));
   }
 
+  getPersonalDeskFlashcards(student = this.currentUser) {
+    const states = new Map(this.getLearnerObjectiveStates(student)
+      .map(item => [item.specificationPointId, item]));
+    return this.getRecallCardMappings().filter(({ objectiveId }) => {
+      if (!objectiveId) return false;
+      const learnerState = states.get(objectiveId);
+      return learnerState?.state === 'covered' && learnerState.cardState === 'active';
+    });
+  }
+
+  getPersonalDeskTopics(student = this.currentUser) {
+    return new Set(this.getPersonalDeskFlashcards(student).map(item => item.card.topicId));
+  }
+
   getRecallDeckOverview(student = this.currentUser, now = new Date()) {
     const topics = new Map(window.db.getUnits().flatMap(unit =>
       unit.topics.map(topic => [topic.id, topic])
@@ -914,7 +928,7 @@ class App {
         if (!latestByCard.has(item.questionId)) latestByCard.set(item.questionId, item);
       });
     const groups = new Map();
-    this.getEligibleRecallCards(student).forEach(({ card }) => {
+    this.getPersonalDeskFlashcards(student).forEach(({ card }) => {
       if (!groups.has(card.topicId)) {
         const topic = topics.get(card.topicId);
         groups.set(card.topicId, {
@@ -959,7 +973,7 @@ class App {
     const ratings = window.db.getAttempts().filter(item =>
       item.studentId === student?.id && ['retrieval_rating', 'retrieval_deck_extra'].includes(item.type)
     );
-    return this.getEligibleRecallCards(student)
+    return this.getPersonalDeskFlashcards(student)
       .map(item => ({ ...item.card, recallMappingPrecision: item.precision, specificationPointId: item.objectiveId }))
       .filter(card => this.retrievalDeckTopicId === 'all' || card.topicId === this.retrievalDeckTopicId)
       .map(card => {
@@ -3376,7 +3390,7 @@ class App {
   // ==================== WEEKLY NUMBER SKILLS ====================
   renderStudentRetrievalDeck(panel) {
     const topics = window.db.getUnits().flatMap(unit => unit.topics);
-    const eligibleTopics = this.getEligibleRecallTopics();
+    const eligibleTopics = this.getPersonalDeskTopics();
     const cards = this.getRetrievalDeckCards();
     const dueCards = cards.filter(card => card.due);
     const distinctCards = [...new Map(cards.map(item => [item.id, item])).values()];

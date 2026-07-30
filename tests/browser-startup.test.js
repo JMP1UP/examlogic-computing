@@ -611,6 +611,7 @@ describe('production browser startup', () => {
       appendChild: jest.fn()
     });
     context.app.currentUser = context.db.getStudents()[0];
+    context.app.updateLearnerObjectiveState('1.1.1', 'covered', 'active');
     context.app.retrievalDeckSessionId = 'stable-session';
     context.app.retrievalDeckSeenCardIds = ['term_cpu'];
     context.app.retrievalDeckRatedCount = 1;
