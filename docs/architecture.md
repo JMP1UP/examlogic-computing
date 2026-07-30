@@ -151,3 +151,10 @@ human review. Semantic/equivalence marking and any confidence-driven scheduling
 policy require separately validated designs. Historical evidence without stable
 question IDs, focus metadata or checkpoint rule versions remains visible with
 reduced precision rather than being rewritten.
+
+Teacher-authored assessment reports are stored in `assessmentReports`. Each
+record names its class, learner, assessment, specification-point judgements and
+optional exam-technique tags. Reports create curriculum and practice links but
+do not become demonstrated attempts, alter learner-rated confidence or award
+checkpoints. Existing schema-13 browsers gain the empty collection through
+non-destructive reconciliation; the schema version remains 13.

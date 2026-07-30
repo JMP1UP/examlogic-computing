@@ -5,6 +5,14 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Added an evidence-led class markbook and learner profiles that keep checked
+  performance, self-rated flashcard confidence, awaiting-review work and teacher
+  assessment reports distinct.
+- Added teacher-authored post-assessment reports with topic strengths and
+  priorities, exam-technique tags and direct learner links to matching teaching
+  and exam-practice materials.
+- Documented bounded AI use and retained deterministic, teacher-led markbook and
+  assessment decisions.
 - Added explicitly specification-mapped starter flashcards for every curriculum
   strand, plus a small prerequisite graph for routes that depend on earlier
   knowledge.

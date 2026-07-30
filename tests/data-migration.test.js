@@ -80,6 +80,7 @@ describe('StudySpice local-data migrations', () => {
       { id: 'q_1_1_a', topicId: 'topic_1_1', specificationPointId: '1.1.1' },
       { id: 'q_1_1_a', topicId: 'topic_1_1', specificationPointId: '1.1.1' }
     ];
+    stored.assessmentReports = [{ id: 'report_existing', studentId: 'stud_1', assessmentId: 'prep_1', topicRatings: [] }];
     global.localStorage.getItem.mockReturnValue(JSON.stringify(stored));
 
     require('../database');
@@ -89,9 +90,21 @@ describe('StudySpice local-data migrations', () => {
     expect(new Set(questionIds).size).toBe(questionIds.length);
     expect(reconciled.attempts).toEqual(stored.attempts);
     expect(reconciled.settings).toEqual(stored.settings);
+    expect(reconciled.assessmentReports).toEqual(stored.assessmentReports);
     expect(reconciled.questions.find(question => question.id === 'q_1_1_a').assessmentFocus)
       .toBe('control-unit-coordination');
     expect(reconciled.attempts.some(attempt => attempt.questionEvidence?.some(item => item.assessmentFocus))).toBe(false);
+  });
+
+  test('adds empty assessment report storage to existing schema 13 data when absent', () => {
+    const stored = clone(schema12Fixture);
+    stored.schemaVersion = 13;
+    delete stored.assessmentReports;
+    global.localStorage.getItem.mockReturnValue(JSON.stringify(stored));
+    require('../database');
+    expect(global.window.db.cachedData.schemaVersion).toBe(13);
+    expect(global.window.db.cachedData.assessmentReports).toEqual([]);
+    expect(global.window.db.cachedData.attempts).toEqual(stored.attempts);
   });
 
   test.each([

@@ -2695,3 +2695,36 @@ body.dark-mode .app-container[data-user-role="student"] {
   cursor: pointer;
   font-weight: 700;
 }
+
+.teacher-markbook table { min-width: 820px; }
+.teacher-student-profile-btn { color: var(--teal-dark); text-align: left; }
+.teacher-learner-profile, .teacher-assessment-report-entry { margin-top: 24px; }
+.teacher-learner-profile > header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.teacher-learner-profile h2 { margin: 8px 0 4px; }
+.teacher-profile-summary-grid, .teacher-report-form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+.teacher-report-form-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.teacher-profile-summary-grid > div { padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; gap: 4px; }
+.teacher-profile-summary-grid span, .teacher-profile-summary-grid small { color: var(--text-muted); }
+.teacher-profile-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.teacher-profile-topic-list { list-style: none; padding: 0; }
+.teacher-profile-topic-list li, .teacher-topic-rating { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+.teacher-profile-report { padding: 12px; border-left: 3px solid var(--teal); background: var(--bg-main); margin-bottom: 10px; }
+.teacher-profile-report > span { float: right; }
+.assessment-topic-set { border: 0; padding: 0; margin: 0 0 20px; }
+.teacher-topic-rating select { max-width: 180px; }
+.teacher-technique-tags { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 14px; margin: 18px 0; border: 1px solid var(--border-color); border-radius: 8px; }
+.teacher-technique-tags legend { font-weight: 700; }
+.student-assessment-report { margin-top: 20px; border-left: 5px solid var(--teal); }
+.student-assessment-mark strong { font-size: 1.5rem; }
+.student-report-topic-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+.student-report-topic { padding: 14px; border: 1px solid var(--border-color); border-top: 4px solid var(--teal); border-radius: 8px; }
+.student-report-topic--priority { border-top-color: var(--coral); }
+.student-report-topic--developing { border-top-color: var(--amber); }
+.student-report-topic > span { font-size: .75rem; font-weight: 700; text-transform: uppercase; }
+.student-exam-technique-support { padding: 16px; background: var(--bg-main); border-radius: 8px; }
+.student-exam-technique-support article p { margin-top: 4px; }
+
+@media (max-width: 900px) {
+  .teacher-profile-summary-grid, .teacher-report-form-grid, .teacher-profile-columns, .student-report-topic-grid { grid-template-columns: 1fr; }
+  .teacher-technique-tags { grid-template-columns: 1fr; }
+}

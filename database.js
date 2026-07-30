@@ -1266,6 +1266,7 @@ def calculate_area(width, height):
       includePseudocode: false
     }
   ],
+  assessmentReports: [],
   supportSessions: [
     {
       id: 'session_1',
@@ -3961,6 +3962,7 @@ class LocalDB {
   }
   getAssignments() { return this.cachedData.assignments; }
   getTestPreps() { return this.cachedData.testPreps || []; }
+  getAssessmentReports() { return this.cachedData.assessmentReports || []; }
   getSupportSessions() { return this.cachedData.supportSessions || []; }
   getCurriculumContent() { return this.cachedData.curriculumContent || []; }
   getExamTransferTasks() { return this.cachedData.examTransferTasks || []; }
@@ -4032,6 +4034,19 @@ class LocalDB {
     this.saveData();
     this.addAuditLog('Test preparation created', `Test preparation "${newPrep.title}" created.`, 'Teacher');
     return newPrep;
+  }
+
+  addAssessmentReport(report) {
+    const newReport = {
+      id: 'assessment_report_' + Date.now(),
+      recordedAt: new Date().toISOString(),
+      ...report
+    };
+    if (!Array.isArray(this.cachedData.assessmentReports)) this.cachedData.assessmentReports = [];
+    this.cachedData.assessmentReports.push(newReport);
+    this.saveData();
+    this.addAuditLog('Assessment report recorded', `Assessment report recorded for learner ${newReport.studentId}.`, 'Teacher');
+    return newReport;
   }
 
   addSupportSession(session) {

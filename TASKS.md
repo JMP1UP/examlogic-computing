@@ -26,6 +26,9 @@
 - [ ] Consider broader student-interface redesign only after learning and data integrity are stable.
 - [ ] Replace strict pseudocode matching with a validated equivalence-marking policy; until then, non-matching meaningful submissions remain awaiting review.
 - [ ] Define a validated scheduling policy before confidence can influence revision timing.
+- [ ] Define and publish retention, deletion and provider-processing guidance before optional AI feedback handles live pupil writing or code.
+- [ ] Add privacy-preserving AI availability, fallback and teacher-disagreement monitoring before expanding model use.
+- [ ] Require explicit teacher moderation before any AI-generated estimate can become a summative assessment mark.
 - [x] Improve grouping and checkpoint precision only for future evidence; historical records without stable question IDs or focus/rule metadata remain visibly reduced-precision.
 
 ## Later

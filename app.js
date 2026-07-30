@@ -88,6 +88,7 @@ class App {
     this.selectedChatStudentId = null;
     this.teacherMessageDraft = '';
     this.selectedTeacherClassId = null;
+    this.selectedTeacherStudentId = null;
 
     // Teacher assignment creator
     this.newAssignmentTopic = '';
@@ -872,14 +873,14 @@ class App {
     return true;
   }
 
-  getObjectiveRecallConfidence(objectiveId) {
+  getObjectiveRecallConfidence(objectiveId, studentId = this.currentUser?.id) {
     const objectiveCardIds = new Set(this.getRecallCardMappings()
       .filter(item => item.objectiveId === objectiveId)
       .map(item => item.card.id));
     if (!objectiveCardIds.size) return 'Not rated yet';
     const latestByCard = new Map();
     window.db.getAttempts()
-      .filter(item => item.studentId === this.currentUser?.id
+      .filter(item => item.studentId === studentId
         && ['retrieval_rating', 'retrieval_deck_extra'].includes(item.type)
         && objectiveCardIds.has(item.questionId))
       .sort((left, right) => new Date(right.date) - new Date(left.date))
@@ -895,6 +896,75 @@ class App {
     if (average < 1.25) return 'Building confidence';
     if (average < 1.8 || ratings.length < 3) return 'Usually recalled';
     return 'Consistently recalled';
+  }
+
+  getExamTechniqueCatalogue() {
+    return [
+      { id: 'command-words', label: 'Command words', support: 'Underline the command word and match the depth of the response to describe, explain, compare, discuss or evaluate.' },
+      { id: 'show-working', label: 'Show calculation working', support: 'Write the formula or values, show each conversion and finish with the requested unit.' },
+      { id: 'apply-scenario', label: 'Apply points to the scenario', support: 'Connect each technical point to the named person, system or consequence in the question.' },
+      { id: 'extended-judgement', label: 'Build a justified conclusion', support: 'Develop relevant arguments, weigh them for the scenario and finish with a supported judgement.' },
+      { id: 'precise-terminology', label: 'Use precise computing terms', support: 'Replace vague wording with the exact component, process, data structure or security control.' },
+      { id: 'time-and-marks', label: 'Use marks and time well', support: 'Use the mark total to judge how many developed points or stages the examiner expects.' }
+    ];
+  }
+
+  getTeacherLearnerSummary(student) {
+    const attempts = window.db.getAttempts().filter(item => item.studentId === student.id);
+    const mastery = this.getDemonstratedMastery(attempts);
+    const states = this.getLearnerObjectiveStates(student).filter(item => item.state === 'covered');
+    const confidence = states.map(item => ({
+      specificationPointId: item.specificationPointId,
+      label: this.getObjectiveRecallConfidence(item.specificationPointId, student.id)
+    }));
+    const rated = confidence.filter(item => item.label !== 'Not rated yet');
+    const confident = rated.filter(item => ['Usually recalled', 'Consistently recalled'].includes(item.label)).length;
+    const needsReview = rated.filter(item => item.label === 'Needs another look').length;
+    const reports = (window.db.getAssessmentReports?.() || [])
+      .filter(item => item.studentId === student.id)
+      .sort((left, right) => new Date(right.recordedAt) - new Date(left.recordedAt));
+    const awaitingReview = attempts.filter(item => item.completionStatus === 'awaiting_review').length
+      + window.db.getWrittenSubmissions().filter(item => item.studentId === student.id && item.status === 'Awaiting Teacher Review').length
+      + window.db.getProgrammingSubmissions().filter(item => item.studentId === student.id && item.status !== 'Teacher Reviewed').length;
+    return { student, mastery, confidence, ratedCount: rated.length, confident, needsReview, reports, latestReport: reports[0] || null, awaitingReview };
+  }
+
+  getAssessmentReportLinks(report) {
+    const objectives = new Map(window.db.getUnits().flatMap(unit =>
+      unit.topics.flatMap(topic => topic.objectives.map(objective => [objective.id, { ...objective, topicId: topic.id }]))
+    ));
+    return (report?.topicRatings || []).map(item => ({
+      ...item,
+      objective: objectives.get(item.specificationPointId) || { id: item.specificationPointId, name: item.specificationPointId, topicId: null }
+    }));
+  }
+
+  recordTeacherAssessmentReport(report) {
+    if (!this.currentUser || this.currentUser.role === 'student') return false;
+    const selectedClass = this.getSelectedTeacherClass();
+    const assessment = window.db.getTestPreps().find(item =>
+      item.id === report?.assessmentId && item.classId === selectedClass?.id
+    );
+    if (!assessment || report.classId !== selectedClass.id || !this.canTeacherAccessStudent(report.studentId)) return false;
+    const allowedPoints = new Set(assessment.specificationPointIds || []);
+    const topicRatings = Array.isArray(report.topicRatings) ? report.topicRatings : [];
+    const ratedPoints = new Set(topicRatings.map(item => item.specificationPointId));
+    if (topicRatings.length !== allowedPoints.size
+      || ratedPoints.size !== allowedPoints.size
+      || topicRatings.some(item => !allowedPoints.has(item.specificationPointId)
+        || !['strong', 'developing', 'priority'].includes(item.rating))) return false;
+    const allowedTechniques = new Set(this.getExamTechniqueCatalogue().map(item => item.id));
+    if ((report.examTechniqueTags || []).some(id => !allowedTechniques.has(id))) return false;
+    if ((report.overallMark && !report.maxMark)
+      || (!report.overallMark && report.maxMark)
+      || (report.overallMark && (Number(report.overallMark) < 0 || Number(report.overallMark) > Number(report.maxMark)))) return false;
+    return window.db.addAssessmentReport({
+      ...report,
+      assessmentTitle: assessment.title,
+      teacherId: this.currentUser.id,
+      topicRatings: topicRatings.map(item => ({ ...item })),
+      examTechniqueTags: [...new Set(report.examTechniqueTags || [])]
+    });
   }
 
   getRecallCardMappings() {
@@ -3420,6 +3490,21 @@ class App {
     const minutesEach = Number(prep.sessionMinutes || 10);
     const startIdx = this.testPrepOffset + 1;
     const sessionsPerWeek = Math.max(1, Math.floor(Number(prep.weeklyMinutes || minutesEach) / minutesEach));
+    const latestReport = (window.db.getAssessmentReports?.() || [])
+      .filter(item => item.assessmentId === prep.id && item.studentId === this.currentUser.id)
+      .sort((left, right) => new Date(right.recordedAt) - new Date(left.recordedAt))[0] || null;
+    const reportTopics = this.getAssessmentReportLinks(latestReport);
+    const techniqueCatalogue = new Map(this.getExamTechniqueCatalogue().map(item => [item.id, item]));
+    const ratingLabels = { strong: 'Stronger area', developing: 'Developing', priority: 'Needs review' };
+    const reportHtml = latestReport ? `
+      <section class="card student-assessment-report" aria-labelledby="student-assessment-report-heading">
+        <span class="badge badge-primary">Teacher assessment report</span>
+        <h2 id="student-assessment-report-heading">How this assessment went</h2>
+        ${latestReport.overallMark !== '' && latestReport.maxMark ? `<p class="student-assessment-mark"><strong>${this.escapeHTML(latestReport.overallMark)}/${this.escapeHTML(latestReport.maxMark)}</strong> overall</p>` : ''}
+        ${latestReport.teacherNote ? `<p><strong>Teacher summary:</strong> ${this.escapeHTML(latestReport.teacherNote)}</p>` : ''}
+        <div class="student-report-topic-grid">${reportTopics.map(item => `<article class="student-report-topic student-report-topic--${this.escapeHTML(item.rating)}"><span>${this.escapeHTML(ratingLabels[item.rating] || item.rating)}</span><h3>${this.escapeHTML(item.specificationPointId)} ${this.escapeHTML(item.objective.name)}</h3>${item.rating === 'strong' ? '<p>Keep this fresh with flashcards and mixed practice.</p>' : '<p>Review the explanation and worked example, then try the linked exam question.</p>'}<button type="button" class="btn btn-secondary btn-sm student-report-topic-btn" data-topic-id="${this.escapeHTML(item.objective.topicId || '')}" data-specification-id="${this.escapeHTML(item.specificationPointId)}">${item.rating === 'strong' ? 'Review topic' : 'Improve this topic'}</button></article>`).join('')}</div>
+        ${(latestReport.examTechniqueTags || []).length ? `<div class="student-exam-technique-support"><h3>Exam technique to practise</h3>${latestReport.examTechniqueTags.map(id => { const technique = techniqueCatalogue.get(id); return technique ? `<article><strong>${this.escapeHTML(technique.label)}</strong><p>${this.escapeHTML(technique.support)}</p></article>` : ''; }).join('')}<button type="button" class="btn btn-primary btn-sm" id="student-report-technique-btn">Practise with an exam question</button></div>` : ''}
+      </section>` : '';
 
     panel.innerHTML = `
       <div class="student-route-header">
@@ -3476,6 +3561,7 @@ class App {
           </div>`;
         }).join('')}
       </div>
+      ${reportHtml}
       <div class="card" style="margin-top:20px; background:var(--bg-main);"><strong>Why these points?</strong><p style="font-size:13px; margin:6px 0 0;">The plan prioritises the teacher’s selected specification coverage, then uses your responses and support use to decide what returns. A target grade is never used to restrict content.</p></div>
     `;
     panel.querySelectorAll('.prep-point-start-btn').forEach(button => button.onclick = () => {
@@ -3490,6 +3576,28 @@ class App {
         this.examTransferResponse = '';
       }
       this.switchTab(button.getAttribute('data-target-tab'));
+    });
+    panel.querySelectorAll('.student-report-topic-btn').forEach(button => {
+      button.onclick = () => {
+        this.activeTopicId = button.getAttribute('data-topic-id');
+        this.activeObjectiveId = button.getAttribute('data-specification-id');
+        this.switchTab('stud-learn');
+      };
+    });
+    panel.querySelector('#student-report-technique-btn')?.addEventListener('click', () => {
+      const target = reportTopics.find(item => item.rating !== 'strong') || reportTopics[0];
+      if (!target) return this.switchTab('stud-practice');
+      const task = this.getMatchingExamTransferTask(target.objective.topicId, target.specificationPointId);
+      if (!task) {
+        this.activeTopicId = target.objective.topicId;
+        this.activeObjectiveId = target.specificationPointId;
+        return this.switchTab('stud-learn');
+      }
+      this.activeTopicId = task.topicId;
+      this.activeObjectiveId = target.specificationPointId;
+      this.activeExamTransferId = task.id;
+      this.examTransferStage = 'decode';
+      this.switchTab('stud-exam-transfer');
     });
 
     const prevBatchBtn = panel.querySelector('.prep-prev-batch-btn');
@@ -4986,6 +5094,7 @@ class App {
     // Learning Design compliance: 'inputs-processes-outputs', 'read and predict', 'find and fix a fault'
     const challenges = window.db.getProgrammingChallenges();
     const challenge = challenges.find(c => c.id === this.activeChallengeId);
+    const aiFeaturesEnabled = window.db.getSettings()?.aiFeaturesEnabled !== false;
 
     if (!challenge) {
       panel.innerHTML = `<div class="card" role="status"><h2>Challenge not found</h2><p>This programming activity is unavailable. Return to the Programming hub and choose another stage.</p><button class="btn btn-secondary" id="missing-challenge-back-btn">Back to Programming</button></div>`;
@@ -5115,7 +5224,7 @@ class App {
             
             ${supportLadderButtonsHtml}
             
-            <button class="btn btn-primary btn-sm" id="ai-programming-tutor-btn" style="width:100%; margin-top: 8px; margin-bottom:12px; min-height: 36px;" ${this.lastProgrammingEvidence.length ? '' : 'disabled'}>Ask tutor about my test result</button>
+            <button class="btn btn-primary btn-sm" id="ai-programming-tutor-btn" style="width:100%; margin-top: 8px; margin-bottom:12px; min-height: 36px;" ${this.lastProgrammingEvidence.length && aiFeaturesEnabled ? '' : 'disabled'}>${aiFeaturesEnabled ? 'Ask tutor about my test result' : 'Automated tutor disabled by school'}</button>
             
             <div id="support-ladder-feedback" class="card" role="status" aria-live="polite" style="background-color: var(--bg-main); padding: 12px; font-size:13px; line-height: 1.4; margin-top: 10px; display: ${Object.keys(this.activeSupportFeedback || {}).length ? 'block' : 'none'};">
               ${Object.keys(this.activeSupportFeedback || {}).sort((a,b) => a-b).map((s, idx, arr) => `
@@ -5451,6 +5560,10 @@ class App {
   async requestProgrammingTutor(challenge) {
     const output = document.getElementById('ai-programming-feedback');
     const button = document.getElementById('ai-programming-tutor-btn');
+    if (window.db.getSettings()?.aiFeaturesEnabled === false) {
+      this.alert('Automated tutor feedback is disabled in school settings. Use the support ladder and test results instead.');
+      return;
+    }
     if (!output || !this.lastProgrammingEvidence.length) return;
     output.style.display = 'block';
     output.innerHTML = '<strong>Tutor:</strong> Looking at the first useful test result...';
@@ -5477,7 +5590,7 @@ class App {
       };
     }
     this.aiTutorHintLevel = Math.min(4, this.aiTutorHintLevel + 1);
-    output.innerHTML = `<strong>What I noticed</strong><p>${this.escapeHTML(feedback.diagnosis)}</p><strong>One hint</strong><p>${this.escapeHTML(feedback.hint)}</p><strong>Check your understanding</strong><p>${this.escapeHTML(feedback.checkQuestion)}</p><p style="font-size:11px; color:var(--text-muted); margin-bottom:0;">The tutor has not rewritten your program. Try one change, then run the tests again.</p>`;
+    output.innerHTML = `<small>${feedback.source === 'ai' ? 'Automated formative tutor' : 'Local feedback guide'}</small><strong>What I noticed</strong><p>${this.escapeHTML(feedback.diagnosis)}</p><strong>One hint</strong><p>${this.escapeHTML(feedback.hint)}</p><strong>Check your understanding</strong><p>${this.escapeHTML(feedback.checkQuestion)}</p><p style="font-size:11px; color:var(--text-muted); margin-bottom:0;">The tutor has not rewritten your program. Try one change, then run the tests again.</p>`;
     if (button) button.disabled = false;
   }
 
@@ -5698,6 +5811,11 @@ class App {
 
   async requestAiWritingFeedback(question, responseText, button) {
     if (button) { button.disabled = true; button.textContent = 'Checking against the feedback guide…'; }
+    if (window.db.getSettings()?.aiFeaturesEnabled === false) {
+      this.runAiMarkingSimulation(question, responseText);
+      if (button) { button.disabled = false; button.textContent = '3. Check and improve again'; }
+      return;
+    }
     try {
       const token = window.db.getSessionToken();
       if (!token) throw new Error('Local fallback');
@@ -6075,6 +6193,7 @@ class App {
     const activeThisWeek = students.filter(student => Date.now() - new Date(student.lastActive).getTime() <= 7 * 24 * 3600 * 1000).length;
     const weeklyCompletion = students.length ? Math.round((activeThisWeek / students.length) * 100) : 0;
     const savedPriorityCount = students.filter(student => (student.personalRevisionPriorities || []).length > 0).length;
+    const learnerSummaries = students.map(student => this.getTeacherLearnerSummary(student));
     const monitoringStatusHtml = flags.length
       ? `<button type="button" id="teacher-flagged-messages" class="btn btn-sm" role="status" style="font-size:13px; color:#991B1B; font-weight:700; margin-left:12px; padding:4px 8px; background:#FEF2F2; border:1px solid #FCA5A5;">⚠ ${flags.length} flagged message${flags.length === 1 ? '' : 's'} in this class</button>`
       : `<span role="status" style="font-size:13px; color:#047857; font-weight:600; display:inline-flex; align-items:center; gap:4px; margin-left:12px; padding:4px 8px; background-color:rgba(16,185,129,0.06); border-radius:4px;">No flagged messages in this class</span>`;
@@ -6309,36 +6428,12 @@ class App {
 
             <!-- Class Progress Summary -->
             <div class="card card-info" style="padding: 24px;">
-              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 16px;">Class progress summary</h3>
-              <div style="display: flex; flex-direction: column; gap: 16px;">
-                <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
-                    <span style="color: var(--text-muted); font-weight: 500;">Systems Architecture</span>
-                    <strong style="color: var(--text-muted);">No verified class score</strong>
-                  </div>
-                  <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-                    <div style="width: 0; height: 100%; background-color: var(--teal);"></div>
-                  </div>
-                </div>
-                <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
-                    <span style="color: var(--text-muted); font-weight: 500;">Data Representation</span>
-                    <strong style="color: var(--text-muted);">No verified class score</strong>
-                  </div>
-                  <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-                    <div style="width: 0; height: 100%; background-color: var(--teal);"></div>
-                  </div>
-                </div>
-                <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
-                    <span style="color: var(--text-muted); font-weight: 500;">Programming Basics</span>
-                    <strong style="color: var(--text-muted);">No verified class score</strong>
-                  </div>
-                  <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-                    <div style="width: 0; height: 100%; background-color: var(--teal);"></div>
-                  </div>
-                </div>
+              <h3 style="font-size:15px; margin-bottom:6px;">Class markbook</h3>
+              <p style="font-size:12px; color:var(--text-muted);">Checked work and learner-rated confidence are shown separately.</p>
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                ${learnerSummaries.slice(0, 5).map(summary => `<button type="button" class="teacher-overview-profile-btn" data-student-id="${this.escapeHTML(summary.student.id)}" style="background:none; border:0; border-bottom:1px solid var(--border-color); padding:8px 0; text-align:left; cursor:pointer;"><strong>${this.escapeHTML(summary.student.name)}</strong><br><span style="font-size:12px; color:var(--text-muted);">${this.escapeHTML(summary.mastery.label)} · ${summary.confident} confident flashcard ${summary.confident === 1 ? 'topic' : 'topics'} · ${summary.latestReport ? this.escapeHTML(summary.latestReport.assessmentTitle || 'assessment report') : 'no assessment report'}</span></button>`).join('') || '<p>No learners in this class.</p>'}
               </div>
+              <button type="button" class="btn btn-secondary btn-sm" id="open-class-markbook" style="margin-top:14px;">Open full markbook</button>
             </div>
           </div>
         </div>
@@ -6413,6 +6508,15 @@ class App {
       }
       this.switchTab('teach-messages');
     };
+    panel.querySelectorAll('.teacher-overview-profile-btn').forEach(button => {
+      button.onclick = () => {
+        const studentId = button.getAttribute('data-student-id');
+        if (!this.canTeacherAccessStudent(studentId)) return;
+        this.selectedTeacherStudentId = studentId;
+        this.switchTab('teach-classes');
+      };
+    });
+    panel.querySelector('#open-class-markbook')?.addEventListener('click', () => this.switchTab('teach-classes'));
   }
 
   // ==================== TEACHER CLASSES ====================
@@ -6420,57 +6524,83 @@ class App {
     const selectedClass = this.getSelectedTeacherClass();
     if (!selectedClass) return this.renderTeacherClassEmptyState(panel);
     const students = this.getTeacherClassStudents();
-    const attempts = this.getTeacherClassRecords(window.db.getAttempts());
     const query = (this.rosterSearchQuery || '').toLowerCase().trim();
     const filteredStudents = students.filter(s => s.name.toLowerCase().includes(query) || s.email.toLowerCase().includes(query));
+    const summaries = filteredStudents.map(student => this.getTeacherLearnerSummary(student));
+    const selectedStudent = students.find(student => student.id === this.selectedTeacherStudentId) || null;
+    const selectedSummary = selectedStudent ? this.getTeacherLearnerSummary(selectedStudent) : null;
+    const objectiveNames = new Map(window.db.getUnits().flatMap(unit =>
+      unit.topics.flatMap(topic => topic.objectives.map(objective => [objective.id, objective.name]))
+    ));
+    const ratingLabels = { strong: 'Stronger', developing: 'Developing', priority: 'Needs review' };
+    const techniqueLabels = new Map(this.getExamTechniqueCatalogue().map(item => [item.id, item.label]));
+    const profileHtml = selectedSummary ? `
+      <section class="card teacher-learner-profile" aria-labelledby="teacher-learner-profile-heading">
+        <header>
+          <div><span class="badge badge-primary">Learner profile</span><h2 id="teacher-learner-profile-heading">${this.escapeHTML(selectedStudent.name)}</h2><p>Checked performance, learner-rated flashcard confidence and teacher reports remain separate.</p></div>
+          <button type="button" class="btn btn-secondary btn-sm" id="close-learner-profile">Close profile</button>
+        </header>
+        <div class="teacher-profile-summary-grid">
+          <div><span>Checked evidence</span><strong>${this.escapeHTML(selectedSummary.mastery.label)}</strong><small>${selectedSummary.mastery.evidenceCount} latest assessed ${selectedSummary.mastery.evidenceCount === 1 ? 'activity' : 'activities'}</small></div>
+          <div><span>Flashcard confidence</span><strong>${selectedSummary.confident} confident</strong><small>${selectedSummary.needsReview} need another look · ${selectedSummary.ratedCount} rated</small></div>
+          <div><span>Awaiting review</span><strong>${selectedSummary.awaitingReview}</strong><small>Not included in checked performance</small></div>
+        </div>
+        <div class="teacher-profile-columns">
+          <section><h3>Topics on the learner's desk</h3>
+            ${selectedSummary.confidence.length ? `<ul class="teacher-profile-topic-list">${selectedSummary.confidence.map(item => `<li><span><strong>${this.escapeHTML(item.specificationPointId)}</strong> ${this.escapeHTML(objectiveNames.get(item.specificationPointId) || '')}</span><span>${this.escapeHTML(item.label)}</span></li>`).join('')}</ul>` : '<p>No topics are currently marked as covered on this learner’s desk.</p>'}
+          </section>
+          <section><h3>Teacher assessment reports</h3>
+            ${selectedSummary.reports.length ? selectedSummary.reports.map(report => `<article class="teacher-profile-report"><strong>${this.escapeHTML(report.assessmentTitle || 'Assessment')}</strong><span>${report.overallMark !== '' && report.maxMark ? `${this.escapeHTML(report.overallMark)}/${this.escapeHTML(report.maxMark)}` : 'No overall mark entered'}</span><p>${this.getAssessmentReportLinks(report).map(item => `${this.escapeHTML(item.specificationPointId)} ${this.escapeHTML(ratingLabels[item.rating] || item.rating)}`).join(' · ') || 'No topic judgements recorded'}</p>${(report.examTechniqueTags || []).length ? `<small>Exam technique: ${report.examTechniqueTags.map(id => this.escapeHTML(techniqueLabels.get(id) || id)).join(', ')}</small>` : ''}</article>`).join('') : '<p>No assessment report has been recorded yet.</p>'}
+          </section>
+        </div>
+      </section>` : '';
 
     panel.innerHTML = `
-      <div style="margin-bottom: 24px;">
-        <h1>🏫 Classes and Roster</h1>
-        <p>Review individual pupil progress records and homework streaks.</p>
+      <div style="margin-bottom:24px;">
+        <span class="badge badge-primary">Evidence-led class view</span>
+        <h1 style="margin-top:8px;">${this.escapeHTML(selectedClass.name)} markbook</h1>
+        <p>Compare checked work, learner-rated flashcard confidence and teacher assessment reports without treating one as another.</p>
       </div>
 
       <div style="margin-bottom: 16px; max-width: 320px;">
-        <input type="text" id="roster-search-input" class="form-control" placeholder="🔍 Search pupils by name or email..." value="${this.escapeHTML(this.rosterSearchQuery || '')}" style="font-size: 14px; min-height: 38px;">
+        <label for="roster-search-input" class="sr-only">Search pupils</label>
+        <input type="search" id="roster-search-input" class="form-control" placeholder="Search pupils by name or email" value="${this.escapeHTML(this.rosterSearchQuery || '')}" style="font-size:14px; min-height:38px;">
       </div>
 
-      <div class="table-container">
+      <div class="table-container teacher-markbook">
         <table>
           <thead>
             <tr>
               <th scope="col">Name</th>
-              <th scope="col">Email</th>
-              <th scope="col">Year Group</th>
-              <th scope="col">Homework Streak</th>
-              <th scope="col">Revision Priority</th>
-              <th scope="col">Exam transfer</th>
-              <th scope="col">Status</th>
+              <th scope="col">Checked performance</th>
+              <th scope="col">Flashcard confidence</th>
+              <th scope="col">Latest assessment</th>
+              <th scope="col">Awaiting review</th>
             </tr>
           </thead>
           <tbody>
-            ${filteredStudents.length === 0 ? `
+            ${summaries.length === 0 ? `
               <tr>
-                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                <td colspan="5" style="text-align:center; color:var(--text-muted); padding:24px;">
                   No pupils found matching "${this.escapeHTML(this.rosterSearchQuery)}"
                 </td>
               </tr>
-            ` : filteredStudents.map(s => `
+            ` : summaries.map(summary => `
               <tr>
-                <td><strong>${this.escapeHTML(s.name)}</strong></td>
-                <td>${this.escapeHTML(s.email)}</td>
-                <td>${this.escapeHTML(s.yearGroup)}</td>
-                <td>🔥 ${this.escapeHTML(s.streak)} weeks</td>
-                <td>${this.escapeHTML((s.personalRevisionPriorities || []).join(', ') || 'None recorded')}</td>
-                <td>${attempts.filter(attempt => attempt.studentId === s.id && String(attempt.type).startsWith('exam_transfer')).length} attempts</td>
-                <td><span class="badge ${s.active ? 'badge-success' : 'badge-danger'}">${s.active ? 'Active' : 'Suspended'}</span></td>
+                <td><button type="button" class="btn-link teacher-student-profile-btn" data-student-id="${this.escapeHTML(summary.student.id)}"><strong>${this.escapeHTML(summary.student.name)}</strong></button><br><small>${this.escapeHTML(summary.student.yearGroup || '')}</small></td>
+                <td><strong>${this.escapeHTML(summary.mastery.label)}</strong><br><small>${summary.mastery.evidenceCount} evidence ${summary.mastery.evidenceCount === 1 ? 'item' : 'items'}</small></td>
+                <td><strong>${summary.confident} confident</strong><br><small>${summary.needsReview} need another look · self-rated</small></td>
+                <td>${summary.latestReport ? `<strong>${this.escapeHTML(summary.latestReport.assessmentTitle || 'Assessment')}</strong><br><small>${summary.latestReport.overallMark !== '' && summary.latestReport.maxMark ? `${this.escapeHTML(summary.latestReport.overallMark)}/${this.escapeHTML(summary.latestReport.maxMark)}` : 'Topic report recorded'}</small>` : '<span>No report yet</span>'}</td>
+                <td>${summary.awaitingReview}</td>
               </tr>
             `).join('')}
           </tbody>
         </table>
       </div>
+      ${profileHtml}
     `;
 
-    const searchIn = document.getElementById('roster-search-input');
+    const searchIn = panel.querySelector('#roster-search-input');
     if (searchIn) {
       searchIn.oninput = (e) => {
         this.rosterSearchQuery = e.target.value;
@@ -6482,6 +6612,18 @@ class App {
         }
       };
     }
+    panel.querySelectorAll('.teacher-student-profile-btn').forEach(button => {
+      button.onclick = () => {
+        const studentId = button.getAttribute('data-student-id');
+        if (!this.canTeacherAccessStudent(studentId)) return;
+        this.selectedTeacherStudentId = studentId;
+        this.renderTeacherClasses(panel);
+      };
+    });
+    panel.querySelector('#close-learner-profile')?.addEventListener('click', () => {
+      this.selectedTeacherStudentId = null;
+      this.renderTeacherClasses(panel);
+    });
   }
 
   // ==================== TEACHER ASSIGN ====================
@@ -6607,6 +6749,10 @@ class App {
     const units = window.db.getUnits();
     const testPreps = this.getTeacherClassPublishedRecords(window.db.getTestPreps());
     const students = this.getTeacherClassStudents();
+    const objectives = new Map(units.flatMap(unit => unit.topics.flatMap(topic =>
+      topic.objectives.map(objective => [objective.id, { ...objective, topicId: topic.id, paper: unit.paper }])
+    )));
+    const techniqueCatalogue = this.getExamTechniqueCatalogue();
 
     panel.innerHTML = `
       <div style="margin-bottom:24px;">
@@ -6668,9 +6814,28 @@ class App {
             </ul>
           </div>
           <h2 style="font-size:18px;">Active plans</h2>
-          ${testPreps.map(prep => `<div class="card" style="margin-top:12px;"><strong>${this.escapeHTML(prep.title)}</strong><div style="font-size:13px; color:var(--text-muted); margin-top:5px;">${prep.specificationPointIds.length} points · ${prep.weeklyMinutes} mins/week · ${this.formatDueDate(prep.testDate).replace('Due ', 'Test ')}</div></div>`).join('') || '<p>No active plans.</p>'}
+          ${testPreps.map(prep => `<div class="card" style="margin-top:12px;"><strong>${this.escapeHTML(prep.title)}</strong><div style="font-size:13px; color:var(--text-muted); margin-top:5px;">${prep.specificationPointIds.length} points · ${prep.weeklyMinutes} mins/week · ${this.formatDueDate(prep.testDate).replace('Due ', 'Test ')}</div><ul style="font-size:12px; padding-left:18px; margin:10px 0 0;">${prep.specificationPointIds.map(id => `<li><strong>${this.escapeHTML(id)}</strong> ${this.escapeHTML(objectives.get(id)?.name || 'Mapped curriculum section')} · ${this.getMatchingExamTransferTask(objectives.get(id)?.topicId, id) ? 'theory and exam question linked' : 'focused theory linked'}</li>`).join('')}</ul></div>`).join('') || '<p>No active plans.</p>'}
         </div>
       </div>
+      ${testPreps.length ? `
+        <section class="card teacher-assessment-report-entry" aria-labelledby="assessment-report-heading">
+          <span class="badge badge-primary">After the assessment</span>
+          <h2 id="assessment-report-heading">Record strengths and next steps</h2>
+          <p>Teacher judgements create a report and support links. They do not overwrite checked StudySpice evidence or learner confidence.</p>
+          <form id="assessment-report-form">
+            <div class="teacher-report-form-grid">
+              <div class="form-group"><label for="report-assessment-in">Assessment</label><select id="report-assessment-in" class="form-control">${testPreps.map(prep => `<option value="${this.escapeHTML(prep.id)}">${this.escapeHTML(prep.title)}</option>`).join('')}</select></div>
+              <div class="form-group"><label for="report-student-in">Learner</label><select id="report-student-in" class="form-control">${students.map(student => `<option value="${this.escapeHTML(student.id)}">${this.escapeHTML(student.name)}</option>`).join('')}</select></div>
+              <div class="form-group"><label for="report-mark-in">Overall mark (optional)</label><input type="number" min="0" id="report-mark-in" class="form-control"></div>
+              <div class="form-group"><label for="report-max-mark-in">Out of (optional)</label><input type="number" min="1" id="report-max-mark-in" class="form-control"></div>
+            </div>
+            <h3>Topic judgements</h3>
+            ${testPreps.map((prep, prepIndex) => `<fieldset class="assessment-topic-set" data-prep-id="${this.escapeHTML(prep.id)}" ${prepIndex ? 'hidden' : ''}><legend class="sr-only">${this.escapeHTML(prep.title)} topics</legend>${prep.specificationPointIds.map(id => `<label class="teacher-topic-rating"><span><strong>${this.escapeHTML(id)}</strong> ${this.escapeHTML(objectives.get(id)?.name || id)}</span><select class="form-control assessment-topic-rating" data-prep-id="${this.escapeHTML(prep.id)}" data-specification-id="${this.escapeHTML(id)}"><option value="strong">Stronger area</option><option value="developing" selected>Developing</option><option value="priority">Needs review</option></select></label>`).join('')}</fieldset>`).join('')}
+            <fieldset class="teacher-technique-tags"><legend>Exam technique to improve</legend>${techniqueCatalogue.map(item => `<label><input type="checkbox" class="assessment-technique-tag" value="${this.escapeHTML(item.id)}"> ${this.escapeHTML(item.label)}</label>`).join('')}</fieldset>
+            <div class="form-group"><label for="report-note-in">Teacher note (optional)</label><textarea id="report-note-in" class="form-control" rows="3" placeholder="One clear summary or next step"></textarea></div>
+            <button type="submit" class="btn btn-primary">Publish learner report</button>
+          </form>
+        </section>` : ''}
     `;
 
     const checkboxes = panel.querySelectorAll('.prep-point-checkbox');
@@ -6682,6 +6847,14 @@ class App {
     };
     checkboxes.forEach(box => box.onchange = updateSummary);
     document.getElementById('prep-weekly-in').onchange = updateSummary;
+
+    const reportAssessment = panel.querySelector('#report-assessment-in');
+    const updateReportTopics = () => {
+      panel.querySelectorAll('.assessment-topic-set').forEach(fieldset => {
+        fieldset.hidden = fieldset.getAttribute('data-prep-id') !== reportAssessment?.value;
+      });
+    };
+    if (reportAssessment) reportAssessment.onchange = updateReportTopics;
 
     document.getElementById('test-prep-form').onsubmit = (event) => {
       event.preventDefault();
@@ -6713,6 +6886,43 @@ class App {
       });
       this.alert('Test preparation published. It will replace normal revision recommendations within the selected time budget.');
       this.render();
+    };
+
+    const reportForm = panel.querySelector('#assessment-report-form');
+    if (reportForm) reportForm.onsubmit = event => {
+      event.preventDefault();
+      const assessmentId = reportAssessment.value;
+      const assessment = testPreps.find(item => item.id === assessmentId);
+      const studentId = panel.querySelector('#report-student-in').value;
+      if (!assessment || !this.canTeacherAccessStudent(studentId)) {
+        this.alert('Choose an assessment and a learner in the selected class.');
+        return;
+      }
+      const overallMark = panel.querySelector('#report-mark-in').value.trim();
+      const maxMark = panel.querySelector('#report-max-mark-in').value.trim();
+      if ((overallMark && !maxMark) || (!overallMark && maxMark) || (overallMark && Number(overallMark) > Number(maxMark))) {
+        this.alert('Enter both mark values and make sure the mark is not greater than the total.');
+        return;
+      }
+      const topicRatings = Array.from(panel.querySelectorAll(`.assessment-topic-rating[data-prep-id="${assessmentId}"]`))
+        .map(input => ({ specificationPointId: input.getAttribute('data-specification-id'), rating: input.value }));
+      const examTechniqueTags = Array.from(panel.querySelectorAll('.assessment-technique-tag:checked')).map(input => input.value);
+      const savedReport = this.recordTeacherAssessmentReport({
+        assessmentId,
+        classId: selectedClass.id,
+        studentId,
+        overallMark,
+        maxMark,
+        topicRatings,
+        examTechniqueTags,
+        teacherNote: panel.querySelector('#report-note-in').value.trim()
+      });
+      if (!savedReport) {
+        this.alert('The report did not match the selected class and assessment, so nothing was saved.');
+        return;
+      }
+      this.alert('Assessment report published. The learner can now open linked review and exam-technique support.');
+      this.renderTeacherTestPrep(panel);
     };
   }
 
@@ -7288,7 +7498,8 @@ class App {
       <div class="card" style="max-width: 600px;">
         <form id="settings-form">
           <div class="form-group">
-            <label><input type="checkbox" id="ai-toggle-box" ${settings.aiFeaturesEnabled ? 'checked' : ''}> Enable automated AI formative feedback on essays</label>
+            <label><input type="checkbox" id="ai-toggle-box" ${settings.aiFeaturesEnabled ? 'checked' : ''}> Enable optional automated formative feedback for writing and programming</label>
+            <p style="font-size:12px; color:var(--text-muted);">When disabled, writing uses the local feedback guide and programming retains deterministic tests and the support ladder.</p>
           </div>
 
           <div class="form-group" style="margin-top:20px;">
