@@ -5536,16 +5536,65 @@ class App {
       str = filtered.join('\n').trim();
     }
 
-    // Format SyntaxError / IndentationError
-    const syntaxMatch = str.match(/(SyntaxError|IndentationError):\s*(.*?)(?:\(detected at line (\d+)\)|\(line (\d+)\)|$)/i);
-    if (syntaxMatch) {
-      const type = syntaxMatch[1];
-      const msg = syntaxMatch[2].trim();
-      const line = syntaxMatch[3] || syntaxMatch[4];
-      return line ? `${type} on line ${line}: ${msg}` : `${type}: ${msg}`;
+    // Extract line number if present
+    const lineMatch = str.match(/(?:line|Line)\s+(\d+)/);
+    const lineNum = lineMatch ? lineMatch[1] : null;
+    const linePrefix = lineNum ? `Line ${lineNum}: ` : '';
+
+    // 1. Unterminated string literal
+    if (/unterminated string literal|EOL while scanning string literal/i.test(str)) {
+      return `${linePrefix}Unclosed text string. You started a quote " or ' on this line, but forgot to close it before the end of the line.`;
     }
 
-    // Clean up standard exception tracebacks
+    // 2. Missing / expected colon
+    if (/expected ':'/i.test(str)) {
+      return `${linePrefix}Missing colon (:). Statements like if, else, elif, for, or while need a colon : at the end of the line.`;
+    }
+
+    // 3. Unmatched / unclosed parentheses
+    if (/'\)' was never closed|\(' was never closed/i.test(str)) {
+      return `${linePrefix}Unclosed bracket. You opened a bracket ( on this line, but forgot to close it with ).`;
+    }
+    if (/unmatched '\)'|unmatched '\]'|unmatched '\}'/i.test(str)) {
+      return `${linePrefix}Extra bracket. Check your brackets ( ) — there is an unmatched closing bracket.`;
+    }
+
+    // 4. Generic SyntaxError
+    if (/SyntaxError/i.test(str)) {
+      const cleanMsg = str.replace(/^SyntaxError:\s*/i, '').replace(/\(detected at line \d+\)/i, '').replace(/on line \d+:\s*/i, '').trim();
+      return `${linePrefix}Syntax check — Python couldn't understand this line (${cleanMsg}). Check for missing quotes, brackets, or colons.`;
+    }
+
+    // 5. IndentationError
+    if (/IndentationError|unexpected indent|expected an indented block/i.test(str)) {
+      if (/expected an indented block/i.test(str)) {
+        return `${linePrefix}Missing indentation. The code inside an if, else, for, or while block needs 4 spaces at the start of the line.`;
+      }
+      return `${linePrefix}Indentation check. Check the spacing at the start of this line so it aligns correctly with the block above.`;
+    }
+
+    // 6. NameError (undefined variable/function)
+    const nameMatch = str.match(/NameError:\s*name '([^']+)' is not defined/i);
+    if (nameMatch) {
+      return `${linePrefix}Unknown name '${nameMatch[1]}'. Check for typos in '${nameMatch[1]}', or make sure you defined it before using it.`;
+    }
+
+    // 7. TypeError (concatenating string + int)
+    if (/can only concatenate str \(not "int"\) to str|unsupported operand type/i.test(str)) {
+      return `${linePrefix}Type error. You tried to combine text with a number. Use str(...) to convert numbers to text, or use commas in print().`;
+    }
+
+    // 8. ZeroDivisionError
+    if (/ZeroDivisionError|division by zero/i.test(str)) {
+      return `${linePrefix}Division by zero. You cannot divide a number by 0.`;
+    }
+
+    // 9. EOFError
+    if (/EOFError|requested more input/i.test(str)) {
+      return `Input needed. Your code called input() more times than supplied by this test case.`;
+    }
+
+    // Clean fallback for any other error
     str = str.replace(/^Traceback \(most recent call last\):\s*/i, '');
     str = str.replace(/File "student_code\.py", line (\d+)(?:, in <module>)?/gi, 'Line $1');
 
