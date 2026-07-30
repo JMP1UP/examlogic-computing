@@ -129,7 +129,6 @@ class App {
     
     if (diffDays === 0) return 'Due today';
     if (diffDays === 1) return 'Due tomorrow';
-    if (diffDays === -1) return 'Overdue yesterday';
     if (diffDays < 0) return 'Overdue';
     
     if (diffDays < 7) {
@@ -137,7 +136,7 @@ class App {
       return `Due ${weekdays[d.getDay()]}`;
     }
     
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return `Due ${d.getDate()} ${months[d.getMonth()]}`;
   }
 
@@ -2478,47 +2477,51 @@ class App {
           type: 'Teacher Test Prep',
           icon: '📝',
           tagClass: 'badge-primary',
-          details: `${prep.specificationPointIds?.length || 0} specification points`
+          details: `Teacher Test Prep · ${prep.specificationPointIds?.length || 0} points`
         });
       }
     });
     activeAssignments.forEach(assign => {
       if (assign.dueDate) {
+        const rawDate = this.formatDueDate(assign.dueDate);
+        const isOverdue = assign.status === 'Overdue' || rawDate.includes('Overdue');
+        const dateLabel = isOverdue ? 'Overdue' : rawDate.replace('Due ', '');
         upcomingEvents.push({
           title: assign.title,
-          dateLabel: this.formatDueDate(assign.dueDate).replace('Due ', ''),
+          dateLabel,
           type: 'Assignment',
           icon: '📋',
-          tagClass: assign.status === 'Overdue' ? 'badge-warning' : 'badge-secondary',
-          details: `${assign.estimatedMinutes || 10} mins · ${assign.status}`
+          tagClass: isOverdue ? 'badge-warning' : 'badge-secondary',
+          details: `Teacher Assignment · ${assign.estimatedMinutes || 10} mins`
         });
       }
     });
     upcomingSessions.forEach(session => {
+      const title = (session.title || 'Teacher Support Session')
+        .split(' ')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
       upcomingEvents.push({
-        title: session.title || 'Teacher Support Session',
-        dateLabel: session.sessionDate || 'Scheduled',
+        title,
+        dateLabel: session.sessionDate ? new Date(`${session.sessionDate}T12:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'Scheduled',
         type: 'Support Session',
         icon: '💬',
         tagClass: 'badge-success',
-        details: session.time || 'Live support'
+        details: 'Live Teacher Support'
       });
     });
     if (upcomingEvents.length === 0) {
       upcomingEvents.push(
-        { title: 'OCR GCSE Paper 1: Computer Systems', dateLabel: 'May 2027', type: 'Final Exam', icon: '🎓', tagClass: 'badge-primary', details: '1h 30m · 80 marks' },
-        { title: 'OCR GCSE Paper 2: Computational Thinking', dateLabel: 'June 2027', type: 'Final Exam', icon: '💻', tagClass: 'badge-primary', details: '1h 30m · 80 marks' }
+        { title: 'OCR GCSE Paper 1: Computer Systems', dateLabel: 'May 2027', type: 'Final Exam', icon: '🎓', tagClass: 'badge-primary', details: 'OCR GCSE Exam · 1h 30m' },
+        { title: 'OCR GCSE Paper 2: Computational Thinking', dateLabel: 'June 2027', type: 'Final Exam', icon: '💻', tagClass: 'badge-primary', details: 'OCR GCSE Exam · 1h 30m' }
       );
     }
 
     const upcomingDatesHtml = `
       <section class="card student-upcoming-dates" aria-labelledby="upcoming-dates-heading" style="padding: 22px; border-top: 5px solid var(--teal); background: var(--bg-card); border-radius: 12px; margin-bottom: 20px;">
-        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <div>
-            <span class="student-kicker" style="font-weight: 700; color: var(--teal); text-transform: uppercase; font-size: 11px;">Key Milestones</span>
-            <h2 id="upcoming-dates-heading" style="margin: 2px 0 0 0; font-size: 18px; font-weight: 700;">📅 Upcoming dates</h2>
-          </div>
-          <span class="badge badge-secondary" style="font-size: 11px; font-weight: 600;">Teacher & Exam Schedule</span>
+        <header style="margin-bottom: 16px;">
+          <span class="student-kicker" style="font-weight: 700; color: var(--teal); text-transform: uppercase; font-size: 11px;">Key Milestones</span>
+          <h2 id="upcoming-dates-heading" style="margin: 2px 0 0 0; font-size: 18px; font-weight: 700;">📅 Upcoming dates</h2>
         </header>
         <div style="display: flex; flex-direction: column; gap: 10px;">
           ${upcomingEvents.map(evt => `
