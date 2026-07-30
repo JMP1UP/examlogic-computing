@@ -4219,8 +4219,8 @@ class App {
           }
 
           return `
-            <fieldset class="card" style="margin-bottom: 24px;">
-              <legend style="font-size:15px; color: var(--text-main); font-weight:600; margin-bottom:16px;">Question ${idx + 1}: ${q.question}</legend>
+            <fieldset class="card" style="margin-bottom: 24px; max-width: 680px; padding: 24px; box-sizing: border-box;">
+              <legend style="font-size: 16px; color: var(--navy); font-weight: 600; margin-bottom: 16px; float: none; width: 100%; display: block; padding: 0; line-height: 1.5;">Question ${idx + 1}: ${q.question}</legend>
               <div>${fieldsHTML}</div>
             </fieldset>
           `;
@@ -4741,29 +4741,28 @@ class App {
         <div style="height:100%; width:${progress}%; background:var(--teal); transition: width 0.3s ease;"></div>
       </div>
 
-      <div class="card" id="exam-transfer-question" tabindex="-1" style="margin-bottom:18px; border-left: 5px solid var(--teal); scroll-margin-top:12px;">
-        <p style="font-size:16px; font-weight:600; margin:14px 0 0; line-height:1.5; color: var(--text-main);">${this.escapeHTML(task.question)}</p>
-        <details style="margin-top:14px;">
-          <summary style="cursor:pointer; font-weight:700;">Choose a different question</summary>
+      <div class="card" id="exam-transfer-question" tabindex="-1" style="margin-bottom: 16px; padding: 20px; border-left: 5px solid var(--teal); scroll-margin-top: 12px; background-color: var(--bg-card);">
+        <strong style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--teal);">Question Prompt (${task.marks} Marks)</strong>
+        <p style="font-size: 16.5px; font-weight: 600; margin: 8px 0 0; line-height: 1.5; color: var(--navy);">${this.escapeHTML(task.question)}</p>
+        <details style="margin-top: 12px;">
+          <summary style="cursor: pointer; font-weight: 600; font-size: 13px; color: var(--slate);">Choose a different question</summary>
           <label for="exam-transfer-task-select" class="sr-only">Exam question</label>
-          <select id="exam-transfer-task-select" class="form-control" style="margin-top:7px;">
+          <select id="exam-transfer-task-select" class="form-control" style="margin-top: 8px;">
             ${tasks.map(item => `<option value="${item.id}" ${item.id === task.id ? 'selected' : ''}>${item.paper} &middot; ${item.specificationPointId} &middot; ${item.commandWord} (${item.marks} Marks)</option>`).join('')}
           </select>
         </details>
       </div>
 
       ${this.examTransferStage === 'decode' ? `
-        <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 24px;">
+        <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 20px;">
           <span class="badge badge-primary">Stage 1 of 4: Understand</span>
-          <h2 style="font-size:18px; margin-top:10px;">Work out what the question asks</h2>
-          <div style="background: rgba(45, 156, 145, 0.08); padding: 14px; border-radius: 8px; border: 1px solid var(--teal); margin: 12px 0;">
-            <strong style="color: var(--teal);">Command word: ${task.commandWord}</strong>
-            <p style="font-size: 12.5px; margin: 4px 0 0;">The command word is the instruction word, such as describe, explain or evaluate.</p>
-            <p style="font-size: 13.5px; margin: 4px 0 0 0; line-height: 1.5;">${this.escapeHTML(task.decodePrompt)}</p>
-          </div>
-          <label for="transfer-decode-response" style="font-weight: 600; font-size: 14px;">In your own words, what does the question require?</label>
-          <textarea id="transfer-decode-response" class="form-control" rows="3" placeholder="For example: explain two reasons and link each one to the scenario."></textarea>
-          <button id="transfer-to-plan" class="btn btn-primary" style="margin-top:14px; min-height: 40px;">Next: Plan your answer &rarr;</button>
+          <h2 style="font-size: 17px; margin-top: 10px; margin-bottom: 10px;">Work out what the question asks</h2>
+          <p style="font-size: 14px; line-height: 1.5; margin-bottom: 12px; color: var(--navy);">
+            <strong>Command word: ${task.commandWord}</strong> — ${this.escapeHTML(task.decodePrompt)}
+          </p>
+          <label for="transfer-decode-response" style="font-weight: 600; font-size: 14px; margin-top: 6px; display: block;">In your own words, what does the question require?</label>
+          <textarea id="transfer-decode-response" class="form-control" rows="3" placeholder="For example: explain two reasons and link each one to the scenario." style="margin-top: 6px;"></textarea>
+          <button id="transfer-to-plan" class="btn btn-primary" style="margin-top: 14px; min-height: 40px;">Next: Plan your answer &rarr;</button>
         </div>
       ` : ''}
 
