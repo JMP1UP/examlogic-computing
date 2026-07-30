@@ -2220,9 +2220,9 @@ class App {
     const btnBg = isOverdueHomework ? '#D97706' : isHomework ? '#07111F' : 'var(--teal)';
     
     const bannerBgColor = hasActiveTestPrep
-      ? '#EEF7F6'
+      ? '#E6F4F1'
       : isHomework
-        ? (isOverdueHomework ? '#FEF3C7' : '#F0F4F8')
+        ? (isOverdueHomework ? '#FEF3C7' : '#EAEFF5')
         : '#FFFFFF';
 
     dominantTaskHtml = `
