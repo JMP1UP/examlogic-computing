@@ -2763,10 +2763,10 @@ class App {
                   <tr style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; height: 28px;">
                     <th scope="col" style="padding: 0 10px; text-align: left;">Code</th>
                     <th scope="col" style="padding: 0 10px; text-align: left;">Topic Strand</th>
-                    <th scope="col" style="padding: 0 10px; text-align: center;">Desk</th>
-                    <th scope="col" style="padding: 0 10px; text-align: center;">Confidence</th>
-                    <th scope="col" style="padding: 0 10px; text-align: center;">Mastery</th>
-                    <th scope="col" style="padding: 0 10px; text-align: center;">Checked</th>
+                    <th scope="col" style="padding: 0 10px; text-align: center;">My Desk</th>
+                    <th scope="col" style="padding: 0 10px; text-align: center;">Memory</th>
+                    <th scope="col" style="padding: 0 10px; text-align: center;">Exam Check</th>
+                    <th scope="col" style="padding: 0 10px; text-align: center;">Last Done</th>
                     <th scope="col" style="padding: 0 10px; text-align: right;">Actions</th>
                   </tr>
                 </thead>
@@ -2780,23 +2780,23 @@ class App {
                     const confidence = this.getObjectiveRecallConfidence(objective.id);
                     const task = this.getMatchingExamTransferTask(topic.id, objective.id);
                     
-                    let confidenceBadge = `<span class="badge badge-secondary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; display: inline-block; width: 125px; text-align: center;" title="Click to practice recall">⚪ Not rated</span>`;
+                    let confidenceBadge = `<span class="badge badge-secondary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; display: inline-block; width: 125px; text-align: center;" title="Click to practice memory cards">⚪ Untested</span>`;
                     if (confidence === 'Consistently recalled') {
-                      confidenceBadge = `<span class="badge badge-success objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; display: inline-block; width: 125px; text-align: center;" title="High confidence score - Click to review">🟢 High Confidence</span>`;
+                      confidenceBadge = `<span class="badge badge-success objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; display: inline-block; width: 125px; text-align: center;" title="High memory score - Click to review">🟢 Strong Recall</span>`;
                     } else if (confidence === 'Needs review' || (inDeck && state === 'covered')) {
-                      confidenceBadge = `<span class="badge badge-warning objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; display: inline-block; width: 125px; text-align: center; border: 1px solid var(--coral);" title="Review due! Click to practice">🔔 Review Due</span>`;
+                      confidenceBadge = `<span class="badge badge-warning objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; display: inline-block; width: 125px; text-align: center; border: 1px solid var(--coral);" title="Memory practice due! Click to start">🔔 Practice Due</span>`;
                     }
 
-                    let masteryBadge = '<span class="badge badge-secondary" style="font-size: 11px; display: inline-block; width: 95px; text-align: center;">⭕ New</span>';
+                    let masteryBadge = '<span class="badge badge-secondary" style="font-size: 11px; display: inline-block; width: 95px; text-align: center;">⭕ Not Started</span>';
                     if (milestone?.state === 'checkpoint_secured') {
                       masteryBadge = `<span class="badge badge-success ${task ? 'objective-exam-btn' : ''}" ${task ? `data-task-id="${this.escapeHTML(task.id)}"` : ''} style="font-size: 11px; display: inline-block; width: 95px; text-align: center; ${task ? 'cursor: pointer;' : ''}" title="Goal met - Click to review exam task">🎯 Goal Met</span>`;
                     } else if (milestone?.state === 'practice_completed') {
-                      masteryBadge = `<span class="badge badge-warning ${task ? 'objective-exam-btn' : ''}" ${task ? `data-task-id="${this.escapeHTML(task.id)}"` : ''} style="font-size: 11px; display: inline-block; width: 95px; text-align: center; ${task ? 'cursor: pointer;' : ''}" title="Practising - Click to try exam task">⏳ Practising</span>`;
+                      masteryBadge = `<span class="badge badge-warning ${task ? 'objective-exam-btn' : ''}" ${task ? `data-task-id="${this.escapeHTML(task.id)}"` : ''} style="font-size: 11px; display: inline-block; width: 95px; text-align: center; ${task ? 'cursor: pointer;' : ''}" title="In practice - Click to try exam task">⏳ In Practice</span>`;
                     }
 
                     const lastDate = milestone?.latestDate ? new Date(milestone.latestDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Not yet';
                     const available = contentIds.has(objective.id);
-                    const reviewLabel = state === 'learning' ? 'Continue' : 'Review';
+                    const reviewLabel = state === 'learning' ? 'Continue' : 'Study note';
 
                     return `
                       <tr style="height: 48px; background: ${inDeck ? 'rgba(45, 156, 145, 0.04)' : 'var(--bg-card)'}; border: 1px solid var(--border-color); border-left: 4px solid ${inDeck ? 'var(--teal)' : 'var(--border-color)'};">
@@ -2804,7 +2804,7 @@ class App {
                         <td style="padding: 8px 10px; font-size: 14px; font-weight: 600; color: var(--text-main); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${this.escapeHTML(objective.name)}</td>
                         <td style="padding: 8px 10px; text-align: center;">
                           <span class="badge ${inDeck ? 'badge-primary' : 'badge-secondary'} objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; display: inline-block; width: 95px; text-align: center;" title="Click to toggle desk inclusion">
-                            ${inDeck ? '🎴 In Deck' : '➕ Add to desk'}
+                            ${inDeck ? '🎴 In My Desk' : '➕ Add to Desk'}
                           </span>
                         </td>
                         <td style="padding: 8px 10px; text-align: center;">${confidenceBadge}</td>
@@ -2812,9 +2812,9 @@ class App {
                         <td style="padding: 8px 10px; text-align: center; font-size: 12px; color: var(--text-muted); font-weight: 500;">${lastDate}</td>
                         <td style="padding: 8px 10px; text-align: right; white-space: nowrap;">
                           ${inDeck
-                            ? `<button type="button" class="btn btn-primary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px; width: 105px;">Review cards</button>`
-                            : `<button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px; width: 105px;">+ Add to desk</button>`}
-                          <button type="button" class="btn btn-secondary objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px; width: 85px; margin-left: 4px;" ${available ? '' : 'disabled'}>${available ? reviewLabel : 'N/A'}</button>
+                            ? `<button type="button" class="btn btn-primary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px; width: 110px;">Practice cards</button>`
+                            : `<button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px; width: 110px;">+ Add cards</button>`}
+                          <button type="button" class="btn btn-secondary objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px; width: 90px; margin-left: 4px;" ${available ? '' : 'disabled'}>${available ? reviewLabel : 'N/A'}</button>
                         </td>
                       </tr>
                     `;
