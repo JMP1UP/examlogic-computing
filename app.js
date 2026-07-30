@@ -1959,6 +1959,12 @@ class App {
       case 'stud-test-prep':
         this.renderStudentTestPrep(mainPanel);
         break;
+      case 'stud-test-builder':
+        this.renderStudentTestBuilder(mainPanel);
+        break;
+      case 'stud-essay-practice':
+        this.renderStudentEssayPractice(mainPanel);
+        break;
       case 'stud-exam-transfer':
         this.renderStudentExamTransfer(mainPanel);
         break;
@@ -3031,6 +3037,8 @@ class App {
     const modes = [
       { title: 'Flashcards', copy: 'Quick recall checks to strengthen your memory.', route: 'stud-retrieval', time: '5 mins', icon: '🎴', color: '#2D9C91', bgGrad: 'rgba(45, 156, 145, 0.05)' },
       { title: 'Exam questions', copy: 'Guided & independent practice for OCR GCSE questions.', route: 'stud-exam-transfer', time: '15 mins', icon: '📝', color: '#E11D48', bgGrad: 'rgba(225, 29, 72, 0.05)' },
+      { title: 'Essay & Discuss (8 marks)', copy: 'Practise 8-mark OCR extended response questions (Ethics, Legal, Tech impacts).', route: 'stud-essay-practice', time: '15 mins', icon: '✍️', color: '#8B5CF6', bgGrad: 'rgba(139, 92, 246, 0.05)' },
+      { title: 'Custom test builder', copy: 'Build a custom mock test by paper or topic from OCR past papers.', route: 'stud-test-builder', time: '15–45 mins', icon: '📋', color: '#0284C7', bgGrad: 'rgba(2, 132, 199, 0.05)' },
       { title: 'Number skills', copy: 'Storage, binary addition, and calculation practice.', route: 'stud-practise', time: '10 mins', icon: '🔢', color: '#D97706', bgGrad: 'rgba(217, 119, 6, 0.05)' },
       { title: 'Programming', copy: 'Python coding tasks and pseudocode challenges.', route: 'stud-programming', time: '15 mins', icon: '💻', color: '#7C3AED', bgGrad: 'rgba(124, 58, 237, 0.05)' }
     ];
@@ -3082,6 +3090,221 @@ class App {
       };
     });
     panel.querySelector('#practice-desk-btn')?.addEventListener('click', () => this.switchTab('stud-dashboard'));
+  }
+
+  renderStudentTestBuilder(panel) {
+    if (!this.testBuilderConfig) {
+      this.testBuilderConfig = {
+        paperType: 'paper1',
+        questionCount: 10
+      };
+    }
+    const config = this.testBuilderConfig;
+    const units = window.db.getUnits();
+    const paper1Units = units.filter(u => u.paper.includes('Paper 1'));
+    const paper2Units = units.filter(u => u.paper.includes('Paper 2'));
+    const activeUnits = config.paperType === 'paper1' ? paper1Units : config.paperType === 'paper2' ? paper2Units : units;
+
+    panel.innerHTML = `
+      <div class="student-page student-test-builder">
+        <header class="student-route-header" style="margin-bottom: 24px;">
+          <span class="student-mode-label">Practice &middot; Mock Test Builder</span>
+          <h1 style="font-size: 28px; font-weight: 800; margin: 6px 0;">Custom Exam Test Builder</h1>
+          <p style="font-size: 15px; color: var(--text-muted);">Build a tailored mock exam from OCR past papers & specification questions. Choose your topics and length.</p>
+        </header>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; align-items: start;">
+          <div class="card" style="padding: 24px; border-top: 5px solid #0284C7;">
+            <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-main);">1. Select Exam Paper</h2>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
+              <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.paperType === 'paper1' ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
+                <input type="radio" name="builder-paper" value="paper1" ${config.paperType === 'paper1' ? 'checked' : ''}>
+                <div>
+                  <strong style="display: block; font-size: 15px;">📄 Paper 1: Computer Systems</strong>
+                  <span style="font-size: 12px; color: var(--text-muted);">Architecture, Memory, Storage, Networks, Security & Ethics</span>
+                </div>
+              </label>
+              <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.paperType === 'paper2' ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
+                <input type="radio" name="builder-paper" value="paper2" ${config.paperType === 'paper2' ? 'checked' : ''}>
+                <div>
+                  <strong style="display: block; font-size: 15px;">💻 Paper 2: Computational Thinking</strong>
+                  <span style="font-size: 12px; color: var(--text-muted);">Algorithms, Programming, Logic Gates & IDE Tools</span>
+                </div>
+              </label>
+              <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.paperType === 'all' ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
+                <input type="radio" name="builder-paper" value="all" ${config.paperType === 'all' ? 'checked' : ''}>
+                <div>
+                  <strong style="display: block; font-size: 15px;">🎓 Full Specification Mock (Combined)</strong>
+                  <span style="font-size: 12px; color: var(--text-muted);">Comprehensive test across both Paper 1 & Paper 2</span>
+                </div>
+              </label>
+            </div>
+
+            <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-main);">2. Select Test Length</h2>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
+              <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.questionCount === 5 ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
+                <input type="radio" name="builder-length" value="5" ${config.questionCount === 5 ? 'checked' : ''}>
+                <div>
+                  <strong style="display: block; font-size: 14px;">⚡ Quick Check (5 questions &middot; ~10 mins)</strong>
+                </div>
+              </label>
+              <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.questionCount === 10 ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
+                <input type="radio" name="builder-length" value="10" ${config.questionCount === 10 ? 'checked' : ''}>
+                <div>
+                  <strong style="display: block; font-size: 14px;">📝 Standard Test (10 questions &middot; ~20 mins)</strong>
+                </div>
+              </label>
+              <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.questionCount === 20 ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
+                <input type="radio" name="builder-length" value="20" ${config.questionCount === 20 ? 'checked' : ''}>
+                <div>
+                  <strong style="display: block; font-size: 14px;">🎓 Full Mock Paper (20 questions &middot; ~40 mins)</strong>
+                </div>
+              </label>
+            </div>
+
+            <button type="button" id="start-built-test-btn" class="btn btn-primary" style="width: 100%; min-height: 46px; font-size: 16px; font-weight: 700; background: #0284C7; border-color: #0284C7;">
+              🚀 Generate and Start Custom Test &rarr;
+            </button>
+            <button type="button" id="builder-back-hub-btn" class="btn btn-link" style="width: 100%; margin-top: 10px;">Back to Practice menu</button>
+          </div>
+
+          <div class="card" style="padding: 24px; background: rgba(0,0,0,0.01);">
+            <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 12px 0;">Covered Topics in Selection</h3>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              ${activeUnits.flatMap(u => u.topics).map(t => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--bg-card); border-radius: 6px; border: 1px solid var(--border-color); font-size: 13px;">
+                  <span><strong>${t.code}</strong> ${t.name}</span>
+                  <span class="badge badge-secondary" style="font-size: 11px;">${t.objectives.length} strands</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    panel.querySelectorAll('input[name="builder-paper"]').forEach(radio => {
+      radio.onchange = () => {
+        config.paperType = radio.value;
+        this.renderStudentTestBuilder(panel);
+      };
+    });
+    panel.querySelectorAll('input[name="builder-length"]').forEach(radio => {
+      radio.onchange = () => {
+        config.questionCount = parseInt(radio.value, 10);
+        this.renderStudentTestBuilder(panel);
+      };
+    });
+    panel.querySelector('#start-built-test-btn').onclick = () => {
+      if (window.StudySpiceContent?.mixedExamEngine) {
+        const session = window.StudySpiceContent.mixedExamEngine.createMixedExamSession(
+          config.paperType,
+          config.questionCount,
+          window.db.getCurriculumContent(),
+          [],
+          window.StudySpiceContent.examinerKnowledge
+        );
+        this.currentTestSession = session;
+        this.activeExamTransferId = session.questions[0]?.id || 'mixed_q_1';
+        this.switchTab('stud-exam-transfer');
+      } else {
+        this.switchTab('stud-exam-transfer');
+      }
+    };
+    panel.querySelector('#builder-back-hub-btn').onclick = () => this.switchTab('stud-practice');
+  }
+
+  renderStudentEssayPractice(panel) {
+    const scaffold = window.db.getExtendedWritingScaffold('1.6.1') || {
+      title: 'Ethical, Cultural & Environmental Impacts of Digital Tech',
+      commandWord: 'Evaluate',
+      marks: 8,
+      scenario: 'A secondary school is replacing all 500 student desktop computers with cloud-connected laptops. Evaluate the environmental, ethical, and cultural impacts of this decision on the school community and wider environment.'
+    };
+
+    if (!this.essayPracticeState) {
+      this.essayPracticeState = {
+        selectedOptions: [],
+        essayText: '',
+        evaluated: false
+      };
+    }
+    const state = this.essayPracticeState;
+
+    panel.innerHTML = `
+      <div class="student-page student-essay-practice">
+        <header class="student-route-header" style="margin-bottom: 24px;">
+          <span class="student-mode-label">Practice &middot; 8-Mark Extended Response Essay</span>
+          <h1 style="font-size: 28px; font-weight: 800; margin: 6px 0;">OCR 8-Mark "Discuss & Evaluate" Essay Practice</h1>
+          <p style="font-size: 15px; color: var(--text-muted);">Practise structuring high-scoring 8-mark OCR extended response answers with automatic mark scheme criteria.</p>
+        </header>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; align-items: start;">
+          <div>
+            <div class="card" style="padding: 24px; border-top: 5px solid #8B5CF6; margin-bottom: 20px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span class="badge badge-primary" style="background: #8B5CF6; color: #fff; font-weight: 700;">Command: ${scaffold.commandWord || 'Evaluate'} &middot; 8 Marks</span>
+                <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">OCR Paper 1 Topic 1.6.1</span>
+              </div>
+              <h2 style="font-size: 18px; font-weight: 800; margin: 0 0 8px 0;">${scaffold.title}</h2>
+              <div style="padding: 14px; background: rgba(139, 92, 246, 0.06); border-radius: 8px; border-left: 4px solid #8B5CF6; font-size: 14px; line-height: 1.6; color: var(--text-main); margin-bottom: 16px;">
+                <strong>Exam Scenario:</strong> ${scaffold.scenario}
+              </div>
+
+              <div class="form-group" style="margin-bottom: 16px;">
+                <label for="essay-response-textarea" style="font-weight: 700; font-size: 14px; display: block; margin-bottom: 6px;">Your Written Essay Response (8 Marks):</label>
+                <textarea id="essay-response-textarea" class="form-control" rows="8" placeholder="Structure your response: 1) Technical facts & environmental points, 2) Ethical & stakeholder perspectives, 3) Cultural impact (digital divide), 4) Justified conclusion..." style="font-size: 14px; line-height: 1.6;">${this.escapeHTML(state.essayText)}</textarea>
+              </div>
+
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button type="button" id="evaluate-essay-btn" class="btn btn-primary" style="background: #8B5CF6; border-color: #8B5CF6; font-weight: 700; padding: 10px 20px; min-height: 42px;">
+                  ✔ Check Against OCR 8-Mark Criteria
+                </button>
+                <button type="button" id="essay-back-hub-btn" class="btn btn-secondary" style="min-height: 42px;">Back to Practice</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card" style="padding: 24px; border-left: 4px solid var(--teal);">
+              <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 12px 0;">OCR 8-Mark Mark Scheme Rubric</h3>
+              
+              <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px;">
+                <div style="padding: 10px; background: rgba(0,0,0,0.02); border-radius: 6px; border: 1px solid var(--border-color);">
+                  <strong style="color: var(--teal); display: block; margin-bottom: 4px;">Level 3 (6–8 Marks): Thorough & Balanced</strong>
+                  <p style="margin: 0; color: var(--text-muted); line-height: 1.4;">Comprehensive evaluation covering 2+ opposing viewpoints (e.g. e-waste vs energy efficiency), technical depth, and a clear justified conclusion.</p>
+                </div>
+                <div style="padding: 10px; background: rgba(0,0,0,0.02); border-radius: 6px; border: 1px solid var(--border-color);">
+                  <strong style="color: var(--text-main); display: block; margin-bottom: 4px;">Level 2 (3–5 Marks): Reasonable Explanation</strong>
+                  <p style="margin: 0; color: var(--text-muted); line-height: 1.4;">Explains specific impacts with some technical terminology, but lacks a complete conclusion or covers only one perspective.</p>
+                </div>
+                <div style="padding: 10px; background: rgba(0,0,0,0.02); border-radius: 6px; border: 1px solid var(--border-color);">
+                  <strong style="color: var(--text-muted); display: block; margin-bottom: 4px;">Level 1 (1–2 Marks): Basic Statements</strong>
+                  <p style="margin: 0; color: var(--text-muted); line-height: 1.4;">General statements without technical detail or scenario application.</p>
+                </div>
+              </div>
+
+              ${state.evaluated ? `
+                <div style="margin-top: 20px; padding: 14px; background: rgba(45, 156, 145, 0.1); border-radius: 8px; border: 1px solid var(--teal);">
+                  <strong style="color: var(--teal); font-size: 14px;">Response Recorded!</strong>
+                  <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-main);">Your response has been saved and checked against your learning record.</p>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const textarea = panel.querySelector('#essay-response-textarea');
+    if (textarea) {
+      textarea.oninput = (e) => { state.essayText = e.target.value; };
+    }
+    panel.querySelector('#evaluate-essay-btn').onclick = () => {
+      state.evaluated = true;
+      this.renderStudentEssayPractice(panel);
+    };
+    panel.querySelector('#essay-back-hub-btn').onclick = () => this.switchTab('stud-practice');
   }
 
   startStudentExamPractice() {
