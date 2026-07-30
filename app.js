@@ -2727,50 +2727,73 @@ class App {
     const milestoneBySection = new Map(this.getSectionMilestones().map(item => [item.id, item]));
     const contentIds = new Set(window.db.getCurriculumContent().map(item => item.id));
     const paperHtml = window.db.getUnits().map((unit, unitIndex) => `
-      <details class="student-topic-paper" data-disclosure-id="paper-${unitIndex}" ${unitIndex === 0 ? 'open' : ''}>
-        <summary>${this.escapeHTML(unit.paper)}: ${this.escapeHTML(unit.title)}</summary>
+      <div class="student-open-paper-section" style="margin-bottom: 32px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: var(--bg-card); border-bottom: 3px solid var(--teal); border-radius: 8px 8px 0 0; margin-bottom: 16px;">
+          <h2 style="font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0;">${this.escapeHTML(unit.paper)}: ${this.escapeHTML(unit.title)}</h2>
+          <span class="badge badge-primary">${unit.topics.reduce((acc, t) => acc + t.objectives.length, 0)} strands</span>
+        </div>
+        
         ${unit.topics.map(topic => `
-          <details class="student-topic-group" data-disclosure-id="topic-${this.escapeHTML(topic.id)}">
-            <summary>${this.escapeHTML(topic.code)} ${this.escapeHTML(topic.name)}</summary>
-            <div class="student-objective-list">
+          <div class="student-open-topic-group" style="margin-bottom: 20px;">
+            <h3 style="font-size: 15px; font-weight: 700; color: var(--teal); margin: 12px 0 8px 4px;">${this.escapeHTML(topic.code)} ${this.escapeHTML(topic.name)}</h3>
+            <div class="student-objective-open-list" style="display: flex; flex-direction: column; gap: 6px;">
               ${topic.objectives.map(objective => {
                 const saved = this.getLearnerObjectiveState(objective.id);
                 const state = saved?.state || 'not_covered';
                 const cardsActive = saved?.cardState !== 'paused';
                 const milestone = milestoneBySection.get(objective.id);
-                const checked = milestone?.state === 'checkpoint_secured'
-                  ? 'Goal met'
-                  : milestone?.state === 'practice_completed'
-                    ? 'Checked practice underway'
-                    : 'No checked result yet';
-                const task = this.getMatchingExamTransferTask(topic.id, objective.id);
-                const available = contentIds.has(objective.id);
                 const inDeck = state === 'covered' && cardsActive;
-                const deckStatus = inDeck
-                  ? `On your desk · ${this.escapeHTML(this.getObjectiveRecallConfidence(objective.id))}`
-                  : state === 'covered'
-                    ? 'Cards paused'
-                    : 'Not on your desk';
-                const reviewLabel = state === 'learning' ? 'Continue refresher' : 'Review topic';
+                const confidence = this.getObjectiveRecallConfidence(objective.id);
+                
+                let confidenceBadge = '<span class="badge badge-secondary" style="font-size: 11px;">⚪ Not rated</span>';
+                if (confidence === 'Consistently recalled') {
+                  confidenceBadge = '<span class="badge badge-success" style="font-size: 11px;">🟢 High Confidence</span>';
+                } else if (confidence === 'Needs review') {
+                  confidenceBadge = '<span class="badge badge-warning" style="font-size: 11px;">🟡 Needs Review</span>';
+                }
+
+                let masteryBadge = '<span class="badge badge-secondary" style="font-size: 11px;">⭕ New</span>';
+                if (milestone?.state === 'checkpoint_secured') {
+                  masteryBadge = '<span class="badge badge-success" style="font-size: 11px;">🎯 Goal Met</span>';
+                } else if (milestone?.state === 'practice_completed') {
+                  masteryBadge = '<span class="badge badge-warning" style="font-size: 11px;">⏳ Practising</span>';
+                }
+
+                const lastDate = milestone?.latestDate ? new Date(milestone.latestDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Not yet';
+                const available = contentIds.has(objective.id);
+                const reviewLabel = state === 'learning' ? 'Continue' : 'Review';
+
                 return `
-                  <div class="student-objective-row" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 16px; margin-bottom: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: ${inDeck ? 'rgba(45, 156, 145, 0.05)' : 'var(--bg-card)'}; border-left: 4px solid ${inDeck ? 'var(--teal)' : 'var(--border-color)'}; flex-wrap: wrap;">
-                    <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 240px;">
-                      <h3 id="objective-name-${this.escapeHTML(objective.id)}" style="margin: 0; font-size: 15px; font-weight: 600;">${this.escapeHTML(objective.id)} &middot; ${this.escapeHTML(objective.name)}</h3>
-                      <span class="badge ${inDeck ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px; white-space: nowrap;">
-                        ${inDeck ? '🎴 On desk' : 'Not on desk'}
+                  <div class="student-topic-flat-row" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 8px; background: ${inDeck ? 'rgba(45, 156, 145, 0.04)' : 'var(--bg-card)'}; border-left: 4px solid ${inDeck ? 'var(--teal)' : 'var(--border-color)'}; flex-wrap: wrap;">
+                    
+                    <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 260px;">
+                      <strong style="font-size: 14px; font-weight: 700; min-width: 50px; color: var(--text-main);">${this.escapeHTML(objective.id)}</strong>
+                      <span style="font-size: 14px; font-weight: 600; color: var(--text-main);">${this.escapeHTML(objective.name)}</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                      <span class="badge ${inDeck ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px;">
+                        ${inDeck ? '🎴 In Deck' : '➕ Not on desk'}
                       </span>
+                      ${confidenceBadge}
+                      ${masteryBadge}
+                      <span style="font-size: 12px; color: var(--text-muted); font-weight: 500; min-width: 60px; text-align: right;">${lastDate}</span>
                     </div>
-                    <div class="student-objective-actions" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+
+                    <div style="display: flex; align-items: center; gap: 8px;">
                       ${inDeck
-                        ? `<button type="button" class="btn btn-primary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 14px; font-size: 13px; min-height: 36px;">Review flashcards</button>`
-                        : `<button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 14px; font-size: 13px; min-height: 36px;">+ Add to desk</button>`}
-                      <button type="button" class="btn btn-secondary objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 14px; font-size: 13px; min-height: 36px;" ${available ? '' : 'disabled'}>${available ? 'Review topic' : 'Unavailable'}</button>
+                        ? `<button type="button" class="btn btn-primary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px;">Review cards</button>`
+                        : `<button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px;">+ Add to desk</button>`}
+                      <button type="button" class="btn btn-secondary objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px;" ${available ? '' : 'disabled'}>${available ? reviewLabel : 'N/A'}</button>
                     </div>
-                  </div>`;
+                  </div>
+                `;
               }).join('')}
             </div>
-          </details>`).join('')}
-      </details>`).join('');
+          </div>
+        `).join('')}
+      </div>
+    `).join('');
 
     panel.innerHTML = `
       <div class="student-page student-topics-page">
@@ -2779,14 +2802,14 @@ class App {
           <h1>Computer Science topics</h1>
           <p>Organise the topics you study alongside your lessons at school.</p>
         </header>
-        <aside class="card student-status-explainer">
+        <aside class="card student-status-explainer" style="margin-bottom: 24px;">
           <strong>Choose what belongs on your desk</strong>
           <p>Met it at school? Add its flashcards now. Need a reminder? Review the topic first. Your card choices help schedule future practice; checked questions are shown separately in Progress.</p>
         </aside>
         <p class="sr-only" id="topics-state-announcement" role="status" aria-live="polite" aria-atomic="true"></p>
         <div class="student-topic-papers">${paperHtml}</div>
       </div>`;
-    const openIds = restore.openIds || [];
+    const openIds = [];
     panel.querySelectorAll('details[data-disclosure-id]').forEach(detail => {
       if (openIds.includes(detail.dataset.disclosureId)) detail.open = true;
     });
@@ -2796,8 +2819,7 @@ class App {
         stateAnnouncement.textContent = restore.announcement;
       }, 0);
     }
-    const captureOpenIds = () => [...panel.querySelectorAll('details[data-disclosure-id][open]')]
-      .map(detail => detail.dataset.disclosureId);
+    const captureOpenIds = () => [];
     panel.querySelectorAll('.objective-learn-btn').forEach(button => {
       button.onclick = () => this.openObjectiveLearning(button.dataset.topicId, button.dataset.objectiveId);
     });
