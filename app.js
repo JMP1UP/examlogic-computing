@@ -6366,11 +6366,6 @@ class App {
 
         <div>${this.renderStudentAchievementPanel(student)}</div>
       </div>
-      <aside class="card student-progress-desk-link">
-        <h2>Choose what to study next</h2>
-        <p>Progress shows checked work. Your flashcards are organised separately on My desk.</p>
-        <button type="button" class="btn btn-secondary" id="progress-topics-btn">Choose topics for my desk</button>
-      </aside>
     `;
     (panel.querySelectorAll ? panel.querySelectorAll('.progress-learn-section') : []).forEach(button => {
       button.onclick = () => {
@@ -6394,7 +6389,6 @@ class App {
         button.onclick = () => this.openAchievementRoute(achievementId, panel);
       }
     });
-    panel.querySelector?.('#progress-topics-btn')?.addEventListener('click', () => this.switchTab('stud-topics'));
   }
 
   // ==================== TEACHER OVERVIEW ====================
