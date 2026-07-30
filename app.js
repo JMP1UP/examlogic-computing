@@ -2209,13 +2209,20 @@ class App {
       }
     }
 
-    const isTeacherWork = requiredCount > 0;
+    const isOverdueHomework = dominantAssignment?.status === 'Overdue';
+    const isHomework = !hasActiveTestPrep && dominantAssignment;
+    
+    const bannerIcon = hasActiveTestPrep ? '📌' : isHomework ? (isOverdueHomework ? '⚠️' : '📋') : '🎯';
+    const bannerAccentColor = isOverdueHomework ? '#D97706' : isHomework ? '#07111F' : 'var(--teal)';
+    const bannerBadgeBg = isOverdueHomework ? '#D97706' : isHomework ? '#07111F' : 'var(--teal)';
+    const btnBg = isOverdueHomework ? '#D97706' : isHomework ? '#07111F' : 'var(--teal)';
+
     dominantTaskHtml = `
-      <section class="card student-primary-task-banner" aria-labelledby="primary-task-title" style="padding: 22px 28px; border-left: 6px solid var(--teal); background: #FFFFFF; border: 1px solid rgba(45, 156, 145, 0.3); border-left-width: 6px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; box-shadow: 0 8px 24px rgba(7, 17, 31, 0.12); position: relative; z-index: 5;">
+      <section class="card student-primary-task-banner" aria-labelledby="primary-task-title" style="padding: 22px 28px; border-left: 6px solid ${bannerAccentColor}; background: #FFFFFF; border: 1px solid var(--border-color); border-left-width: 6px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; box-shadow: 0 8px 24px rgba(7, 17, 31, 0.08); position: relative; z-index: 5;">
         <div style="flex: 1; min-width: 260px;">
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-            <span style="font-size: 18px;">${isTeacherWork ? '📌' : '🎯'}</span>
-            <span class="badge ${isTeacherWork ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px; font-weight: 700; background: var(--teal); color: #ffffff; padding: 4px 10px; border-radius: 12px;">${this.escapeHTML(dominantTask.label)}</span>
+            <span style="font-size: 18px;">${bannerIcon}</span>
+            <span class="badge" style="font-size: 11px; font-weight: 700; background: ${bannerBadgeBg}; color: #ffffff; padding: 4px 10px; border-radius: 12px;">${this.escapeHTML(dominantTask.label)}</span>
             <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">${this.escapeHTML(dominantTask.kind)} &middot; ${dominantTask.actionMinutes} min</span>
           </div>
           <h2 id="primary-task-title" style="margin: 0 0 6px 0; font-size: 20px; font-weight: 800; color: #07111F; line-height: 1.3;">${this.escapeHTML(dominantTask.title)}</h2>
@@ -2223,7 +2230,7 @@ class App {
             ${dominantTask.meta.map(item => `<span>${this.escapeHTML(item)}</span>`).join(' &middot; ')}
           </div>
         </div>
-        <button class="btn btn-primary ${dominantTask.actionClass}" ${dominantTask.actionAttributes} style="min-height: 44px; padding: 12px 24px; font-size: 14px; font-weight: 700; white-space: nowrap; box-shadow: 0 2px 8px rgba(45, 156, 145, 0.25);">
+        <button class="btn btn-primary ${dominantTask.actionClass}" ${dominantTask.actionAttributes} style="min-height: 44px; padding: 12px 24px; font-size: 14px; font-weight: 700; white-space: nowrap; background: ${btnBg}; border-color: ${btnBg}; box-shadow: 0 2px 8px rgba(7, 17, 31, 0.15);">
           ${this.escapeHTML(dominantTask.actionLabel)} &rarr; (${dominantTask.actionMinutes} min)
         </button>
       </section>
