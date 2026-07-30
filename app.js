@@ -2745,62 +2745,82 @@ class App {
         </div>
         
         ${unit.topics.map(topic => `
-          <div class="student-open-topic-group" style="margin-bottom: 20px;">
+          <div class="student-open-topic-group" style="margin-bottom: 24px;">
             <h3 style="font-size: 15px; font-weight: 700; color: var(--teal); margin: 16px 0 8px 4px; padding-bottom: 4px; border-bottom: 1px solid var(--border-color);">${this.escapeHTML(topic.code)} ${this.escapeHTML(topic.name)}</h3>
-            <div class="student-objective-open-list" style="display: flex; flex-direction: column; gap: 6px;">
-              ${topic.objectives.map(objective => {
-                const saved = this.getLearnerObjectiveState(objective.id);
-                const state = saved?.state || 'not_covered';
-                const cardsActive = saved?.cardState !== 'paused';
-                const milestone = milestoneBySection.get(objective.id);
-                const inDeck = state === 'covered' && cardsActive;
-                const confidence = this.getObjectiveRecallConfidence(objective.id);
-                const task = this.getMatchingExamTransferTask(topic.id, objective.id);
-                
-                let confidenceBadge = `<span class="badge badge-secondary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer;" title="Click to practice recall">⚪ Not rated</span>`;
-                if (confidence === 'Consistently recalled') {
-                  confidenceBadge = `<span class="badge badge-success objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer;" title="High confidence score - Click to review">🟢 High Confidence</span>`;
-                } else if (confidence === 'Needs review' || (inDeck && state === 'covered')) {
-                  confidenceBadge = `<span class="badge badge-warning objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; border: 1px solid var(--coral);" title="Review due! Click to practice">🔔 Review Due</span>`;
-                }
-
-                let masteryBadge = '<span class="badge badge-secondary" style="font-size: 11px;">⭕ New</span>';
-                if (milestone?.state === 'checkpoint_secured') {
-                  masteryBadge = `<span class="badge badge-success ${task ? 'objective-exam-btn' : ''}" ${task ? `data-task-id="${this.escapeHTML(task.id)}"` : ''} style="font-size: 11px; ${task ? 'cursor: pointer;' : ''}" title="Goal met - Click to review exam task">🎯 Goal Met</span>`;
-                } else if (milestone?.state === 'practice_completed') {
-                  masteryBadge = `<span class="badge badge-warning ${task ? 'objective-exam-btn' : ''}" ${task ? `data-task-id="${this.escapeHTML(task.id)}"` : ''} style="font-size: 11px; ${task ? 'cursor: pointer;' : ''}" title="Practising - Click to try exam task">⏳ Practising</span>`;
-                }
-
-                const lastDate = milestone?.latestDate ? new Date(milestone.latestDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Not yet';
-                const available = contentIds.has(objective.id);
-                const reviewLabel = state === 'learning' ? 'Continue' : 'Review';
-
-                return `
-                  <div class="student-topic-grid-row" style="display: grid; grid-template-columns: 55px minmax(180px, 1fr) 110px 130px 110px 75px 190px; align-items: center; gap: 12px; padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 8px; background: ${inDeck ? 'rgba(45, 156, 145, 0.04)' : 'var(--bg-card)'}; border-left: 4px solid ${inDeck ? 'var(--teal)' : 'var(--border-color)'};">
+            
+            <div class="table-container" style="overflow-x: auto;">
+              <table style="width: 100%; min-width: 880px; table-layout: fixed; border-collapse: separate; border-spacing: 0 6px;">
+                <colgroup>
+                  <col style="width: 65px;">
+                  <col style="width: auto;">
+                  <col style="width: 115px;">
+                  <col style="width: 145px;">
+                  <col style="width: 115px;">
+                  <col style="width: 85px;">
+                  <col style="width: 215px;">
+                </colgroup>
+                <thead>
+                  <tr style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; height: 28px;">
+                    <th scope="col" style="padding: 0 10px; text-align: left;">Code</th>
+                    <th scope="col" style="padding: 0 10px; text-align: left;">Topic Strand</th>
+                    <th scope="col" style="padding: 0 10px; text-align: center;">Desk</th>
+                    <th scope="col" style="padding: 0 10px; text-align: center;">Confidence</th>
+                    <th scope="col" style="padding: 0 10px; text-align: center;">Mastery</th>
+                    <th scope="col" style="padding: 0 10px; text-align: center;">Checked</th>
+                    <th scope="col" style="padding: 0 10px; text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${topic.objectives.map(objective => {
+                    const saved = this.getLearnerObjectiveState(objective.id);
+                    const state = saved?.state || 'not_covered';
+                    const cardsActive = saved?.cardState !== 'paused';
+                    const milestone = milestoneBySection.get(objective.id);
+                    const inDeck = state === 'covered' && cardsActive;
+                    const confidence = this.getObjectiveRecallConfidence(objective.id);
+                    const task = this.getMatchingExamTransferTask(topic.id, objective.id);
                     
-                    <strong style="font-size: 14px; font-weight: 700; color: var(--text-main);">${this.escapeHTML(objective.id)}</strong>
-                    <span style="font-size: 14px; font-weight: 600; color: var(--text-main); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${this.escapeHTML(objective.name)}</span>
+                    let confidenceBadge = `<span class="badge badge-secondary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; display: inline-block; width: 125px; text-align: center;" title="Click to practice recall">⚪ Not rated</span>`;
+                    if (confidence === 'Consistently recalled') {
+                      confidenceBadge = `<span class="badge badge-success objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; display: inline-block; width: 125px; text-align: center;" title="High confidence score - Click to review">🟢 High Confidence</span>`;
+                    } else if (confidence === 'Needs review' || (inDeck && state === 'covered')) {
+                      confidenceBadge = `<span class="badge badge-warning objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; display: inline-block; width: 125px; text-align: center; border: 1px solid var(--coral);" title="Review due! Click to practice">🔔 Review Due</span>`;
+                    }
 
-                    <div>
-                      <span class="badge ${inDeck ? 'badge-primary' : 'badge-secondary'} objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer;" title="Click to toggle desk inclusion">
-                        ${inDeck ? '🎴 In Deck' : '➕ Add to desk'}
-                      </span>
-                    </div>
+                    let masteryBadge = '<span class="badge badge-secondary" style="font-size: 11px; display: inline-block; width: 95px; text-align: center;">⭕ New</span>';
+                    if (milestone?.state === 'checkpoint_secured') {
+                      masteryBadge = `<span class="badge badge-success ${task ? 'objective-exam-btn' : ''}" ${task ? `data-task-id="${this.escapeHTML(task.id)}"` : ''} style="font-size: 11px; display: inline-block; width: 95px; text-align: center; ${task ? 'cursor: pointer;' : ''}" title="Goal met - Click to review exam task">🎯 Goal Met</span>`;
+                    } else if (milestone?.state === 'practice_completed') {
+                      masteryBadge = `<span class="badge badge-warning ${task ? 'objective-exam-btn' : ''}" ${task ? `data-task-id="${this.escapeHTML(task.id)}"` : ''} style="font-size: 11px; display: inline-block; width: 95px; text-align: center; ${task ? 'cursor: pointer;' : ''}" title="Practising - Click to try exam task">⏳ Practising</span>`;
+                    }
 
-                    <div>${confidenceBadge}</div>
-                    <div>${masteryBadge}</div>
-                    
-                    <div style="font-size: 12px; color: var(--text-muted); font-weight: 500; text-align: right;">${lastDate}</div>
+                    const lastDate = milestone?.latestDate ? new Date(milestone.latestDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Not yet';
+                    const available = contentIds.has(objective.id);
+                    const reviewLabel = state === 'learning' ? 'Continue' : 'Review';
 
-                    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
-                      ${inDeck
-                        ? `<button type="button" class="btn btn-primary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px;">Review cards</button>`
-                        : `<button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px;">+ Add to desk</button>`}
-                      <button type="button" class="btn btn-secondary objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px;" ${available ? '' : 'disabled'}>${available ? reviewLabel : 'N/A'}</button>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
+                    return `
+                      <tr style="height: 48px; background: ${inDeck ? 'rgba(45, 156, 145, 0.04)' : 'var(--bg-card)'}; border: 1px solid var(--border-color); border-left: 4px solid ${inDeck ? 'var(--teal)' : 'var(--border-color)'};">
+                        <td style="padding: 8px 10px; font-size: 14px; font-weight: 700; color: var(--text-main);">${this.escapeHTML(objective.id)}</td>
+                        <td style="padding: 8px 10px; font-size: 14px; font-weight: 600; color: var(--text-main); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${this.escapeHTML(objective.name)}</td>
+                        <td style="padding: 8px 10px; text-align: center;">
+                          <span class="badge ${inDeck ? 'badge-primary' : 'badge-secondary'} objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; display: inline-block; width: 95px; text-align: center;" title="Click to toggle desk inclusion">
+                            ${inDeck ? '🎴 In Deck' : '➕ Add to desk'}
+                          </span>
+                        </td>
+                        <td style="padding: 8px 10px; text-align: center;">${confidenceBadge}</td>
+                        <td style="padding: 8px 10px; text-align: center;">${masteryBadge}</td>
+                        <td style="padding: 8px 10px; text-align: center; font-size: 12px; color: var(--text-muted); font-weight: 500;">${lastDate}</td>
+                        <td style="padding: 8px 10px; text-align: right; white-space: nowrap;">
+                          ${inDeck
+                            ? `<button type="button" class="btn btn-primary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px; width: 105px;">Review cards</button>`
+                            : `<button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px; width: 105px;">+ Add to desk</button>`}
+                          <button type="button" class="btn btn-secondary objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px; width: 85px; margin-left: 4px;" ${available ? '' : 'disabled'}>${available ? reviewLabel : 'N/A'}</button>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
             </div>
           </div>
         `).join('')}
