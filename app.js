@@ -2745,83 +2745,67 @@ class App {
         </div>
         
         ${unit.topics.map(topic => `
-          <div class="student-open-topic-group" style="margin-bottom: 24px;">
-            <h3 style="font-size: 15px; font-weight: 700; color: var(--teal); margin: 16px 0 8px 4px; padding-bottom: 4px; border-bottom: 1px solid var(--border-color);">${this.escapeHTML(topic.code)} ${this.escapeHTML(topic.name)}</h3>
+          <div class="student-open-topic-group" style="margin-bottom: 20px;">
+            <h3 style="font-size: 14px; font-weight: 700; color: var(--teal); margin: 14px 0 6px 4px; padding-bottom: 4px; border-bottom: 1px solid var(--border-color);">${this.escapeHTML(topic.code)} ${this.escapeHTML(topic.name)}</h3>
             
-            <div class="table-container" style="overflow-x: auto;">
-              <table style="width: 100%; min-width: 880px; table-layout: fixed; border-collapse: separate; border-spacing: 0 6px;">
-                <colgroup>
-                  <col style="width: 65px;">
-                  <col style="width: auto;">
-                  <col style="width: 115px;">
-                  <col style="width: 145px;">
-                  <col style="width: 115px;">
-                  <col style="width: 85px;">
-                  <col style="width: 215px;">
-                </colgroup>
-                <thead>
-                  <tr style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; height: 28px;">
-                    <th scope="col" style="padding: 0 10px; text-align: left;">Code</th>
-                    <th scope="col" style="padding: 0 10px; text-align: left;">Topic Strand</th>
-                    <th scope="col" style="padding: 0 10px; text-align: center;">My Desk</th>
-                    <th scope="col" style="padding: 0 10px; text-align: center;">Memory</th>
-                    <th scope="col" style="padding: 0 10px; text-align: center;">Exam Check</th>
-                    <th scope="col" style="padding: 0 10px; text-align: center;">Last Done</th>
-                    <th scope="col" style="padding: 0 10px; text-align: right;">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${topic.objectives.map(objective => {
-                    const saved = this.getLearnerObjectiveState(objective.id);
-                    const state = saved?.state || 'not_covered';
-                    const cardsActive = saved?.cardState !== 'paused';
-                    const milestone = milestoneBySection.get(objective.id);
-                    const inDeck = state === 'covered' && cardsActive;
-                    const confidence = this.getObjectiveRecallConfidence(objective.id);
-                    const task = this.getMatchingExamTransferTask(topic.id, objective.id);
-                    
-                    let confidenceBadge = `<span class="badge badge-secondary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; display: inline-block; width: 125px; text-align: center;" title="Click to practice memory cards">⚪ Untested</span>`;
-                    if (confidence === 'Consistently recalled') {
-                      confidenceBadge = `<span class="badge badge-success objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; display: inline-block; width: 125px; text-align: center;" title="High memory score - Click to review">🟢 Strong Recall</span>`;
-                    } else if (confidence === 'Needs review' || (inDeck && state === 'covered')) {
-                      confidenceBadge = `<span class="badge badge-warning objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; display: inline-block; width: 125px; text-align: center; border: 1px solid var(--coral);" title="Memory practice due! Click to start">🔔 Practice Due</span>`;
-                    }
+            <table style="width: 100%; border-collapse: separate; border-spacing: 0 4px; font-size: 13px;">
+              <thead>
+                <tr style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; height: 26px;">
+                  <th scope="col" style="padding: 0 8px; text-align: left;">Topic Strand</th>
+                  <th scope="col" style="padding: 0 8px; text-align: center; width: 90px;">Memory</th>
+                  <th scope="col" style="padding: 0 8px; text-align: center; width: 90px;">Exam Goal</th>
+                  <th scope="col" style="padding: 0 8px; text-align: center; width: 70px;">Last Done</th>
+                  <th scope="col" style="padding: 0 8px; text-align: right; width: 190px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${topic.objectives.map(objective => {
+                  const saved = this.getLearnerObjectiveState(objective.id);
+                  const state = saved?.state || 'not_covered';
+                  const cardsActive = saved?.cardState !== 'paused';
+                  const milestone = milestoneBySection.get(objective.id);
+                  const inDeck = state === 'covered' && cardsActive;
+                  const confidence = this.getObjectiveRecallConfidence(objective.id);
+                  const task = this.getMatchingExamTransferTask(topic.id, objective.id);
+                  
+                  let confidenceBadge = `<span class="badge badge-secondary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; padding: 2px 6px; white-space: nowrap;" title="Memory score - Click to practice cards">⚪ New</span>`;
+                  if (confidence === 'Consistently recalled') {
+                    confidenceBadge = `<span class="badge badge-success objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; padding: 2px 6px; white-space: nowrap;" title="Strong memory recall - Click to review">🟢 Strong</span>`;
+                  } else if (confidence === 'Needs review' || (inDeck && state === 'covered')) {
+                    confidenceBadge = `<span class="badge badge-warning objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; padding: 2px 6px; white-space: nowrap; border: 1px solid var(--coral);" title="Flashcard practice due! Click to start">🔔 Due</span>`;
+                  }
 
-                    let masteryBadge = '<span class="badge badge-secondary" style="font-size: 11px; display: inline-block; width: 95px; text-align: center;">⭕ Not Started</span>';
-                    if (milestone?.state === 'checkpoint_secured') {
-                      masteryBadge = `<span class="badge badge-success ${task ? 'objective-exam-btn' : ''}" ${task ? `data-task-id="${this.escapeHTML(task.id)}"` : ''} style="font-size: 11px; display: inline-block; width: 95px; text-align: center; ${task ? 'cursor: pointer;' : ''}" title="Goal met - Click to review exam task">🎯 Goal Met</span>`;
-                    } else if (milestone?.state === 'practice_completed') {
-                      masteryBadge = `<span class="badge badge-warning ${task ? 'objective-exam-btn' : ''}" ${task ? `data-task-id="${this.escapeHTML(task.id)}"` : ''} style="font-size: 11px; display: inline-block; width: 95px; text-align: center; ${task ? 'cursor: pointer;' : ''}" title="In practice - Click to try exam task">⏳ In Practice</span>`;
-                    }
+                  let masteryBadge = '<span class="badge badge-secondary" style="font-size: 11px; padding: 2px 6px; white-space: nowrap;">⭕ New</span>';
+                  if (milestone?.state === 'checkpoint_secured') {
+                    masteryBadge = `<span class="badge badge-success ${task ? 'objective-exam-btn' : ''}" ${task ? `data-task-id="${this.escapeHTML(task.id)}"` : ''} style="font-size: 11px; padding: 2px 6px; white-space: nowrap; ${task ? 'cursor: pointer;' : ''}" title="Checked exam goal passed!">🎯 Met</span>`;
+                  } else if (milestone?.state === 'practice_completed') {
+                    masteryBadge = `<span class="badge badge-warning ${task ? 'objective-exam-btn' : ''}" ${task ? `data-task-id="${this.escapeHTML(task.id)}"` : ''} style="font-size: 11px; padding: 2px 6px; white-space: nowrap; ${task ? 'cursor: pointer;' : ''}" title="Checked practice in progress">⏳ Active</span>`;
+                  }
 
-                    const lastDate = milestone?.latestDate ? new Date(milestone.latestDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Not yet';
-                    const available = contentIds.has(objective.id);
-                    const reviewLabel = state === 'learning' ? 'Continue' : 'Study note';
+                  const lastDate = milestone?.latestDate ? new Date(milestone.latestDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '-';
+                  const available = contentIds.has(objective.id);
+                  const reviewLabel = state === 'learning' ? 'Continue' : 'Notes';
 
-                    return `
-                      <tr style="height: 48px; background: ${inDeck ? 'rgba(45, 156, 145, 0.04)' : 'var(--bg-card)'}; border: 1px solid var(--border-color); border-left: 4px solid ${inDeck ? 'var(--teal)' : 'var(--border-color)'};">
-                        <td style="padding: 8px 10px; font-size: 14px; font-weight: 700; color: var(--text-main);">${this.escapeHTML(objective.id)}</td>
-                        <td style="padding: 8px 10px; font-size: 14px; font-weight: 600; color: var(--text-main); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${this.escapeHTML(objective.name)}</td>
-                        <td style="padding: 8px 10px; text-align: center;">
-                          <span class="badge ${inDeck ? 'badge-primary' : 'badge-secondary'} objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" style="font-size: 11px; cursor: pointer; display: inline-block; width: 95px; text-align: center;" title="Click to toggle desk inclusion">
-                            ${inDeck ? '🎴 In My Desk' : '➕ Add to Desk'}
-                          </span>
-                        </td>
-                        <td style="padding: 8px 10px; text-align: center;">${confidenceBadge}</td>
-                        <td style="padding: 8px 10px; text-align: center;">${masteryBadge}</td>
-                        <td style="padding: 8px 10px; text-align: center; font-size: 12px; color: var(--text-muted); font-weight: 500;">${lastDate}</td>
-                        <td style="padding: 8px 10px; text-align: right; white-space: nowrap;">
-                          ${inDeck
-                            ? `<button type="button" class="btn btn-primary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px; width: 110px;">Practice cards</button>`
-                            : `<button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px; width: 110px;">+ Add cards</button>`}
-                          <button type="button" class="btn btn-secondary objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 12px; font-size: 13px; min-height: 36px; width: 90px; margin-left: 4px;" ${available ? '' : 'disabled'}>${available ? reviewLabel : 'N/A'}</button>
-                        </td>
-                      </tr>
-                    `;
-                  }).join('')}
-                </tbody>
-              </table>
-            </div>
+                  return `
+                    <tr style="height: 38px; background: ${inDeck ? 'rgba(45, 156, 145, 0.04)' : 'var(--bg-card)'}; border: 1px solid var(--border-color); border-left: 4px solid ${inDeck ? 'var(--teal)' : 'var(--border-color)'};">
+                      <td style="padding: 6px 8px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        <strong style="margin-right: 6px; color: var(--text-muted); font-size: 13px;">${this.escapeHTML(objective.id)}</strong>
+                        ${this.escapeHTML(objective.name)}
+                      </td>
+                      <td style="padding: 6px 4px; text-align: center;">${confidenceBadge}</td>
+                      <td style="padding: 6px 4px; text-align: center;">${masteryBadge}</td>
+                      <td style="padding: 6px 4px; text-align: center; font-size: 12px; color: var(--text-muted); font-weight: 500; white-space: nowrap;">${lastDate}</td>
+                      <td style="padding: 6px 8px; text-align: right; white-space: nowrap;">
+                        ${inDeck
+                          ? `<button type="button" class="btn btn-primary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 4px 10px; font-size: 12px; min-height: 32px;">🎴 Cards</button>`
+                          : `<button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 4px 10px; font-size: 12px; min-height: 32px;">+ Add to desk</button>`}
+                        <button type="button" class="btn btn-secondary objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 4px 10px; font-size: 12px; min-height: 32px; margin-left: 4px;" ${available ? '' : 'disabled'}>${available ? reviewLabel : 'N/A'}</button>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
           </div>
         `).join('')}
       </div>
@@ -2835,12 +2819,12 @@ class App {
           <p>Organise the topics you study alongside your lessons at school.</p>
         </header>
         
-        <aside class="card student-status-explainer" style="margin-bottom: 24px; padding: 18px; border-left: 4px solid var(--teal);">
-          <h2 style="font-size: 16px; font-weight: 700; margin: 0 0 8px 0;">Understanding Your Topic Indicators</h2>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; font-size: 13px; color: var(--text-muted);">
-            <div><strong style="color: var(--text-main);">🎴 Desk State:</strong> Topic added to your active practice desk for spaced retrieval. Click badge to toggle.</div>
-            <div><strong style="color: var(--text-main);">🟢 Confidence:</strong> Calculated automatically from your last 3 flashcard & recall scores. Click badge to review.</div>
-            <div><strong style="color: var(--text-main);">🎯 Mastery Goal:</strong> Earned when checked practice verifies all specification checkpoints. Click badge to practise.</div>
+        <aside class="card student-status-explainer" style="margin-bottom: 20px; padding: 14px 18px; border-left: 4px solid var(--teal);">
+          <h2 style="font-size: 15px; font-weight: 700; margin: 0 0 6px 0;">How Your Topic Progress Works</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 13px; color: var(--text-muted);">
+            <div><strong style="color: var(--text-main);">1. My Desk:</strong> Click <strong>+ Add to desk</strong> on any topic to add its flashcards to your daily retrieval practice.</div>
+            <div><strong style="color: var(--text-main);">2. Memory Score:</strong> Click <strong>🎴 Cards</strong> to practice retrieval. Complete card sessions to turn memory 🟢 <strong>Strong</strong>.</div>
+            <div><strong style="color: var(--text-main);">3. Exam Goal:</strong> Complete checked GCSE exam questions in Progress to earn your 🎯 <strong>Met</strong> badge. <strong>Last Done</strong> shows your last practice date.</div>
           </div>
         </aside>
 
