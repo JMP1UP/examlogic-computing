@@ -1106,7 +1106,7 @@ class App {
   }
 
   recordRetrievalDeckRating(card, rating, now = new Date()) {
-    if (!this.isMeaningfulLearnerResponse(this.retrievalDeckAttempt, 2) || !this.retrievalDeckRevealed) return false;
+    if (!this.retrievalDeckRevealed) return false;
     if (!['couldnt-recall', 'difficult', 'secure'].includes(rating)) return false;
     const performance = this.getLatestTopicSchedulingPerformance(card.topicId);
     const due = new Date(now);
@@ -3678,18 +3678,23 @@ class App {
           <span class="student-kicker">${this.retrievalDeckExtraMode ? 'Extra card' : `Card ${Math.min(this.retrievalDeckRatedCount + 1, this.retrievalDeckSessionTarget)} of ${this.retrievalDeckSessionTarget}`}</span>
           <span class="badge badge-secondary">${this.escapeHTML(topics.find(topic => topic.id === card.topicId)?.name || 'Topic on your desk')}</span>
           <h2 id="retrieval-card-term" style="margin-top:12px;">Explain: ${this.escapeHTML(card.term)}</h2>
-          <label for="retrieval-card-attempt"><strong>Your answer first</strong></label>
-          <textarea id="retrieval-card-attempt" class="form-control" rows="4" placeholder="Write what you can remember...">${this.escapeHTML(this.retrievalDeckAttempt)}</textarea>
-          <button type="button" class="btn btn-primary" id="retrieval-reveal-btn" style="margin-top:12px;">Reveal after my attempt</button>
-          <button type="button" class="btn btn-secondary" id="retrieval-pause-btn" style="margin-top:12px;">Pause and return to your plan</button>
-          <div id="retrieval-card-answer" tabindex="-1" ${this.retrievalDeckRevealed ? '' : 'hidden'} style="margin-top:16px;">
-            <div class="card" style="background:var(--bg-main);"><strong>Check your recall</strong><p>${this.escapeHTML(card.definition)}</p></div>
-            <fieldset style="margin-top:14px;">
-              <legend><strong>How did recall feel?</strong> Choose one to schedule the card.</legend>
-              <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
-                <button type="button" class="btn btn-secondary retrieval-rating-btn" data-rating="couldnt-recall">Not yet</button>
-                <button type="button" class="btn btn-secondary retrieval-rating-btn" data-rating="difficult">Needed effort</button>
-                <button type="button" class="btn btn-secondary retrieval-rating-btn" data-rating="secure">Easy to recall</button>
+          <label for="retrieval-card-attempt"><strong>Scratchpad — optional</strong></label>
+          <textarea id="retrieval-card-attempt" class="form-control" rows="3" placeholder="Recall your answer mentally, or type notes here if you choose...">${this.escapeHTML(this.retrievalDeckAttempt)}</textarea>
+          <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-primary" id="retrieval-reveal-btn" style="min-height: 44px; padding-inline: 24px;">Flip card</button>
+            <button type="button" class="btn btn-secondary" id="retrieval-pause-btn" style="min-height: 44px;">Pause and return to your plan</button>
+          </div>
+          <div id="retrieval-card-answer" tabindex="-1" ${this.retrievalDeckRevealed ? '' : 'hidden'} style="margin-top: 16px;">
+            <div class="card" style="background: var(--bg-main); border-left: 4px solid var(--teal);">
+              <strong style="color: var(--teal); display: block; margin-bottom: 6px;">Correct Answer</strong>
+              <p style="font-size: 15px; font-weight: 500; color: var(--navy); line-height: 1.5; margin: 0;">${this.escapeHTML(card.definition)}</p>
+            </div>
+            <fieldset style="margin-top: 14px; border: none; padding: 0;">
+              <legend style="float: none; width: 100%; display: block; font-size: 14px; color: var(--navy); font-weight: 600; margin-bottom: 8px;"><strong>How did recall feel?</strong> Choose one to schedule this card:</legend>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;">
+                <button type="button" class="btn btn-secondary retrieval-rating-btn" data-rating="couldnt-recall" style="min-height: 40px;">Not yet</button>
+                <button type="button" class="btn btn-secondary retrieval-rating-btn" data-rating="difficult" style="min-height: 40px;">Needed effort</button>
+                <button type="button" class="btn btn-secondary retrieval-rating-btn" data-rating="secure" style="min-height: 40px;">Easy to recall</button>
               </div>
             </fieldset>
           </div>
@@ -3712,14 +3717,13 @@ class App {
     const reveal = panel.querySelector?.('#retrieval-reveal-btn') || document.getElementById('retrieval-reveal-btn');
     if (reveal) reveal.onclick = () => {
       this.retrievalDeckAttempt = attempt?.value.trim() || '';
-      if (!this.isMeaningfulLearnerResponse(this.retrievalDeckAttempt, 2)) return this.alert('Write what you can remember before revealing the answer.');
       this.retrievalDeckRevealed = true;
       this.renderStudentRetrievalDeck(panel);
       (panel.querySelector?.('#retrieval-card-answer') || document.getElementById('retrieval-card-answer'))?.focus?.();
     };
     panel.querySelectorAll?.('.retrieval-rating-btn').forEach(button => {
       button.onclick = () => {
-        if (!this.recordRetrievalDeckRating(card, button.getAttribute('data-rating'))) return this.alert('Attempt the card, reveal it and choose a rating.');
+        if (!this.recordRetrievalDeckRating(card, button.getAttribute('data-rating'))) return this.alert('Reveal the card first before choosing a rating.');
         this.renderStudentRetrievalDeck(panel);
         panel.querySelector?.(this.retrievalDeckSessionComplete && !this.retrievalDeckExtraMode ? '#retrieval-session-back-btn' : '#retrieval-card-attempt')?.focus?.();
       };
