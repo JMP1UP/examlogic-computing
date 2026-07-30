@@ -52,8 +52,13 @@ presents one recommended next action and the topics whose flashcards the pupil
 has chosen to keep fresh.
 
 - Required teacher work takes priority.
-- Without required work, the next weekly-rhythm activity is primary.
-- The full weekly plan is secondary and may be collapsed.
+- Without required work, the next weekly-notebook activity is primary.
+- The weekly notebook stays visible below the primary action and links each
+  study task to the relevant activity.
+- Flashcard progress counts separate study days, not the number of sessions
+  completed on one day.
+- The nearest teacher-set test shows its date, days remaining and included
+  specification sections, with a direct route to its test plan.
 - Engagement and checked performance remain separate.
 - **Flashcards on your desk** shows at most three active topics, due topics
   first, plus the hidden-topic count and an **Organise my topics** route.

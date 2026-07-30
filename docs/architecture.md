@@ -116,7 +116,15 @@ Personal flashcard selection and legacy availability are deliberately separate.
 use only explicit active `learnerObjectiveStates`. Classroom controls and
 legacy inferred coverage remain readable for compatibility but never silently
 place content on a pupil's personal desk. This does not combine self-rated
-recall with checked evidence.
+recall confidence with checked attainment evidence.
+
+The My desk weekly notebook is derived from existing learner activity records;
+it does not introduce a second progress store. Flashcard completion uses
+distinct local calendar days, while number-systems and programming practice use
+recorded weekly sessions and exam-style practice uses the existing fortnightly
+submission state. The nearest active teacher test is read from the existing test
+preparation record and its specification-point identifiers are resolved against
+curriculum objectives for display and navigation.
 Cards use an explicit `specificationPointId` where present. A legacy topic-only
 card is mapped to an objective only when its term occurs in exactly one
 curriculum objective inside that same topic. Ambiguous cards retain honest

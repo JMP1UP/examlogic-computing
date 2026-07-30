@@ -772,12 +772,12 @@ class App {
     );
     const examDueThisWeek = Math.floor(week.start.getTime() / (14 * 24 * 3600 * 1000)) % 2 === 0;
     const items = [
-      { id: 'retrieval', label: 'Recall on two different days', done: Math.min(retrievalDays.size, 2), target: 2, minutes: 10, route: 'stud-retrieval' },
-      { id: 'number', label: 'Number fluency', done: numberDone ? 1 : 0, target: 1, minutes: 10, route: 'stud-practise' },
-      { id: 'programming', label: 'Programming', done: programmingDone ? 1 : 0, target: 1, minutes: 15, route: 'stud-programming' }
+      { id: 'retrieval', label: 'Review flashcards', cadence: 'On 2 different days', done: Math.min(retrievalDays.size, 2), target: 2, unit: 'days', minutes: 10, route: 'stud-retrieval' },
+      { id: 'number', label: 'Practise number systems', cadence: 'Once this week', done: numberDone ? 1 : 0, target: 1, unit: 'session', minutes: 10, route: 'stud-practise' },
+      { id: 'programming', label: 'Practise programming', cadence: 'Once this week', done: programmingDone ? 1 : 0, target: 1, unit: 'session', minutes: 15, route: 'stud-programming' }
     ];
     if (examDueThisWeek) {
-      items.push({ id: 'exam', label: '4–6 mark exam answer', done: examSubmitted ? 1 : 0, target: 1, minutes: 10, route: 'stud-exam-transfer', awaitingReview: examSubmitted });
+      items.push({ id: 'exam', label: 'Practise an exam question', cadence: 'Once this fortnight', done: examSubmitted ? 1 : 0, target: 1, unit: 'answer', minutes: 10, route: 'stud-exam-transfer', awaitingReview: examSubmitted });
     }
     const next = items.find(item => item.done < item.target) || null;
     return {
@@ -789,6 +789,37 @@ class App {
       totalMinutes: items.reduce((sum, item) => sum + item.minutes, 0),
       habitAchieved: retrievalDays.size >= 2 && numberDone && programmingDone,
       attainmentChanged: false
+    };
+  }
+
+  getUpcomingTestNotebook(prep, now = new Date()) {
+    if (!prep?.testDate) return null;
+    const testDate = new Date(`${prep.testDate}T12:00:00`);
+    if (Number.isNaN(testDate.getTime())) return null;
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    const testDay = new Date(testDate);
+    testDay.setHours(0, 0, 0, 0);
+    const daysAway = Math.ceil((testDay - today) / (24 * 60 * 60 * 1000));
+    const objectiveNames = new Map(window.db.getUnits().flatMap(unit =>
+      unit.topics.flatMap(topic => (topic.objectives || []).map(objective => [
+        objective.id,
+        `${objective.id} · ${objective.name}`
+      ]))
+    ));
+    return {
+      id: prep.id,
+      title: prep.title,
+      dateLabel: testDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+      daysAway,
+      daysLabel: daysAway < 0
+        ? 'Date passed'
+        : daysAway === 0
+          ? 'Today'
+          : daysAway === 1
+            ? 'Tomorrow'
+            : `${daysAway} days away`,
+      sections: (prep.specificationPointIds || []).map(id => objectiveNames.get(id) || id)
     };
   }
 
@@ -1986,6 +2017,10 @@ class App {
     const generalNextMilestone = availableMilestones.find(item => item.state === 'practice_completed')
       || availableMilestones.find(item => item.state === 'not_started');
     const activeTestPreps = window.db.getTestPreps().filter(p => p.status === 'Active' && this.isPublishedToStudent(p, student));
+    const upcomingTestPrep = [...activeTestPreps].sort((left, right) =>
+      String(left.testDate || '').localeCompare(String(right.testDate || ''))
+    )[0] || null;
+    const upcomingTestNotebook = this.getUpcomingTestNotebook(upcomingTestPrep);
     const upcomingSessions = window.db.getSupportSessions().filter(item => item.published && this.isPublishedToStudent(item, student));
     const controls = window.db.getClassroomControls(student.classId);
     const practiceRhythm = this.getStudentPracticeRhythm(student.id);
@@ -2339,23 +2374,53 @@ class App {
       </aside>
     `;
     const requiredTaskActive = hasActiveTestPrep || Boolean(dominantAssignment);
-    const weeklyRhythmHtml = requiredTaskActive ? `
-      <section class="card" aria-labelledby="weekly-rhythm-heading">
-        <span class="student-kicker">Weekly study rhythm &middot; paused</span>
-        <h2 id="weekly-rhythm-heading">Recommended study resumes after required work</h2>
-        <p>Complete the required task above first. Your optional rhythm is waiting; it is not extra work to complete now and unfinished items do not become overdue.</p>
-      </section>
-    ` : `
-      <section class="card" aria-labelledby="weekly-rhythm-heading">
-        <span class="student-kicker">Study habit &middot; resets each Monday</span>
-        <h2 id="weekly-rhythm-heading">Your Computing rhythm</h2>
-        <p>${practiceRhythm.completedCount} of ${practiceRhythm.items.length} planned activities complete. About ${practiceRhythm.totalMinutes} minutes across the week.</p>
-        <p>Regular study builds your routine. Only marked work changes Progress.</p>
-        <ul style="list-style:none; padding:0; display:grid; gap:8px;">
-          ${practiceRhythm.items.map(item => `<li ${!requiredTaskActive && practiceRhythm.next?.id === item.id ? 'aria-current="step"' : ''} style="display:flex; justify-content:space-between; gap:12px;"><span>${item.done >= item.target ? 'Done' : practiceRhythm.next?.id === item.id ? (requiredTaskActive ? 'After required work' : 'Up next') : 'Planned'} &middot; ${this.escapeHTML(item.label)}</span><strong>${item.done}/${item.target}</strong></li>`).join('')}
+    const weeklyRhythmHtml = `
+      <section class="card student-weekly-notebook" aria-labelledby="weekly-rhythm-heading">
+        <header class="student-weekly-notebook__header">
+          <div>
+            <span class="student-kicker">Weekly notebook &middot; resets each Monday</span>
+            <h2 id="weekly-rhythm-heading">My study tasks</h2>
+            <p>${practiceRhythm.completedCount} of ${practiceRhythm.items.length} tasks complete. About ${practiceRhythm.totalMinutes} minutes across the week.</p>
+          </div>
+          <span class="student-weekly-notebook__count">${practiceRhythm.completedCount}/${practiceRhythm.items.length}</span>
+        </header>
+        ${requiredTaskActive ? '<p class="student-weekly-notebook__priority"><strong>Required work comes first.</strong> Your notebook stays visible so you can see the rest of your week.</p>' : ''}
+        ${upcomingTestNotebook ? `
+          <aside class="student-notebook-test" aria-labelledby="upcoming-test-heading">
+            <div>
+              <span class="student-kicker">Upcoming test</span>
+              <h3 id="upcoming-test-heading">${this.escapeHTML(upcomingTestNotebook.title)}</h3>
+              <p><strong>${this.escapeHTML(upcomingTestNotebook.dateLabel)}</strong> &middot; ${this.escapeHTML(upcomingTestNotebook.daysLabel)}</p>
+              <p>Topics: ${upcomingTestNotebook.sections.slice(0, 3).map(item => this.escapeHTML(item)).join('; ')}${upcomingTestNotebook.sections.length > 3 ? `; +${upcomingTestNotebook.sections.length - 3} more` : ''}</p>
+            </div>
+            <button type="button" class="btn btn-secondary notebook-test-btn" data-prep-id="${this.escapeHTML(upcomingTestNotebook.id)}">Open test plan</button>
+          </aside>
+        ` : ''}
+        <ul class="student-weekly-notebook__tasks">
+          ${practiceRhythm.items.map(item => {
+            const complete = item.done >= item.target;
+            const current = practiceRhythm.next?.id === item.id;
+            const progressLabel = item.unit === 'days'
+              ? `${item.done} of ${item.target} days`
+              : complete
+                ? 'Done'
+                : `${item.done} of ${item.target}`;
+            return `
+              <li ${current ? 'aria-current="step"' : ''}>
+                <span class="student-weekly-notebook__check" aria-hidden="true">${complete ? '✓' : '○'}</span>
+                <span>
+                  <strong>${this.escapeHTML(item.label)}</strong>
+                  <small>${this.escapeHTML(item.cadence)} &middot; about ${item.minutes} min</small>
+                </span>
+                <span class="student-weekly-notebook__progress">${progressLabel}</span>
+                ${complete
+                  ? '<span class="student-weekly-notebook__done">Complete</span>'
+                  : `<button type="button" class="btn btn-secondary btn-sm notebook-task-btn" data-activity-id="${this.escapeHTML(item.id)}" data-route="${this.escapeHTML(item.route)}">${requiredTaskActive ? 'Open' : current ? 'Start next' : 'Start'}</button>`}
+              </li>`;
+          }).join('')}
         </ul>
-        ${practiceRhythm.habitAchieved ? '<p><strong>Study-habit achievement:</strong> Weekly rhythm complete. This recognises regular study, not mastery.</p>' : ''}
-        ${practiceRhythm.next ? `<button type="button" class="btn btn-secondary" id="weekly-rhythm-next" data-activity-id="${this.escapeHTML(practiceRhythm.next.id)}" data-route="${this.escapeHTML(practiceRhythm.next.route)}">Next: ${this.escapeHTML(practiceRhythm.next.label)} &middot; ${practiceRhythm.next.minutes} min</button>` : '<p><strong>Weekly plan complete.</strong> A new plan begins next Monday; unfinished optional study does not become overdue.</p>'}
+        <p class="student-weekly-notebook__note">Flashcards count on different days, so doing extra cards today cannot complete another day. Regular study builds your routine; only marked work changes Progress.</p>
+        ${practiceRhythm.habitAchieved ? '<p><strong>Weekly habit complete.</strong> This recognises regular study, not mastery.</p>' : ''}
       </section>
     `;
     const deskSummary = this.getDeskTopicSummary(student);
@@ -2480,14 +2545,21 @@ class App {
 
     const achievementsButton = panel.querySelector('#dashboard-achievements-btn');
     if (achievementsButton) achievementsButton.onclick = () => this.switchTab('stud-progress');
-    const rhythmNextButton = panel.querySelector('#weekly-rhythm-next');
-    if (rhythmNextButton) rhythmNextButton.onclick = () => {
-      if (rhythmNextButton.getAttribute('data-activity-id') === 'exam') {
-        this.activateScheduledExamTransfer();
-      } else {
-        this.switchTab(rhythmNextButton.getAttribute('data-route'));
-      }
-    };
+    panel.querySelectorAll('.notebook-task-btn').forEach(button => {
+      button.onclick = () => {
+        if (button.getAttribute('data-activity-id') === 'exam') {
+          this.activateScheduledExamTransfer();
+        } else {
+          this.switchTab(button.getAttribute('data-route'));
+        }
+      };
+    });
+    panel.querySelectorAll('.notebook-test-btn').forEach(button => {
+      button.onclick = () => {
+        this.activeTestPrepId = button.getAttribute('data-prep-id');
+        this.switchTab('stud-test-prep');
+      };
+    });
 
     const trigger = document.getElementById('student-profile-trigger');
     const dropdown = document.getElementById('student-profile-dropdown');

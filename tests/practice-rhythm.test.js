@@ -58,6 +58,45 @@ describe('weekly practice rhythm', () => {
     expect(app.getStudentPracticeRhythm('student_1', new Date('2026-07-29T12:00:00')).retrievalDays).toBe(2);
   });
 
+  test('weekly notebook uses honest frequencies and maps an upcoming test to sections', () => {
+    const { app, data } = loadApp();
+    data.units.push({
+      topics: [{
+        id: 'topic_1_1',
+        objectives: [{ id: '1.1.1', name: 'Architecture of the CPU' }]
+      }]
+    });
+    const rhythm = app.getStudentPracticeRhythm('student_1', new Date('2026-07-29T12:00:00'));
+    expect(rhythm.items.find(item => item.id === 'retrieval')).toMatchObject({
+      label: 'Review flashcards',
+      cadence: 'On 2 different days',
+      target: 2,
+      unit: 'days'
+    });
+    expect(rhythm.items.find(item => item.id === 'number')).toMatchObject({
+      label: 'Practise number systems',
+      cadence: 'Once this week'
+    });
+    expect(rhythm.items.find(item => item.id === 'programming')).toMatchObject({
+      label: 'Practise programming',
+      cadence: 'Once this week'
+    });
+
+    expect(app.getUpcomingTestNotebook({
+      id: 'prep_cpu',
+      title: 'CPU test',
+      testDate: '2026-08-05',
+      specificationPointIds: ['1.1.1']
+    }, new Date('2026-07-29T12:00:00'))).toMatchObject({
+      id: 'prep_cpu',
+      title: 'CPU test',
+      dateLabel: '5 Aug',
+      daysAway: 7,
+      daysLabel: '7 days away',
+      sections: ['1.1.1 · Architecture of the CPU']
+    });
+  });
+
   test('keeps awaiting-review exam work as submitted engagement and outside attainment', () => {
     const { app, data } = loadApp();
     data.attempts.push({

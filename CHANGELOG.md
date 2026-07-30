@@ -5,6 +5,11 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Added a weekly notebook to My desk with directly linked flashcard,
+  number-systems, programming and exam-question tasks. Flashcards must be
+  reviewed on different days, so one long session cannot complete the week.
+- Added the nearest teacher-set test to the notebook, including its date, days
+  remaining, included specification sections and a direct test-plan action.
 - Made personal desk membership explicit: classroom and legacy availability no
   longer silently place flashcards on My desk or in its personal sessions.
 - Reframed the student start page as My desk, with selected flashcard topics,
