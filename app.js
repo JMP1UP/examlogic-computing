@@ -2218,16 +2218,15 @@ class App {
     const bannerAccentColor = isOverdueHomework ? '#D97706' : isHomework ? '#07111F' : 'var(--teal)';
     const bannerBadgeBg = isOverdueHomework ? '#D97706' : isHomework ? '#07111F' : 'var(--teal)';
     const btnBg = isOverdueHomework ? '#D97706' : isHomework ? '#07111F' : 'var(--teal)';
-    const bgGradient = hasActiveTestPrep
-      ? 'linear-gradient(135deg, rgba(45, 156, 145, 0.08) 0%, rgba(255, 255, 255, 1) 100%)'
+    
+    const bannerBgColor = hasActiveTestPrep
+      ? '#EEF7F6'
       : isHomework
-        ? (isOverdueHomework
-          ? 'linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(255, 255, 255, 1) 100%)'
-          : 'linear-gradient(135deg, rgba(7, 17, 31, 0.04) 0%, rgba(255, 255, 255, 1) 100%)')
-        : 'linear-gradient(135deg, rgba(45, 156, 145, 0.06) 0%, rgba(255, 255, 255, 1) 100%)';
+        ? (isOverdueHomework ? '#FEF3C7' : '#F0F4F8')
+        : '#FFFFFF';
 
     dominantTaskHtml = `
-      <section class="card student-primary-task-banner" aria-labelledby="primary-task-title" style="padding: 22px 28px; border-left: 6px solid ${bannerAccentColor}; background: #FFFFFF !important; border: 1px solid var(--border-color); border-left-width: 6px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; box-shadow: 0 8px 24px rgba(7, 17, 31, 0.08); position: relative; z-index: 5; opacity: 1 !important; backdrop-filter: none !important;">
+      <section class="card student-primary-task-banner" aria-labelledby="primary-task-title" style="padding: 22px 28px; border-left: 6px solid ${bannerAccentColor}; background: ${bannerBgColor} !important; border: 1px solid var(--border-color); border-left-width: 6px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; box-shadow: 0 8px 24px rgba(7, 17, 31, 0.08); position: relative; z-index: 5; opacity: 1 !important; backdrop-filter: none !important;">
         <div style="flex: 1; min-width: 260px;">
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
             <span style="font-size: 18px;">${bannerIcon}</span>
