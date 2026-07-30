@@ -5532,98 +5532,110 @@ class App {
         <div style="height:100%; width:${progress}%; background:var(--teal); transition: width 0.3s ease;"></div>
       </div>
 
-      <div class="card" id="exam-transfer-question" tabindex="-1" style="margin-bottom: 16px; padding: 20px; border-left: 5px solid var(--teal); scroll-margin-top: 12px; background-color: var(--bg-card);">
-        <strong style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--teal);">Question Prompt (${task.marks} Marks)</strong>
-        <p style="font-size: 16.5px; font-weight: 600; margin: 8px 0 0; line-height: 1.5; color: var(--navy);">${this.escapeHTML(task.question)}</p>
-        <details style="margin-top: 12px;">
-          <summary style="cursor: pointer; font-weight: 600; font-size: 13px; color: var(--slate);">Choose a different question</summary>
-          <label for="exam-transfer-task-select" class="sr-only">Exam question</label>
-          <select id="exam-transfer-task-select" class="form-control" style="margin-top: 8px;">
-            ${tasks.map(item => `<option value="${item.id}" ${item.id === task.id ? 'selected' : ''}>${item.paper} &middot; ${item.specificationPointId} &middot; ${item.commandWord} (${item.marks} Marks)</option>`).join('')}
-          </select>
-        </details>
-      </div>
-
-      ${this.examTransferStage === 'decode' ? `
-        <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 20px;">
-          <span class="badge badge-primary">Stage 1 of 4: Understand</span>
-          <h2 style="font-size: 17px; margin-top: 10px; margin-bottom: 10px;">Work out what the question asks</h2>
-          <p style="font-size: 14px; line-height: 1.5; margin-bottom: 12px; color: var(--navy);">
-            <strong>Command word: ${task.commandWord}</strong> — ${this.escapeHTML(task.decodePrompt)}
-          </p>
-          <label for="transfer-decode-response" style="font-weight: 600; font-size: 14px; margin-top: 6px; display: block;">In your own words, what does the question require?</label>
-          <textarea id="transfer-decode-response" class="form-control" rows="3" placeholder="For example: explain two reasons and link each one to the scenario." style="margin-top: 6px;"></textarea>
-          <button id="transfer-to-plan" class="btn btn-primary" style="margin-top: 14px; min-height: 40px;">Next: Plan your answer &rarr;</button>
-        </div>
-      ` : ''}
-
-      ${this.examTransferStage === 'plan' ? `
-        <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 24px;">
-          <span class="badge badge-primary">Stage 2 of 4: Plan</span>
-          <h2 style="font-size:18px; margin-top:10px;">${responseGuidance.planTitle}</h2>
-          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">${responseGuidance.planHelp}</p>
-          ${task.planningLabels.map((label, index) => `
-            <div class="form-group" style="margin-bottom: 14px;">
-              <label for="transfer-plan-${index}" style="font-weight: 600; font-size: 13.5px;">${isCalculation ? 'Step' : 'Point'} ${index + 1}: ${this.escapeHTML(label)}</label>
-              <input id="transfer-plan-${index}" class="form-control" placeholder="${isCalculation ? 'Write the value, operation or unit...' : 'Write a key point...'}" value="${this.escapeHTML(plan[index] || '')}">
+      <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 24px; border-left: 5px solid var(--teal); background-color: var(--bg-card);">
+        <!-- Top Question Bar -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
+          <div>
+            <span class="badge badge-primary" style="font-size: 11px;">Stage ${this.examTransferStage === 'decode' ? '1: Understand' : this.examTransferStage === 'plan' ? '2: Plan' : this.examTransferStage === 'answer' ? '3: Answer' : '4: Check'}</span>
+            <strong style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--teal); margin-left: 8px;">Exam Question (${task.marks} Marks)</strong>
+          </div>
+          <details style="position: relative;">
+            <summary style="cursor: pointer; font-weight: 600; font-size: 12px; color: var(--text-muted);">⚙️ Change question</summary>
+            <div style="position: absolute; right: 0; top: 24px; width: 320px; z-index: 50; padding: 10px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.12);">
+              <label for="exam-transfer-task-select" style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 4px;">Select exam prompt:</label>
+              <select id="exam-transfer-task-select" class="form-control" style="font-size: 12px;">
+                ${tasks.map(item => `<option value="${item.id}" ${item.id === task.id ? 'selected' : ''}>${item.paper} &middot; ${item.specificationPointId} &middot; ${item.commandWord} (${item.marks} Marks)</option>`).join('')}
+              </select>
             </div>
-          `).join('')}
-          <div style="display: flex; gap: 10px; margin-top: 16px;">
-            <button id="transfer-back-decode" class="btn btn-secondary">&larr; Back</button>
-            <button id="transfer-to-answer" class="btn btn-primary">Next: write your answer &rarr;</button>
-          </div>
+          </details>
         </div>
-      ` : ''}
 
-      ${this.examTransferStage === 'answer' ? `
-        <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 24px;">
-          <span class="badge badge-primary">Stage 3 of 4: Answer</span>
-          <h2 style="font-size:18px; margin-top:10px;">${responseGuidance.answerTitle}</h2>
-          <p style="font-size:13px; color:var(--text-muted); margin-bottom: 12px;">Aim for about ${Math.max(3, Math.round(task.minutes * 0.65))} minutes. ${responseGuidance.answerHelp}</p>
-          <textarea id="transfer-answer-response" class="form-control" rows="8" placeholder="${responseGuidance.placeholder}">${this.escapeHTML(this.examTransferResponse)}</textarea>
+        <!-- Prominent Question Text -->
+        <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 16px 0; line-height: 1.45; color: var(--navy);">${this.escapeHTML(task.question)}</h2>
 
-          <div style="display: flex; gap: 10px; margin-top:16px;">
-            <button id="transfer-back-plan" class="btn btn-secondary">&larr; Back to Plan</button>
-            <button id="transfer-to-check" class="btn btn-primary">Check Against Mark Scheme &rarr;</button>
+        <!-- Subtle Collapsible Command Word Guidance -->
+        <details style="margin-bottom: 16px; background: rgba(45, 156, 145, 0.05); border: 1px solid rgba(45, 156, 145, 0.2); border-radius: 8px; padding: 8px 12px;">
+          <summary style="cursor: pointer; font-size: 13px; font-weight: 600; color: var(--teal);">💡 Examiner Advice & Command Word Tip (${task.commandWord})</summary>
+          <div style="font-size: 13px; color: var(--text-main); margin-top: 8px; line-height: 1.5; border-top: 1px dashed rgba(45, 156, 145, 0.2); padding-top: 8px;">
+            <strong>Command word: ${task.commandWord}</strong> — ${this.escapeHTML(task.decodePrompt)}
           </div>
-        </div>
-      ` : ''}
+        </details>
 
-      ${this.examTransferStage === 'check' ? `
-        <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 24px;">
-          <span class="badge badge-primary">Stage 4 of 4: Check</span>
-          <h2 style="font-size:18px; margin-top:10px;">${isCalculation ? 'Check your method' : 'Compare with the mark scheme'}</h2>
-          <p>${isCalculation ? 'Check each stage of your working, including the conversion and final unit.' : 'A mark scheme lists points an examiner may credit. This check is for practice, not a final mark. Tick only what your answer actually explains.'}</p>
-          <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
-            ${task.requiredElements.map((element, index) => `
-              <label style="display:flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-main); border-radius: 6px; border: 1px solid var(--border-color); font-size: 14px; cursor: pointer;">
-                <input type="checkbox" class="transfer-evidence-checkbox" value="${index}" style="width: 18px; height: 18px;">
-                <span>${this.escapeHTML(element)}</span>
-              </label>
+        <!-- STAGE 1: DECODE -->
+        ${this.examTransferStage === 'decode' ? `
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label for="transfer-decode-response" style="font-weight: 700; font-size: 14px; display: block; margin-bottom: 6px;">In your own words, what does this question require?</label>
+            <textarea id="transfer-decode-response" class="form-control" rows="3" placeholder="For example: explain two reasons and link each one to the scenario." style="font-size: 14px; line-height: 1.6;"></textarea>
+          </div>
+          <button id="transfer-to-plan" class="btn btn-primary" style="min-height: 42px; font-weight: 700;">Next: Plan your answer &rarr;</button>
+        ` : ''}
+
+        <!-- STAGE 2: PLAN -->
+        ${this.examTransferStage === 'plan' ? `
+          <div style="margin-bottom: 16px;">
+            <h3 style="font-size: 15px; font-weight: 700; margin: 0 0 6px 0;">${responseGuidance.planTitle}</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 12px 0;">${responseGuidance.planHelp}</p>
+            ${task.planningLabels.map((label, index) => `
+              <div class="form-group" style="margin-bottom: 12px;">
+                <label for="transfer-plan-${index}" style="font-weight: 600; font-size: 13px;">${isCalculation ? 'Step' : 'Point'} ${index + 1}: ${this.escapeHTML(label)}</label>
+                <input id="transfer-plan-${index}" class="form-control" placeholder="${isCalculation ? 'Write the value, operation or unit...' : 'Write a key point...'}" value="${this.escapeHTML(plan[index] || '')}">
+              </div>
             `).join('')}
           </div>
-          <details class="card" style="margin-top:14px; background: rgba(7, 17, 31, 0.04); padding: 16px;">
-            <summary style="cursor:pointer; font-weight:700; font-size: 14px;">Compare with an example answer plan</summary>
-            <ol style="margin-top: 10px; padding-left: 20px; font-size: 13.5px; line-height: 1.6;">
-              ${task.modelPlan.map(item => `<li>${this.escapeHTML(item)}</li>`).join('')}
-            </ol>
-          </details>
-          <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:16px;">
-            <button id="transfer-finish-guided" class="btn btn-secondary" style="min-height:40px;">Finish and return to My desk</button>
-            <button id="transfer-to-retry" class="btn btn-primary" style="min-height:40px;">Optional: try a similar question &rarr;</button>
+          <div style="display: flex; gap: 10px;">
+            <button id="transfer-back-decode" class="btn btn-secondary">&larr; Back</button>
+            <button id="transfer-to-answer" class="btn btn-primary" style="font-weight: 700;">Next: Write full answer &rarr;</button>
           </div>
-        </div>
-      ` : ''}
+        ` : ''}
 
-      ${this.examTransferStage === 'retry' ? `
-        <div class="card" id="exam-transfer-stage" tabindex="-1" style="padding: 24px;">
-          <span class="badge badge-warning">Optional independent question</span>
-          <h2 style="font-size:18px; margin-top:10px;">Try a similar question without help</h2>
-          <p style="font-size:16px; font-weight:600; color: var(--text-main); margin-bottom: 12px;">${this.escapeHTML(task.retryQuestion)}</p>
-          <textarea id="transfer-retry-response" class="form-control" rows="8" placeholder="Write your answer without help here..."></textarea>
-          <button id="transfer-finish" class="btn btn-primary" style="margin-top:16px; min-height: 44px;">Send answer for teacher review</button>
-        </div>
-      ` : ''}
+        <!-- STAGE 3: ANSWER -->
+        ${this.examTransferStage === 'answer' ? `
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label for="transfer-answer-response" style="font-weight: 700; font-size: 14px; display: block; margin-bottom: 6px;">Your Written Answer (Aim for ~${Math.max(3, Math.round(task.minutes * 0.65))} mins):</label>
+            <textarea id="transfer-answer-response" class="form-control" rows="8" placeholder="${responseGuidance.placeholder}" style="font-size: 14px; line-height: 1.6;">${this.escapeHTML(this.examTransferResponse)}</textarea>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button id="transfer-back-plan" class="btn btn-secondary">&larr; Back to Plan</button>
+            <button id="transfer-to-check" class="btn btn-primary" style="font-weight: 700;">Check Against Mark Scheme &rarr;</button>
+          </div>
+        ` : ''}
+
+        <!-- STAGE 4: CHECK -->
+        ${this.examTransferStage === 'check' ? `
+          <div>
+            <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 6px 0;">${isCalculation ? 'Check your method' : 'Compare with official OCR mark scheme'}</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 14px 0;">${isCalculation ? 'Check each stage of your working.' : 'Tick only what your written answer actually explains.'}</p>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+              ${task.requiredElements.map((element, index) => `
+                <label style="display:flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-main); border-radius: 6px; border: 1px solid var(--border-color); font-size: 13.5px; cursor: pointer;">
+                  <input type="checkbox" class="transfer-evidence-checkbox" value="${index}" style="width: 18px; height: 18px;">
+                  <span>${this.escapeHTML(element)}</span>
+                </label>
+              `).join('')}
+            </div>
+            <details style="margin-top: 14px; background: rgba(7, 17, 31, 0.04); padding: 14px; border-radius: 8px;">
+              <summary style="cursor:pointer; font-weight:700; font-size: 13.5px;">Compare with an example model plan</summary>
+              <ol style="margin-top: 10px; padding-left: 20px; font-size: 13.5px; line-height: 1.6;">
+                ${task.modelPlan.map(item => `<li>${this.escapeHTML(item)}</li>`).join('')}
+              </ol>
+            </details>
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:16px;">
+              <button id="transfer-finish-guided" class="btn btn-secondary" style="min-height:40px;">Finish and return to My desk</button>
+              <button id="transfer-to-retry" class="btn btn-primary" style="min-height:40px; font-weight: 700;">Try similar question &rarr;</button>
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- RETRY -->
+        ${this.examTransferStage === 'retry' ? `
+          <div>
+            <span class="badge badge-warning" style="margin-bottom: 8px;">Optional independent practice</span>
+            <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 8px 0;">${this.escapeHTML(task.retryQuestion)}</h3>
+            <textarea id="transfer-retry-response" class="form-control" rows="8" placeholder="Write your answer without help here..." style="font-size: 14px; line-height: 1.6;"></textarea>
+            <button id="transfer-finish" class="btn btn-primary" style="margin-top:16px; min-height: 44px; font-weight: 700;">Send answer for teacher review</button>
+          </div>
+        ` : ''}
+      </div>
     `;
 
     const taskSelect = document.getElementById('exam-transfer-task-select');
