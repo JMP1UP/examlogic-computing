@@ -2753,35 +2753,20 @@ class App {
                     : 'Not on your desk';
                 const reviewLabel = state === 'learning' ? 'Continue refresher' : 'Review topic';
                 return `
-                  <article class="student-objective-card ${inDeck ? 'student-objective-card--in-deck' : 'student-objective-card--not-in-deck'}" aria-labelledby="objective-name-${this.escapeHTML(objective.id)}">
-                    <div>
-                      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
-                        <h3 id="objective-name-${this.escapeHTML(objective.id)}" style="margin: 0;">${this.escapeHTML(objective.id)} &middot; ${this.escapeHTML(objective.name)}</h3>
-                        <span class="badge ${inDeck ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px; white-space: nowrap;">
-                          ${inDeck ? '🎴 On your desk' : state === 'covered' ? '⏸ Cards paused' : 'Not on desk'}
-                        </span>
-                      </div>
-                      <p class="student-objective-next"><strong>${deckStatus}</strong></p>
+                  <div class="student-objective-row" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 16px; margin-bottom: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: ${inDeck ? 'rgba(45, 156, 145, 0.05)' : 'var(--bg-card)'}; border-left: 4px solid ${inDeck ? 'var(--teal)' : 'var(--border-color)'}; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 240px;">
+                      <h3 id="objective-name-${this.escapeHTML(objective.id)}" style="margin: 0; font-size: 15px; font-weight: 600;">${this.escapeHTML(objective.id)} &middot; ${this.escapeHTML(objective.name)}</h3>
+                      <span class="badge ${inDeck ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px; white-space: nowrap;">
+                        ${inDeck ? '🎴 On desk' : 'Not on desk'}
+                      </span>
                     </div>
-                    <div class="student-objective-actions">
+                    <div class="student-objective-actions" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                       ${inDeck
-                        ? `<button type="button" class="btn btn-primary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="Review topic flashcards: ${this.escapeHTML(topic.code)} ${this.escapeHTML(topic.name)}">Review topic flashcards</button>`
-                        : `<button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="${state === 'covered' ? 'Add flashcards again' : 'Add flashcards to my desk'}: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">${state === 'covered' ? '+ Add flashcards again' : '+ Add flashcards to my desk'}</button>`}
-                      <button type="button" class="btn btn-secondary objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="${reviewLabel}: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}" ${available ? '' : 'disabled'}>${available ? reviewLabel : 'Refresher unavailable'}</button>
-                      <details>
-                        <summary aria-label="More choices and progress for ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">More choices and progress</summary>
-                        <dl class="student-objective-status">
-                          <div><dt>Flashcards</dt><dd>${deckStatus}</dd></div>
-                          <div><dt>Checked questions</dt><dd>${checked}</dd></div>
-                        </dl>
-                        <div class="student-action-row">
-                          ${inDeck ? `<button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="Pause flashcards: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">Pause these flashcards</button>` : ''}
-                          ${task ? `<button type="button" class="btn btn-secondary objective-exam-btn" data-task-id="${this.escapeHTML(task.id)}" aria-label="Try a checked question: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">Try a checked question</button>` : ''}
-                          <button type="button" class="btn btn-secondary objective-progress-btn" aria-label="See my progress: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">See my progress</button>
-                        </div>
-                      </details>
+                        ? `<button type="button" class="btn btn-primary objective-recall-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 14px; font-size: 13px; min-height: 36px;">Review flashcards</button>`
+                        : `<button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 14px; font-size: 13px; min-height: 36px;">+ Add to desk</button>`}
+                      <button type="button" class="btn btn-secondary objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" style="padding: 6px 14px; font-size: 13px; min-height: 36px;" ${available ? '' : 'disabled'}>${available ? 'Review topic' : 'Unavailable'}</button>
                     </div>
-                  </article>`;
+                  </div>`;
               }).join('')}
             </div>
           </details>`).join('')}
