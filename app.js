@@ -2205,25 +2205,20 @@ class App {
     }
 
     dominantTaskHtml = `
-      <section class="student-primary-task" aria-labelledby="primary-task-title">
-        <div class="student-primary-task__index" aria-hidden="true">01</div>
-        <div class="student-primary-task__body">
-          <div class="student-primary-task__eyebrow">
-            <span class="student-priority-tag">${this.escapeHTML(dominantTask.label)}</span>
-            <span>${this.escapeHTML(dominantTask.kind)}</span>
-            <span>${dominantTask.actionMinutes} min</span>
+      <section class="card student-primary-task-banner" aria-labelledby="primary-task-title" style="padding: 16px 20px; border-left: 6px solid var(--teal); background: var(--bg-card); border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 260px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span class="badge badge-primary" style="font-size: 11px; font-weight: 700;">${this.escapeHTML(dominantTask.label)}</span>
+            <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">${this.escapeHTML(dominantTask.kind)} &middot; ${dominantTask.actionMinutes} min</span>
           </div>
-          <h2 id="primary-task-title">${this.escapeHTML(dominantTask.title)}</h2>
-          <div class="student-primary-task__meta">
-            ${dominantTask.meta.map(item => `<span>${this.escapeHTML(item)}</span>`).join('')}
+          <h2 id="primary-task-title" style="margin: 0 0 4px 0; font-size: 18px; font-weight: 800; color: var(--text-main);">${this.escapeHTML(dominantTask.title)}</h2>
+          <div style="font-size: 13px; color: var(--text-muted);">
+            ${dominantTask.meta.map(item => `<span>${this.escapeHTML(item)}</span>`).join(' &middot; ')}
           </div>
-          <p class="student-primary-task__description">${this.escapeHTML(dominantTask.description)}</p>
-          <button class="btn student-primary-task__action ${dominantTask.actionClass}" ${dominantTask.actionAttributes}>
-            <span>${this.escapeHTML(dominantTask.actionLabel)}</span>
-            <span aria-hidden="true">&rarr;</span>
-            <small>${dominantTask.actionMinutes} min</small>
-          </button>
         </div>
+        <button class="btn btn-primary ${dominantTask.actionClass}" ${dominantTask.actionAttributes} style="min-height: 42px; padding: 10px 20px; font-size: 14px; font-weight: 600; white-space: nowrap;">
+          ${this.escapeHTML(dominantTask.actionLabel)} &rarr; (${dominantTask.actionMinutes} min)
+        </button>
       </section>
     `;
 
@@ -2665,9 +2660,19 @@ class App {
 
         <div class="student-dashboard__flow">
           ${dominantTaskHtml}
-          ${weeklyRhythmHtml}
-          ${upcomingDatesHtml}
-          ${myDeckHtml}
+
+          <div class="student-desk-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; align-items: start;">
+            <!-- Left Main Column: Revision Desk (Flashcards + Notebook) -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              ${myDeckHtml}
+              ${weeklyRhythmHtml}
+            </div>
+
+            <!-- Right Sidebar Column: Upcoming Schedule & Dates -->
+            <div>
+              ${upcomingDatesHtml}
+            </div>
+          </div>
         </div>
       </div>
     `;
