@@ -431,9 +431,9 @@ class App {
     return `
       <section class="card student-achievement-panel" aria-labelledby="student-achievements-heading">
         <header>
-          <span class="student-kicker">Study habits and demonstrated skills</span>
+          <span class="student-kicker">Study habits & skills</span>
           <h3 id="student-achievements-heading">Your badges</h3>
-          <p>Skill badges come from checked evidence. Study-habit achievements recognise regular practice only and never claim mastery. There is no time pressure.</p>
+          <p>Badges earned through regular study habits and completed exam tasks.</p>
         </header>
         <div class="student-achievement-group">
           <h4>Achievements earned</h4>
@@ -6194,9 +6194,14 @@ class App {
     const topicLabels = new Map(window.db.getUnits().flatMap(unit => unit.topics).map(topic => [topic.id, topic.name]));
     const activityTypeLabels = {
       spaced_theory: 'Quick recall',
+      retrieval_rating: 'Flashcard check',
+      retrieval_deck_session: 'Flashcard session',
+      quick_recall: 'Quick recall',
       number_skills: 'Number skills',
       pseudocode_assessed: 'Pseudocode check',
-      exam_transfer_retry: 'Exam answer sent for review',
+      exam_transfer_retry: 'Exam question',
+      exam_transfer: 'Exam question',
+      programming: 'Programming task',
       definition_test: 'Definition practice'
     };
     const submissions = window.db.getProgrammingSubmissions().filter(s => s.studentId === this.currentUser.id);
@@ -6249,10 +6254,11 @@ class App {
     const topicMasteryHtml = window.db.getUnits().flatMap(unit => unit.topics).map(topic => {
       const topicAttempts = attempts.filter(attempt => this.attemptMatchesTopic(attempt, topic));
       const mastery = this.getDemonstratedMastery(topicAttempts);
-      const badgeClass = mastery.ratio === null ? 'badge-secondary' : mastery.ratio >= 0.85 ? 'badge-success' : mastery.ratio >= 0.6 ? 'badge-warning' : 'badge-primary';
-      const legacyDetail = mastery.legacyEvidenceCount ? ` · ${mastery.legacyEvidenceCount} older ${mastery.legacyEvidenceCount === 1 ? 'result' : 'results'} with less question detail` : '';
-      const detail = mastery.ratio === null ? 'No checked result yet' : `${mastery.earned}/${mastery.available} from ${mastery.evidenceCount} latest checked ${mastery.evidenceCount === 1 ? 'activity' : 'activities'}${legacyDetail}`;
-      return `<div style="display:flex; justify-content:space-between; gap:12px; font-size:14px;"><span>${this.escapeHTML(topic.name)}</span><span><span class="badge ${badgeClass}">${mastery.label}</span><span style="display:block; font-size:11px; color:var(--text-muted); text-align:right;">${detail}</span></span></div>`;
+      const isNotStarted = mastery.ratio === null;
+      const badgeClass = isNotStarted ? 'badge-secondary' : mastery.ratio >= 0.85 ? 'badge-success' : mastery.ratio >= 0.6 ? 'badge-warning' : 'badge-primary';
+      const badgeText = isNotStarted ? 'Not Started' : mastery.label;
+      const detail = isNotStarted ? '' : `<span style="display:block; font-size:11px; color:var(--text-muted); text-align:right;">${mastery.earned}/${mastery.available} passed</span>`;
+      return `<div style="display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:14px; padding: 6px 0; border-bottom: 1px dashed var(--border-color);"><span>${this.escapeHTML(topic.name)}</span><span style="text-align:right;"><span class="badge ${badgeClass}">${badgeText}</span>${detail}</span></div>`;
     }).join('');
 
     panel.innerHTML = `
@@ -6296,7 +6302,7 @@ class App {
           <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 16px; color: var(--text-main);">Topic Status</h2>
           
           <div class="card" style="margin-bottom: 32px; padding: 20px;">
-            <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
               ${topicMasteryHtml}
             </div>
           </div>
@@ -6314,19 +6320,25 @@ class App {
                 </tr>
               </thead>
               <tbody>
-                ${displayedAttempts.slice(0, 10).map(a => `
-                  <tr>
-                    <td style="font-weight: 600;">${this.escapeHTML(topicLabels.get(a.topic) || a.topic || 'General activity')}</td>
-                    <td>${this.escapeHTML(activityTypeLabels[a.type] || String(a.type || 'Activity').replaceAll('_', ' '))}</td>
-                    <td><strong style="color: var(--teal);">${a.score}</strong></td>
-                    <td>
-                      <span class="badge ${a.completionStatus === 'completed' || a.score > 0 ? 'badge-success' : 'badge-primary'}">
-                        ${a.completionStatus === 'awaiting_review' ? 'Awaiting Review' : 'Completed'}
-                      </span>
-                    </td>
-                    <td style="color: var(--text-muted); font-size: 13px;">${new Date(a.date).toLocaleDateString()}</td>
-                  </tr>
-                `).join('')}
+                ${displayedAttempts.slice(0, 10).map(a => {
+                  const scoreText = a.score === 'engagement only' || String(a.score).includes('engagement')
+                    ? '<span style="color: var(--text-muted); font-size: 12px; font-weight: 500;">Practice</span>'
+                    : `<strong style="color: var(--teal);">${a.score}</strong>`;
+                  const activityText = activityTypeLabels[a.type] || String(a.type || 'Activity').replaceAll('_', ' ');
+                  return `
+                    <tr>
+                      <td style="font-weight: 600;">${this.escapeHTML(topicLabels.get(a.topic) || a.topic || 'General activity')}</td>
+                      <td>${this.escapeHTML(activityText)}</td>
+                      <td>${scoreText}</td>
+                      <td>
+                        <span class="badge ${a.completionStatus === 'completed' || a.score > 0 ? 'badge-success' : 'badge-primary'}">
+                          ${a.completionStatus === 'awaiting_review' ? 'Awaiting Review' : 'Completed'}
+                        </span>
+                      </td>
+                      <td style="color: var(--text-muted); font-size: 13px;">${new Date(a.date).toLocaleDateString()}</td>
+                    </tr>
+                  `;
+                }).join('')}
               </tbody>
             </table>
           </div>
