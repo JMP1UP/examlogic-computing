@@ -2778,3 +2778,62 @@ body.dark-mode .app-container[data-user-role="student"] {
   .teacher-profile-summary-grid, .teacher-report-form-grid, .teacher-profile-columns, .student-report-topic-grid { grid-template-columns: 1fr; }
   .teacher-technique-tags { grid-template-columns: 1fr; }
 }
+
+/* 25Thirty Learning Step Accordion & Results Drawer Enhancements */
+.step-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.step-accordion-item {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--bg-card);
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.step-accordion-item.active {
+  border-color: var(--teal);
+  box-shadow: 0 2px 8px rgba(45, 156, 145, 0.15);
+}
+
+.step-accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: rgba(7, 17, 31, 0.03);
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.step-accordion-content {
+  padding: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.results-drawer {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.results-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.missed-filter-btn {
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: 10px;
+}
+
