@@ -3705,13 +3705,36 @@ class App {
     const cardPool = this.retrievalDeckExtraMode ? availableCards : unseenCards;
     const card = cardPool.length ? cardPool[this.retrievalDeckCardIndex % cardPool.length] : null;
     const showCompletion = this.retrievalDeckSessionComplete && !this.retrievalDeckExtraMode;
+    const confidentCardsCount = distinctCards.filter(card => {
+      const conf = this.getObjectiveRecallConfidence(card.objectiveId || card.topicId);
+      return conf === 'Consistently recalled';
+    }).length;
+    const totalDeskCardsCount = distinctCards.length || 0;
+    const confidencePercent = Math.round((confidentCardsCount / (totalDeskCardsCount || 1)) * 100);
 
     panel.innerHTML = `
       <div class="student-route-header">
         <span class="student-mode-label">Flashcards &middot; about 5 minutes</span>
         <h1>Review flashcards on your desk</h1>
-        <p>Try the prompt before revealing the answer. Your choice changes when the card returns; flashcards are not marked in Progress.</p>
+        <p>Try the prompt before revealing the answer. Rate how recall felt to schedule future card reviews.</p>
       </div>
+
+      <!-- Flashcards Overview Metrics Bar -->
+      <div class="student-retrieval-metrics" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
+        <div class="card" style="padding: 14px 18px; border-left: 4px solid var(--teal);">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Cards On Desk</span>
+          <div style="font-size: 20px; font-weight: 700; color: var(--text-main); margin-top: 4px;">🎴 ${totalDeskCardsCount} active ${totalDeskCardsCount === 1 ? 'card' : 'cards'}</div>
+        </div>
+        <div class="card" style="padding: 14px 18px; border-left: 4px solid #2e7d32;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Strong Memory</span>
+          <div style="font-size: 20px; font-weight: 700; color: var(--text-main); margin-top: 4px;">🟢 ${confidentCardsCount} confident (${confidencePercent}%)</div>
+        </div>
+        <div class="card" style="padding: 14px 18px; border-left: 4px solid #f57c00;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Practice Due</span>
+          <div style="font-size: 20px; font-weight: 700; color: var(--text-main); margin-top: 4px;">🔔 ${dueCards.length} due for review</div>
+        </div>
+      </div>
+
       <div class="card" style="margin-bottom:18px;">
         <label for="retrieval-topic-filter"><strong>Topic</strong></label>
         <select id="retrieval-topic-filter" class="form-control" style="max-width:420px; margin-top:6px;" ${this.retrievalDeckRatedCount > 0 ? 'disabled aria-describedby="retrieval-filter-status"' : ''}>
