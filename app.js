@@ -3118,7 +3118,8 @@ class App {
     if (!this.testBuilderConfig) {
       this.testBuilderConfig = {
         paperType: 'paper1',
-        questionCount: 10
+        questionCount: 10,
+        selectedTopicCodes: null
       };
     }
     const config = this.testBuilderConfig;
@@ -3126,6 +3127,12 @@ class App {
     const paper1Units = units.filter(u => u.paper.includes('Paper 1'));
     const paper2Units = units.filter(u => u.paper.includes('Paper 2'));
     const activeUnits = config.paperType === 'paper1' ? paper1Units : config.paperType === 'paper2' ? paper2Units : units;
+    const allActiveTopics = activeUnits.flatMap(u => u.topics);
+
+    if (!config.selectedTopicCodes || config.lastPaperType !== config.paperType) {
+      config.selectedTopicCodes = allActiveTopics.map(t => t.code);
+      config.lastPaperType = config.paperType;
+    }
 
     panel.innerHTML = `
       <div class="student-page student-test-builder">
@@ -3191,14 +3198,25 @@ class App {
           </div>
 
           <div class="card" style="padding: 24px; background: rgba(0,0,0,0.01);">
-            <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 12px 0;">Covered Topics in Selection</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 16px; font-weight: 700; margin: 0;">3. Filter Specific Topics (${config.selectedTopicCodes.length}/${allActiveTopics.length})</h3>
+              <button type="button" id="toggle-all-topics-btn" class="btn btn-link" style="font-size: 12px; padding: 0;">
+                ${config.selectedTopicCodes.length === allActiveTopics.length ? 'Deselect all' : 'Select all'}
+              </button>
+            </div>
             <div style="display: flex; flex-direction: column; gap: 8px;">
-              ${activeUnits.flatMap(u => u.topics).map(t => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--bg-card); border-radius: 6px; border: 1px solid var(--border-color); font-size: 13px;">
-                  <span><strong>${t.code}</strong> ${t.name}</span>
-                  <span class="badge badge-secondary" style="font-size: 11px;">${t.objectives.length} strands</span>
-                </div>
-              `).join('')}
+              ${allActiveTopics.map(t => {
+                const isSelected = config.selectedTopicCodes.includes(t.code);
+                return `
+                  <label style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: ${isSelected ? 'var(--bg-card)' : 'rgba(0,0,0,0.02)'}; border-radius: 6px; border: 1px solid var(--border-color); font-size: 13px; cursor: pointer;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <input type="checkbox" class="topic-select-checkbox" data-topic-code="${t.code}" ${isSelected ? 'checked' : ''}>
+                      <span><strong>${t.code}</strong> ${t.name}</span>
+                    </div>
+                    <span class="badge badge-secondary" style="font-size: 11px;">${t.objectives.length} strands</span>
+                  </label>
+                `;
+              }).join('')}
             </div>
           </div>
         </div>
@@ -3208,6 +3226,7 @@ class App {
     panel.querySelectorAll('input[name="builder-paper"]').forEach(radio => {
       radio.onchange = () => {
         config.paperType = radio.value;
+        config.selectedTopicCodes = null;
         this.renderStudentTestBuilder(panel);
       };
     });
@@ -3216,6 +3235,25 @@ class App {
         config.questionCount = parseInt(radio.value, 10);
         this.renderStudentTestBuilder(panel);
       };
+    });
+    panel.querySelectorAll('.topic-select-checkbox').forEach(cb => {
+      cb.onchange = () => {
+        const code = cb.dataset.topicCode;
+        if (cb.checked) {
+          if (!config.selectedTopicCodes.includes(code)) config.selectedTopicCodes.push(code);
+        } else {
+          config.selectedTopicCodes = config.selectedTopicCodes.filter(c => c !== code);
+        }
+        this.renderStudentTestBuilder(panel);
+      };
+    });
+    panel.querySelector('#toggle-all-topics-btn')?.addEventListener('click', () => {
+      if (config.selectedTopicCodes.length === allActiveTopics.length) {
+        config.selectedTopicCodes = [];
+      } else {
+        config.selectedTopicCodes = allActiveTopics.map(t => t.code);
+      }
+      this.renderStudentTestBuilder(panel);
     });
     panel.querySelector('#start-built-test-btn').onclick = () => {
       if (window.StudySpiceContent?.mixedExamEngine) {
