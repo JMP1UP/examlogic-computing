@@ -325,7 +325,7 @@ describe('production browser startup', () => {
     startButton.onclick();
 
     expect(context.app.activeObjectiveId).toBe('1.2.3');
-    expect(panel.innerHTML).toContain('Learn this section');
+    expect(panel.innerHTML).toContain('Review this section');
     expect(panel.innerHTML).toContain('Back to Topics');
   });
 
@@ -337,9 +337,9 @@ describe('production browser startup', () => {
 
     context.app.renderStudentLearn(panel);
 
-    expect(panel.innerHTML).toContain('Learn this section');
+    expect(panel.innerHTML).toContain('Review this section');
     expect(panel.innerHTML).toContain('Try a 4-mark exam question');
-    expect(panel.innerHTML).toContain('Mark as covered and add recall cards');
+    expect(panel.innerHTML).toContain('Add flashcards to my desk');
     expect(panel.innerHTML).toContain('Back to Topics');
     expect(panel.innerHTML).not.toContain('More ways to revise this topic');
     expect(panel.innerHTML).not.toContain('Choose a specification section');
@@ -359,7 +359,7 @@ describe('production browser startup', () => {
     context.app.renderStudentLearn(panel);
 
     expect(panel.innerHTML).toContain('Reading helps you prepare but does not update Progress');
-    expect(panel.innerHTML).toContain('it does not mean mastered');
+    expect(panel.innerHTML).toContain('does not mean you have mastered the topic');
     expect(panel.innerHTML).not.toContain('Check this section');
   });
 
@@ -695,6 +695,6 @@ describe('production browser startup', () => {
     const missingPanel = createPanel();
     context.app.activeTopicId = 'topic_missing';
     context.app.renderStudentLearn(missingPanel);
-    expect(missingPanel.innerHTML).toContain('Learning content unavailable');
+    expect(missingPanel.innerHTML).toContain('Topic review unavailable');
   });
 });

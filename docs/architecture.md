@@ -98,7 +98,7 @@ contribute to completion or mastery. This preserves potentially valid equivalent
 algorithms for human review without claiming an unsupported automated judgement.
 
 Student routes retain their legacy internal identifiers, but a route-parent
-resolver maps them to five visible destinations: Home, Topics, Practice,
+resolver maps them to five visible destinations: My desk, Topics, Practice,
 Progress and Messages. This preserves deep links and activity state while
 removing legacy engines from the top-level sidebar. Teacher route identifiers
 and navigation are unchanged.
@@ -111,7 +111,10 @@ progress, and older pupil records require no migration. The stored pupil record
 is the source of truth after session reload; the smaller session identity is not
 used as persistence.
 
-One recall-eligibility pipeline serves both deck selection and topic filters.
+One recall-eligibility pipeline serves both flashcard selection and topic
+filters. The student interface frames the selected topics as **Flashcards on
+your desk**; this is presentation language only and does not combine
+self-rated recall with checked evidence.
 Cards use an explicit `specificationPointId` where present. A legacy topic-only
 card is mapped to an objective only when its term occurs in exactly one
 curriculum objective inside that same topic. Ambiguous cards retain honest

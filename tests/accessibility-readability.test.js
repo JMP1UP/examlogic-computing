@@ -77,13 +77,12 @@ describe('cross-page text readability', () => {
 
   test('missing-content states are announced and provide named recovery actions', () => {
     [
-      'Learning content unavailable',
-      'Learning content unavailable',
+      'Topic review unavailable',
       'Recall questions unavailable',
       'Challenge not found',
       'Screen not found'
     ].forEach(heading => expect(app).toContain(heading));
-    ['Back to Home', 'Back to Learn', 'Back to Programming'].forEach(action =>
+    ['Back to My desk', 'Back to Topics', 'Back to Programming'].forEach(action =>
       expect(app).toContain(action)
     );
   });

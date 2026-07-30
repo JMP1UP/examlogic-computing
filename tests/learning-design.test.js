@@ -81,7 +81,7 @@ describe('GCSE learning design', () => {
     expect(appSource).toContain("{ id: 'stud-topics', label: 'Topics'");
     expect(appSource).toContain("{ id: 'stud-practice', label: 'Practice'");
     expect(appSource).toContain('Choose how to practise');
-    expect(appSource).toContain("title: 'Recall cards'");
+    expect(appSource).toContain("title: 'Flashcards'");
     expect(appSource).toContain("title: 'Exam questions'");
     expect(appSource).toContain("title: 'Number skills'");
     expect(appSource).toContain("title: 'Programming'");
