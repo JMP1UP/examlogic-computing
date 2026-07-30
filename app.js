@@ -2147,8 +2147,8 @@ class App {
       ? 'one optional 5-minute recall activity'
       : 'one suggested 10-minute guided learning session';
     const greetingText = requiredCount > 0
-      ? `You have ${requiredCountWord} priority ${requiredCount === 1 ? 'task' : 'tasks'} set by your teacher (${requiredMinutes} mins).`
-      : `You have no priority tasks and ${suggestedSession}.`;
+      ? `You have ${requiredCountWord} task ${requiredCount === 1 ? '' : 's'} set by your teacher (${requiredMinutes} mins).`
+      : `You have no tasks set by your teacher and ${suggestedSession}.`;
 
     // Compute dominant task for "Do this now"
     let dominantTaskHtml = '';
@@ -2161,7 +2161,7 @@ class App {
       const prep = activeTestPreps[0];
       dominantTask = {
         kind: 'Test preparation',
-        label: 'Priority Task',
+        label: 'Set by Teacher · Test Prep',
         title: prep.title,
         meta: [`${prep.specificationPointIds.length} specification points`, this.formatDueDate(prep.testDate).replace('Due ', 'Test ')],
         description: 'Your plan adapts each specification point separately. Optional recommendations are reduced while this plan is active.',
@@ -2177,7 +2177,7 @@ class App {
         dominantAssignment = a;
         dominantTask = {
           kind: 'Assignment',
-          label: a.status === 'Overdue' ? 'Overdue Task' : 'Priority Task',
+          label: a.status === 'Overdue' ? 'Overdue Homework' : 'Homework Set by Teacher',
           title: a.title,
           meta: [this.formatDueDate(a.dueDate), a.title.toLowerCase().includes('programming') ? 'Programming task' : 'Knowledge check'],
           description: a.status === 'Overdue' ? 'This task is overdue. Complete it before optional revision.' : 'Complete this task set by your teacher before optional revision.',

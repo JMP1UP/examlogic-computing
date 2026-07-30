@@ -2546,44 +2546,47 @@ body.dark-mode .app-container[data-user-role="student"] {
 }
 
 .student-weekly-notebook__tasks {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0 0 0;
   padding: 0;
   list-style: none;
 }
 
 .student-weekly-notebook__tasks li {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 6px 10px;
-  padding: 10px 12px;
-  border-bottom: 2px solid var(--border-color);
-  background: var(--bg-main);
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-card);
 }
 
 .student-weekly-notebook__tasks li[aria-current="step"] {
-  border-bottom-color: var(--teal);
+  border-left-color: var(--teal);
+  background: rgba(45, 156, 145, 0.04);
 }
 
 .student-weekly-notebook__tasks small {
   display: block;
-  margin-top: 3px;
+  margin-top: 2px;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .student-weekly-notebook__check {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
+  color: var(--teal);
 }
 
 .student-weekly-notebook__progress,
 .student-weekly-notebook__done {
-  grid-column: 2;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
 }
 
