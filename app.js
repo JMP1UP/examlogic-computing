@@ -3539,10 +3539,6 @@ class App {
           <p><strong>Common mistake:</strong> ${this.escapeHTML(content.misconception)}</p>
         </article>
         ${tool ? `<aside class="card student-context-tool"><h2>Useful tool</h2><p>Use this interactive tool if it helps you see the process.</p><button type="button" class="btn btn-secondary" id="focused-tool-btn">${tool.label}</button></aside>` : ''}
-        <aside class="card student-evidence-note">
-          <strong>What counts?</strong>
-          <p>Reading helps you prepare but does not update Progress. Checked exam work shows what you can do. Adding flashcards to your desk does not mean you have mastered the topic.</p>
-        </aside>
         <div class="student-focused-actions">
           ${task ? `<button type="button" class="btn btn-primary" id="focused-exam-btn">Try a ${task.marks}-mark exam question</button>` : '<p role="status"><strong>No exact exam question is available for this section yet.</strong> Review the section or choose another topic.</p>'}
           <button type="button" class="btn btn-secondary" id="focused-cover-btn">${state?.state === 'covered' ? (state.cardState === 'paused' ? 'Add flashcards to my desk' : 'Pause these flashcards') : 'Add flashcards to my desk'}</button>
