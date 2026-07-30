@@ -234,6 +234,226 @@
   ],
   examTransferTasks: [
     {
+      id: 'priority_transfer_112', specificationPointId: '1.1.2', topicId: 'topic_1_1', paper: 'Paper 1', purpose: 'exam-transfer',
+      commandWord: 'Compare', marks: 6, minutes: 9, responseForm: 'explanation',
+      question: 'Processor A has a higher clock speed and a smaller cache than Processor B. Both have four cores. Compare how clock speed, cache size and number of cores could affect their performance when editing video.',
+      decodePrompt: 'Explain the possible effect of each characteristic and relate it to the video-editing workload. Do not assume one figure alone guarantees the faster processor.',
+      requiredElements: ['higher clock speed can allow more processor cycles each second', 'larger cache can reduce waiting for frequently used data or instructions', 'multiple cores can process suitable tasks at the same time', 'software must divide work for multiple cores to help', 'other hardware or software factors also affect performance', 'comparison linked to the video-editing scenario'],
+      planningLabels: ['Clock speed', 'Cache', 'Cores and software', 'Overall comparison'],
+      modelPlan: ['Processor A may complete more cycles each second', 'Processor B may retrieve likely-needed items from cache with less waiting', 'four cores help only where the editor can run work in parallel', 'the information is insufficient to guarantee which processor finishes first'],
+      retryQuestion: 'Two processors have different clock speeds, cache sizes and core counts. Compare how each characteristic could affect performance when rendering an animation, including one reason extra cores may give limited improvement.'
+    },
+    {
+      id: 'priority_transfer_113', specificationPointId: '1.1.3', topicId: 'topic_1_1', paper: 'Paper 1', purpose: 'exam-transfer',
+      commandWord: 'Explain', marks: 4, minutes: 6, responseForm: 'explanation',
+      question: 'A greenhouse controller reads temperature and moisture sensors and operates fans and water valves. Explain why the controller is an embedded system.',
+      decodePrompt: 'Identify the larger product, the controller’s dedicated purpose and how its inputs and outputs support that purpose.',
+      requiredElements: ['computer system is built into the greenhouse equipment', 'performs a dedicated monitoring and control function', 'sensor readings provide input data', 'controller processes the data and controls fans or valves as outputs'],
+      planningLabels: ['Larger system', 'Dedicated purpose', 'Inputs', 'Processing and outputs'],
+      modelPlan: ['the controller is part of the greenhouse equipment', 'it is designed for one monitoring and control purpose', 'temperature and moisture sensors supply data', 'the controller processes readings and operates the appropriate output'],
+      retryQuestion: 'A dishwasher contains a controller that reads buttons and sensors before operating pumps and heaters. Explain why the controller is an embedded system.'
+    },
+    {
+      id: 'priority_transfer_122', specificationPointId: '1.2.2', topicId: 'topic_1_2', paper: 'Paper 1', purpose: 'exam-transfer',
+      commandWord: 'Recommend', marks: 6, minutes: 9, responseForm: 'explanation',
+      question: 'A wildlife camera is carried over rough ground and must store many high-resolution photographs before they are transferred. Recommend a suitable secondary-storage technology and justify your choice.',
+      decodePrompt: 'Use the camera’s storage capacity, movement, reliability, speed, portability and cost needs. Compare the recommendation with at least one realistic alternative.',
+      requiredElements: ['clear recommendation of solid-state storage', 'no moving parts improves resistance to movement or impact', 'suitable capacity for many high-resolution photographs', 'fast enough for saving or transferring images', 'portable and low-power suitability linked to the camera', 'comparison or limitation involving cost, magnetic or optical storage'],
+      planningLabels: ['Scenario priorities', 'Recommended technology', 'Linked benefits', 'Alternative or limitation'],
+      modelPlan: ['the camera needs portable, durable storage with enough capacity', 'solid-state storage has no moving parts', 'it resists movement and offers suitable speed and capacity', 'it can cost more per unit than magnetic storage, while optical discs are impractical in the moving camera'],
+      retryQuestion: 'Recommend a secondary-storage technology for a lightweight action camera used during cycling. Justify the choice using capacity, durability, portability, speed and one limitation or alternative.'
+    },
+    {
+      id: 'priority_transfer_125', specificationPointId: '1.2.5', topicId: 'topic_1_3', paper: 'Paper 1', purpose: 'exam-transfer',
+      commandWord: 'Explain', marks: 4, minutes: 6, responseForm: 'explanation',
+      question: 'A developer must compress a program source-code file before sending it. Explain why lossless compression should be used instead of lossy compression.',
+      decodePrompt: 'Link the need to reconstruct every source-code character to how lossless and lossy compression handle data.',
+      requiredElements: ['compression reduces file size or transmission requirements', 'lossless compression reconstructs the original exactly', 'every source-code character may affect program meaning or syntax', 'lossy compression permanently removes data and could change or break the program'],
+      planningLabels: ['Purpose of compression', 'Lossless property', 'Why exact code matters', 'Lossy risk'],
+      modelPlan: ['a compressed file needs fewer bits to transmit', 'lossless compression restores every original character', 'a changed character can alter or invalidate the code', 'lossy compression removes information permanently and is unsuitable'],
+      retryQuestion: 'A school is archiving spreadsheet files containing examination marks. Explain why lossless compression is appropriate and why lossy compression could damage the usefulness of the files.'
+    },
+    {
+      id: 'priority_transfer_131', specificationPointId: '1.3.1', topicId: 'topic_1_4', paper: 'Paper 1', purpose: 'exam-transfer',
+      commandWord: 'Recommend', marks: 6, minutes: 9, responseForm: 'explanation',
+      question: 'A school is replacing a peer-to-peer network with a client-server network using a star topology. Recommend whether this change is suitable, explaining benefits and drawbacks for the school.',
+      decodePrompt: 'Consider central management, security, backup and performance as well as the central server, switch and cabling risks or costs.',
+      requiredElements: ['central user or security management benefit', 'central file storage or backup benefit', 'server can provide shared services or resources', 'server failure can make services unavailable', 'central switch failure can disrupt the star network', 'cost or administration comparison linked to the school'],
+      planningLabels: ['Client-server benefits', 'Star benefits', 'Failure risks', 'Recommendation'],
+      modelPlan: ['accounts, permissions and files can be managed centrally', 'individual cable failure normally affects one device', 'server or switch failure can affect many users', 'recommend if the school accepts equipment and administration costs for central control'],
+      retryQuestion: 'A small college is considering client-server networking with a star topology instead of peer-to-peer networking. Recommend an approach using management, backup, performance, reliability and cost.'
+    },
+    {
+      id: 'priority_transfer_141', specificationPointId: '1.4.1', topicId: 'topic_1_5', paper: 'Paper 1', purpose: 'exam-transfer',
+      commandWord: 'Explain', marks: 6, minutes: 9, responseForm: 'explanation',
+      question: 'An online shop accepts a login and a product-search input. Explain how brute-force login attempts, phishing and SQL injection could each threaten the shop or its customers.',
+      decodePrompt: 'For each named threat, explain how it operates and a likely consequence in this scenario.',
+      requiredElements: ['brute force repeatedly guesses login credentials', 'successful guessing may give unauthorised account access', 'phishing uses deceptive communication or a false site', 'phishing may obtain customer credentials or information', 'SQL injection places malicious database instructions in unchecked input', 'SQL injection may expose, alter or delete stored data'],
+      planningLabels: ['Brute force', 'Phishing', 'SQL injection', 'Scenario consequences'],
+      modelPlan: ['automated guesses may enter customer accounts', 'convincing messages or pages may trick customers into disclosing credentials', 'malicious search text may change a database query', 'customer or product records could be read or changed'],
+      retryQuestion: 'A school portal contains a login form and database-backed search. Explain how brute force, phishing and SQL injection could threaten the portal, including one consequence of each.'
+    },
+    {
+      id: 'priority_transfer_142', specificationPointId: '1.4.2', topicId: 'topic_1_5', paper: 'Paper 1', purpose: 'exam-transfer',
+      commandWord: 'Recommend', marks: 6, minutes: 9, responseForm: 'explanation',
+      question: 'A clinic stores sensitive records and allows staff to connect over a network. Recommend security measures that reduce unauthorised access and protect data if network traffic is intercepted.',
+      decodePrompt: 'Choose complementary measures and explain the mechanism of each. Include access control and protection for transmitted data.',
+      requiredElements: ['strong authentication or passwords reduce unauthorised login', 'access levels limit records or actions available to each role', 'firewall filters network traffic using rules', 'encryption makes intercepted data unreadable without the key', 'updates or anti-malware reduce exploitation or malicious software', 'measures are combined because each addresses a different risk'],
+      planningLabels: ['Login protection', 'Access after login', 'Network boundary', 'Data and layered protection'],
+      modelPlan: ['authenticate each staff member', 'give roles only the records and actions needed', 'filter traffic at the network boundary', 'encrypt traffic and keep systems updated because no single control covers every threat'],
+      retryQuestion: 'A legal firm stores confidential files and supports remote staff access. Recommend a combination of authentication, access levels, firewall rules, encryption and one further security measure.'
+    },
+    {
+      id: 'priority_transfer_151', specificationPointId: '1.5.1', topicId: 'topic_1_6', paper: 'Paper 1', purpose: 'exam-transfer',
+      commandWord: 'Explain', marks: 4, minutes: 6, responseForm: 'explanation',
+      question: 'A pupil prints a document while music and a web browser are also running. Explain two operating-system functions involved in this situation.',
+      decodePrompt: 'Choose two distinct operating-system functions and explain how each supports the stated activity.',
+      requiredElements: ['processor or memory management supports several active applications', 'multitasking schedules processor time or allocates memory', 'a device driver allows communication with the printer', 'explanations are linked to printing or the simultaneously running applications'],
+      planningLabels: ['First OS function', 'Link to scenario', 'Second OS function', 'Link to scenario'],
+      modelPlan: ['the OS schedules processor time and allocates memory among the active programs', 'a printer driver translates general print requests into commands the printer can use'],
+      retryQuestion: 'A user scans a photograph while a video call and word processor are running. Explain two operating-system functions involved, linking each function to the scenario.'
+    },
+    {
+      id: 'priority_transfer_152', specificationPointId: '1.5.2', topicId: 'topic_1_6', paper: 'Paper 1', purpose: 'exam-transfer',
+      commandWord: 'Explain', marks: 4, minutes: 6, responseForm: 'explanation',
+      question: 'A magnetic hard disk stores parts of files in separated locations. Explain how a defragmentation utility may improve access speed and why the same process is unnecessary for solid-state storage.',
+      decodePrompt: 'Describe what is rearranged and link the performance effect specifically to moving disk hardware.',
+      requiredElements: ['defragmentation rearranges separated parts or blocks of files', 'related blocks are placed closer together or contiguously', 'magnetic read-write head needs less movement', 'solid-state storage has no moving read-write head'],
+      planningLabels: ['What is rearranged', 'New arrangement', 'Magnetic-disk effect', 'Solid-state distinction'],
+      modelPlan: ['move fragmented file blocks into adjacent locations', 'the magnetic head travels less distance to read a file', 'solid-state access does not depend on mechanical head movement'],
+      retryQuestion: 'Explain how defragmentation can improve file access on a magnetic disk and why it should not be presented as a speed improvement for a solid-state drive.'
+    },
+    {
+      id: 'priority_transfer_162', specificationPointId: '1.6.2', topicId: 'topic_1_7', paper: 'Paper 1', purpose: 'exam-transfer',
+      commandWord: 'Explain', marks: 6, minutes: 9, responseForm: 'explanation',
+      question: 'An employee uses another person’s password to enter a company system and copies customer records and licensed software. Explain how two named laws and software licensing are relevant.',
+      decodePrompt: 'Match each action to the correct legal or licensing concern. Do not describe every action as the same offence.',
+      requiredElements: ['Computer Misuse Act linked to unauthorised system access', 'using a known password does not make access authorised', 'Data Protection Act linked to handling or copying customer personal data', 'organisation must process personal data lawfully and securely', 'copyright or licence terms restrict unauthorised software copying', 'actions are distinguished and applied to the scenario'],
+      planningLabels: ['Unauthorised access', 'Personal data', 'Software copying', 'Applied distinction'],
+      modelPlan: ['another person’s password does not provide permission under the Computer Misuse Act', 'customer records are personal data requiring lawful and secure handling', 'copying licensed software may breach copyright and its licence terms'],
+      retryQuestion: 'A contractor enters a school system without permission, downloads pupil details and distributes a copy of licensed software. Explain how two named laws and the software licence apply.'
+    },
+    {
+      id: 'priority_transfer_123', specificationPointId: '1.2.3', topicId: 'topic_1_3', paper: 'Paper 1', purpose: 'exam-transfer',
+      commandWord: 'Calculate', marks: 4, minutes: 7, responseForm: 'calculation',
+      question: 'A backup contains 3,500 files. Each file is 240 KB. Calculate the total size of the backup in MB. Use 1 MB = 1,000 KB and show your working.',
+      decodePrompt: 'Multiply to find the total in KB, then convert KB to MB. Keep the unit with each stage.',
+      requiredElements: ['3,500 multiplied by 240 KB', 'total of 840,000 KB', 'divide by 1,000 to convert KB to MB', 'final answer of 840 MB with the unit'],
+      planningLabels: ['Values and starting unit', 'Total in KB', 'Conversion operation', 'Final answer and unit'],
+      modelPlan: ['3,500 × 240 KB', '= 840,000 KB', '840,000 ÷ 1,000', '= 840 MB'],
+      retryQuestion: 'A collection contains 2,400 images of 750 KB each. Calculate its total size in GB using 1 GB = 1,000,000 KB. Show your working.'
+    },
+    {
+      id: 'priority_transfer_123_text', specificationPointId: '1.2.3', topicId: 'topic_1_3', paper: 'Paper 1', purpose: 'exam-transfer',
+      commandWord: 'Calculate', marks: 4, minutes: 7, responseForm: 'calculation',
+      question: 'A plain-text file contains 12,000 characters. Each character is stored using 8 bits. Calculate the file size in bytes and kilobytes using 1 KB = 1,000 bytes. Show your working.',
+      decodePrompt: 'Find the total bits, convert bits to bytes, then convert bytes to kilobytes using the convention supplied.',
+      requiredElements: ['12,000 multiplied by 8 gives 96,000 bits', 'divide by 8 to convert to 12,000 bytes', 'divide by 1,000 to convert bytes to kilobytes', 'final answer of 12 KB with correct units'],
+      planningLabels: ['Total bits', 'Bits to bytes', 'Bytes to KB', 'Final unit'],
+      modelPlan: ['12,000 × 8 = 96,000 bits', '96,000 ÷ 8 = 12,000 bytes', '12,000 ÷ 1,000', '= 12 KB'],
+      retryQuestion: 'A text file contains 25,000 characters stored using 16 bits per character. Calculate its size in bytes and KB using 1 KB = 1,000 bytes. Show your working.'
+    },
+    {
+      id: 'priority_transfer_124a', specificationPointId: '1.2.4a', topicId: 'topic_1_3', paper: 'Paper 1', purpose: 'exam-transfer',
+      commandWord: 'Complete', marks: 5, minutes: 8, responseForm: 'number-representation',
+      question: 'An 8-bit register stores 10110110. Convert this value to denary and hexadecimal. The value is then shifted one place to the left. State the stored result, the usual numerical effect of a left shift and whether a significant bit is discarded.',
+      decodePrompt: 'Treat each requested representation and the shift as a separate part. Check the bit discarded from the left of the fixed-width register without calling shift data loss binary-addition overflow.',
+      requiredElements: ['denary value 182', 'hexadecimal value B6', 'left shift gives 01101100 in 8 bits', 'a one-place left shift usually multiplies an unsigned value by two', 'the leading 1 is discarded so the fixed-width stored result does not represent 364'],
+      planningLabels: ['Binary to denary', 'Binary to hexadecimal', 'Shifted 8-bit result', 'Effect and discarded bit'],
+      modelPlan: ['128 + 32 + 16 + 4 + 2 = 182', '1011 0110 = B6', 'shift left gives 01101100', 'a leading 1 is discarded, so the stored 8-bit result is not the full doubled value'],
+      retryQuestion: 'Convert 11100101 to denary and hexadecimal, then shift it one place left in an 8-bit register. State the stored result, the usual numerical effect and whether a significant bit is discarded.'
+    },
+    {
+      id: 'priority_transfer_124a_add', specificationPointId: '1.2.4a', topicId: 'topic_1_3', paper: 'Paper 1', purpose: 'exam-transfer',
+      commandWord: 'Calculate', marks: 4, minutes: 6, responseForm: 'number-representation',
+      question: 'Add the two 8-bit binary values 11001010 and 01110101. Show the binary addition, give the stored 8-bit result and state whether binary-addition overflow occurs.',
+      decodePrompt: 'Add from the least-significant bit, show carries and compare the full result with the eight available bits.',
+      requiredElements: ['correct column-by-column binary addition or carries', 'full mathematical result requires a ninth bit', 'stored 8-bit result is 00111111', 'binary-addition overflow occurs because the result does not fit in 8 bits'],
+      planningLabels: ['Set out operands', 'Carries', 'Stored result', 'Overflow decision'],
+      modelPlan: ['align both 8-bit values', 'add each column and record carries', 'the full result is 1 00111111', 'the ninth bit cannot fit, so 8-bit overflow occurs'],
+      retryQuestion: 'Add the 8-bit binary values 10110110 and 10011101. Show the addition, give the stored 8-bit result and state whether binary-addition overflow occurs.'
+    },
+    {
+      id: 'priority_transfer_124b', specificationPointId: '1.2.4b', topicId: 'topic_1_3', paper: 'Paper 1', purpose: 'exam-transfer',
+      commandWord: 'Explain', marks: 4, minutes: 7, responseForm: 'explanation',
+      question: 'A messaging service must store text written in many languages and include emoji. Explain why Unicode is more suitable than ASCII and how the number of bits used for each character can affect file size.',
+      decodePrompt: 'Link the size of the character set to the available symbols, then link bits per character to storage.',
+      requiredElements: ['characters are represented using binary codes', 'Unicode can represent a wider range of characters than ASCII', 'the wider range supports multiple writing systems or emoji', 'using more bits per character can increase the storage required for the same number of characters'],
+      planningLabels: ['How characters are represented', 'Character-set range', 'Application to the service', 'Storage consequence'],
+      modelPlan: ['each character is stored as a binary code', 'Unicode provides codes for many more characters than ASCII', 'this supports different languages and emoji', 'more bits for each stored character can increase the text file size'],
+      retryQuestion: 'Explain why Unicode is appropriate for a worldwide travel website and how character encoding can affect the size of its text data.'
+    },
+    {
+      id: 'priority_transfer_124d', specificationPointId: '1.2.4d', topicId: 'topic_1_3', paper: 'Paper 1', purpose: 'exam-transfer',
+      commandWord: 'Calculate', marks: 5, minutes: 8, responseForm: 'calculation', traceabilitySpecificationPointIds: ['1.2.3'],
+      question: 'A mono sound recording uses a sample rate of 40,000 Hz and a sample depth of 16 bits. The recording lasts 30 seconds. Calculate its file size in bytes and show your working.',
+      decodePrompt: 'Use sample rate × sample depth × duration to find bits, then convert bits to bytes.',
+      requiredElements: ['40,000 × 16 × 30', '19,200,000 bits', 'divide by 8 to convert bits to bytes', '2,400,000 bytes', 'correct units shown in the working and final answer'],
+      planningLabels: ['Formula and values', 'File size in bits', 'Bits-to-bytes conversion', 'Final answer and unit'],
+      modelPlan: ['40,000 × 16 × 30', '= 19,200,000 bits', '19,200,000 ÷ 8', '= 2,400,000 bytes'],
+      retryQuestion: 'A mono recording uses 20,000 samples per second, 8 bits per sample and lasts 45 seconds. Calculate its size in bytes and show your working.'
+    },
+    {
+      id: 'priority_transfer_211', specificationPointId: '2.1.1', topicId: 'topic_2_1', paper: 'Paper 2', purpose: 'exam-transfer',
+      commandWord: 'Explain', marks: 4, minutes: 6, responseForm: 'explanation',
+      question: 'A team is designing a parcel-delivery system. Explain how decomposition and abstraction could help the team produce its initial design.',
+      decodePrompt: 'Apply each computational-thinking method to the parcel system rather than only defining the two terms.',
+      requiredElements: ['decomposition breaks the system into smaller parts', 'relevant parts such as booking, routing or tracking are identified', 'abstraction removes details that do not affect the required solution', 'example of a relevant detail kept or an irrelevant detail omitted'],
+      planningLabels: ['Decomposition', 'Applied parts', 'Abstraction', 'Applied detail'],
+      modelPlan: ['split booking, route planning, tracking and delivery confirmation', 'design and test these linked parts', 'keep addresses, routes and parcel status', 'omit details such as vehicle colour when it does not affect delivery'],
+      retryQuestion: 'A team is designing a cinema-booking system. Explain how decomposition and abstraction could help create the initial solution, using examples from the scenario.'
+    },
+    {
+      id: 'priority_transfer_222', specificationPointId: '2.2.2', topicId: 'topic_2_2', paper: 'Paper 2', purpose: 'exam-transfer',
+      commandWord: 'Explain', marks: 4, minutes: 6, responseForm: 'explanation',
+      question: 'A program inputs an age as the string "15" and then needs to calculate the age next year. Explain the data-type problem and how casting can correct it.',
+      decodePrompt: 'Identify the current and required types, explain why arithmetic is unsuitable before conversion, and give the corrected operation.',
+      requiredElements: ['input value is currently a string', 'arithmetic addition requires a numeric type', 'cast or convert the string to an integer', 'calculate the converted value plus one, giving 16'],
+      planningLabels: ['Current type', 'Problem', 'Conversion', 'Correct operation'],
+      modelPlan: ['"15" is text', 'string concatenation or a type error would not produce the intended arithmetic', 'convert with an integer cast', 'int(age) + 1 gives 16'],
+      retryQuestion: 'A program inputs a price as the string "7.50" and must add 2.25. Explain the data-type problem and how casting can produce the correct arithmetic result.'
+    },
+    {
+      id: 'priority_transfer_22py', specificationPointId: '2.2.PY', topicId: 'topic_2_2', paper: 'Paper 2', purpose: 'exam-transfer',
+      commandWord: 'Write', marks: 6, minutes: 10, responseForm: 'constructed',
+      question: 'Write a Python function count_above(values, limit) that returns how many values in a list are greater than limit. Include two suitable test calls with expected results.',
+      decodePrompt: 'The response must be executable Python, use both parameters, examine every list item, return a count and include tests.',
+      requiredElements: ['valid Python function with both parameters', 'counter initialised before the loop', 'iteration through every value', 'selection tests value greater than limit', 'counter returned after the loop', 'two test calls with stated expected results including a useful edge case'],
+      planningLabels: ['Function and parameters', 'Loop and condition', 'Return', 'Tests and expected results'],
+      modelPlan: ['def count_above(values, limit):', 'start count at zero and loop through values', 'increment where value > limit and return after the loop', 'test a mixed list and an empty or no-match list'],
+      retryQuestion: 'Write a Python function count_negative(values) that returns the number of negative values in a list. Include two suitable test calls with expected results.'
+    },
+    {
+      id: 'priority_transfer_231', specificationPointId: '2.3.1', topicId: 'topic_2_3', paper: 'Paper 2', purpose: 'exam-transfer',
+      commandWord: 'Design', marks: 6, minutes: 9, responseForm: 'constructed',
+      question: 'Using OCR Exam Reference Language, design a defensive input routine for creating a pupil username. It must check identity before the change, accept usernames of 6 to 20 characters and remain easy to maintain.',
+      decodePrompt: 'Write OCR Exam Reference Language that separates authentication from validation and uses maintainable names and structure.',
+      requiredElements: ['authenticate the user before allowing the change', 'length validation accepts 6 to 20 characters inclusive', 'rejects or repeats input outside the range', 'clear meaningful variable or subprogram names', 'routine split into suitable subprograms or reusable checks', 'indentation or purposeful comments support maintainability'],
+      planningLabels: ['Authentication', 'Validation', 'Response to invalid input', 'Maintainability'],
+      modelPlan: ['verify the current account credentials', 'use a username-length check for the inclusive range', 'show an error and request another value', 'place checks in clearly named functions with readable structure'],
+      retryQuestion: 'Using OCR Exam Reference Language, design a defensive routine for changing an email address. Authenticate the account, validate that a non-empty value contains an @ symbol, handle rejected input and use maintainable code.'
+    },
+    {
+      id: 'priority_transfer_241', specificationPointId: '2.4.1', topicId: 'topic_2_4', paper: 'Paper 2', purpose: 'exam-transfer',
+      commandWord: 'Complete', marks: 5, minutes: 8, responseForm: 'constructed',
+      question: 'A door opens when card A is valid AND code B is valid, provided override C is NOT active. Write the Boolean expression and evaluate the output for A=1, B=1, C=0 and for A=1, B=1, C=1.',
+      decodePrompt: 'Translate the two-part access rule first, apply NOT to the override, then evaluate one intermediate result at a time.',
+      requiredElements: ['expression includes A AND B', 'expression applies NOT to C', 'complete expression is (A AND B) AND NOT C or equivalent', 'first input set evaluates to 1 or door open', 'second input set evaluates to 0 or door closed'],
+      planningLabels: ['Access condition', 'Override condition', 'Combined expression', 'Two evaluations'],
+      modelPlan: ['valid access is A AND B', 'enabled state is NOT C', 'combine as (A AND B) AND NOT C', '1,1,0 gives 1; 1,1,1 gives 0'],
+      retryQuestion: 'An alarm sounds when sensor A OR sensor B is active, provided disable switch C is NOT active. Write the Boolean expression and evaluate it for A=0, B=1, C=0 and A=0, B=1, C=1.'
+    },
+    {
+      id: 'priority_transfer_252', specificationPointId: '2.5.2', topicId: 'topic_2_5', paper: 'Paper 2', purpose: 'exam-transfer',
+      commandWord: 'Explain', marks: 4, minutes: 6, responseForm: 'explanation',
+      question: 'A program stops with an error while calculating an average. Explain how error diagnostics and the IDE run-time environment could help the programmer locate and correct the fault.',
+      decodePrompt: 'Explain the evidence produced when the program is run and how the programmer uses the diagnostic location and message.',
+      requiredElements: ['run-time environment executes the program with test data', 'error diagnostics report an error type or message', 'diagnostics identify or highlight a relevant source-code location', 'programmer corrects the cause and repeats the test'],
+      planningLabels: ['Run the program', 'Diagnostic message', 'Source location', 'Correction and retest'],
+      modelPlan: ['use the run-time environment to execute the program with known test data', 'read the reported error type and line', 'inspect the calculation and values used at that location', 'correct the cause and run the same test again'],
+      retryQuestion: 'A program stops while converting an input value. Explain how the IDE run-time environment and error diagnostics could help locate and correct the fault, including how the programmer should retest it.'
+    },
+    {
       id: 'priority_transfer_223', specificationPointId: '2.2.3', topicId: 'topic_2_2', paper: 'Paper 2', purpose: 'exam-transfer',
       commandWord: 'Write', marks: 8, minutes: 12,
       question: 'A file contains one integer score on each line. Write an OCR Exam Reference Language algorithm that reads every score, counts scores of 50 or more, closes the file and prints the count.',
@@ -256,12 +476,12 @@
     {
       id: 'priority_transfer_212', specificationPointId: '2.1.2', topicId: 'topic_2_1', paper: 'Paper 2', purpose: 'exam-transfer',
       commandWord: 'Refine', marks: 6, minutes: 9,
-      question: 'An algorithm should output the first index containing target. It currently continues searching after a match and returns the final matching index. Refine the algorithm so it returns the first index, or -1 when absent.',
-      decodePrompt: 'Identify where the successful return belongs and when -1 may safely be returned.',
-      requiredElements: ['iterate indexes from the start', 'compare each element with target', 'return the index immediately on a match', 'do not overwrite a found index', 'return -1 only after the loop', 'works with duplicate and absent targets'],
-      planningLabels: ['Loop order', 'Match test', 'Successful return', 'Absent return'],
-      modelPlan: ['visit indexes in ascending order', 'if values[index] == target', 'return index inside the match branch', 'after the loop return -1'],
-      retryQuestion: 'Refine a minimum-search algorithm that incorrectly initialises its minimum to zero.'
+      question: 'The following OCR Exam Reference Language should input five integers and output how many are positive:\n\ncount = 1\nfor index = 1 to 5\n    value = input("Integer")\n    if value >= 0 then\n        count = count + 1\n    endif\nnext index\nprint(count)\n\nTrace it for 4, 0, -2, 7, 1. Identify both faulty lines and write their corrected versions.',
+      decodePrompt: 'Record the count after each input, compare the output with the intended result, then correct the initial value and positive-number condition.',
+      requiredElements: ['trace begins from the stated incorrect count of 1', 'zero is counted by the incorrect condition', 'incorrect final count is identified as 5', 'correct number of positive inputs is 3', 'refine count initialisation from 1 to 0', 'refine the condition so only values greater than zero are counted'],
+      planningLabels: ['Trace values', 'Incorrect output', 'First fault and correction', 'Second fault and correction'],
+      modelPlan: ['record count as the five inputs are processed', 'the faulty algorithm counts 4, 0, 7 and 1 on top of its initial 1', 'initialise count to zero', 'use value > 0 rather than value >= 0'],
+      retryQuestion: 'This algorithm should count how many of four temperatures are below zero, but uses `count = 1` and `temperature <= 0`. Trace it for -3, 0, 4, -1, then write the two corrected lines.'
     },
     {
       id: 'priority_transfer_221', specificationPointId: '2.2.1', topicId: 'topic_2_2', paper: 'Paper 2', purpose: 'exam-transfer',

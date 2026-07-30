@@ -28,6 +28,14 @@ Coverage is recorded per internal strand. A strand is not complete because it ha
 
 The evidence required depends on how OCR can validly assess the requirement. A uniform item-count threshold is not used as a proxy for depth. **Awaiting QA** means the implemented route is present and traceable; it does not claim that qualified-teacher review has happened. **Developing** and **Foundation** identify structural gaps.
 
+Every strand now has at least two explicitly mapped flashcards, sequenced
+teaching blocks and an exact exam-transfer route. This is a structured
+curriculum baseline, not a claim that two cards and one exam question sample
+every bullet or every valid assessment form in the specification. Routes that
+rely on earlier knowledge also carry explicit prerequisite strand IDs. Further
+qualified-teacher review, question variation and unseen mixed practice remain
+necessary before full curriculum readiness can be claimed.
+
 ## Current audited coverage
 
 This table records the implemented evidence after the July 2026 integrity pass. `Teach` means an objective-level explanation, worked example, key terms and misconception are present.
@@ -35,37 +43,37 @@ This table records the implemented evidence after the July 2026 integrity pass. 
 | App strand | Official OCR reference | Printed page(s) | Teach | Diagnostic | Retrieval | Application | Exam transfer |
 |---|---|---:|---:|---:|---:|---:|---:|
 | 1.1.1 Architecture of the CPU | 1.1.1 | 6 | 1 | 1 | 6 | 1 | 1 |
-| 1.1.2 CPU performance | 1.1.2 | 6 | 1 | 1 | 2 | 1 | 0 |
-| 1.1.3 Embedded systems | 1.1.3 | 6 | 1 | 1 | 1 | 1 | 0 |
+| 1.1.2 CPU performance | 1.1.2 | 6 | 1 | 1 | 2 | 1 | 1 |
+| 1.1.3 Embedded systems | 1.1.3 | 6 | 1 | 1 | 1 | 1 | 1 |
 | 1.2.1 Primary storage | 1.2.1 | 7 | 1 | 1 | 6 | 1 | 1 |
-| 1.2.2 Secondary storage | 1.2.2 | 7 | 1 | 1 | 4 | 1 | 0 |
-| 1.2.3 Units | 1.2.3 | 8 | 1 | 1 | 1 | 1 | 0 |
-| 1.2.4a Numbers | 1.2.4 | 8 | 1 | 1 | 3 | 1 | 0 |
-| 1.2.4b Characters | 1.2.4 | 9 | 1 | 1 | 1 | 1 | 0 |
+| 1.2.2 Secondary storage | 1.2.2 | 7 | 1 | 1 | 4 | 1 | 1 |
+| 1.2.3 Units | 1.2.3 | 8 | 1 | 1 | 1 | 1 | 1 |
+| 1.2.4a Numbers | 1.2.4 | 8 | 1 | 1 | 3 | 1 | 1 |
+| 1.2.4b Characters | 1.2.4 | 9 | 1 | 1 | 1 | 1 | 1 |
 | 1.2.4c Images | 1.2.4 | 9 | 1 | 1 | 1 | 1 | 1 |
-| 1.2.4d Sound | 1.2.4 | 9 | 1 | 1 | 2 | 1 | 0 |
-| 1.2.5 Compression | 1.2.5 | 9 | 1 | 1 | 1 | 1 | 0 |
-| 1.3.1 Networks and topologies | 1.3.1 | 10 | 1 | 1 | 2 | 1 | 0 |
+| 1.2.4d Sound | 1.2.4 | 9 | 1 | 1 | 2 | 1 | 1 |
+| 1.2.5 Compression | 1.2.5 | 9 | 1 | 1 | 1 | 1 | 1 |
+| 1.3.1 Networks and topologies | 1.3.1 | 10 | 1 | 1 | 2 | 1 | 1 |
 | 1.3.2 Connections, protocols and layers | 1.3.2 | 11 | 1 | 1 | 5 | 0 | 1 |
-| 1.4.1 Threats | 1.4.1 | 12 | 1 | 1 | 2 | 1 | 0 |
-| 1.4.2 Preventing vulnerabilities | 1.4.2 | 12 | 1 | 1 | 3 | 1 | 0 |
-| 1.5.1 Operating systems | 1.5.1 | 13 | 1 | 1 | 4 | 1 | 0 |
-| 1.5.2 Utility software | 1.5.2 | 13 | 1 | 1 | 1 | 1 | 0 |
+| 1.4.1 Threats | 1.4.1 | 12 | 1 | 1 | 2 | 1 | 1 |
+| 1.4.2 Preventing vulnerabilities | 1.4.2 | 12 | 1 | 1 | 3 | 1 | 1 |
+| 1.5.1 Operating systems | 1.5.1 | 13 | 1 | 1 | 4 | 1 | 1 |
+| 1.5.2 Utility software | 1.5.2 | 13 | 1 | 1 | 1 | 1 | 1 |
 | 1.6.1 Impacts | 1.6.1 | 14 | 1 | 1 | 1 | 1 | 1 |
-| 1.6.2 Legislation and licensing | 1.6.1 | 14 | 1 | 1 | 4 | 1 | 0 |
-| 2.1.1 Computational thinking | 2.1.1 | 15 | 1 | 1 | 1 | 1 | 0 |
+| 1.6.2 Legislation and licensing | 1.6.1 | 14 | 1 | 1 | 4 | 1 | 1 |
+| 2.1.1 Computational thinking | 2.1.1 | 15 | 1 | 1 | 1 | 1 | 1 |
 | 2.1.2 Designing and refining algorithms | 2.1.2 | 15 | 1 | 1 | 4 | 2 | 1 |
 | 2.1.3 Searching and sorting | 2.1.3 | 16 | 1 | 1 | 4 | 1 | 1 |
 | 2.2.1 Programming fundamentals | 2.2.1 | 17 | 1 | 1 | 7 | 2 | 1 |
-| 2.2.2 Data types | 2.2.2 | 18 | 1 | 1 | 0 | 1 | 0 |
+| 2.2.2 Data types | 2.2.2 | 18 | 1 | 1 | 0 | 1 | 1 |
 | 2.2.3 Additional techniques | 2.2.3 | 18 | 1 | 1 | 4 | 2 | 1 |
-| 2.2.PY Practical Python | 2d and 2.2 | 17-22 | 1 | 1 | 0 | 13 | 0 |
+| 2.2.PY Practical Python | 2d and 2.2 | 17-22 | 1 | 1 | 0 | 13 | 1 |
 | 2.2.ERL OCR reference language | 3c and 2.1-2.3 | 25-31 | 1 | 1 | 4 | 2 | 1 |
-| 2.3.1 Defensive design | 2.3.1 | 19 | 1 | 1 | 1 | 1 | 0 |
+| 2.3.1 Defensive design | 2.3.1 | 19 | 1 | 1 | 1 | 1 | 1 |
 | 2.3.2 Testing | 2.3.2 | 19 | 1 | 1 | 6 | 2 | 2 |
-| 2.4.1 Boolean logic | 2.4.1 | 20 | 1 | 1 | 5 | 1 | 0 |
+| 2.4.1 Boolean logic | 2.4.1 | 20 | 1 | 1 | 5 | 1 | 1 |
 | 2.5.1 Languages | 2.5.1 | 21 | 1 | 1 | 4 | 1 | 1 |
-| 2.5.2 IDE | 2.5.2 | 21 | 1 | 1 | 1 | 1 | 0 |
+| 2.5.2 IDE | 2.5.2 | 21 | 1 | 1 | 1 | 1 | 1 |
 
 ## Audit findings and implementation decisions
 
@@ -79,6 +87,24 @@ This table records the implemented evidence after the July 2026 integrity pass. 
 - MAC-address teaching now avoids the misleading claim that an address is necessarily permanent, and storage-unit feedback accepts OCR's decimal-unit convention.
 - Variables and constants now map to `2.2.1`; two-dimensional arrays and subprograms are taught as core requirements; programming practice now includes reproducible randomness and authentication.
 - The corpus is implemented against J277 v3.1 but remains explicitly awaiting qualified-teacher quality assurance.
+- The local assessment-reference review uses the 2020-2025 papers, mark
+  schemes, examiner reports and candidate exemplars without copying protected
+  wording. Its inventory and current exam-transfer gaps are recorded in
+  `docs/assessment-reference-index.md`.
+- Test preparation now schedules one specification point per session and labels
+  its actual action honestly. A mapped point opens its exact exam-transfer task;
+  an unmapped point opens focused review rather than a short recall quiz
+  presented as exam preparation.
+- The `1.2.1` RAM/ROM retry no longer changes strand to secondary storage.
+  Search assessment uses required J277 language rather than logarithmic
+  complexity, and translator assessment now permits a balanced, contextual
+  recommendation.
+- Data Representation exam transfer is now split across units, numbers,
+  characters, images and sound. Calculation tasks preserve method and unit
+  stages; evidence for one representation does not imply coverage of another.
+  Image and sound calculations retain audit-only traceability to official point
+  `1.2.3`; this metadata does not create additional evidence or duplicate an
+  activity.
 
 ## Next implementation priority
 

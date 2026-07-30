@@ -347,9 +347,172 @@
     '2.5.1': ['explanation', 'comparison', 'recommendation'], '2.5.2': ['recall', 'practical use']
   };
   const longerCoreStrands = new Set(['1.2.4a', '1.2.4c', '1.2.4d', '1.3.1', '1.3.2', '1.6.1', '2.1.2', '2.1.3', '2.2.1', '2.2.3', '2.2.PY', '2.2.ERL', '2.3.2', '2.4.1']);
+  const prerequisites = {
+    '1.1.2': ['1.1.1'],
+    '1.2.3': [],
+    '1.2.4a': ['1.2.3'],
+    '1.2.4b': ['1.2.3'],
+    '1.2.4c': ['1.2.3'],
+    '1.2.4d': ['1.2.3'],
+    '1.3.2': ['1.3.1'],
+    '1.4.2': ['1.4.1'],
+    '2.1.2': ['2.1.1'],
+    '2.1.3': ['2.1.2'],
+    '2.2.2': ['2.2.1'],
+    '2.2.3': ['2.2.1', '2.2.2'],
+    '2.2.PY': ['2.1.2', '2.2.1', '2.2.2'],
+    '2.2.ERL': ['2.1.2', '2.2.1', '2.2.2'],
+    '2.3.1': ['2.2.1'],
+    '2.3.2': ['2.2.1', '2.2.2'],
+    '2.5.2': ['2.5.1']
+  };
+  const teachingSections = {
+    '1.1.1': [
+      { heading: 'CPU components', body: 'The control unit coordinates the fetch-decode-execute cycle and sends control signals. The ALU performs arithmetic and logical operations. Cache stores frequently used data and instructions close to the processor. Registers are very small storage locations inside the CPU, each used for a particular role.' },
+      { heading: 'Registers during fetch', body: 'The program counter holds the address of the next instruction. That address is copied to the memory address register, which holds an address being accessed. The instruction returned from memory is held in the memory data register. The program counter is increased so it identifies the following instruction.' },
+      { heading: 'Decode and execute', body: 'The control unit decodes the fetched instruction to determine the operation and any data required. It coordinates the appropriate CPU components during execution. The accumulator stores intermediate arithmetic or logical results. Remember the distinction: the MAR holds an address, while the MDR holds data or an instruction.' }
+    ],
+    '1.1.2': [
+      { heading: 'Clock speed and cache', body: 'Clock speed is the number of processor cycles per second. A higher clock speed can allow more instructions to be processed in a given time, but comparison is meaningful only when other factors are considered. A larger cache can reduce the time spent waiting for instructions and data from slower main memory.' },
+      { heading: 'Cores and limitations', body: 'Each processor core can execute its own instruction stream. Multiple cores can improve performance when software divides work into parts that can run at the same time. They do not automatically multiply speed: sequential work, coordination overhead and other system bottlenecks can limit the gain.' }
+    ],
+    '1.1.3': [
+      { heading: 'Purpose and characteristics', body: 'An embedded system is a computer built into a larger product to perform a dedicated function. Its hardware and software are selected for that job, often with limits on cost, power use, memory and processing. Unlike a general-purpose computer, it is not designed for the user to install many unrelated applications.' },
+      { heading: 'Inputs, processing and outputs', body: 'Embedded systems commonly read sensors, process their data and control an output. A washing machine controller reads settings and sensors before controlling valves and a motor. A traffic-light controller reads timing or traffic inputs before changing lights. The whole product is not the embedded system; the controller inside it is.' }
+    ],
+    '1.2.1': [
+      { heading: 'RAM and ROM', body: 'RAM stores programs and data currently being used. It is volatile, so its contents are lost when power is removed, and it can be read from and written to. ROM is non-volatile and normally stores instructions that should remain available, such as startup instructions; its contents do not normally change during ordinary use.' },
+      { heading: 'Virtual memory and cache', body: 'When RAM is insufficient, the operating system can use part of secondary storage as virtual memory. This lets programs continue but is slower because secondary storage has a longer access time and data must be transferred between it and RAM. Cache is different: it is fast memory close to the CPU used to reduce waiting.' }
+    ],
+    '1.2.2': [
+      { heading: 'Storage technologies', body: 'Magnetic storage records data by magnetising a surface and often offers high capacity at low cost. Optical storage uses laser-readable marks on removable discs. Solid-state storage uses electronic circuits with no moving parts, making it fast, quiet and resistant to movement, although cost per unit of capacity may be higher.' },
+      { heading: 'Choosing storage in context', body: 'A justified choice must use the needs of the scenario. Compare capacity, speed, portability, durability, reliability and cost rather than claiming one technology is always best. An archive may prioritise capacity and cost, while a portable camera may prioritise low power use, durability and resistance to movement.' }
+    ],
+    '1.2.3': [
+      { heading: 'Units and binary storage', body: 'A bit is one binary digit and eight bits make one byte. Larger units are kilobyte, megabyte, gigabyte, terabyte and petabyte. Questions may state whether to use decimal multiples such as 1,000 or binary multiples such as 1,024; use the convention given and show each conversion with its unit.' },
+      { heading: 'Capacity calculations', body: 'Convert values into compatible units before comparing or combining them. To convert bits to bytes, divide by eight. To find how many files fit, first express the storage capacity and file size in the same unit, then divide the capacity by the size of one file and use a whole number of complete files.' }
+    ],
+    '1.2.4a': [
+      { heading: 'Binary, denary and hexadecimal', body: 'Each binary position has a power-of-two place value. Convert binary to denary by adding the place values containing a one. Hexadecimal groups binary into four-bit nibbles: values ten to fifteen use A to F. Convert through four-bit groups rather than treating a hexadecimal number as a denary number.' },
+      { heading: 'Addition and overflow', body: 'Binary addition uses the same place-value principle as denary addition, with carries into the next column. In a fixed-width register, overflow occurs when the result needs more bits than are available. The discarded carry does not mean the full mathematical result was represented correctly.' },
+      { heading: 'Binary shifts', body: 'A left shift moves bits towards more significant positions and fills vacated positions with zeroes; for an unsigned value, each retained one-place shift multiplies by two. A right shift divides by two and discards any remainder. Bits shifted beyond the fixed width are lost, so always show the stated register size.' }
+    ],
+    '1.2.4b': [
+      { heading: 'Character sets', body: 'A character set gives each character a numeric code which is stored in binary. With n bits there are 2 to the power n different bit patterns, so using more bits allows more distinct characters. Codes also give characters a logical order, which programs can use when sorting or comparing text.' },
+      { heading: 'ASCII and Unicode', body: 'ASCII represents a limited collection of characters, while Unicode supports far more writing systems and symbols. More bits per character can increase the size of text data. Use the bit width or code table supplied in a question; pupils are not expected to memorise character codes.' }
+    ],
+    '1.2.4c': [
+      { heading: 'Representing a bitmap', body: 'A bitmap is a grid of pixels. Each pixel stores a binary colour code, and colour depth is the number of bits available for that code. Resolution is the number of pixels, usually expressed as width by height. Metadata describes the image, including dimensions or creation information, but is separate from its pixel data.' },
+      { heading: 'Quality and file size', body: 'More pixels can capture finer spatial detail, while a greater colour depth can represent more colours. Both changes increase the uncompressed pixel-data size. Calculate width multiplied by height multiplied by colour depth for bits, then divide by eight for bytes; add metadata only if the question supplies its size.' }
+    ],
+    '1.2.4d': [
+      { heading: 'Sampling sound', body: 'A microphone produces an analogue signal whose amplitude changes continuously. An analogue-to-digital converter measures the signal at regular intervals and stores each measurement as a binary value. Sample rate is the number of measurements each second; sample depth is the bits used for each measurement.' },
+      { heading: 'Quality and file size', body: 'A higher sample rate captures the signal more frequently and a higher sample depth records each measurement with greater precision. Both can improve the digital representation but increase file size. For mono uncompressed audio, multiply sample rate by sample depth by duration to obtain bits, then convert the unit requested.' }
+    ],
+    '1.2.5': [
+      { heading: 'Why files are compressed', body: 'Compression reduces the number of bits needed to store or transmit a file. Smaller files require less storage space and normally transfer more quickly. The appropriate method depends on whether exact reconstruction is required and whether some loss of quality is acceptable.' },
+      { heading: 'Lossy and lossless', body: 'Lossy compression permanently removes data judged less important, often producing a smaller file but reducing quality. Lossless compression represents the same information more efficiently and can reconstruct the original exactly. Program code and other exact data require lossless compression; media may use either depending on its purpose.' }
+    ],
+    '1.3.1': [
+      { heading: 'Network size and ownership', body: 'A LAN covers a small area and is normally owned or managed by one organisation. A WAN connects networks across a larger geographical area and commonly uses infrastructure owned by telecommunications providers. The Internet is a worldwide network of networks, not simply another name for a WAN.' },
+      { heading: 'Roles and hardware', body: 'A client requests a service; a server provides and manages it. Peer-to-peer devices can both request and provide resources without a dedicated server. Switches connect devices inside a LAN, routers pass packets between networks, wireless access points connect wireless devices, and network interface controllers allow devices to connect.' },
+      { heading: 'Choosing a topology', body: 'In a star network, each device has its own connection to a central switch. One cable failure normally affects one device, but the central device is a single point of failure. A mesh provides multiple routes, improving resilience, but needs more connections and is more expensive and complex.' },
+      { heading: 'Client-server or peer-to-peer', body: 'Client-server networks support central accounts, access control, file storage and backup, but need server equipment and administration; server failure can remove shared services. Peer-to-peer networks can be cheaper for a very small group, but resources, security and backups are managed separately and become difficult to control as the network grows.' }
+    ],
+    '1.3.2': [
+      { heading: 'Connections and addressing', body: 'Ethernet provides a wired connection, while Wi-Fi uses radio for local wireless networking and Bluetooth supports short-range device connections. An IP address identifies a device for communication across networks and may change; a MAC address identifies a network interface on the local network and is normally assigned to its hardware.' },
+      { heading: 'Protocols', body: 'Protocols define how communicating devices format and exchange data. TCP/IP supports communication across networks; HTTP and HTTPS transfer web content, with HTTPS adding encryption and authentication; FTP transfers files; SMTP sends email, while POP and IMAP retrieve or synchronise it. Each answer should link a named protocol to its actual purpose.' },
+      { heading: 'Standards and layers', body: 'Standards allow hardware and software from different organisations to work together. A layered protocol model separates communication into responsibilities. This supports independent development, replacement of one layer without redesigning everything, and easier fault finding. OCR does not require pupils to memorise the names and functions of every individual layer.' }
+    ],
+    '1.4.1': [
+      { heading: 'Attacks on systems', body: 'Malware is software created to cause harm or gain unauthorised access. Brute-force attacks repeatedly guess credentials. Denial-of-service attacks overwhelm a service with requests. Data may also be intercepted or stolen while stored or transmitted. For each threat, distinguish how the attack operates from the damage it may cause.' },
+      { heading: 'Attacks using people or input', body: 'Social engineering manipulates a person into revealing information or taking an unsafe action; phishing is one common method. SQL injection places malicious database instructions into unchecked input. These attacks exploit different weaknesses, so a useful explanation names the weakness, the attacker’s action and the intended outcome.' }
+    ],
+    '1.4.2': [
+      { heading: 'Technical prevention', body: 'Anti-malware software detects or blocks malicious software. A firewall examines network traffic against configured rules. Encryption makes intercepted data unreadable without the key. Regular updates correct known weaknesses. Each measure reduces a particular risk but does not make a system immune to every attack.' },
+      { heading: 'People, access and testing', body: 'Strong authentication, passwords and access levels limit who can reach data and what an authorised account can do. Physical security protects equipment directly. Penetration testing is authorised security work that uses attack techniques to identify weaknesses so they can be corrected; permission separates it from an illegal attack.' }
+    ],
+    '1.5.1': [
+      { heading: 'Managing resources', body: 'An operating system provides a user interface and manages processor time, memory and multitasking. It allocates resources to running programs and keeps track of which memory is available. Multitasking rapidly schedules work from active programs; it does not mean one core literally executes every instruction at the same instant.' },
+      { heading: 'Devices, users and files', body: 'The operating system uses drivers to communicate with peripherals. It creates and manages user accounts and access rights, and provides file operations such as naming, organising, saving and deleting files. These are operating-system responsibilities, while applications perform the user’s specific productive tasks.' }
+    ],
+    '1.5.2': [
+      { heading: 'Utility software', body: 'Utilities perform maintenance or housekeeping tasks. Encryption utilities transform readable data so it needs the correct key; compression utilities reduce file size. Backup tools may also protect data in practice, but exam answers must use the utility functions named in the specification and match each one to its purpose.' },
+      { heading: 'Defragmentation', body: 'On magnetic disks, parts of a file may be stored in separated locations. Defragmentation rearranges file blocks so related blocks are closer together, reducing movement of the read-write head. It is not a useful speed treatment for solid-state storage because solid-state devices have no moving read head.' }
+    ],
+    '1.6.1': [
+      { heading: 'People and society', body: 'Technology can affect privacy, employment, access to services, working patterns, culture and relationships. A balanced response identifies affected stakeholders and develops both benefits and harms in the given context. An unsupported list of generic issues is weaker than explaining how a specific design or use produces an effect.' },
+      { heading: 'Environmental effects', body: 'Manufacturing devices consumes finite resources and energy, while operation and data centres consume electricity. Replacing equipment creates electronic waste, which can contain valuable and hazardous materials. Longer product life, repair, reuse, responsible recycling and lower-energy operation can reduce some effects but may involve trade-offs.' }
+    ],
+    '1.6.2': [
+      { heading: 'Data, access and creative work', body: 'The Data Protection Act 2018 governs responsible handling of personal data. The Computer Misuse Act 1990 addresses unauthorised access and related unauthorised acts. The Copyright, Designs and Patents Act 1988 protects creative work from unauthorised copying. Apply the correct law to the action rather than assuming every digital offence is “hacking”.' },
+      { heading: 'Software licences', body: 'A proprietary licence restricts use, modification and redistribution according to its terms, and source code is normally unavailable. Open-source licences make source code available under stated conditions and may permit modification and redistribution. Open source does not mean there are no licence conditions, and proprietary software is not automatically paid software.' }
+    ],
+    '2.1.1': [
+      { heading: 'Decomposition', body: 'Break the problem into parts that can be understood, designed and tested separately. The parts must still fit together: for a library system, searching, borrowing and returning books exchange shared data rather than behaving as unrelated mini-programs.' },
+      { heading: 'Abstraction', body: 'Keep the details that affect the solution and leave out details that do not. A route-planning model needs road connections and travel costs, but it may not need the colour of each building. Abstraction simplifies the model without ignoring information required for a correct result.' },
+      { heading: 'Algorithmic thinking', body: 'Turn the chosen inputs, decisions, repetitions and outputs into an unambiguous sequence. Check unusual and boundary cases as the algorithm is refined; an ordered plan that works only for the first example is not yet a complete solution.' }
+    ],
+    '2.1.2': [
+      { heading: 'Representing a solution', body: 'Identify inputs, processing and outputs before choosing a representation. Structure diagrams show decomposition. Flowcharts show sequence, decisions and repetition visually. Pseudocode or OCR Exam Reference Language expresses precise executable-style steps without requiring a complete program in a particular high-level language.' },
+      { heading: 'Tracing and refining', body: 'A trace table records selected variables, conditions and outputs after each relevant instruction or loop pass. Use it to find the first point where actual behaviour differs from the intended result. Correct that cause, then repeat the trace with normal and unusual data rather than patching only the final value.' }
+    ],
+    '2.1.3': [
+      { heading: 'Search algorithms', body: 'Linear search checks items in order and works on unsorted data. Binary search repeatedly checks the middle of a sorted list and discards the half that cannot contain the target. Binary search cannot be applied correctly to an unsorted list; this prerequisite matters as much as remembering its steps.' },
+      { heading: 'Sort algorithms', body: 'Bubble sort repeatedly compares neighbouring items and swaps those in the wrong order. Insertion sort inserts an item into the correct place in an ordered part. Merge sort splits data into smaller lists and merges ordered lists. Pupils must trace and recognise the stated algorithms, not only name them.' }
+    ],
+    '2.2.1': [
+      { heading: 'Variables, input and operators', body: 'Variables store values that may change; constants retain a declared value. Assignment places a value into storage. Programs receive input and produce output, while arithmetic, comparison and Boolean operators build calculations and conditions. DIV gives a whole-number quotient and MOD gives the remainder.' },
+      { heading: 'Control structures', body: 'Sequence runs instructions in order. Selection chooses a path using a condition. Count-controlled iteration repeats a known number of times, while condition-controlled iteration repeats according to a Boolean test. Nested structures must be traced carefully because an inner structure can run several times for each outer iteration.' }
+    ],
+    '2.2.2': [
+      { heading: 'Choosing data types', body: 'Integer stores whole numbers, real stores numbers with a fractional part, Boolean stores true or false, character stores one symbol and string stores a sequence of characters. Choose a type from the permitted values and operations, not from how a value happens to look on one occasion.' },
+      { heading: 'Casting', body: 'Input is often received as text even when the user typed digits. Casting converts a value to another data type so suitable operations can be performed. A cast can fail when the value cannot be represented by the requested type, so validation and error handling may be needed before conversion.' }
+    ],
+    '2.2.3': [
+      { heading: 'Working with structured data', body: 'Strings can be joined, measured and sliced. One-dimensional arrays use one index; two-dimensional arrays use a row and column index. Records group fields of different types about one item. A design should choose the structure that matches how the program must locate and update its data.' },
+      { heading: 'Files and databases', body: 'Programs open files before reading or writing and close them afterwards. A SQL SELECT statement chooses fields, FROM names the table and WHERE filters records. File and database work should be traced with realistic data so that missing records, end-of-file behaviour and unsuitable types are considered.' },
+      { heading: 'Subprograms and scope', body: 'Functions return a value, whereas procedures perform a named task and do not have to return one. Parameters pass data into a subprogram. Local variables exist within their subprogram; global variables are available more widely and should be used carefully because several parts of a program may change them.' },
+      { heading: 'Random numbers', body: 'A random-number facility produces a value within stated bounds for uses such as simulations, games or selecting test data. Check whether both endpoints can be generated in the chosen language. The result should be stored or used like any other value, and tests should not assume that one particular random result will occur.' },
+      { heading: 'File loop in OCR notation', body: 'A file-processing algorithm opens the file, repeats while the file has more data, reads one item inside the loop and closes the file afterwards. If numeric processing is required, convert each text line before arithmetic. Keep the supplied end-of-file and close syntax visible when completing an OCR Exam Reference Language task.' }
+    ],
+    '2.2.PY': [
+      { heading: 'Read before writing', body: 'Trace short Python programs one statement at a time. Record variable values, decisions, loop iterations and output. This separates understanding the algorithm from guessing what a whole program might do.' },
+      { heading: 'Build in small steps', body: 'Start from defined inputs and outputs, then add one construct at a time. Use clear names and small functions where they make the program easier to test. Syntax that runs is not enough: the produced result must also match the requirement.' },
+      { heading: 'Test and refine', body: 'Run normal, boundary, invalid and erroneous test cases where relevant. Record the expected result before running the program, compare it with the actual result, locate the cause of any difference and repeat the test after making a correction.' },
+      { heading: 'Function pattern', body: 'A Python function begins with def, names its parameters in brackets and uses an indented body. Initialise an accumulator before a loop, update it only when the condition is met, and return the result after the loop. Test a parameterised function with typical data and an edge case such as an empty list or no matches.' }
+    ],
+    '2.2.ERL': [
+      { heading: 'Read the supplied notation', body: 'OCR Exam Reference Language is the notation used for algorithms in OCR assessments. Follow its syntax consistently: assignment uses a single equals sign, equality uses two, blocks use terminators such as endif, and count-controlled loops include their stated end value. Do not silently replace it with Python syntax.' },
+      { heading: 'Trace, complete and write', body: 'Trace existing algorithms to understand variables and control flow. When completing code, preserve the surrounding notation and meet the stated requirement. When writing, plan inputs, processing, outputs and edge cases, then check loop bounds, array indexes, return values and block endings.' },
+      { heading: 'Function and file patterns', body: 'A function names its parameters, performs its processing, returns a value and ends with endfunction. Count-controlled loop bounds are inclusive in OCR notation, so an array of size n normally uses indexes zero to n minus one. File tasks should follow the open, end-of-file check, read and close forms supplied in the question or reference material.' }
+    ],
+    '2.3.1': [
+      { heading: 'Defensive design', body: 'A program should anticipate accidental and deliberate misuse. Authentication checks identity, while validation checks whether supplied data follows rules such as type, range, presence or length. Validation does not prove that data is true, and authentication does not prove that every value entered by an authorised user is suitable.' },
+      { heading: 'Maintainability', body: 'Clear names, indentation, comments that explain purpose, and well-defined subprograms make code easier to understand and change. Repeated code can often be placed in a reusable subprogram. Maintainability is about reducing future misunderstanding and error, not adding comments that merely repeat every instruction.' }
+    ],
+    '2.3.2': [
+      { heading: 'Testing during development', body: 'Iterative testing checks components and changes while a program is being developed, making faults easier to locate near the work that introduced them. Terminal testing checks the completed product. A test plan records test data, expected results, actual results and whether each test passed.' },
+      { heading: 'Test data and errors', body: 'Normal data is valid and typical; boundary data is at an accepted limit; invalid data is outside the permitted rules; erroneous data has the wrong type or cannot be processed as expected. Syntax errors break language rules, while logic errors allow the program to run but produce an incorrect result.' }
+    ],
+    '2.4.1': [
+      { heading: 'Individual logic gates', body: 'AND outputs true only when all its inputs are true. OR outputs true when at least one input is true. NOT reverses one input. Learn each symbol and truth table, then connect the gate behaviour to a statement such as an alarm, access rule or control condition.' },
+      { heading: 'Combined logic', body: 'For a combined diagram or Boolean expression, work through one gate at a time and record each intermediate output. Brackets and diagram connections determine the order. To design a circuit, translate each part of the written rule into gates and test every possible input combination.' }
+    ],
+    '2.5.1': [
+      { heading: 'Language levels and translators', body: 'High-level languages are designed to be readable and portable, while low-level languages are closely related to processor instructions and hardware. A processor cannot directly execute high-level source code, so a translator converts it into machine code.' },
+      { heading: 'Compiler and interpreter', body: 'A compiler translates the whole program and reports errors after compilation, producing code that can run without the compiler. An interpreter translates and executes one statement at a time and normally stops at an error, which can support development. A justified choice depends on development, distribution and execution needs.' }
+    ],
+    '2.5.2': [
+      { heading: 'Writing and running', body: 'An integrated development environment brings programming tools together. The editor supports entering and organising source code, syntax highlighting makes language elements easier to distinguish, and a translator or run-time environment allows the program to be executed during development.' },
+      { heading: 'Finding faults', body: 'Error diagnostics identify a type and location of a detected problem. Debugging tools can pause execution, step through instructions and inspect variable values. These tools provide evidence about where a fault occurs, but the programmer must still understand the intended behaviour and correct its cause.' }
+    ]
+  };
   return content.map(item => ({
     ...item,
     requiredKnowledge: item.scope.split(';').map(part => part.trim()).filter(Boolean),
+    prerequisiteSpecificationPointIds: prerequisites[item.id] || [],
+    teachingSections: teachingSections[item.id] || [],
     requiredSkills: assessmentModes[item.id] || ['recall'],
     assessmentModes: assessmentModes[item.id] || ['recall'],
     supportedPractice: supportedPractice[item.id],

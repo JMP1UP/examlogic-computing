@@ -81,6 +81,51 @@ describe('objective-level curriculum coverage integrity', () => {
     expect(task.planningLabels).toEqual(['PC role', 'Address moves to MAR', 'Instruction moves to MDR', 'PC increment']);
   });
 
+  test('keeps exam-transfer retries and depth within their mapped J277 strand', () => {
+    const memory = data.examTransferTasks.find(item => item.id === 'transfer_6');
+    expect(memory.specificationPointId).toBe('1.2.1');
+    expect(memory.retryQuestion).toMatch(/RAM.*ROM/);
+    expect(memory.retryQuestion).not.toMatch(/SSD|HDD/);
+
+    const search = data.examTransferTasks.find(item => item.id === 'transfer_7');
+    expect(search.requiredElements).toContain('The list must be sorted');
+    expect(search.requiredElements.join(' ')).not.toMatch(/logarithm|20 comparisons/i);
+
+    const translator = data.examTransferTasks.find(item => item.id === 'transfer_8');
+    expect(translator.requiredElements).toContain('Recommendation linked to development or release needs');
+    expect(translator.requiredElements.join(' ')).not.toContain('Justified recommendation for Compiler');
+  });
+
+  test('keeps Data Representation exam evidence separate and method-aware', () => {
+    const expectedForms = {
+      '1.2.3': 'calculation',
+      '1.2.4a': 'number-representation',
+      '1.2.4b': 'explanation',
+      '1.2.4c': undefined,
+      '1.2.4d': 'calculation'
+    };
+    Object.entries(expectedForms).forEach(([id, responseForm]) => {
+      const tasks = data.examTransferTasks.filter(item => item.specificationPointId === id);
+      expect(tasks.length).toBeGreaterThanOrEqual(1);
+      if (responseForm) expect(tasks.every(task => task.responseForm === responseForm)).toBe(true);
+      expect(tasks.every(task => task.retryQuestion)).toBe(true);
+    });
+
+    ['1.2.3', '1.2.4d'].forEach(id => {
+      const task = data.examTransferTasks.find(item => item.specificationPointId === id);
+      expect(task.requiredElements.join(' ')).toMatch(/convert|divide/i);
+      expect(task.requiredElements.join(' ')).toMatch(/unit|bytes|MB/i);
+    });
+    const numbers = data.examTransferTasks.find(item => item.specificationPointId === '1.2.4a');
+    expect(numbers.requiredElements.join(' ')).toMatch(/denary/i);
+    expect(numbers.requiredElements.join(' ')).toMatch(/hexadecimal/i);
+    expect(numbers.requiredElements.join(' ')).not.toMatch(/overflow/i);
+    expect(data.examTransferTasks.find(item => item.id === 'priority_transfer_124a_add').requiredElements.join(' ')).toMatch(/overflow/i);
+    expect(data.examTransferTasks.find(item => item.id === 'transfer_1').traceabilitySpecificationPointIds).toContain('1.2.3');
+    expect(data.examTransferTasks.find(item => item.id === 'priority_transfer_124d').traceabilitySpecificationPointIds).toContain('1.2.3');
+    expect(data.examTransferTasks.find(item => item.id === 'priority_transfer_123_text').question).toMatch(/text file/i);
+  });
+
   test('provides complete practice evidence for the priority Paper 2 strands', () => {
     ['2.2.3', '2.2.ERL', '2.1.2', '2.2.1', '2.3.2'].forEach(id => {
       const retrieval = data.questions.filter(item => item.specificationPointId === id && item.purpose === 'retrieval');
@@ -130,6 +175,123 @@ describe('objective-level curriculum coverage integrity', () => {
       expect(item.specificationPointId).toBeTruthy();
       expect(validIds.has(item.specificationPointId)).toBe(true);
     });
+  });
+
+  test('gives every specification strand an explicitly mapped starter flashcard set', () => {
+    const objectiveIds = data.units.flatMap(unit => unit.topics.flatMap(topic => topic.objectives.map(objective => objective.id)));
+    const termIds = new Set();
+    data.keyTerms.forEach(term => {
+      expect(term.id).toBeTruthy();
+      expect(termIds.has(term.id)).toBe(false);
+      termIds.add(term.id);
+      expect(term.specificationPointId).toBeTruthy();
+      expect(term.definition.length).toBeGreaterThan(30);
+      expect(term.keywords.length).toBeGreaterThanOrEqual(2);
+    });
+    objectiveIds.forEach(id => {
+      expect(data.keyTerms.filter(term => term.specificationPointId === id).length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  test('uses a valid prerequisite graph rather than treating scope headings as prerequisites', () => {
+    const objectiveIds = new Set(data.curriculumContent.map(item => item.id));
+    data.curriculumContent.forEach(item => {
+      expect(Array.isArray(item.prerequisiteSpecificationPointIds)).toBe(true);
+      item.prerequisiteSpecificationPointIds.forEach(id => {
+        expect(objectiveIds.has(id)).toBe(true);
+        expect(id).not.toBe(item.id);
+      });
+    });
+    expect(data.curriculumContent.find(item => item.id === '1.2.4d').prerequisiteSpecificationPointIds).toContain('1.2.3');
+    expect(data.curriculumContent.find(item => item.id === '2.2.3').prerequisiteSpecificationPointIds).toEqual(['2.2.1', '2.2.2']);
+    expect(data.curriculumContent.find(item => item.id === '1.2.5').prerequisiteSpecificationPointIds).toEqual([]);
+    expect(data.curriculumContent.find(item => item.id === '2.4.1').prerequisiteSpecificationPointIds).toEqual([]);
+  });
+
+  test('provides sequenced teaching for the broadest previously compressed strands', () => {
+    ['1.3.1', '2.1.1', '2.2.3', '2.2.PY'].forEach(id => {
+      const content = data.curriculumContent.find(item => item.id === id);
+      expect(content.teachingSections.length).toBeGreaterThanOrEqual(3);
+      content.teachingSections.forEach(section => {
+        expect(section.heading).toBeTruthy();
+        expect(section.body.length).toBeGreaterThan(100);
+      });
+    });
+  });
+
+  test('provides sequenced teaching and a usable flashcard deck across systems and storage', () => {
+    const systemsAndStorage = ['1.1.1', '1.1.2', '1.1.3', '1.2.1', '1.2.2', '1.2.3', '1.2.4a', '1.2.4b', '1.2.4c', '1.2.4d', '1.2.5'];
+    systemsAndStorage.forEach(id => {
+      const content = data.curriculumContent.find(item => item.id === id);
+      expect(content.teachingSections.length).toBeGreaterThanOrEqual(2);
+      expect(data.keyTerms.filter(term => term.specificationPointId === id).length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  test('adds markable exam-transfer routes for the previously missing systems and storage strands', () => {
+    ['1.1.2', '1.1.3', '1.2.2', '1.2.5'].forEach(id => {
+      const task = data.examTransferTasks.find(item => item.specificationPointId === id);
+      expect(task).toBeTruthy();
+      expect(task.requiredElements).toHaveLength(task.marks);
+      expect(task.retryQuestion.length).toBeGreaterThan(60);
+      expect(task.responseForm).toBeTruthy();
+    });
+    expect(data.examTransferTasks.find(item => item.specificationPointId === '1.2.2').question).toMatch(/wildlife camera/i);
+    expect(data.examTransferTasks.find(item => item.specificationPointId === '1.2.5').question).toMatch(/lossless/i);
+  });
+
+  test('provides sequenced teaching, mapped cards and exam transfer across every Paper 1 strand', () => {
+    const paper1Ids = data.units[0].topics.flatMap(topic => topic.objectives.map(objective => objective.id));
+    paper1Ids.forEach(id => {
+      const content = data.curriculumContent.find(item => item.id === id);
+      const task = data.examTransferTasks.find(item => item.specificationPointId === id);
+      expect(content.teachingSections.length).toBeGreaterThanOrEqual(2);
+      expect(data.keyTerms.filter(term => term.specificationPointId === id).length).toBeGreaterThanOrEqual(2);
+      expect(task).toBeTruthy();
+      expect(task.requiredElements.length).toBeGreaterThanOrEqual(Math.min(3, task.marks));
+      expect(task.retryQuestion).toBeTruthy();
+    });
+  });
+
+  test('provides the same structured baseline across every Paper 2 strand', () => {
+    const paper2Ids = data.units[1].topics.flatMap(topic => topic.objectives.map(objective => objective.id));
+    paper2Ids.forEach(id => {
+      const content = data.curriculumContent.find(item => item.id === id);
+      const task = data.examTransferTasks.find(item => item.specificationPointId === id);
+      expect(content.teachingSections.length).toBeGreaterThanOrEqual(2);
+      expect(data.keyTerms.filter(term => term.specificationPointId === id).length).toBeGreaterThanOrEqual(2);
+      expect(task).toBeTruthy();
+      expect(task.requiredElements.length).toBeGreaterThanOrEqual(Math.min(3, task.marks));
+      expect(task.retryQuestion).toBeTruthy();
+    });
+  });
+
+  test('teaches required random-number use and keeps IDE assessment within named facilities', () => {
+    expect(data.curriculumContent.find(item => item.id === '2.2.3').teachingSections
+      .some(section => /random number/i.test(section.heading + section.body))).toBe(true);
+    const ideTask = data.examTransferTasks.find(item => item.id === 'priority_transfer_252');
+    expect(ideTask.question).toMatch(/run-time environment/i);
+    expect(JSON.stringify(ideTask)).not.toMatch(/debugger|step-through/i);
+  });
+
+  test('keeps live curriculum and assessment text free from common encoding corruption', () => {
+    const liveText = JSON.stringify({
+      curriculum: data.curriculumContent,
+      questions: data.questions.filter(item => !item.retired),
+      written: data.writtenQuestions,
+      transfers: data.examTransferTasks,
+      cards: data.keyTerms
+    });
+    ['Ã—', 'Ã·', 'â€™', 'â€“', 'â†’', 'Â·', 'ï¸'].forEach(sequence => {
+      expect(liveText).not.toContain(sequence);
+    });
+  });
+
+  test('keeps retry questions on the same assessed construct as the original task', () => {
+    expect(data.examTransferTasks.find(item => item.id === 'transfer_2').retryQuestion).toMatch(/DNS.*IP address/i);
+    expect(data.examTransferTasks.find(item => item.id === 'transfer_5').retryQuestion).toMatch(/PC.*MAR.*MDR/i);
+    expect(data.examTransferTasks.find(item => item.id === 'transfer_6').retryQuestion).toMatch(/RAM.*ROM/i);
+    expect(data.examTransferTasks.find(item => item.id === 'transfer_8').retryQuestion).toMatch(/compiler.*interpreter/i);
   });
 
   test('labels learning evidence by purpose rather than counting topic totals as coverage', () => {
