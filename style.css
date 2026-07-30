@@ -547,21 +547,24 @@ textarea.form-control {
 
 /* Tabs */
 .tab-container {
+  margin-top: 24px;
+}
+
 .student-practice-mode-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 20px !important;
 }
 
 @media (max-width: 1024px) {
   .student-practice-mode-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 
 @media (max-width: 640px) {
   .student-practice-mode-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 }
 

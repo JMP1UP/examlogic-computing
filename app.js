@@ -2227,7 +2227,7 @@ class App {
         : 'linear-gradient(135deg, rgba(45, 156, 145, 0.06) 0%, rgba(255, 255, 255, 1) 100%)';
 
     dominantTaskHtml = `
-      <section class="card student-primary-task-banner" aria-labelledby="primary-task-title" style="padding: 22px 28px; border-left: 6px solid ${bannerAccentColor}; background: ${bgGradient}; border: 1px solid var(--border-color); border-left-width: 6px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; box-shadow: 0 8px 24px rgba(7, 17, 31, 0.08); position: relative; z-index: 5;">
+      <section class="card student-primary-task-banner" aria-labelledby="primary-task-title" style="padding: 22px 28px; border-left: 6px solid ${bannerAccentColor}; background: #FFFFFF !important; border: 1px solid var(--border-color); border-left-width: 6px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; box-shadow: 0 8px 24px rgba(7, 17, 31, 0.08); position: relative; z-index: 5; opacity: 1 !important; backdrop-filter: none !important;">
         <div style="flex: 1; min-width: 260px;">
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
             <span style="font-size: 18px;">${bannerIcon}</span>
@@ -3083,7 +3083,7 @@ class App {
           <button type="button" class="btn btn-primary" id="recommended-practice-btn" style="min-height: 42px; padding: 10px 24px; font-size: 15px; font-weight: 600;">Start recommended activity</button>
         </section>
 
-        <div class="student-practice-mode-grid">
+        <div class="student-practice-mode-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
           ${modes.map(mode => `
             <article class="card student-practice-mode" style="padding: 22px; display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid ${mode.color}; background: #FFFFFF; border-radius: 12px; box-shadow: 0 4px 12px rgba(7, 17, 31, 0.04); transition: transform 0.2s ease, box-shadow 0.2s ease;">
               <div>
