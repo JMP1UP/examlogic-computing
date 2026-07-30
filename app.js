@@ -4977,63 +4977,103 @@ class App {
       ` : ''}
 
       ${this.activeSimTool === 'logic-gates' ? `
-        <div class="card" style="padding:24px;">
-          <h2>🔌 Logic Gate & Truth Table Workbench</h2>
-          <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">Select a logic gate, toggle inputs A and B, and observe the live truth table evaluation.</p>
-
-          <!-- Gate Selection -->
-          <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
-            ${['AND', 'OR', 'NOT', 'XOR'].map(gate => `
-              <button class="btn ${this.logicGateType === gate ? 'btn-primary' : 'btn-secondary'} gate-select-btn" data-gate="${gate}">${gate} Gate</button>
-            `).join('')}
-          </div>
-
-          <!-- Interactive Circuit Wire Canvas Mock -->
-          <div class="card" style="background:var(--bg-main); padding:20px; margin-bottom:20px; text-align:center;">
-            <div style="display:flex; justify-content:center; align-items:center; gap:24px; flex-wrap:wrap;">
-              <div>
-                <label style="font-weight:700;">Input A</label><br>
-                <button id="toggle-input-a" class="btn ${this.logicInputA ? 'btn-primary' : 'btn-secondary'}" style="width:60px; height:44px; margin-top:6px; font-size:18px; font-weight:700;">${this.logicInputA}</button>
-              </div>
-              ${this.logicGateType !== 'NOT' ? `
-                <div>
-                  <label style="font-weight:700;">Input B</label><br>
-                  <button id="toggle-input-b" class="btn ${this.logicInputB ? 'btn-primary' : 'btn-secondary'}" style="width:60px; height:44px; margin-top:6px; font-size:18px; font-weight:700;">${this.logicInputB}</button>
-                </div>
-              ` : ''}
-              <div style="font-size:24px; font-weight:800; color:var(--teal); margin:0 12px;">&rarr; [ ${this.logicGateType} ] &rarr;</div>
-              <div>
-                <label style="font-weight:700;">Output Q</label><br>
-                <div style="width:60px; height:44px; margin-top:6px; font-size:22px; font-weight:800; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; background:${gateResult ? 'var(--teal)' : '#64748b'}; color:#fff;">${gateResult}</div>
-              </div>
+        <div class="card" style="padding:28px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+            <div>
+              <span class="student-kicker" style="font-weight:700; color:var(--teal); text-transform:uppercase; font-size:11px;">Interactive Circuit Simulator</span>
+              <h2 style="margin:2px 0 4px 0; font-size:22px; font-weight:800; color:var(--text-main);">🔌 Logic Gate & Truth Table Workbench</h2>
+              <p style="font-size:14px; color:var(--text-muted); margin:0;">Select a logic gate, toggle inputs A and B, and observe the live signal flow and truth table.</p>
             </div>
           </div>
 
+          <!-- Gate Selection Tabs -->
+          <div style="display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap;">
+            ${['AND', 'OR', 'NOT', 'XOR'].map(gate => `
+              <button class="btn ${this.logicGateType === gate ? 'btn-primary' : 'btn-secondary'} gate-select-btn" data-gate="${gate}" style="font-weight:700; min-height:40px; padding:8px 18px; font-size:14px;">${gate} Gate</button>
+            `).join('')}
+          </div>
+
+          <!-- Interactive Circuit Wire Canvas -->
+          <div class="card" style="background:#FAF8F2; padding:28px; margin-bottom:24px; border:1px solid var(--border-color); border-radius:14px; box-shadow:0 4px 16px rgba(7, 17, 31, 0.04);">
+            <div style="display:flex; justify-content:center; align-items:center; gap:20px; flex-wrap:wrap;">
+              
+              <!-- Input A Switch -->
+              <div style="text-align:center;">
+                <label style="font-weight:700; font-size:13px; color:var(--text-main); display:block; margin-bottom:6px;">Input A</label>
+                <button id="toggle-input-a" class="btn" style="min-width:110px; height:46px; font-size:15px; font-weight:800; border-radius:10px; transition:all 0.2s ease; cursor:pointer; ${this.logicInputA === 1 ? 'background:#10B981; border-color:#10B981; color:#FFFFFF; box-shadow:0 4px 12px rgba(16, 185, 129, 0.3);' : 'background:#F1F5F9; border:1px solid #CBD5E1; color:#64748B;'}" aria-label="Toggle Input A, current state is ${this.logicInputA}">
+                  ${this.logicInputA === 1 ? '⚡ 1 (HIGH)' : '0 (LOW)'}
+                </button>
+              </div>
+
+              <!-- Wire A Signal Line -->
+              <div style="display:flex; align-items:center; gap:4px; font-weight:800; font-size:16px; color:${this.logicInputA === 1 ? '#10B981' : '#94A3B8'};">
+                <span style="font-size:18px;">${this.logicInputA === 1 ? '━━━▶' : '━━━▷'}</span>
+              </div>
+
+              ${this.logicGateType !== 'NOT' ? `
+                <!-- Input B Switch -->
+                <div style="text-align:center;">
+                  <label style="font-weight:700; font-size:13px; color:var(--text-main); display:block; margin-bottom:6px;">Input B</label>
+                  <button id="toggle-input-b" class="btn" style="min-width:110px; height:46px; font-size:15px; font-weight:800; border-radius:10px; transition:all 0.2s ease; cursor:pointer; ${this.logicInputB === 1 ? 'background:#10B981; border-color:#10B981; color:#FFFFFF; box-shadow:0 4px 12px rgba(16, 185, 129, 0.3);' : 'background:#F1F5F9; border:1px solid #CBD5E1; color:#64748B;'}" aria-label="Toggle Input B, current state is ${this.logicInputB}">
+                    ${this.logicInputB === 1 ? '⚡ 1 (HIGH)' : '0 (LOW)'}
+                  </button>
+                </div>
+
+                <!-- Wire B Signal Line -->
+                <div style="display:flex; align-items:center; gap:4px; font-weight:800; font-size:16px; color:${this.logicInputB === 1 ? '#10B981' : '#94A3B8'};">
+                  <span style="font-size:18px;">${this.logicInputB === 1 ? '━━━▶' : '━━━▷'}</span>
+                </div>
+              ` : ''}
+
+              <!-- Central Logic Gate Chip -->
+              <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; background:#07111F; color:#FFFFFF; padding:12px 24px; border-radius:12px; border:2px solid var(--teal); box-shadow:0 6px 18px rgba(7, 17, 31, 0.18); min-width:110px;">
+                <span style="font-size:10px; font-weight:700; color:var(--teal); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:2px;">LOGIC GATE</span>
+                <strong style="font-size:22px; font-weight:800; letter-spacing:0.05em; font-family:monospace;">${this.logicGateType}</strong>
+              </div>
+
+              <!-- Output Signal Line -->
+              <div style="display:flex; align-items:center; gap:4px; font-weight:800; font-size:16px; color:${gateResult === 1 ? '#10B981' : '#94A3B8'};">
+                <span style="font-size:18px;">${gateResult === 1 ? '━━━▶' : '━━━▷'}</span>
+              </div>
+
+              <!-- Output Q Display -->
+              <div style="text-align:center;">
+                <label style="font-weight:700; font-size:13px; color:var(--text-main); display:block; margin-bottom:6px;">Output Q</label>
+                <div style="min-width:120px; height:46px; font-size:15px; font-weight:800; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; transition:all 0.2s ease; ${gateResult === 1 ? 'background:#10B981; color:#FFFFFF; box-shadow:0 4px 14px rgba(16, 185, 129, 0.35);' : 'background:#64748B; color:#FFFFFF;'}" role="status" aria-live="polite">
+                  ${gateResult === 1 ? '⚡ 1 (HIGH)' : '0 (LOW)'}
+                </div>
+              </div>
+
+            </div>
+            <p style="margin:16px 0 0 0; font-size:12px; color:var(--text-muted); font-weight:500;">💡 Click on Input buttons above to toggle signals between 0 (LOW) and 1 (HIGH).</p>
+          </div>
+
           <!-- Live Truth Table -->
-          <div class="card" style="padding:16px;">
-            <h3 style="font-size:16px; margin-bottom:12px;">${this.logicGateType} Gate Truth Table</h3>
-            <table style="width:100%; border-collapse:collapse; text-align:center; font-size:14px;">
+          <div class="card" style="padding:20px; border-radius:12px;">
+            <h3 style="font-size:16px; font-weight:700; margin:0 0 14px 0; color:var(--text-main);">${this.logicGateType} Gate Truth Table</h3>
+            <table style="width:100%; border-collapse:separate; border-spacing:0 4px; text-align:center; font-size:14px;">
               <thead>
-                <tr style="background:rgba(45,156,145,0.1); border-bottom:2px solid var(--border-color);">
-                  <th scope="col" style="padding:8px;">Input A</th>
+                <tr style="background:#07111F; color:#FFFFFF; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; height:34px;">
+                  <th scope="col" style="padding:8px; border-radius:6px 0 0 6px;">Input A</th>
                   ${this.logicGateType !== 'NOT' ? `<th scope="col" style="padding:8px;">Input B</th>` : ''}
-                  <th scope="col" style="padding:8px;">Output Q</th>
+                  <th scope="col" style="padding:8px; border-radius:0 6px 6px 0;">Output Q</th>
                 </tr>
               </thead>
               <tbody>
                 ${this.logicGateType === 'NOT' ? `
-                  <tr style="${this.logicInputA === 0 ? 'background:rgba(45,156,145,0.2); font-weight:700;' : ''} border-bottom:1px solid var(--border-color);"><td style="padding:8px;">0</td><td style="padding:8px;">1</td></tr>
-                  <tr style="${this.logicInputA === 1 ? 'background:rgba(45,156,145,0.2); font-weight:700;' : ''}"><td style="padding:8px;">1</td><td style="padding:8px;">0</td></tr>
+                  <tr style="${this.logicInputA === 0 ? 'background:rgba(16, 185, 129, 0.12); font-weight:800; border-left:4px solid #10B981;' : 'background:var(--bg-card);'} border-bottom:1px solid var(--border-color); height:36px;"><td style="padding:8px;">0</td><td style="padding:8px; color:var(--teal); font-weight:800;">1</td></tr>
+                  <tr style="${this.logicInputA === 1 ? 'background:rgba(16, 185, 129, 0.12); font-weight:800; border-left:4px solid #10B981;' : 'background:var(--bg-card);'} height:36px;"><td style="padding:8px;">1</td><td style="padding:8px; color:var(--teal); font-weight:800;">0</td></tr>
                 ` : `
-                  <tr style="${this.logicInputA === 0 && this.logicInputB === 0 ? 'background:rgba(45,156,145,0.2); font-weight:700;' : ''} border-bottom:1px solid var(--border-color);"><td style="padding:8px;">0</td><td style="padding:8px;">0</td><td style="padding:8px;">${this.logicGateType === 'AND' ? '0' : this.logicGateType === 'OR' ? '0' : '0'}</td></tr>
-                  <tr style="${this.logicInputA === 0 && this.logicInputB === 1 ? 'background:rgba(45,156,145,0.2); font-weight:700;' : ''} border-bottom:1px solid var(--border-color);"><td style="padding:8px;">0</td><td style="padding:8px;">1</td><td style="padding:8px;">${this.logicGateType === 'AND' ? '0' : this.logicGateType === 'OR' ? '1' : '1'}</td></tr>
-                  <tr style="${this.logicInputA === 1 && this.logicInputB === 0 ? 'background:rgba(45,156,145,0.2); font-weight:700;' : ''} border-bottom:1px solid var(--border-color);"><td style="padding:8px;">1</td><td style="padding:8px;">0</td><td style="padding:8px;">${this.logicGateType === 'AND' ? '0' : this.logicGateType === 'OR' ? '1' : '1'}</td></tr>
-                  <tr style="${this.logicInputA === 1 && this.logicInputB === 1 ? 'background:rgba(45,156,145,0.2); font-weight:700;' : ''}"><td style="padding:8px;">1</td><td style="padding:8px;">1</td><td style="padding:8px;">${this.logicGateType === 'AND' ? '1' : this.logicGateType === 'OR' ? '1' : '0'}</td></tr>
+                  <tr style="${this.logicInputA === 0 && this.logicInputB === 0 ? 'background:rgba(16, 185, 129, 0.12); font-weight:800; border-left:4px solid #10B981;' : 'background:var(--bg-card);'} border-bottom:1px solid var(--border-color); height:36px;"><td style="padding:8px;">0</td><td style="padding:8px;">0</td><td style="padding:8px; color:var(--teal); font-weight:800;">0</td></tr>
+                  <tr style="${this.logicInputA === 0 && this.logicInputB === 1 ? 'background:rgba(16, 185, 129, 0.12); font-weight:800; border-left:4px solid #10B981;' : 'background:var(--bg-card);'} border-bottom:1px solid var(--border-color); height:36px;"><td style="padding:8px;">0</td><td style="padding:8px;">1</td><td style="padding:8px; color:var(--teal); font-weight:800;">${this.logicGateType === 'AND' ? '0' : this.logicGateType === 'OR' ? '1' : '1'}</td></tr>
+                  <tr style="${this.logicInputA === 1 && this.logicInputB === 0 ? 'background:rgba(16, 185, 129, 0.12); font-weight:800; border-left:4px solid #10B981;' : 'background:var(--bg-card);'} border-bottom:1px solid var(--border-color); height:36px;"><td style="padding:8px;">1</td><td style="padding:8px;">0</td><td style="padding:8px; color:var(--teal); font-weight:800;">${this.logicGateType === 'AND' ? '0' : this.logicGateType === 'OR' ? '1' : '1'}</td></tr>
+                  <tr style="${this.logicInputA === 1 && this.logicInputB === 1 ? 'background:rgba(16, 185, 129, 0.12); font-weight:800; border-left:4px solid #10B981;' : 'background:var(--bg-card);'} height:36px;"><td style="padding:8px;">1</td><td style="padding:8px;">1</td><td style="padding:8px; color:var(--teal); font-weight:800;">${this.logicGateType === 'AND' ? '1' : this.logicGateType === 'OR' ? '1' : '0'}</td></tr>
                 `}
               </tbody>
             </table>
           </div>
         </div>
+      ` : ''}
       ` : ''}
 
       ${this.activeSimTool === 'algorithms' ? `
