@@ -190,6 +190,6 @@ describe('student route clarity behaviour', () => {
 
     expect(panel.innerHTML).toContain(brief);
     expect(panel.innerHTML).toContain(control);
-    expect(panel.innerHTML).toContain('Finish and return Home');
+    expect(panel.innerHTML).toContain('Finish and return to Topics');
   });
 });

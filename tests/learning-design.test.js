@@ -27,7 +27,8 @@ describe('GCSE learning design', () => {
   });
 
   test('makes programming a first-class student area with separate progress', () => {
-    expect(appSource).toContain("{ id: 'stud-programming', label: 'Programming'");
+    expect(appSource).toContain("{ title: 'Programming'");
+    expect(appSource).toContain("route: 'stud-programming'");
     expect(appSource).toContain('renderStudentProgrammingHub');
     expect(appSource).toContain('Practical Python');
     expect(appSource).toContain('OCR Exam Reference Language');
@@ -77,10 +78,13 @@ describe('GCSE learning design', () => {
   });
 
   test('reduces navigation and reveals complex practice choices progressively', () => {
-    expect(appSource).toContain("label: 'Exam preparation'");
-    expect(appSource).toContain('Choose one practice mode');
-    expect(appSource).toContain('<details style="border:1px solid var(--border-color)');
-    expect(appSource).toContain('3. Check and improve');
+    expect(appSource).toContain("{ id: 'stud-topics', label: 'Topics'");
+    expect(appSource).toContain("{ id: 'stud-practice', label: 'Practice'");
+    expect(appSource).toContain('Choose how to practise');
+    expect(appSource).toContain("title: 'Recall cards'");
+    expect(appSource).toContain("title: 'Exam questions'");
+    expect(appSource).toContain("title: 'Number skills'");
+    expect(appSource).toContain("title: 'Programming'");
   });
 
   test('derives the teacher weekly-engagement measure from pupil records', () => {

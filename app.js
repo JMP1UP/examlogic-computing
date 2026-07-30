@@ -806,13 +806,107 @@ class App {
     return covered;
   }
 
+  getLearnerObjectiveStates(student = this.currentUser) {
+    const studentId = student?.id || this.currentUser?.id;
+    const storedStudent = window.db.getStudents?.().find(item => item.id === studentId);
+    const record = storedStudent || student;
+    return Array.isArray(record?.learnerObjectiveStates) ? record.learnerObjectiveStates : [];
+  }
+
+  getLearnerObjectiveState(objectiveId, student = this.currentUser) {
+    return this.getLearnerObjectiveStates(student).find(item =>
+      item.studentId === student?.id && item.specificationPointId === objectiveId
+    ) || null;
+  }
+
+  updateLearnerObjectiveState(objectiveId, state, cardState = null) {
+    if (!this.currentUser?.id || !['not_covered', 'learning', 'covered'].includes(state)) return false;
+    const existingStates = this.getLearnerObjectiveStates().map(item => ({ ...item }));
+    const index = existingStates.findIndex(item =>
+      item.studentId === this.currentUser.id && item.specificationPointId === objectiveId
+    );
+    const previous = index >= 0 ? existingStates[index] : null;
+    const next = {
+      studentId: this.currentUser.id,
+      specificationPointId: objectiveId,
+      state,
+      cardState: cardState || previous?.cardState || (state === 'covered' ? 'active' : 'paused'),
+      updatedAt: new Date().toISOString(),
+      source: 'learner'
+    };
+    if (index >= 0) existingStates[index] = next;
+    else existingStates.push(next);
+    window.db.updateStudent(this.currentUser.id, { learnerObjectiveStates: existingStates });
+    this.currentUser.learnerObjectiveStates = existingStates;
+    return true;
+  }
+
+  getObjectiveRecallConfidence(objectiveId) {
+    const objectiveCardIds = new Set(this.getRecallCardMappings()
+      .filter(item => item.objectiveId === objectiveId)
+      .map(item => item.card.id));
+    if (!objectiveCardIds.size) return 'Not rated yet';
+    const latestByCard = new Map();
+    window.db.getAttempts()
+      .filter(item => item.studentId === this.currentUser?.id
+        && ['retrieval_rating', 'retrieval_deck_extra'].includes(item.type)
+        && objectiveCardIds.has(item.questionId))
+      .sort((left, right) => new Date(right.date) - new Date(left.date))
+      .forEach(item => {
+        if (!latestByCard.has(item.questionId)) latestByCard.set(item.questionId, item);
+      });
+    const ratings = [...latestByCard.values()]
+      .slice(0, 5);
+    if (!ratings.length) return 'Not rated yet';
+    const values = { 'couldnt-recall': 0, difficult: 1, secure: 2 };
+    const average = ratings.reduce((sum, item) => sum + (values[item.selfRating] ?? 0), 0) / ratings.length;
+    if (average < 0.5) return 'Needs another look';
+    if (average < 1.25) return 'Building confidence';
+    if (average < 1.8 || ratings.length < 3) return 'Usually recalled';
+    return 'Consistently recalled';
+  }
+
+  getRecallCardMappings() {
+    const content = window.db.getCurriculumContent?.() || [];
+    const locations = new Map(window.db.getUnits().flatMap(unit =>
+      unit.topics.flatMap(topic => (topic.objectives || []).map(objective => [objective.id, topic.id]))
+    ));
+    return window.db.getKeyTerms().map(card => {
+      if (card.specificationPointId && locations.get(card.specificationPointId) === card.topicId) {
+        return { card, objectiveId: card.specificationPointId, precision: 'exact' };
+      }
+      const normalisedTerm = String(card.term || '').trim().toLowerCase();
+      const matches = content.filter(item =>
+        locations.get(item.id) === card.topicId
+        && (item.keyTerms || []).some(term => String(term).trim().toLowerCase() === normalisedTerm)
+      );
+      if (matches.length === 1) return { card, objectiveId: matches[0].id, precision: 'derived_exact' };
+      return { card, objectiveId: null, precision: 'legacy_topic' };
+    });
+  }
+
+  getEligibleRecallCards(student = this.currentUser) {
+    const legacyCoveredTopics = this.getCoveredTopicIds(student);
+    const states = new Map(this.getLearnerObjectiveStates(student)
+      .map(item => [item.specificationPointId, item]));
+    return this.getRecallCardMappings().filter(({ card, objectiveId }) => {
+      if (!objectiveId) return legacyCoveredTopics.has(card.topicId);
+      const learnerState = states.get(objectiveId);
+      if (learnerState) return learnerState.state === 'covered' && learnerState.cardState === 'active';
+      return legacyCoveredTopics.has(card.topicId);
+    });
+  }
+
+  getEligibleRecallTopics(student = this.currentUser) {
+    return new Set(this.getEligibleRecallCards(student).map(item => item.card.topicId));
+  }
+
   getRetrievalDeckCards(student = this.currentUser, now = new Date()) {
-    const covered = this.getCoveredTopicIds(student);
     const ratings = window.db.getAttempts().filter(item =>
       item.studentId === student?.id && ['retrieval_rating', 'retrieval_deck_extra'].includes(item.type)
     );
-    return window.db.getKeyTerms()
-      .filter(card => covered.has(card.topicId))
+    return this.getEligibleRecallCards(student)
+      .map(item => ({ ...item.card, recallMappingPrecision: item.precision, specificationPointId: item.objectiveId }))
       .filter(card => this.retrievalDeckTopicId === 'all' || card.topicId === this.retrievalDeckTopicId)
       .map(card => {
         const latest = ratings.filter(item => item.questionId === card.id)
@@ -1478,6 +1572,29 @@ class App {
     this.focusMainContent();
   }
 
+  getStudentRouteParent(tabId = this.activeTab) {
+    const parents = {
+      'stud-dashboard': 'stud-dashboard',
+      'stud-topics': 'stud-topics',
+      'stud-learn': 'stud-topics',
+      'stud-simulators': 'stud-topics',
+      'stud-practice': 'stud-practice',
+      'stud-practise': 'stud-practice',
+      'stud-retrieval': 'stud-practice',
+      'stud-recall': 'stud-practice',
+      'stud-programming': 'stud-practice',
+      'stud-programme': 'stud-practice',
+      'stud-pseudocode': 'stud-practice',
+      'stud-dictionary': 'stud-practice',
+      'stud-written': 'stud-practice',
+      'stud-test-prep': 'stud-practice',
+      'stud-exam-transfer': 'stud-practice',
+      'stud-progress': 'stud-progress',
+      'stud-messages': 'stud-messages'
+    };
+    return parents[tabId] || null;
+  }
+
   focusMainContent(selector = 'h1, h2') {
     const mainPanel = document.getElementById('main-panel');
     if (!mainPanel) return;
@@ -1553,20 +1670,17 @@ class App {
     // Render Navigation based on role
     navList.innerHTML = '';
     if (this.currentUser.role === 'student') {
+      const activeParent = this.getStudentRouteParent();
       const links = [
         { id: 'stud-dashboard', label: 'Home', icon: SVG_ICONS.home },
-        { id: 'stud-learn', label: 'Learn', icon: SVG_ICONS.learn },
-        { id: 'stud-simulators', label: 'Simulators', icon: SVG_ICONS.learn },
-        { id: 'stud-programming', label: 'Programming', icon: SVG_ICONS.programme },
-        { id: 'stud-practise', label: 'Practise', icon: SVG_ICONS.practise },
-        { id: 'stud-retrieval', label: 'Recall deck', icon: SVG_ICONS.revise },
-        { id: 'stud-recall', label: 'Exam preparation', icon: SVG_ICONS.revise },
+        { id: 'stud-topics', label: 'Topics', icon: SVG_ICONS.learn },
+        { id: 'stud-practice', label: 'Practice', icon: SVG_ICONS.practise },
         { id: 'stud-progress', label: 'Progress', icon: SVG_ICONS.progress },
         { id: 'stud-messages', label: 'Messages', icon: SVG_ICONS.messages }
       ];
       links.forEach((link, index) => {
         const li = document.createElement('li');
-        li.innerHTML = `<a class="nav-link ${this.activeTab === link.id ? 'active' : ''}" href="#" data-tab="${link.id}" ${this.activeTab === link.id ? 'aria-current="page"' : ''}>
+        li.innerHTML = `<a class="nav-link ${activeParent === link.id ? 'active' : ''}" href="#" data-tab="${link.id}" ${activeParent === link.id ? 'aria-current="page"' : ''}>
           <span style="display: inline-flex; align-items: center; margin-right: 12px; opacity: 0.85;">${link.icon}</span>
           <span>${link.label}</span>
           <span class="student-nav-index" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>
@@ -1606,6 +1720,12 @@ class App {
       // Student screens
       case 'stud-dashboard':
         this.renderStudentDashboard(mainPanel);
+        break;
+      case 'stud-topics':
+        this.renderStudentTopics(mainPanel);
+        break;
+      case 'stud-practice':
+        this.renderStudentPracticeHub(mainPanel);
         break;
       case 'stud-learn':
         this.renderStudentLearn(mainPanel);
@@ -1649,7 +1769,6 @@ class App {
       case 'stud-exam-transfer':
         this.renderStudentExamTransfer(mainPanel);
         break;
-
       // Teacher screens
       case 'teach-overview':
         this.renderTeacherOverview(mainPanel);
@@ -1683,6 +1802,10 @@ class App {
         break;
 
       default:
+        if (this.currentUser.role === 'student') {
+          this.renderStudentRouteRecovery(mainPanel);
+          break;
+        }
         mainPanel.innerHTML = `<div class="card" role="status"><h1>Screen not found</h1><p>This route is unavailable. Return to the appropriate home screen and choose another task.</p><button class="btn btn-secondary" id="unknown-route-back-btn">Back to Home</button></div>`;
         const unknownRouteBackButton = document.getElementById('unknown-route-back-btn');
         if (unknownRouteBackButton) {
@@ -2294,6 +2417,221 @@ class App {
     }
   }
 
+  renderStudentRouteRecovery(panel) {
+    panel.innerHTML = `
+      <section class="card student-recovery" role="status">
+        <h1>This page is not available</h1>
+        <p>The activity may have moved. Choose a safe place to continue.</p>
+        <div class="student-action-row">
+          <button type="button" class="btn btn-primary" data-recovery-route="stud-dashboard">Go to Home</button>
+          <button type="button" class="btn btn-secondary" data-recovery-route="stud-topics">Open Topics</button>
+        </div>
+      </section>`;
+    panel.querySelectorAll('[data-recovery-route]').forEach(button => {
+      button.onclick = () => this.switchTab(button.getAttribute('data-recovery-route'));
+    });
+  }
+
+  getObjectiveLocation(objectiveId) {
+    for (const unit of window.db.getUnits()) {
+      for (const topic of unit.topics) {
+        const objective = topic.objectives.find(item => item.id === objectiveId);
+        if (objective) return { unit, topic, objective };
+      }
+    }
+    return null;
+  }
+
+  openObjectiveLearning(topicId, objectiveId) {
+    this.activeTopicId = topicId;
+    this.activeObjectiveId = objectiveId;
+    const current = this.getLearnerObjectiveState(objectiveId);
+    if (!current || current.state === 'not_covered') this.updateLearnerObjectiveState(objectiveId, 'learning');
+    this.switchTab('stud-learn');
+  }
+
+  renderStudentTopics(panel, restore = {}) {
+    const milestoneBySection = new Map(this.getSectionMilestones().map(item => [item.id, item]));
+    const contentIds = new Set(window.db.getCurriculumContent().map(item => item.id));
+    const stateLabels = {
+      not_covered: 'Not covered yet',
+      learning: 'Learning now',
+      covered: 'Covered — cards added'
+    };
+    const paperHtml = window.db.getUnits().map((unit, unitIndex) => `
+      <details class="student-topic-paper" data-disclosure-id="paper-${unitIndex}" ${unitIndex === 0 ? 'open' : ''}>
+        <summary>${this.escapeHTML(unit.paper)}: ${this.escapeHTML(unit.title)}</summary>
+        ${unit.topics.map(topic => `
+          <details class="student-topic-group" data-disclosure-id="topic-${this.escapeHTML(topic.id)}">
+            <summary>${this.escapeHTML(topic.code)} ${this.escapeHTML(topic.name)}</summary>
+            <div class="student-objective-list">
+              ${topic.objectives.map(objective => {
+                const saved = this.getLearnerObjectiveState(objective.id);
+                const state = saved?.state || 'not_covered';
+                const cardsActive = saved?.cardState !== 'paused';
+                const milestone = milestoneBySection.get(objective.id);
+                const checked = milestone?.state === 'checkpoint_secured'
+                  ? 'Section goal met'
+                  : milestone?.state === 'practice_completed'
+                    ? 'Checked practice started'
+                    : 'No checked work yet';
+                const task = this.getMatchingExamTransferTask(topic.id, objective.id);
+                const available = contentIds.has(objective.id);
+                const primaryLabel = state === 'covered' ? 'Review section' : state === 'learning' ? 'Continue learning' : 'Start learning';
+                return `
+                  <article class="student-objective-card" aria-labelledby="objective-name-${this.escapeHTML(objective.id)}">
+                    <div>
+                      <h3 id="objective-name-${this.escapeHTML(objective.id)}">${this.escapeHTML(objective.id)} · ${this.escapeHTML(objective.name)}</h3>
+                      <dl class="student-objective-status">
+                        <div><dt>Study state</dt><dd>${stateLabels[state]}</dd></div>
+                        <div><dt>Recall confidence</dt><dd>${this.escapeHTML(this.getObjectiveRecallConfidence(objective.id))}</dd></div>
+                        <div><dt>Checked work</dt><dd>${checked}</dd></div>
+                      </dl>
+                    </div>
+                    <div class="student-objective-actions">
+                      <button type="button" class="btn btn-primary objective-learn-btn" data-topic-id="${this.escapeHTML(topic.id)}" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="${primaryLabel}: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}" ${available ? '' : 'disabled'}>${available ? primaryLabel : 'Learning unavailable'}</button>
+                      <details>
+                        <summary aria-label="More options for ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">More options</summary>
+                        <div class="student-action-row">
+                          <button type="button" class="btn btn-secondary objective-cover-btn" data-objective-id="${this.escapeHTML(objective.id)}" aria-label="${state === 'covered' ? (cardsActive ? 'Pause recall cards' : 'Add recall cards again') : 'Mark as covered and add cards'}: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">${state === 'covered' ? (cardsActive ? 'Pause recall cards' : 'Add recall cards again') : 'Mark as covered and add cards'}</button>
+                          ${task ? `<button type="button" class="btn btn-secondary objective-exam-btn" data-task-id="${this.escapeHTML(task.id)}" aria-label="Try matching exam question: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">Try matching exam question</button>` : ''}
+                          <button type="button" class="btn btn-secondary objective-progress-btn" aria-label="View checked progress: ${this.escapeHTML(objective.id)} ${this.escapeHTML(objective.name)}">View checked progress</button>
+                        </div>
+                      </details>
+                    </div>
+                  </article>`;
+              }).join('')}
+            </div>
+          </details>`).join('')}
+      </details>`).join('');
+
+    panel.innerHTML = `
+      <div class="student-page student-topics-page">
+        <header class="student-route-header">
+          <span class="student-mode-label">OCR specification</span>
+          <h1>Computer Science topics</h1>
+          <p>See what you have covered, choose what to learn and manage your recall cards.</p>
+        </header>
+        <aside class="card student-status-explainer">
+          <strong>Three different signals</strong>
+          <p>Covered means you have studied this section and added its cards. It does not mean mastered. Checked questions show what you can do. Recall confidence is based on recent card ratings.</p>
+        </aside>
+        <p class="sr-only" id="topics-state-announcement" aria-live="polite">${this.escapeHTML(restore.announcement || '')}</p>
+        <div class="student-topic-papers">${paperHtml}</div>
+      </div>`;
+    const openIds = restore.openIds || [];
+    panel.querySelectorAll('details[data-disclosure-id]').forEach(detail => {
+      if (openIds.includes(detail.dataset.disclosureId)) detail.open = true;
+    });
+    const captureOpenIds = () => [...panel.querySelectorAll('details[data-disclosure-id][open]')]
+      .map(detail => detail.dataset.disclosureId);
+    panel.querySelectorAll('.objective-learn-btn').forEach(button => {
+      button.onclick = () => this.openObjectiveLearning(button.dataset.topicId, button.dataset.objectiveId);
+    });
+    panel.querySelectorAll('.objective-cover-btn').forEach(button => {
+      button.onclick = () => {
+        const objectiveId = button.dataset.objectiveId;
+        const current = this.getLearnerObjectiveState(objectiveId);
+        let announcement = '';
+        if (current?.state === 'covered') {
+          const nextCardState = current.cardState === 'paused' ? 'active' : 'paused';
+          this.updateLearnerObjectiveState(objectiveId, 'covered', nextCardState);
+          announcement = `${objectiveId} recall cards ${nextCardState === 'active' ? 'added' : 'paused'}.`;
+        } else {
+          this.updateLearnerObjectiveState(objectiveId, 'covered', 'active');
+          announcement = `${objectiveId} marked covered and recall cards added.`;
+        }
+        this.renderStudentTopics(panel, {
+          openIds: captureOpenIds(),
+          focusObjectiveId: objectiveId,
+          announcement
+        });
+      };
+    });
+    panel.querySelectorAll('.objective-exam-btn').forEach(button => {
+      button.onclick = () => {
+        this.activeExamTransferId = button.dataset.taskId;
+        const task = window.db.getExamTransferTasks().find(item => item.id === this.activeExamTransferId);
+        this.activeTopicId = task.topicId;
+        this.activeObjectiveId = task.specificationPointId;
+        this.examTransferStage = 'decode';
+        this.switchTab('stud-exam-transfer');
+      };
+    });
+    panel.querySelectorAll('.objective-progress-btn').forEach(button => {
+      button.onclick = () => this.switchTab('stud-progress');
+    });
+    if (restore.focusObjectiveId) {
+      panel.querySelector(`.objective-cover-btn[data-objective-id="${restore.focusObjectiveId}"]`)?.focus?.();
+    }
+  }
+
+  renderStudentPracticeHub(panel) {
+    const rhythm = this.getStudentPracticeRhythm();
+    const modes = [
+      { title: 'Recall cards', copy: 'Recall three cards in about five minutes. Ratings schedule cards only and contribute to study rhythm.', route: 'stud-retrieval', time: 'About 5 minutes', evidence: 'Study rhythm' },
+      { title: 'Exam questions', copy: 'Apply one specification point in an exam-style response. Extended work waits for review.', route: 'stud-exam-transfer', time: 'About 6–12 minutes', evidence: 'Checked or awaiting review' },
+      { title: 'Number skills', copy: 'Complete a bounded calculation set and retry mistakes.', route: 'stud-practise', time: 'About 10 minutes', evidence: 'Checked work' },
+      { title: 'Programming', copy: 'Continue one coding or pseudocode stage with tests or review.', route: 'stud-programming', time: 'About 15 minutes', evidence: 'Tests or awaiting review' }
+    ];
+    const recommended = rhythm.next || { label: 'Choose one useful practice mode', route: 'stud-retrieval', minutes: 5 };
+    panel.innerHTML = `
+      <div class="student-page student-practice-hub">
+        <header class="student-route-header">
+          <span class="student-mode-label">Practice</span>
+          <h1>Choose how to practise</h1>
+          <p>Use recall to remember knowledge and checked work to demonstrate what you can do.</p>
+        </header>
+        <section class="card student-recommended-practice" aria-labelledby="recommended-practice-title">
+          <span class="student-kicker">Recommended now</span>
+          <h2 id="recommended-practice-title">${this.escapeHTML(recommended.label)}</h2>
+          <p>About ${recommended.minutes} minutes. Complete one focused activity, then return to Home for your next step.</p>
+          <button type="button" class="btn btn-primary" id="recommended-practice-btn">Continue recommended activity</button>
+        </section>
+        <div class="student-practice-mode-grid">
+          ${modes.map(mode => `
+            <article class="card student-practice-mode">
+              <h2>${mode.title}</h2>
+              <p>${mode.copy}</p>
+              <p><strong>Time:</strong> ${mode.time}<br><strong>Records:</strong> ${mode.evidence}</p>
+              <button type="button" class="btn btn-secondary practice-hub-btn" data-target="${mode.route}">Start ${mode.title.toLowerCase()}</button>
+            </article>`).join('')}
+        </div>
+      </div>`;
+    panel.querySelector('#recommended-practice-btn').onclick = () => {
+      if (recommended.route === 'stud-exam-transfer') this.startStudentExamPractice();
+      else this.switchTab(recommended.route);
+    };
+    panel.querySelectorAll('.practice-hub-btn').forEach(button => {
+      button.onclick = () => {
+        if (button.dataset.target === 'stud-exam-transfer') this.startStudentExamPractice();
+        else this.switchTab(button.dataset.target);
+      };
+    });
+  }
+
+  startStudentExamPractice() {
+    const exactCurrent = this.getMatchingExamTransferTask(this.activeTopicId, this.activeObjectiveId);
+    const nextMilestone = this.getSectionMilestones().find(item => item.available && item.state !== 'checkpoint_secured');
+    const nextTask = nextMilestone
+      ? this.getMatchingExamTransferTask(nextMilestone.topicId, nextMilestone.id)
+      : null;
+    const task = exactCurrent || nextTask || this.getOrderedExamTransferTasks()[0] || null;
+    if (!task) {
+      this.activeExamTransferId = null;
+      this.switchTab('stud-practice');
+      return false;
+    }
+    this.activeExamTransferId = task.id;
+    this.activeTopicId = task.topicId;
+    this.activeObjectiveId = task.specificationPointId;
+    this.examTransferStage = 'decode';
+    this.examTransferPlan = {};
+    this.examTransferResponse = '';
+    this.switchTab('stud-exam-transfer');
+    return true;
+  }
+
   // ==================== STUDENT LEARN THEORY HUB ====================
   renderStudentLearn(panel) {
     const theoryNotes = window.db.getTheoryNotes();
@@ -2302,13 +2640,20 @@ class App {
       panel.innerHTML = `
         <div class="card" role="status">
           <h1>Learning content unavailable</h1>
-          <p>This learning section is not available right now. Return to Home and choose another topic.</p>
-          <button class="btn btn-secondary" id="learn-empty-back-btn">Back to Home</button>
+          <p>This learning section is not available right now. Return to Topics and choose another section.</p>
+          <button class="btn btn-secondary" id="learn-empty-back-btn">Back to Topics</button>
         </div>
       `;
       const backButton = panel.querySelector('#learn-empty-back-btn');
-      if (backButton) backButton.onclick = () => this.switchTab('stud-dashboard');
+      if (backButton) backButton.onclick = () => this.switchTab('stud-topics');
       this.focusMainContent();
+      return;
+    }
+    const focusedContent = this.activeObjectiveId && this.activeObjectiveId !== 'all'
+      ? window.db.getCurriculumContent().find(item => item.id === this.activeObjectiveId)
+      : null;
+    if (focusedContent) {
+      this.renderFocusedStudentLearning(panel, activeNote, focusedContent);
       return;
     }
     const currentPaper = activeNote ? activeNote.paper : 'Paper 1';
@@ -2680,6 +3025,68 @@ class App {
     }
   }
 
+  renderFocusedStudentLearning(panel, activeNote, content) {
+    const task = this.getMatchingExamTransferTask(activeNote.topicId, content.id);
+    const state = this.getLearnerObjectiveState(content.id);
+    const contextualTools = {
+      '1.1.1': { id: 'fde-cycle', label: 'Open the fetch–decode–execute tool' },
+      '1.2.4a': { id: 'binary-shift', label: 'Open the binary-shift tool' },
+      '1.2.4c': { id: 'file-size-calc', label: 'Open the file-size tool' },
+      '1.2.4d': { id: 'file-size-calc', label: 'Open the file-size tool' },
+      '2.1.2': { id: 'algorithms', label: 'Open the search and sort tool' },
+      '2.4.1': { id: 'logic-gates', label: 'Open the logic-gates tool' }
+    };
+    const tool = contextualTools[content.id];
+    panel.innerHTML = `
+      <div class="student-page student-focused-learning">
+        <header class="student-route-header student-route-header--quiet">
+          <span class="student-mode-label">Topic ${this.escapeHTML(content.id)}</span>
+          <h1>${this.escapeHTML(content.scope)}</h1>
+          <p>Read the explanation and worked example, then apply it in an exam question.</p>
+        </header>
+        <article class="card student-learning-content">
+          <h2>Learn this section</h2>
+          <p>${this.escapeHTML(content.explanation)}</p>
+          <aside class="student-worked-example">
+            <h3>Worked example</h3>
+            <p>${this.escapeHTML(content.workedExample)}</p>
+          </aside>
+          <p><strong>Common mistake:</strong> ${this.escapeHTML(content.misconception)}</p>
+        </article>
+        ${tool ? `<aside class="card student-context-tool"><h2>Useful tool</h2><p>Use this interactive tool if it helps you see the process.</p><button type="button" class="btn btn-secondary" id="focused-tool-btn">${tool.label}</button></aside>` : ''}
+        <aside class="card student-evidence-note">
+          <strong>What counts?</strong>
+          <p>Reading helps you prepare but does not update Progress. Checked exam work shows what you can do. Marking this covered adds its recall cards; it does not mean mastered.</p>
+        </aside>
+        <div class="student-focused-actions">
+          ${task ? `<button type="button" class="btn btn-primary" id="focused-exam-btn">Try a ${task.marks}-mark exam question</button>` : '<p role="status"><strong>No exact exam question is available for this section yet.</strong> Review the section or choose another topic.</p>'}
+          <button type="button" class="btn btn-secondary" id="focused-cover-btn">${state?.state === 'covered' ? (state.cardState === 'paused' ? 'Add recall cards again' : 'Pause recall cards') : 'Mark as covered and add recall cards'}</button>
+          <button type="button" class="btn btn-link" id="focused-topics-btn">Back to Topics</button>
+        </div>
+      </div>`;
+    panel.querySelector('#focused-exam-btn')?.addEventListener('click', () => {
+      this.activeExamTransferId = task.id;
+      this.examTransferStage = 'decode';
+      this.examTransferPlan = {};
+      this.examTransferResponse = '';
+      this.switchTab('stud-exam-transfer');
+    });
+    panel.querySelector('#focused-cover-btn')?.addEventListener('click', () => {
+      const current = this.getLearnerObjectiveState(content.id);
+      if (current?.state === 'covered') {
+        this.updateLearnerObjectiveState(content.id, 'covered', current.cardState === 'paused' ? 'active' : 'paused');
+      } else {
+        this.updateLearnerObjectiveState(content.id, 'covered', 'active');
+      }
+      this.renderFocusedStudentLearning(panel, activeNote, content);
+    });
+    panel.querySelector('#focused-topics-btn')?.addEventListener('click', () => this.switchTab('stud-topics'));
+    panel.querySelector('#focused-tool-btn')?.addEventListener('click', () => {
+      this.activeSimTool = tool.id;
+      this.switchTab('stud-simulators');
+    });
+  }
+
   // ==================== STUDENT DICTIONARY ====================
   renderStudentDictionary(panel) {
     const terms = window.db.getKeyTerms();
@@ -2846,7 +3253,7 @@ class App {
   // ==================== WEEKLY NUMBER SKILLS ====================
   renderStudentRetrievalDeck(panel) {
     const topics = window.db.getUnits().flatMap(unit => unit.topics);
-    const covered = this.getCoveredTopicIds();
+    const eligibleTopics = this.getEligibleRecallTopics();
     const cards = this.getRetrievalDeckCards();
     const dueCards = cards.filter(card => card.due);
     const distinctCards = [...new Map(cards.map(item => [item.id, item])).values()];
@@ -2875,7 +3282,7 @@ class App {
         <label for="retrieval-topic-filter"><strong>Topic</strong></label>
         <select id="retrieval-topic-filter" class="form-control" style="max-width:420px; margin-top:6px;" ${this.retrievalDeckRatedCount > 0 ? 'disabled aria-describedby="retrieval-filter-status"' : ''}>
           <option value="all">All covered topics</option>
-          ${topics.filter(topic => covered.has(topic.id)).map(topic => `<option value="${this.escapeHTML(topic.id)}" ${topic.id === this.retrievalDeckTopicId ? 'selected' : ''}>${this.escapeHTML(topic.name)}</option>`).join('')}
+          ${topics.filter(topic => eligibleTopics.has(topic.id)).map(topic => `<option value="${this.escapeHTML(topic.id)}" ${topic.id === this.retrievalDeckTopicId ? 'selected' : ''}>${this.escapeHTML(topic.name)}</option>`).join('')}
         </select>
         <p id="retrieval-filter-status" style="font-size:12px; color:var(--text-muted); margin:8px 0 0;">${this.retrievalDeckRatedCount > 0 ? 'Topic is fixed until this short session is complete. Pausing preserves your place.' : `${dueCards.length} ${dueCards.length === 1 ? 'card is' : 'cards are'} ready to practise now.`}</p>
       </div>
@@ -2911,7 +3318,7 @@ class App {
           </div>
         </article>
       ` : `
-        <div class="card" role="status"><h2>No recall cards available yet</h2><p>Your teacher needs to release a topic with recall cards. Completing a checked activity can also add its topic to future recall.</p><button class="btn btn-secondary" id="retrieval-home-btn">Back to Home</button></div>
+        <div class="card" role="status"><h2>No active recall cards yet</h2><p>Open Topics and mark a section as covered to add its available cards. Covered does not mean mastered.</p><button class="btn btn-primary" id="retrieval-topics-btn">Open Topics</button><button class="btn btn-secondary" id="retrieval-home-btn">Back to Practice</button></div>
       `}
     `;
 
@@ -2941,7 +3348,7 @@ class App {
       };
     });
     const pause = panel.querySelector?.('#retrieval-pause-btn');
-    if (pause) pause.onclick = () => this.switchTab('stud-dashboard');
+    if (pause) pause.onclick = () => this.switchTab('stud-practice');
     const sessionBack = panel.querySelector?.('#retrieval-session-back-btn');
     if (sessionBack) sessionBack.onclick = () => {
       this.resetRetrievalDeckSession();
@@ -2955,7 +3362,9 @@ class App {
       this.renderStudentRetrievalDeck(panel);
     };
     const home = panel.querySelector?.('#retrieval-home-btn') || document.getElementById('retrieval-home-btn');
-    if (home) home.onclick = () => this.switchTab('stud-dashboard');
+    if (home) home.onclick = () => this.switchTab('stud-practice');
+    const topicsButton = panel.querySelector?.('#retrieval-topics-btn') || document.getElementById('retrieval-topics-btn');
+    if (topicsButton) topicsButton.onclick = () => this.switchTab('stud-topics');
   }
 
   renderStudentPractise(panel) {
@@ -2971,7 +3380,7 @@ class App {
         <h1>Practise number skills</h1>
         <p>Answer the questions in order, submit the set, then retry any incorrect answers. Your latest checked result can contribute to Progress.</p>
       </div>
-      <div class="card student-workshop-selector" style="margin-bottom:20px; padding:14px;"><strong>Choose one practice mode</strong><div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;"><button class="btn btn-secondary student-selected-control btn-sm practice-mode-btn" data-target="stud-practise">Number skills</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-written">Long answers</button><button class="btn btn-secondary btn-sm practice-mode-btn" data-target="stud-dictionary">Key terms</button></div><div style="font-size:13px; color:var(--text-muted); margin-top:8px;">Complete one short mode, then stop or return Home. Python and OCR-language learning have their own Programming area.</div></div>
+      <p><button type="button" class="btn btn-secondary" id="number-back-practice-btn">Back to Practice</button></p>
 
       <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px; align-items: start;">
         <div>
@@ -3061,7 +3470,8 @@ class App {
     `;
 
     // Bind submit
-    panel.querySelectorAll('.practice-mode-btn').forEach(button => button.onclick = () => this.switchTab(button.getAttribute('data-target')));
+    const backToPractice = panel.querySelector?.('#number-back-practice-btn') || document.getElementById('number-back-practice-btn');
+    if (backToPractice) backToPractice.onclick = () => this.switchTab('stud-practice');
     const numForm = document.getElementById('num-skills-form');
     if (numForm) {
       numForm.onsubmit = (e) => {
@@ -3600,7 +4010,7 @@ class App {
       <div class="student-route-header">
         <span class="student-mode-label">Simulators</span>
         <h1>Explore one computing process</h1>
-        <p>Choose a tool, complete its short brief, then return Home. Simulator use is optional and does not count towards Progress.</p>
+        <p>Use the tool linked from your topic, complete its short brief, then return to Topics. Simulator use is optional and does not count towards Progress.</p>
       </div>
 
       <!-- Tool Selector Sub-Tabs -->
@@ -3611,7 +4021,7 @@ class App {
         <button class="btn btn-secondary ${this.activeSimTool === 'algorithms' ? 'student-selected-control' : ''} sim-tool-btn" data-tool="algorithms">📊 Search & Sort Trace</button>
         <button class="btn btn-secondary ${this.activeSimTool === 'file-size-calc' ? 'student-selected-control' : ''} sim-tool-btn" data-tool="file-size-calc">📐 File Size Math</button>
       </div>
-      <div class="student-mini-brief" role="note"><strong>Your short task</strong><span>${this.escapeHTML(simulatorBriefs[this.activeSimTool])}</span><button type="button" class="btn btn-secondary" onclick="app.switchTab('stud-dashboard')">Finish and return Home</button></div>
+      <div class="student-mini-brief" role="note"><strong>Your short task</strong><span>${this.escapeHTML(simulatorBriefs[this.activeSimTool])}</span><button type="button" class="btn btn-secondary" onclick="app.switchTab('stud-topics')">Finish and return to Topics</button></div>
 
       ${this.activeSimTool === 'binary-shift' ? `
         <div class="card" style="padding:24px;">
@@ -5093,7 +5503,7 @@ class App {
       <div class="student-route-header student-route-header--quiet">
         <span class="student-mode-label">Messages</span>
         <h1>Ask your Computing teacher</h1>
-        <p>Send a question about a topic, assignment or programming task. Messages are monitored during ${this.escapeHTML(communicationHours)}; a reply may not be immediate.</p>
+        <p>Send a question about a topic, assignment or programming task. Messages are monitored during ${this.escapeHTML(communicationHours)}; a reply may not be immediate. Messages do not affect Progress.</p>
       </div>
 
       <div class="chat-container">
@@ -5122,7 +5532,9 @@ class App {
           <button class="btn btn-primary" id="chat-send-btn">Send</button>
         </div>
       </div>
+      <p><button type="button" class="btn btn-secondary" id="messages-home-btn">Back to Home</button></p>
     `;
+    panel.querySelector?.('#messages-home-btn')?.addEventListener('click', () => this.switchTab('stud-dashboard'));
 
     // Scroll chat to bottom
     const scroller = document.getElementById('chat-scroller');

@@ -97,6 +97,29 @@ reference answer. A meaningful non-matching response is stored as
 contribute to completion or mastery. This preserves potentially valid equivalent
 algorithms for human review without claiming an unsupported automated judgement.
 
+Student routes retain their legacy internal identifiers, but a route-parent
+resolver maps them to five visible destinations: Home, Topics, Practice,
+Progress and Messages. This preserves deep links and activity state while
+removing legacy engines from the top-level sidebar. Teacher route identifiers
+and navigation are unchanged.
+
+Learner topic controls are stored as an optional `learnerObjectiveStates` array
+on the existing pupil record. Each record includes the pupil ID, specification
+point ID, study state, card state, timestamp and learner source. This additive
+schema-13 shape does not alter classroom controls, attempts, submissions or
+progress, and older pupil records require no migration. The stored pupil record
+is the source of truth after session reload; the smaller session identity is not
+used as persistence.
+
+One recall-eligibility pipeline serves both deck selection and topic filters.
+Cards use an explicit `specificationPointId` where present. A legacy topic-only
+card is mapped to an objective only when its term occurs in exactly one
+curriculum objective inside that same topic. Ambiguous cards retain honest
+`legacy_topic` behavior and are available only through legacy teacher/topic
+coverage. An explicit pupil objective choice overrides legacy topic coverage
+for cards mapped to that objective; pausing never deletes ratings or scheduling
+history.
+
 ## APIs and integrations
 
 List internal APIs and external services without recording credentials.

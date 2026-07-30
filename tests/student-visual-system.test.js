@@ -58,7 +58,7 @@ describe('student Signal / Paste visual system', () => {
     expect(app).toContain('Recommended learning sequence');
     expect(app).toContain('Suggested starting point');
     expect(app).toContain('student-mini-brief');
-    expect(app).toContain('student-workshop-selector');
+    expect(app).toContain('student-practice-mode-grid');
     expect(app).toContain('Simulator use is optional and does not count towards Progress.');
     expect(css).toContain('.student-instruction-route');
     expect(css).toContain('.student-start-panel');

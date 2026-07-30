@@ -325,8 +325,8 @@ describe('production browser startup', () => {
     startButton.onclick();
 
     expect(context.app.activeObjectiveId).toBe('1.2.3');
-    expect(panel.innerHTML).toContain('Today’s section');
-    expect(panel.innerHTML).toContain('Recommended learning sequence');
+    expect(panel.innerHTML).toContain('Learn this section');
+    expect(panel.innerHTML).toContain('Back to Topics');
   });
 
   test('focused guided learning leads with one section and defers broad navigation', () => {
@@ -337,15 +337,15 @@ describe('production browser startup', () => {
 
     context.app.renderStudentLearn(panel);
 
-    expect(panel.innerHTML).toContain('Today’s section');
-    expect(panel.innerHTML).toContain('about 10 minutes');
-    expect(panel.innerHTML).toContain('Check this section (3 questions · about 6 min)');
-    expect(panel.innerHTML).toContain('View full topic');
+    expect(panel.innerHTML).toContain('Learn this section');
+    expect(panel.innerHTML).toContain('Try a 4-mark exam question');
+    expect(panel.innerHTML).toContain('Mark as covered and add recall cards');
+    expect(panel.innerHTML).toContain('Back to Topics');
     expect(panel.innerHTML).not.toContain('More ways to revise this topic');
-    expect(panel.innerHTML).not.toContain('Copy notes and terms');
+    expect(panel.innerHTML).not.toContain('Choose a specification section');
   });
 
-  test('focused learning labels a completed section check as a recheck', () => {
+  test('focused learning does not turn reading or coverage into checked evidence', () => {
     const context = loadProductionScripts();
     const panel = createPanel();
     context.app.activeTopicId = 'topic_1_1';
@@ -358,26 +358,25 @@ describe('production browser startup', () => {
 
     context.app.renderStudentLearn(panel);
 
-    expect(panel.innerHTML).toContain('Section goal met');
-    expect(panel.innerHTML).toContain('Check this section again (3 questions · about 6 min)');
-    expect(panel.innerHTML).not.toContain('>Check this section (3 questions · about 6 min)<');
+    expect(panel.innerHTML).toContain('Reading helps you prepare but does not update Progress');
+    expect(panel.innerHTML).toContain('it does not mean mastered');
+    expect(panel.innerHTML).not.toContain('Check this section');
   });
 
-  test('focused learning can return to the complete topic', () => {
+  test('focused learning can return to Topics', () => {
     const context = loadProductionScripts();
-    const viewFullTopicButton = {};
+    const topicsButton = { addEventListener: jest.fn((event, handler) => { topicsButton.handler = handler; }) };
     const panel = createPanel();
-    panel.querySelector = selector => selector === '#view-full-topic-btn' ? viewFullTopicButton : null;
+    panel.querySelector = selector => selector === '#focused-topics-btn' ? topicsButton : null;
     context.app.activeTopicId = 'topic_1_1';
     context.app.activeObjectiveId = '1.1.1';
     context.app.focusMainContent = jest.fn();
+    context.app.switchTab = jest.fn();
 
     context.app.renderStudentLearn(panel);
-    viewFullTopicButton.onclick();
+    topicsButton.handler();
 
-    expect(context.app.activeObjectiveId).toBe('all');
-    expect(panel.innerHTML).toContain('Choose a specification section');
-    expect(context.app.focusMainContent).toHaveBeenCalled();
+    expect(context.app.switchTab).toHaveBeenCalledWith('stud-topics');
   });
 
   test('completed recall binds every explicit next action without a runtime error', async () => {
@@ -479,10 +478,10 @@ describe('production browser startup', () => {
 
   test('the Learn renderer binds its exact-match exam application action', () => {
     const context = loadProductionScripts();
-    const examButton = {};
+    const examButton = { addEventListener: jest.fn((event, handler) => { examButton.handler = handler; }) };
     const panel = {
       innerHTML: '',
-      querySelector: selector => selector === '.goto-exam-application-btn' ? examButton : null,
+      querySelector: selector => selector === '#focused-exam-btn' ? examButton : null,
       querySelectorAll: () => []
     };
     context.app.currentUser = context.db.getStudents()[0];
@@ -492,9 +491,9 @@ describe('production browser startup', () => {
 
     context.app.renderStudentLearn(panel);
 
-    expect(panel.innerHTML).toContain('Apply this in a 4-mark exam question');
-    expect(examButton.onclick).toEqual(expect.any(Function));
-    examButton.onclick();
+    expect(panel.innerHTML).toContain('Try a 4-mark exam question');
+    expect(examButton.handler).toEqual(expect.any(Function));
+    examButton.handler();
     expect(context.app.activeExamTransferId).toBe('transfer_5');
     expect(context.app.switchTab).toHaveBeenCalledWith('stud-exam-transfer');
   });
