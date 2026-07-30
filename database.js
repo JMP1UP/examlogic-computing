@@ -11,6 +11,15 @@ const priorityAssessments = typeof module !== 'undefined' && module.exports
 const examinerKnowledge = typeof module !== 'undefined' && module.exports
   ? require('./curriculum-examiner-knowledge')
   : root.StudySpiceContent?.examinerKnowledge;
+const mixedExamEngine = typeof module !== 'undefined' && module.exports
+  ? require('./mixed-exam-engine')
+  : root.StudySpiceContent?.mixedExamEngine;
+const extendedWritingBuilder = typeof module !== 'undefined' && module.exports
+  ? require('./extended-writing-builder')
+  : root.StudySpiceContent?.extendedWritingBuilder;
+const visualTracers = typeof module !== 'undefined' && module.exports
+  ? require('./visual-tracers')
+  : root.StudySpiceContent?.visualTracers;
 
 if (!curriculumContent || !priorityAssessments) {
   throw new Error('StudySpice curriculum content must load before the database.');
@@ -3928,6 +3937,48 @@ class LocalDB {
       return examinerKnowledge.getFlashcardsByStrand(strandId);
     }
     return [];
+  }
+
+  createMixedExamSession(paperType = 'all', questionCount = 10) {
+    if (mixedExamEngine && typeof mixedExamEngine.createMixedExamSession === 'function') {
+      return mixedExamEngine.createMixedExamSession(paperType, questionCount, curriculumContent, priorityAssessments, examinerKnowledge);
+    }
+    return null;
+  }
+
+  evaluateExamPerformance(userAnswers, session) {
+    if (mixedExamEngine && typeof mixedExamEngine.evaluateExamPerformance === 'function') {
+      return mixedExamEngine.evaluateExamPerformance(userAnswers, session);
+    }
+    return null;
+  }
+
+  getExtendedWritingScaffold(strandId = '1.6.1') {
+    if (extendedWritingBuilder && typeof extendedWritingBuilder.getExtendedWritingScaffold === 'function') {
+      return extendedWritingBuilder.getExtendedWritingScaffold(strandId);
+    }
+    return null;
+  }
+
+  evaluateExtendedResponse(strandId, userSelections) {
+    if (extendedWritingBuilder && typeof extendedWritingBuilder.evaluateExtendedResponse === 'function') {
+      return extendedWritingBuilder.evaluateExtendedResponse(strandId, userSelections);
+    }
+    return null;
+  }
+
+  simulateBinaryShift(binaryString, direction, shiftCount) {
+    if (visualTracers && typeof visualTracers.simulateBinaryShift === 'function') {
+      return visualTracers.simulateBinaryShift(binaryString, direction, shiftCount);
+    }
+    return null;
+  }
+
+  simulateLogicGate(gateType, inputA, inputB) {
+    if (visualTracers && typeof visualTracers.simulateLogicGate === 'function') {
+      return visualTracers.simulateLogicGate(gateType, inputA, inputB);
+    }
+    return null;
   }
 
   loadData() {
