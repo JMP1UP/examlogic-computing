@@ -2472,14 +2472,90 @@ class App {
     const deskSummary = this.getDeskTopicSummary(student);
     const deskTopics = deskSummary.visible;
     const hiddenDeskTopicCount = deskSummary.hiddenCount;
+    // Assemble upcoming key dates
+    const upcomingEvents = [];
+    activeTestPreps.forEach(prep => {
+      if (prep.testDate) {
+        const d = new Date(`${prep.testDate}T12:00:00`);
+        const dateLabel = !isNaN(d.getTime()) ? d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : prep.testDate;
+        upcomingEvents.push({
+          title: prep.title,
+          dateLabel,
+          type: 'Teacher Test Prep',
+          icon: '📝',
+          tagClass: 'badge-primary',
+          details: `${prep.specificationPointIds?.length || 0} specification points`
+        });
+      }
+    });
+    activeAssignments.forEach(assign => {
+      if (assign.dueDate) {
+        upcomingEvents.push({
+          title: assign.title,
+          dateLabel: this.formatDueDate(assign.dueDate).replace('Due ', ''),
+          type: 'Assignment',
+          icon: '📋',
+          tagClass: assign.status === 'Overdue' ? 'badge-warning' : 'badge-secondary',
+          details: `${assign.estimatedMinutes || 10} mins · ${assign.status}`
+        });
+      }
+    });
+    upcomingSessions.forEach(session => {
+      upcomingEvents.push({
+        title: session.title || 'Teacher Support Session',
+        dateLabel: session.sessionDate || 'Scheduled',
+        type: 'Support Session',
+        icon: '💬',
+        tagClass: 'badge-success',
+        details: session.time || 'Live support'
+      });
+    });
+    if (upcomingEvents.length === 0) {
+      upcomingEvents.push(
+        { title: 'OCR GCSE Paper 1: Computer Systems', dateLabel: 'May 2027', type: 'Final Exam', icon: '🎓', tagClass: 'badge-primary', details: '1h 30m · 80 marks' },
+        { title: 'OCR GCSE Paper 2: Computational Thinking', dateLabel: 'June 2027', type: 'Final Exam', icon: '💻', tagClass: 'badge-primary', details: '1h 30m · 80 marks' }
+      );
+    }
+
+    const upcomingDatesHtml = `
+      <section class="card student-upcoming-dates" aria-labelledby="upcoming-dates-heading" style="padding: 22px; border-top: 5px solid var(--teal); background: var(--bg-card); border-radius: 12px; margin-bottom: 20px;">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <span class="student-kicker" style="font-weight: 700; color: var(--teal); text-transform: uppercase; font-size: 11px;">Key Milestones</span>
+            <h2 id="upcoming-dates-heading" style="margin: 2px 0 0 0; font-size: 18px; font-weight: 700;">📅 Upcoming dates</h2>
+          </div>
+          <span class="badge badge-secondary" style="font-size: 11px; font-weight: 600;">Teacher & Exam Schedule</span>
+        </header>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          ${upcomingEvents.map(evt => `
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 14px; background: rgba(0,0,0,0.02); border-radius: 8px; border: 1px solid var(--border-color);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 18px;">${evt.icon}</span>
+                <div>
+                  <strong style="font-size: 14px; color: var(--text-main); display: block;">${this.escapeHTML(evt.title)}</strong>
+                  <span style="font-size: 12px; color: var(--text-muted);">${this.escapeHTML(evt.details)}</span>
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge ${evt.tagClass}" style="font-size: 12px; font-weight: 700; padding: 4px 10px;">${this.escapeHTML(evt.dateLabel)}</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </section>
+    `;
+
     const weeklyRhythmHtml = `
-      <section class="card student-weekly-notebook" aria-labelledby="weekly-rhythm-heading">
+      <section class="card student-weekly-notebook" aria-labelledby="weekly-rhythm-heading" style="padding: 24px; border-top: 5px solid var(--teal); background: linear-gradient(180deg, rgba(250, 248, 242, 0.6) 0%, rgba(255, 255, 255, 1) 100%); border-radius: 12px; margin-bottom: 20px;">
         <header class="student-weekly-notebook__header">
           <div>
-            <span class="student-kicker">This week &middot; resets Monday</span>
-            <h2 id="weekly-rhythm-heading">My notebook</h2>
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+              <span style="font-size: 18px;">📓</span>
+              <span class="student-kicker" style="font-weight: 700; color: var(--teal); text-transform: uppercase; font-size: 11px;">This week &middot; resets Monday</span>
+            </div>
+            <h2 id="weekly-rhythm-heading" style="margin: 0; font-size: 20px; font-weight: 800;">My notebook</h2>
           </div>
-          <span class="student-weekly-notebook__count">${practiceRhythm.completedCount}/${practiceRhythm.items.length} done &middot; about ${practiceRhythm.totalMinutes} min</span>
+          <span class="student-weekly-notebook__count" style="font-weight: 700; color: var(--teal); background: rgba(45, 156, 145, 0.1); padding: 4px 10px; border-radius: 12px; font-size: 12px;">${practiceRhythm.completedCount}/${practiceRhythm.items.length} done &middot; ~${practiceRhythm.totalMinutes} min</span>
         </header>
         ${requiredTaskActive ? '<p class="student-weekly-notebook__priority"><strong>First:</strong> finish the required task above. These smaller tasks can be spread across the week.</p>' : ''}
         ${upcomingTestNotebook && !hasActiveTestPrep ? `
@@ -2590,6 +2666,7 @@ class App {
         <div class="student-dashboard__flow">
           ${dominantTaskHtml}
           ${weeklyRhythmHtml}
+          ${upcomingDatesHtml}
           ${myDeckHtml}
 
           <details class="student-desk-details">
