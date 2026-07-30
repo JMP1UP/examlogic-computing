@@ -2203,19 +2203,21 @@ class App {
       }
     }
 
+    const isTeacherWork = requiredCount > 0;
     dominantTaskHtml = `
-      <section class="card student-primary-task-banner" aria-labelledby="primary-task-title" style="padding: 16px 20px; border-left: 6px solid var(--teal); background: var(--bg-card); border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+      <section class="card student-primary-task-banner" aria-labelledby="primary-task-title" style="padding: 20px 24px; border-left: 6px solid var(--teal); background: linear-gradient(135deg, rgba(45, 156, 145, 0.12) 0%, rgba(255, 255, 255, 1) 100%); border: 1px solid rgba(45, 156, 145, 0.3); border-left-width: 6px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; box-shadow: 0 4px 14px rgba(7, 17, 31, 0.05);">
         <div style="flex: 1; min-width: 260px;">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-            <span class="badge badge-primary" style="font-size: 11px; font-weight: 700;">${this.escapeHTML(dominantTask.label)}</span>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span style="font-size: 18px;">${isTeacherWork ? '📌' : '🎯'}</span>
+            <span class="badge ${isTeacherWork ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px; font-weight: 700; background: var(--teal); color: #ffffff; padding: 4px 10px;">${this.escapeHTML(dominantTask.label)}</span>
             <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">${this.escapeHTML(dominantTask.kind)} &middot; ${dominantTask.actionMinutes} min</span>
           </div>
-          <h2 id="primary-task-title" style="margin: 0 0 4px 0; font-size: 18px; font-weight: 800; color: var(--text-main);">${this.escapeHTML(dominantTask.title)}</h2>
-          <div style="font-size: 13px; color: var(--text-muted);">
+          <h2 id="primary-task-title" style="margin: 0 0 6px 0; font-size: 20px; font-weight: 800; color: var(--text-main); line-height: 1.2;">${this.escapeHTML(dominantTask.title)}</h2>
+          <div style="font-size: 13px; color: var(--text-muted); font-weight: 500;">
             ${dominantTask.meta.map(item => `<span>${this.escapeHTML(item)}</span>`).join(' &middot; ')}
           </div>
         </div>
-        <button class="btn btn-primary ${dominantTask.actionClass}" ${dominantTask.actionAttributes} style="min-height: 42px; padding: 10px 20px; font-size: 14px; font-weight: 600; white-space: nowrap;">
+        <button class="btn btn-primary ${dominantTask.actionClass}" ${dominantTask.actionAttributes} style="min-height: 44px; padding: 12px 24px; font-size: 14px; font-weight: 700; white-space: nowrap; box-shadow: 0 2px 8px rgba(45, 156, 145, 0.25);">
           ${this.escapeHTML(dominantTask.actionLabel)} &rarr; (${dominantTask.actionMinutes} min)
         </button>
       </section>
