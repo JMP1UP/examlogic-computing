@@ -1323,7 +1323,7 @@ body.dark-mode .app-container[data-user-role="student"] {
 .student-dashboard__flow {
   position: relative;
   z-index: 3;
-  margin-top: -70px;
+  margin-top: -30px;
   padding: 0 46px 72px;
 }
 

@@ -2211,14 +2211,14 @@ class App {
 
     const isTeacherWork = requiredCount > 0;
     dominantTaskHtml = `
-      <section class="card student-primary-task-banner" aria-labelledby="primary-task-title" style="padding: 20px 24px; border-left: 6px solid var(--teal); background: linear-gradient(135deg, rgba(45, 156, 145, 0.12) 0%, rgba(255, 255, 255, 1) 100%); border: 1px solid rgba(45, 156, 145, 0.3); border-left-width: 6px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; box-shadow: 0 4px 14px rgba(7, 17, 31, 0.05);">
+      <section class="card student-primary-task-banner" aria-labelledby="primary-task-title" style="padding: 22px 28px; border-left: 6px solid var(--teal); background: #FFFFFF; border: 1px solid rgba(45, 156, 145, 0.3); border-left-width: 6px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; box-shadow: 0 8px 24px rgba(7, 17, 31, 0.12); position: relative; z-index: 5;">
         <div style="flex: 1; min-width: 260px;">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
             <span style="font-size: 18px;">${isTeacherWork ? '📌' : '🎯'}</span>
-            <span class="badge ${isTeacherWork ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px; font-weight: 700; background: var(--teal); color: #ffffff; padding: 4px 10px;">${this.escapeHTML(dominantTask.label)}</span>
+            <span class="badge ${isTeacherWork ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px; font-weight: 700; background: var(--teal); color: #ffffff; padding: 4px 10px; border-radius: 12px;">${this.escapeHTML(dominantTask.label)}</span>
             <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">${this.escapeHTML(dominantTask.kind)} &middot; ${dominantTask.actionMinutes} min</span>
           </div>
-          <h2 id="primary-task-title" style="margin: 0 0 6px 0; font-size: 20px; font-weight: 800; color: var(--text-main); line-height: 1.2;">${this.escapeHTML(dominantTask.title)}</h2>
+          <h2 id="primary-task-title" style="margin: 0 0 6px 0; font-size: 20px; font-weight: 800; color: #07111F; line-height: 1.3;">${this.escapeHTML(dominantTask.title)}</h2>
           <div style="font-size: 13px; color: var(--text-muted); font-weight: 500;">
             ${dominantTask.meta.map(item => `<span>${this.escapeHTML(item)}</span>`).join(' &middot; ')}
           </div>
