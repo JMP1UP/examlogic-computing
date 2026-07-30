@@ -463,7 +463,11 @@ class App {
   }
 
   getDisplayedEvidenceAttempts(attempts) {
-    const meaningfulAttempts = attempts.filter(a => a.type !== 'retrieval_rating');
+    const meaningfulAttempts = attempts.filter(a =>
+      a.type !== 'retrieval_rating' &&
+      a.type !== 'retrieval_deck_extra' &&
+      a.type !== 'retrieval_deck_session'
+    );
     const latestVersionedByActivity = new Map();
     const retainedRecords = [];
     meaningfulAttempts.forEach((attempt, index) => {
