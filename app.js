@@ -3538,7 +3538,21 @@ class App {
           </details>
           <p><strong>Common mistake:</strong> ${this.escapeHTML(content.misconception)}</p>
         </article>
-        ${tool ? `<aside class="card student-context-tool"><h2>Useful tool</h2><p>Use this interactive tool if it helps you see the process.</p><button type="button" class="btn btn-secondary" id="focused-tool-btn">${tool.label}</button></aside>` : ''}
+        ${tool ? `
+          <aside class="card student-context-tool" style="padding: 22px 26px; border-left: 6px solid var(--teal); background: linear-gradient(135deg, rgba(45, 156, 145, 0.08) 0%, rgba(255, 255, 255, 1) 100%); border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 260px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <span style="font-size: 20px;">🛠️</span>
+                <span class="student-kicker" style="font-weight: 700; color: var(--teal); text-transform: uppercase; font-size: 11px;">Interactive Simulator</span>
+              </div>
+              <h2 style="margin: 0 0 4px 0; font-size: 18px; font-weight: 800; color: var(--text-main);">${this.escapeHTML(tool.label.replace('Open the ', '').replace(' tool', ' Tool'))}</h2>
+              <p style="margin: 0; font-size: 13px; color: var(--text-muted); line-height: 1.4;">Step through this interactive model in real time to visualize step-by-step memory and register operations.</p>
+            </div>
+            <button type="button" class="btn btn-primary" id="focused-tool-btn" style="min-height: 42px; padding: 10px 22px; font-weight: 600; font-size: 14px; white-space: nowrap;">
+              ⚡ Launch simulator &rarr;
+            </button>
+          </aside>
+        ` : ''}
         <div class="student-focused-actions">
           ${task ? `<button type="button" class="btn btn-primary" id="focused-exam-btn">Try a ${task.marks}-mark exam question</button>` : '<p role="status"><strong>No exact exam question is available for this section yet.</strong> Review the section or choose another topic.</p>'}
           <button type="button" class="btn btn-secondary" id="focused-cover-btn">${state?.state === 'covered' ? (state.cardState === 'paused' ? 'Add flashcards to my desk' : 'Pause these flashcards') : 'Add flashcards to my desk'}</button>
