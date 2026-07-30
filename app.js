@@ -405,45 +405,47 @@ class App {
     const achievements = this.resolveStudentAchievements(student);
     const earnedHtml = achievements.earned.length
       ? achievements.earned.map(item => `
-          <article class="student-achievement-card student-achievement-card--earned">
-            <span class="student-achievement-card__symbol" aria-hidden="true">${this.escapeHTML(item.symbol)}</span>
+          <article class="student-achievement-card student-achievement-card--earned" style="padding: 12px 14px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border-color); border-left: 4px solid var(--teal); border-radius: 8px; background: rgba(45, 156, 145, 0.04);">
+            <div style="font-size: 14px; font-weight: 800; color: #FFFFFF; background: var(--teal); padding: 6px 10px; border-radius: 6px; font-family: monospace;">${this.escapeHTML(item.symbol)}</div>
             <div>
-              <span class="student-achievement-state">${item.category === 'study-habit' ? 'Study-habit achievement' : item.status === 'earned' ? 'Demonstrated skill' : 'Previously earned'}</span>
-              <h4>${this.escapeHTML(item.title)}</h4>
-              <p>${this.escapeHTML(item.earnedDescription)}</p>
+              <h4 style="margin: 0 0 2px 0; font-size: 14px; font-weight: 700; color: var(--text-main);">${this.escapeHTML(item.title)}</h4>
+              <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">✓ ${this.escapeHTML(item.category === 'study-habit' ? '4-week study habit' : 'Demonstrated skill')}</span>
             </div>
           </article>
         `).join('')
-      : '<p class="student-achievement-empty">Your first badges are ready to work towards. Earn them by showing what you can do in checked activities.</p>';
+      : '<p class="student-achievement-empty" style="font-size: 13px; color: var(--text-muted); margin: 0;">Complete checked activities to earn your first badge.</p>';
+
     const nextHtml = achievements.next.slice(0, 2).map(item => `
-      <article class="student-achievement-card student-achievement-card--next">
-        <span class="student-achievement-card__symbol" aria-hidden="true">${this.escapeHTML(item.symbol)}</span>
-        <div>
-          <span class="student-achievement-state">Not earned yet</span>
-          <h4>${this.escapeHTML(item.title)}</h4>
-          <p>${this.escapeHTML(item.criterion)}</p>
-          <button type="button" class="btn-link student-achievement-action" data-achievement-id="${this.escapeHTML(item.id)}">${this.escapeHTML(item.actionLabel)}</button>
+      <article class="student-achievement-card student-achievement-card--next" style="padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; border: 1px dashed var(--border-color); border-radius: 8px; background: #FFFFFF;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="font-size: 14px; font-weight: 800; color: var(--text-muted); background: var(--bg-body); padding: 6px 10px; border-radius: 6px; font-family: monospace;">${this.escapeHTML(item.symbol)}</div>
+          <div>
+            <h4 style="margin: 0 0 2px 0; font-size: 14px; font-weight: 700; color: var(--text-main);">${this.escapeHTML(item.title)}</h4>
+            <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">${this.escapeHTML(item.title === 'Debugging Detective' ? 'Fix loop & pass tests' : item.criterion.split(',')[0])}</span>
+          </div>
         </div>
+        <button type="button" class="btn btn-secondary btn-sm student-achievement-action" data-achievement-id="${this.escapeHTML(item.id)}" style="font-size: 12px; min-height: 32px; padding: 4px 12px; white-space: nowrap;">Try challenge</button>
       </article>
     `).join('');
 
     return `
-      <section class="card student-achievement-panel" aria-labelledby="student-achievements-heading">
-        <header>
-          <span class="student-kicker">Study habits & skills</span>
-          <h3 id="student-achievements-heading">Your badges</h3>
-          <p>Badges earned through regular study habits and completed exam tasks.</p>
+      <section class="card student-achievement-panel" aria-labelledby="student-achievements-heading" style="padding: 20px 24px; margin-bottom: 24px;">
+        <header style="margin-bottom: 16px;">
+          <span class="student-kicker" style="font-weight: 700; color: var(--teal); text-transform: uppercase; font-size: 11px;">Study habits & skills</span>
+          <h3 id="student-achievements-heading" style="margin: 2px 0 0 0; font-size: 18px; font-weight: 800; color: var(--text-main);">Your badges</h3>
         </header>
-        <div class="student-achievement-group">
-          <h4>Achievements earned</h4>
-          <div class="student-achievement-list">${earnedHtml}</div>
-        </div>
+        ${achievements.earned.length ? `
+          <div class="student-achievement-group" style="margin-bottom: 16px;">
+            <h4 style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin: 0 0 10px 0;">Achievements earned</h4>
+            <div class="student-achievement-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px;">${earnedHtml}</div>
+          </div>
+        ` : ''}
         ${nextHtml ? `
           <div class="student-achievement-group">
-            <h4>Badges you can earn next</h4>
-            <div class="student-achievement-list">${nextHtml}</div>
+            <h4 style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin: 0 0 10px 0;">Next badges to earn</h4>
+            <div class="student-achievement-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px;">${nextHtml}</div>
           </div>
-        ` : '<p class="student-achievement-complete">Both current badges earned. Your next task remains the most useful place to focus.</p>'}
+        ` : '<p class="student-achievement-complete" style="font-size: 13px; color: var(--text-muted); margin: 0;">All current badges earned!</p>'}
       </section>
     `;
   }
