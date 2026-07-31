@@ -3529,39 +3529,52 @@ class App {
       return `
         <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h4 style="color: #2D9C91; font-size: 15px; margin: 0; font-weight: 700;">📊 Von Neumann CPU Architecture Diagram</h4>
+            <h4 style="color: #2D9C91; font-size: 15px; margin: 0; font-weight: 700;">📊 Von Neumann CPU Architecture (OCR GCSE J277)</h4>
             <span class="badge badge-primary" style="font-size: 11px;">OCR 1.1 Specification Diagram</span>
           </div>
-          <svg viewBox="0 0 740 320" style="width: 100%; height: auto; font-family: Inter, sans-serif;">
-            <rect x="30" y="40" width="300" height="110" rx="8" fill="#1E293B" stroke="#2D9C91" stroke-width="2"/>
-            <text x="180" y="70" fill="#6EE7D8" font-size="14" font-weight="bold" text-anchor="middle">Control Unit (CU)</text>
-            <text x="180" y="92" fill="#94A3B8" font-size="11" text-anchor="middle">Decodes instructions &amp; sends control signals</text>
-            <text x="180" y="122" fill="#FCD34D" font-size="12" font-weight="600" text-anchor="middle">Registers: PC | MAR | MDR | ACC</text>
+          <svg viewBox="0 0 700 260" style="width: 100%; height: auto; font-family: Inter, sans-serif;">
+            <!-- CPU Container -->
+            <rect x="20" y="20" width="340" height="220" rx="10" fill="#0F172A" stroke="#2D9C91" stroke-width="3"/>
+            <text x="190" y="46" fill="#6EE7D8" font-size="15" font-weight="800" text-anchor="middle">CPU (Central Processing Unit)</text>
 
-            <rect x="30" y="175" width="300" height="110" rx="8" fill="#1E293B" stroke="#3B82F6" stroke-width="2"/>
-            <text x="180" y="205" fill="#60A5FA" font-size="14" font-weight="bold" text-anchor="middle">Arithmetic Logic Unit (ALU)</text>
-            <text x="180" y="228" fill="#94A3B8" font-size="11" text-anchor="middle">Performs arithmetic (+ - * /) &amp; logic (AND OR NOT)</text>
-            <text x="180" y="258" fill="#93C5FD" font-size="11" text-anchor="middle">Accumulator (ACC) holds immediate results</text>
+            <!-- CU -->
+            <rect x="35" y="60" width="150" height="50" rx="6" fill="#1E293B" stroke="#38BDF8" stroke-width="2"/>
+            <text x="110" y="90" fill="#38BDF8" font-size="13" font-weight="bold" text-anchor="middle">Control Unit (CU)</text>
 
-            <line x1="330" y1="95" x2="470" y2="95" stroke="#F59E0B" stroke-width="3" stroke-dasharray="6,4"/>
-            <text x="400" y="85" fill="#FCD34D" font-size="11" font-weight="bold" text-anchor="middle">Control Bus</text>
+            <!-- ALU -->
+            <rect x="195" y="60" width="150" height="50" rx="6" fill="#1E293B" stroke="#3B82F6" stroke-width="2"/>
+            <text x="270" y="90" fill="#60A5FA" font-size="13" font-weight="bold" text-anchor="middle">ALU</text>
 
-            <line x1="330" y1="230" x2="470" y2="230" stroke="#10B981" stroke-width="3"/>
-            <text x="400" y="220" fill="#6EE7B7" font-size="11" font-weight="bold" text-anchor="middle">Data Bus</text>
+            <!-- Registers -->
+            <rect x="35" y="120" width="310" height="60" rx="6" fill="#1E293B" stroke="#F59E0B" stroke-width="2"/>
+            <text x="190" y="140" fill="#FCD34D" font-size="12" font-weight="bold" text-anchor="middle">Registers</text>
+            <text x="190" y="162" fill="#FFFFFF" font-size="12" font-weight="600" text-anchor="middle">PC  |  MAR  |  MDR  |  ACC</text>
 
-            <line x1="330" y1="160" x2="470" y2="160" stroke="#EC4899" stroke-width="3"/>
-            <text x="400" y="150" fill="#F472B6" font-size="11" font-weight="bold" text-anchor="middle">Address Bus</text>
+            <!-- Cache -->
+            <rect x="35" y="190" width="310" height="40" rx="6" fill="#1E293B" stroke="#10B981" stroke-width="2"/>
+            <text x="190" y="215" fill="#6EE7B7" font-size="12" font-weight="bold" text-anchor="middle">Cache Memory</text>
 
-            <rect x="470" y="40" width="240" height="245" rx="8" fill="#0F172A" stroke="#8B5CF6" stroke-width="2"/>
-            <text x="590" y="72" fill="#C4B5FD" font-size="15" font-weight="bold" text-anchor="middle">Main Memory (RAM)</text>
-            <rect x="490" y="92" width="200" height="34" rx="4" fill="#1E293B" stroke="#475569"/>
-            <text x="590" y="113" fill="#E2E8F0" font-size="11" text-anchor="middle">Addr 0x01: PC Fetch [Instruction]</text>
-            <rect x="490" y="138" width="200" height="34" rx="4" fill="#1E293B" stroke="#475569"/>
-            <text x="590" y="159" fill="#E2E8F0" font-size="11" text-anchor="middle">Addr 0x02: MAR [Memory Address]</text>
-            <rect x="490" y="184" width="200" height="34" rx="4" fill="#1E293B" stroke="#475569"/>
-            <text x="590" y="205" fill="#E2E8F0" font-size="11" text-anchor="middle">Addr 0x03: MDR [Data Buffer]</text>
-            <rect x="490" y="230" width="200" height="34" rx="4" fill="#1E293B" stroke="#475569"/>
-            <text x="590" y="251" fill="#E2E8F0" font-size="11" text-anchor="middle">Cache L1 / L2 / L3 Speed Layer</text>
+            <!-- System Buses -->
+            <line x1="360" y1="75" x2="480" y2="75" stroke="#FCD34D" stroke-width="3" stroke-dasharray="4,4"/>
+            <text x="420" y="65" fill="#FCD34D" font-size="10" font-weight="bold" text-anchor="middle">Control Bus</text>
+
+            <line x1="360" y1="130" x2="480" y2="130" stroke="#F472B6" stroke-width="3"/>
+            <polygon points="480,125 490,130 480,135" fill="#F472B6"/>
+            <text x="420" y="120" fill="#F472B6" font-size="10" font-weight="bold" text-anchor="middle">Address Bus</text>
+
+            <line x1="360" y1="185" x2="480" y2="185" stroke="#6EE7B7" stroke-width="3"/>
+            <polygon points="360,180 350,185 360,190" fill="#6EE7B7"/>
+            <polygon points="480,180 490,185 480,190" fill="#6EE7B7"/>
+            <text x="420" y="175" fill="#6EE7B7" font-size="10" font-weight="bold" text-anchor="middle">Data Bus</text>
+
+            <!-- RAM Container -->
+            <rect x="490" y="20" width="190" height="220" rx="10" fill="#0F172A" stroke="#8B5CF6" stroke-width="3"/>
+            <text x="585" y="55" fill="#C4B5FD" font-size="15" font-weight="800" text-anchor="middle">Main Memory</text>
+            <text x="585" y="75" fill="#C4B5FD" font-size="15" font-weight="800" text-anchor="middle">(RAM)</text>
+
+            <rect x="510" y="95" width="150" height="125" rx="6" fill="#1E293B" stroke="#475569"/>
+            <text x="585" y="145" fill="#E2E8F0" font-size="12" font-weight="bold" text-anchor="middle">Stores Instructions</text>
+            <text x="585" y="170" fill="#E2E8F0" font-size="12" font-weight="bold" text-anchor="middle">&amp; Data in Use</text>
           </svg>
         </div>
       `;
