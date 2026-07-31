@@ -3452,7 +3452,9 @@ class App {
   }
 
   getObjectiveDiagramSvg(strandId) {
-    if (['1.1.1', '1.1.2'].includes(strandId)) {
+    if (!strandId) return '';
+    const id = String(strandId).trim();
+    if (id.startsWith('1.1') || id === '1.1') {
       return `
         <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -3493,7 +3495,7 @@ class App {
         </div>
       `;
     }
-    if (['1.2.1', '1.2.2'].includes(strandId)) {
+    if (id.startsWith('1.2') || id === '1.2') {
       return `
         <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -3516,7 +3518,7 @@ class App {
         </div>
       `;
     }
-    if (['1.3.1', '1.3.2'].includes(strandId)) {
+    if (id.startsWith('1.3') || id === '1.3') {
       return `
         <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -3562,7 +3564,7 @@ class App {
         </div>
       `;
     }
-    if (['2.3.1', '2.3.2'].includes(strandId)) {
+    if (id.startsWith('2.3') || id === '2.3') {
       return `
         <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -5220,7 +5222,7 @@ class App {
 
           <!-- Step Description Box -->
           <div style="background:rgba(45,156,145,0.08); border:1px solid var(--teal); padding:16px; border-radius:8px; margin-bottom:20px;">
-            <strong style="color:var(--teal);">Current Phase: Step ${this.fdeStep} of 5</strong>
+            <strong style="color:var(--teal);">${this.fdeStep === 0 ? 'Ready to Start (Fetch-Decode-Execute Cycle)' : `Current Phase: Step ${this.fdeStep} of 5`}</strong>
             <p style="font-size:14px; margin:4px 0 0 0; line-height:1.5;">
               ${this.fdeStep === 0 ? 'Cycle reset. Click Step Forward to start the Fetch phase.' : ''}
               ${this.fdeStep === 1 ? '1. FETCH: Address 0100 in Program Counter (PC) is copied into Memory Address Register (MAR).' : ''}
