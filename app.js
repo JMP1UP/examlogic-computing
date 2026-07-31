@@ -3663,6 +3663,96 @@ class App {
         </div>
       `;
     }
+    if (id.startsWith('1.6') || id === '1.6' || id.includes('legislation') || id.includes('ethical')) {
+      return `
+        <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 22px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h4 style="color: #2D9C91; font-size: 16px; margin: 0; font-weight: 700;">⚖️ UK Computing Legislation &amp; Software Licences (OCR 1.6)</h4>
+            <span class="badge badge-primary" style="font-size: 11px;">OCR 1.6 Legal &amp; Ethics</span>
+          </div>
+
+          <!-- 4 Key UK Laws & Licences Cards -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 20px;">
+            
+            <!-- DPA 2018 -->
+            <div style="background: #1E293B; border-top: 4px solid #3B82F6; padding: 14px; border-radius: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span style="font-size: 18px;">🛡️</span>
+                <strong style="color: #60A5FA; font-size: 13.5px;">Data Protection Act 2018 (DPA)</strong>
+              </div>
+              <p style="font-size: 12.5px; color: #E2E8F0; line-height: 1.5; margin: 0;">
+                Governs responsible handling of personal data. Requires personal data to be processed lawfully, kept secure, accurate, and deleted when no longer needed.
+              </p>
+            </div>
+
+            <!-- CMA 1990 -->
+            <div style="background: #1E293B; border-top: 4px solid #EF4444; padding: 14px; border-radius: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span style="font-size: 18px;">💻</span>
+                <strong style="color: #F87171; font-size: 13.5px;">Computer Misuse Act 1990 (CMA)</strong>
+              </div>
+              <p style="font-size: 12.5px; color: #E2E8F0; line-height: 1.5; margin: 0;">
+                Prohibits hacking! Covers 3 offences: 1) Unauthorised access, 2) Unauthorised access with intent to commit a crime, 3) Unauthorised data modification/malware.
+              </p>
+            </div>
+
+            <!-- CDPA 1988 -->
+            <div style="background: #1E293B; border-top: 4px solid #F59E0B; padding: 14px; border-radius: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span style="font-size: 18px;">🎨</span>
+                <strong style="color: #FCD34D; font-size: 13.5px;">Copyright Designs &amp; Patents Act 1988</strong>
+              </div>
+              <p style="font-size: 12.5px; color: #E2E8F0; line-height: 1.5; margin: 0;">
+                Protects creators' original intellectual property (software code, sound, artwork). Makes software piracy and unauthorised copying illegal.
+              </p>
+            </div>
+
+            <!-- Software Licences -->
+            <div style="background: #1E293B; border-top: 4px solid #10B981; padding: 14px; border-radius: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span style="font-size: 18px;">📜</span>
+                <strong style="color: #6EE7B7; font-size: 13.5px;">Software Licences (Open vs Proprietary)</strong>
+              </div>
+              <p style="font-size: 12.5px; color: #E2E8F0; line-height: 1.5; margin: 0;">
+                Defines legal permissions to use or modify code. Open Source provides source code access; Proprietary withholds source code.
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Open Source vs Proprietary Quick Comparison Table -->
+          <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 14px; border: 1px solid rgba(255,255,255,0.1);">
+            <strong style="color: #2D9C91; font-size: 13px; display: block; margin-bottom: 8px;">⚖️ Open Source vs Proprietary Software Comparison Table:</strong>
+            <table style="width: 100%; font-size: 12px; border-collapse: collapse; color: #E2E8F0;">
+              <thead>
+                <tr style="border-bottom: 1px solid #475569; text-align: left;">
+                  <th style="padding: 6px; color: #94A3B8;">Feature</th>
+                  <th style="padding: 6px; color: #34D399;">🔓 Open Source (e.g. Python, Linux)</th>
+                  <th style="padding: 6px; color: #F472B6;">🔒 Proprietary (e.g. MS Windows, Office)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid #334155;">
+                  <td style="padding: 6px; font-weight: 700;">Source Code</td>
+                  <td style="padding: 6px;">Public &amp; fully customizable</td>
+                  <td style="padding: 6px;">Compiled binary only (Hidden)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #334155;">
+                  <td style="padding: 6px; font-weight: 700;">Cost &amp; Licence</td>
+                  <td style="padding: 6px;">Usually free to download &amp; share</td>
+                  <td style="padding: 6px;">Paid licence fee per user/device</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px; font-weight: 700;">Support</td>
+                  <td style="padding: 6px;">Community forums &amp; volunteers</td>
+                  <td style="padding: 6px;">Official vendor support &amp; updates</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
     return '';
   }
 
