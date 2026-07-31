@@ -3454,6 +3454,77 @@ class App {
   getObjectiveDiagramSvg(strandId) {
     if (!strandId) return '';
     const id = String(strandId).trim();
+    if (id.includes('1.1.3') || id.includes('embedded')) {
+      return `
+        <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 22px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h4 style="color: #2D9C91; font-size: 16px; margin: 0; font-weight: 700;">⚙️ Embedded Systems Architecture &amp; Real-World Case Studies (OCR 1.1.3)</h4>
+            <span class="badge badge-primary" style="font-size: 11px;">OCR 1.1.3 Embedded Systems</span>
+          </div>
+
+          <!-- SVG Architecture Flow Diagram -->
+          <svg viewBox="0 0 740 160" style="width: 100%; height: auto; font-family: Inter, sans-serif; margin-bottom: 18px;">
+            <rect x="20" y="40" width="160" height="80" rx="8" fill="#1E293B" stroke="#38BDF8" stroke-width="2"/>
+            <text x="100" y="72" fill="#38BDF8" font-size="13" font-weight="bold" text-anchor="middle">📡 Sensors (Input)</text>
+            <text x="100" y="94" fill="#94A3B8" font-size="10" text-anchor="middle">Temp, Motion, Pressure</text>
+
+            <line x1="180" y1="80" x2="250" y2="80" stroke="#38BDF8" stroke-width="3"/>
+            <polygon points="250,74 262,80 250,86" fill="#38BDF8"/>
+
+            <rect x="262" y="20" width="220" height="120" rx="10" fill="#0F172A" stroke="#2D9C91" stroke-width="3"/>
+            <text x="372" y="48" fill="#6EE7D8" font-size="14" font-weight="bold" text-anchor="middle">⚡ Microcontroller / CPU</text>
+            <rect x="282" y="60" width="180" height="30" rx="4" fill="#1E293B" stroke="#475569"/>
+            <text x="372" y="80" fill="#FCD34D" font-size="11" font-weight="bold" text-anchor="middle">ROM (Dedicated Firmware)</text>
+            <text x="372" y="122" fill="#94A3B8" font-size="10" text-anchor="middle">Low Power &amp; Single Purpose</text>
+
+            <line x1="482" y1="80" x2="550" y2="80" stroke="#10B981" stroke-width="3"/>
+            <polygon points="550,74 562,80 550,86" fill="#10B981"/>
+
+            <rect x="562" y="40" width="160" height="80" rx="8" fill="#1E293B" stroke="#10B981" stroke-width="2"/>
+            <text x="642" y="72" fill="#6EE7B7" font-size="13" font-weight="bold" text-anchor="middle">⚙️ Actuators (Output)</text>
+            <text x="642" y="94" fill="#94A3B8" font-size="10" text-anchor="middle">Motor, Heater, Valve, LED</text>
+          </svg>
+
+          <!-- 4 Real-World Examples Grid -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            
+            <div style="background: #1E293B; border-left: 4px solid #38BDF8; padding: 12px; border-radius: 8px;">
+              <strong style="color: #38BDF8; font-size: 13px; display: block; margin-bottom: 4px;">🧺 Washing Machine</strong>
+              <p style="font-size: 12px; color: #E2E8F0; margin: 0; line-height: 1.5;">
+                Reads water temp &amp; load weight sensors. Microcontroller executes fixed wash cycle firmware to control water valves &amp; drum motor.
+              </p>
+            </div>
+
+            <div style="background: #1E293B; border-left: 4px solid #EF4444; padding: 12px; border-radius: 8px;">
+              <strong style="color: #F87171; font-size: 13px; display: block; margin-bottom: 4px;">🚗 Car ABS Braking System</strong>
+              <p style="font-size: 12px; color: #E2E8F0; margin: 0; line-height: 1.5;">
+                Reads wheel rotation speed sensors. Microcontroller rapidly pulses hydraulic brake valves in real-time to prevent skidding.
+              </p>
+            </div>
+
+            <div style="background: #1E293B; border-left: 4px solid #F59E0B; padding: 12px; border-radius: 8px;">
+              <strong style="color: #FCD34D; font-size: 13px; display: block; margin-bottom: 4px;">🌡️ Smart Thermostat</strong>
+              <p style="font-size: 12px; color: #E2E8F0; margin: 0; line-height: 1.5;">
+                Reads room ambient temp sensor. Compares against target setting and triggers boiler relay on or off.
+              </p>
+            </div>
+
+            <div style="background: #1E293B; border-left: 4px solid #10B981; padding: 12px; border-radius: 8px;">
+              <strong style="color: #6EE7B7; font-size: 13px; display: block; margin-bottom: 4px;">🚦 Traffic Light Controller</strong>
+              <p style="font-size: 12px; color: #E2E8F0; margin: 0; line-height: 1.5;">
+                Reads road induction loop sensors / timers. Microcontroller cycles signal light relays safely.
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Comparison Summary Box -->
+          <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 12px; border: 1px solid rgba(255,255,255,0.1); font-size: 12px; color: #E2E8F0; line-height: 1.5;">
+            💡 <strong>Exam Distinction:</strong> Unlike a General-Purpose Computer (e.g. PC/Laptop) which runs multiple user-installed apps, an <strong>Embedded System has a single dedicated purpose</strong> with fixed ROM firmware and cannot have third-party apps installed.
+          </div>
+        </div>
+      `;
+    }
     if (id.startsWith('1.1') || id === '1.1') {
       return `
         <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
