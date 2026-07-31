@@ -3624,6 +3624,73 @@ class App {
         </div>
       `;
     }
+    if (id.includes('1.2.4') || id.includes('image') || id.includes('bitmap')) {
+      return `
+        <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h4 style="color: #2D9C91; font-size: 15px; margin: 0; font-weight: 700;">🖼️ Bitmap Image Grid, Resolution &amp; Color Depth (OCR 1.2.4)</h4>
+            <span class="badge badge-primary" style="font-size: 11px;">OCR 1.2.4 Bitmap Images</span>
+          </div>
+          <svg viewBox="0 0 740 240" style="width: 100%; height: auto; font-family: Inter, sans-serif;">
+            <!-- 4x4 Pixel Grid -->
+            <g transform="translate(40, 20)">
+              <text x="90" y="15" fill="#6EE7D8" font-size="12" font-weight="bold" text-anchor="middle">4×4 Pixel Grid (2-bit Color Depth)</text>
+              <rect x="10" y="30" width="40" height="40" fill="#0F172A" stroke="#334155"/>
+              <text x="30" y="55" fill="#64748B" font-size="10" text-anchor="middle">00</text>
+              <rect x="50" y="30" width="40" height="40" fill="#2D9C91" stroke="#334155"/>
+              <text x="70" y="55" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">01</text>
+              <rect x="90" y="30" width="40" height="40" fill="#2D9C91" stroke="#334155"/>
+              <text x="110" y="55" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">01</text>
+              <rect x="130" y="30" width="40" height="40" fill="#0F172A" stroke="#334155"/>
+              <text x="150" y="55" fill="#64748B" font-size="10" text-anchor="middle">00</text>
+
+              <rect x="10" y="70" width="40" height="40" fill="#2D9C91" stroke="#334155"/>
+              <text x="30" y="95" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">01</text>
+              <rect x="50" y="70" width="40" height="40" fill="#F59E0B" stroke="#334155"/>
+              <text x="70" y="95" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">10</text>
+              <rect x="90" y="70" width="40" height="40" fill="#F59E0B" stroke="#334155"/>
+              <text x="110" y="95" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">10</text>
+              <rect x="130" y="70" width="40" height="40" fill="#2D9C91" stroke="#334155"/>
+              <text x="150" y="95" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">01</text>
+
+              <rect x="10" y="110" width="40" height="40" fill="#2D9C91" stroke="#334155"/>
+              <text x="30" y="135" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">01</text>
+              <rect x="50" y="110" width="40" height="40" fill="#F59E0B" stroke="#334155"/>
+              <text x="70" y="135" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">10</text>
+              <rect x="90" y="110" width="40" height="40" fill="#F59E0B" stroke="#334155"/>
+              <text x="110" y="135" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">10</text>
+              <rect x="130" y="110" width="40" height="40" fill="#2D9C91" stroke="#334155"/>
+              <text x="150" y="135" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">01</text>
+
+              <rect x="10" y="150" width="40" height="40" fill="#0F172A" stroke="#334155"/>
+              <text x="30" y="175" fill="#64748B" font-size="10" text-anchor="middle">00</text>
+              <rect x="50" y="150" width="40" height="40" fill="#2D9C91" stroke="#334155"/>
+              <text x="70" y="175" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">01</text>
+              <rect x="90" y="150" width="40" height="40" fill="#2D9C91" stroke="#334155"/>
+              <text x="110" y="175" fill="#FFFFFF" font-size="10" font-weight="bold" text-anchor="middle">01</text>
+              <rect x="130" y="150" width="40" height="40" fill="#0F172A" stroke="#334155"/>
+              <text x="150" y="175" fill="#64748B" font-size="10" text-anchor="middle">00</text>
+            </g>
+
+            <!-- Color Palette Legend -->
+            <g transform="translate(260, 40)">
+              <text x="0" y="15" fill="#FCD34D" font-size="12" font-weight="bold">Color Palette Key (2 bits = 2² = 4 Colors):</text>
+              <rect x="0" y="30" width="18" height="18" fill="#0F172A" stroke="#334155"/>
+              <text x="26" y="44" fill="#E2E8F0" font-size="11">00: Background Dark (#0F172A)</text>
+              <rect x="0" y="56" width="18" height="18" fill="#2D9C91"/>
+              <text x="26" y="70" fill="#E2E8F0" font-size="11">01: Teal (#2D9C91)</text>
+              <rect x="0" y="82" width="18" height="18" fill="#F59E0B"/>
+              <text x="26" y="96" fill="#E2E8F0" font-size="11">10: Amber (#F59E0B)</text>
+              <rect x="0" y="108" width="18" height="18" fill="#3B82F6"/>
+              <text x="26" y="122" fill="#E2E8F0" font-size="11">11: Blue (#3B82F6)</text>
+            </g>
+          </svg>
+          <div style="font-size:12px; color:#94A3B8; margin-top:8px; line-height:1.5;">
+            💡 <strong>Formula:</strong> File Size (bits) = Width (pixels) × Height (pixels) × Color Depth (bits per pixel) + Metadata
+          </div>
+        </div>
+      `;
+    }
     if (id.startsWith('1.2') || id === '1.2') {
       return `
         <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
