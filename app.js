@@ -4409,6 +4409,7 @@ class App {
         <article class="card student-learning-content">
           <h2>Review this section</h2>
           <p>${this.escapeHTML(content.explanation)}</p>
+          ${this.getObjectiveDiagramSvg(objectiveId)}
           ${content.teachingSections?.length ? `
             <div class="student-teaching-sequence" aria-label="Step-by-step teaching">
               ${content.teachingSections.map(section => `
