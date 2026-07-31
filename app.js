@@ -3817,74 +3817,156 @@ class App {
     if (id.includes('1.6.1') || id === '1.6.1') {
       return `
         <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 22px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h4 style="color: #2D9C91; font-size: 16px; margin: 0; font-weight: 700;">📝 OCR 8-Mark Extended Writing Essay Blueprint (Level 3 Guide)</h4>
-            <span class="badge badge-primary" style="font-size: 11px;">OCR Paper 1 8-Mark Mastery</span>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+            <h4 style="color: #2D9C91; font-size: 16px; margin: 0; font-weight: 700;">📝 OCR 8-Mark Extended Response Essay Mastery Hub (Section 1.6.1)</h4>
+            <span class="badge badge-primary" style="font-size: 11px;">OCR Paper 1 Section 1.6.1</span>
           </div>
 
-          <!-- Level 3 Scoring Formula Banner -->
-          <div style="background: rgba(45, 156, 145, 0.12); border-left: 4px solid var(--teal); padding: 12px 16px; border-radius: 6px; margin-bottom: 16px;">
-            <strong style="color: #6EE7D8; font-size: 13.5px;">🏆 Examiner Level 3 Recipe (7–8 Marks):</strong>
-            <div style="font-size: 12.5px; color: #E2E8F0; margin-top: 4px; line-height: 1.5;">
-              <strong>1. Specific Stakeholders</strong> (who is affected?) &middot; 
-              <strong>2. Dual Perspective</strong> (+ Pros vs - Cons) &middot; 
-              <strong>3. Applied Scenario Context</strong> (refer back to the prompt!) &middot; 
-              <strong>4. Justified Conclusion</strong> (weigh trade-offs)
-            </div>
+          <!-- Interactive Sub-Tab Selector -->
+          <div style="display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap;">
+            <button type="button" class="btn ${(!this.essayHubTab || this.essayHubTab === 'blueprint') ? 'btn-primary' : 'btn-secondary'} essay-hub-tab-btn" data-tab="blueprint" style="font-size: 12.5px; font-weight: 700;">🏆 1. Level 3 Formula &amp; Impact Grid</button>
+            <button type="button" class="btn ${this.essayHubTab === 'model' ? 'btn-primary' : 'btn-secondary'} essay-hub-tab-btn" data-tab="model" style="font-size: 12.5px; font-weight: 700;">✍️ 2. Full Model Essay + Examiner Annotations</button>
+            <button type="button" class="btn ${this.essayHubTab === 'pitfalls' ? 'btn-primary' : 'btn-secondary'} essay-hub-tab-btn" data-tab="pitfalls" style="font-size: 12.5px; font-weight: 700;">⚠️ 3. Examiner Report &amp; Common Pitfalls</button>
           </div>
 
-          <!-- 4 Category Impact Grid -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 18px;">
-            
-            <!-- Environmental -->
-            <div style="background: #1E293B; border-top: 4px solid #10B981; padding: 12px; border-radius: 8px;">
-              <strong style="color: #6EE7B7; font-size: 13px; display: block; margin-bottom: 4px;">🌳 Environmental Impacts</strong>
-              <ul style="font-size: 12px; color: #E2E8F0; padding-left: 16px; margin: 0; line-height: 1.5;">
-                <li><strong>E-Waste &amp; WEEE:</strong> Toxic heavy metals (lead/mercury) in discarded devices.</li>
-                <li><strong>Energy Consumption:</strong> 24/7 cloud data centers consume huge electricity.</li>
-                <li><strong>Finite Resources:</strong> Rare earth mining for batteries &amp; chips.</li>
-              </ul>
+          <!-- TAB 1: BLUEPRINT & IMPACT GRID -->
+          ${(!this.essayHubTab || this.essayHubTab === 'blueprint') ? `
+            <div style="background: rgba(45, 156, 145, 0.12); border-left: 4px solid var(--teal); padding: 14px 16px; border-radius: 6px; margin-bottom: 16px;">
+              <strong style="color: #6EE7D8; font-size: 14px;">🏆 Examiner Level 3 Recipe (7–8 Marks):</strong>
+              <div style="font-size: 12.5px; color: #E2E8F0; margin-top: 6px; line-height: 1.5;">
+                <strong>1. Identify Specific Stakeholders</strong> (e.g. pupils, low-income families, IT staff, local community)<br>
+                <strong>2. Dual Perspective</strong> (Give balanced + Benefits vs - Harms for 2-3 categories)<br>
+                <strong>3. Apply Directly to Scenario Context</strong> (Refer back to the prompt details)<br>
+                <strong>4. Justified Conclusion</strong> (Weigh trade-offs to give a final supported judgment)
+              </div>
             </div>
 
-            <!-- Ethical & Societal -->
-            <div style="background: #1E293B; border-top: 4px solid #3B82F6; padding: 12px; border-radius: 8px;">
-              <strong style="color: #60A5FA; font-size: 13px; display: block; margin-bottom: 4px;">⚖️ Ethical &amp; Societal Impacts</strong>
-              <ul style="font-size: 12px; color: #E2E8F0; padding-left: 16px; margin: 0; line-height: 1.5;">
-                <li><strong>Digital Divide:</strong> Unequal access to hardware/fast internet excludes students.</li>
-                <li><strong>Automation:</strong> AI/robots replacing admin jobs vs creating tech roles.</li>
-                <li><strong>Wellbeing:</strong> 24/7 connectivity, screen fatigue &amp; burnout.</li>
-              </ul>
+            <!-- 4 Impact Category Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
+              <div style="background: #1E293B; border-top: 4px solid #10B981; padding: 12px; border-radius: 8px;">
+                <strong style="color: #6EE7B7; font-size: 13px; display: block; margin-bottom: 4px;">🌳 Environmental Impacts</strong>
+                <ul style="font-size: 12px; color: #E2E8F0; padding-left: 16px; margin: 0; line-height: 1.5;">
+                  <li><strong>E-Waste &amp; WEEE:</strong> Toxic heavy metals (lead/mercury) in discarded devices.</li>
+                  <li><strong>Energy Consumption:</strong> 24/7 cloud data centers consume electricity.</li>
+                  <li><strong>Finite Resources:</strong> Rare earth mining for batteries &amp; microchips.</li>
+                </ul>
+              </div>
+
+              <div style="background: #1E293B; border-top: 4px solid #3B82F6; padding: 12px; border-radius: 8px;">
+                <strong style="color: #60A5FA; font-size: 13px; display: block; margin-bottom: 4px;">⚖️ Ethical &amp; Societal Impacts</strong>
+                <ul style="font-size: 12px; color: #E2E8F0; padding-left: 16px; margin: 0; line-height: 1.5;">
+                  <li><strong>Digital Divide:</strong> Unequal access to hardware/fast internet excludes pupils.</li>
+                  <li><strong>Automation:</strong> AI &amp; robots replacing admin roles vs creating tech jobs.</li>
+                  <li><strong>Wellbeing:</strong> 24/7 connectivity, screen fatigue &amp; burnout.</li>
+                </ul>
+              </div>
+
+              <div style="background: #1E293B; border-top: 4px solid #F59E0B; padding: 12px; border-radius: 8px;">
+                <strong style="color: #FCD34D; font-size: 13px; display: block; margin-bottom: 4px;">🌐 Cultural &amp; Community</strong>
+                <ul style="font-size: 12px; color: #E2E8F0; padding-left: 16px; margin: 0; line-height: 1.5;">
+                  <li><strong>Globalisation:</strong> Instant global communication vs loss of local culture.</li>
+                  <li><strong>Flexible Working:</strong> Remote working saves commuting but blurs home boundaries.</li>
+                </ul>
+              </div>
+
+              <div style="background: #1E293B; border-top: 4px solid #EC4899; padding: 12px; border-radius: 8px;">
+                <strong style="color: #F472B6; font-size: 13px; display: block; margin-bottom: 4px;">🔒 Privacy &amp; Surveillance</strong>
+                <ul style="font-size: 12px; color: #E2E8F0; padding-left: 16px; margin: 0; line-height: 1.5;">
+                  <li><strong>Data Collection:</strong> Continuous tracking, facial recognition &amp; cookies.</li>
+                  <li><strong>Data Breaches:</strong> Centralised cloud storage risks leak of personal data.</li>
+                </ul>
+              </div>
             </div>
+          ` : ''}
 
-            <!-- Cultural -->
-            <div style="background: #1E293B; border-top: 4px solid #F59E0B; padding: 12px; border-radius: 8px;">
-              <strong style="color: #FCD34D; font-size: 13px; display: block; margin-bottom: 4px;">🌐 Cultural &amp; Community Impacts</strong>
-              <ul style="font-size: 12px; color: #E2E8F0; padding-left: 16px; margin: 0; line-height: 1.5;">
-                <li><strong>Globalisation:</strong> Instant global communication vs loss of local culture.</li>
-                <li><strong>Flexible Working:</strong> Remote working saves commuting but blurs home boundaries.</li>
-              </ul>
+          <!-- TAB 2: FULL MODEL ESSAY + EXAMINER MARGIN ANNOTATIONS -->
+          ${this.essayHubTab === 'model' ? `
+            <div style="background: #1E293B; padding: 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
+              <div style="background: #0F172A; padding: 12px; border-radius: 6px; margin-bottom: 14px; border-left: 4px solid #F59E0B;">
+                <strong style="color: #FCD34D; font-size: 13px;">📋 Real OCR Exam Essay Prompt (8 Marks):</strong>
+                <p style="font-size: 13px; color: #FFFFFF; margin: 4px 0 0 0; font-style: italic;">
+                  "A secondary school is replacing all 500 desktop PCs with cloud-connected laptops for students. Discuss the ethical, environmental and privacy issues raised by this decision."
+                </p>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                
+                <!-- Paragraph 1 -->
+                <div style="background: #0F172A; padding: 12px; border-radius: 8px; border-left: 4px solid #10B981;">
+                  <span class="badge" style="background:#10B981; color:#fff; font-size:10px; margin-bottom:6px;">Paragraph 1: Environmental Impact</span>
+                  <p style="font-size: 12.5px; color: #E2E8F0; line-height: 1.6; margin: 0;">
+                    "Replacing 500 desktop computers generates significant electronic waste (e-waste). If disposed of improperly, toxic heavy metals such as lead and mercury can leach into soil. The school must ensure old PCs are handed to accredited WEEE (Waste Electrical and Electronic Equipment) recyclers. On the other hand, modern laptops use up to 70% less electricity than desktop towers during operation, reducing the school's carbon footprint."
+                  </p>
+                  <div style="margin-top: 8px; font-size: 11.5px; color: #6EE7B7; background: rgba(16,185,129,0.1); padding: 6px 10px; border-radius: 4px;">
+                    📌 <strong>Examiner Note (Level 3):</strong> Precise technical vocabulary (WEEE directive, heavy metals, operational energy) applied directly to the 500 PC scenario.
+                  </div>
+                </div>
+
+                <!-- Paragraph 2 -->
+                <div style="background: #0F172A; padding: 12px; border-radius: 8px; border-left: 4px solid #3B82F6;">
+                  <span class="badge" style="background:#3B82F6; color:#fff; font-size:10px; margin-bottom:6px;">Paragraph 2: Ethical Impact &amp; Stakeholders</span>
+                  <p style="font-size: 12.5px; color: #E2E8F0; line-height: 1.6; margin: 0;">
+                    "Ethically, providing laptops to all students promotes educational equality by bridging the digital divide for pupils from low-income families who may lack home computers. However, cloud-connected laptops require reliable home internet access. Disadvantaged students without home broadband will be unable to complete homework unless the school provides 4G mobile Wi-Fi dongles."
+                  </p>
+                  <div style="margin-top: 8px; font-size: 11.5px; color: #60A5FA; background: rgba(59,130,246,0.1); padding: 6px 10px; border-radius: 4px;">
+                    📌 <strong>Examiner Note (Level 3):</strong> Clear stakeholder identification (pupils/disadvantaged families) showing dual-sided analysis (+ equality vs - digital divide).
+                  </div>
+                </div>
+
+                <!-- Paragraph 3 -->
+                <div style="background: #0F172A; padding: 12px; border-radius: 8px; border-left: 4px solid #EC4899;">
+                  <span class="badge" style="background:#EC4899; color:#fff; font-size:10px; margin-bottom:6px;">Paragraph 3: Privacy &amp; Data Security</span>
+                  <p style="font-size: 12.5px; color: #E2E8F0; line-height: 1.6; margin: 0;">
+                    "Regarding privacy, cloud storage means student work and personal data are hosted on third-party servers, increasing vulnerability to cyberattacks or data breaches if cloud accounts are hacked. Furthermore, if the school installs remote monitoring software on student laptops, clear policies must prevent monitoring outside school hours to avoid invading family privacy."
+                  </p>
+                  <div style="margin-top: 8px; font-size: 11.5px; color: #F472B6; background: rgba(236,72,153,0.1); padding: 6px 10px; border-radius: 4px;">
+                    📌 <strong>Examiner Note (Level 3):</strong> Direct privacy analysis linking cloud storage risks and remote monitoring software to student rights.
+                  </div>
+                </div>
+
+                <!-- Paragraph 4 -->
+                <div style="background: #0F172A; padding: 12px; border-radius: 8px; border-left: 4px solid #F59E0B;">
+                  <span class="badge" style="background:#F59E0B; color:#fff; font-size:10px; margin-bottom:6px;">Paragraph 4: Justified Conclusion</span>
+                  <p style="font-size: 12.5px; color: #E2E8F0; line-height: 1.6; margin: 0;">
+                    "In conclusion, replacing desktops with cloud laptops is beneficial because educational equity and operational energy savings outweigh the risks. However, to make this decision responsible, the school must mandate WEEE recycling for old PCs, provide 4G dongles for low-income pupils, and enforce strict encryption and privacy rules on cloud storage."
+                  </p>
+                  <div style="margin-top: 8px; font-size: 11.5px; color: #FCD34D; background: rgba(245,158,11,0.1); padding: 6px 10px; border-radius: 4px;">
+                    📌 <strong>Examiner Note (Level 3 - 8/8 Marks):</strong> Outstanding justified conclusion weighing trade-offs and recommending concrete mitigations.
+                  </div>
+                </div>
+
+              </div>
             </div>
+          ` : ''}
 
-            <!-- Privacy -->
-            <div style="background: #1E293B; border-top: 4px solid #EC4899; padding: 12px; border-radius: 8px;">
-              <strong style="color: #F472B6; font-size: 13px; display: block; margin-bottom: 4px;">🔒 Privacy &amp; Surveillance</strong>
-              <ul style="font-size: 12px; color: #E2E8F0; padding-left: 16px; margin: 0; line-height: 1.5;">
-                <li><strong>Data Collection:</strong> Continuous location, facial recognition, &amp; cookies.</li>
-                <li><strong>Data Breaches:</strong> Centralised cloud storage risks leak of personal data.</li>
-              </ul>
+          <!-- TAB 3: EXAMINER REPORT & PITFALLS -->
+          ${this.essayHubTab === 'pitfalls' ? `
+            <div style="background: #1E293B; padding: 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
+              <h5 style="color: #EF4444; font-size: 14px; margin: 0 0 12px 0; font-weight: 700;">⚠️ 4 Mistakes That Lose Marks on the 8-Mark Essay:</h5>
+              
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="background: #0F172A; padding: 10px 14px; border-radius: 6px; border-left: 4px solid #EF4444;">
+                  <strong style="color: #F87171; font-size: 12.5px;">1. Bullet-Point Lists (Capped at Level 1 - Max 3 Marks)</strong>
+                  <p style="font-size: 12px; color: #94A3B8; margin: 2px 0 0 0;">Examiners cannot award Level 2 or 3 to bullet points. Write in continuous prose paragraphs with connectives (e.g., <em>However, Consequently, On the other hand</em>).</p>
+                </div>
+
+                <div style="background: #0F172A; padding: 10px 14px; border-radius: 6px; border-left: 4px solid #F59E0B;">
+                  <strong style="color: #FCD34D; font-size: 12.5px;">2. Ignoring the Given Scenario (Capped at Level 2 - Max 5 Marks)</strong>
+                  <p style="font-size: 12px; color: #94A3B8; margin: 2px 0 0 0;">Regurgitating general memory facts without linking them to the specific scenario (e.g., school, hospital, driverless cars) loses marks. Explicitly name the scenario!</p>
+                </div>
+
+                <div style="background: #0F172A; padding: 10px 14px; border-radius: 6px; border-left: 4px solid #3B82F6;">
+                  <strong style="color: #60A5FA; font-size: 12.5px;">3. One-Sided Arguments (No Counter-Perspective)</strong>
+                  <p style="font-size: 12px; color: #94A3B8; margin: 2px 0 0 0;">Only listing benefits without discussing risks/harms (or vice versa) prevents reaching Level 3. Always include both pros and cons.</p>
+                </div>
+
+                <div style="background: #0F172A; padding: 10px 14px; border-radius: 6px; border-left: 4px solid #10B981;">
+                  <strong style="color: #6EE7B7; font-size: 12.5px;">4. Missing Justified Conclusion (Capped at 6 Marks)</strong>
+                  <p style="font-size: 12px; color: #94A3B8; margin: 2px 0 0 0;">Level 3 requires a final concluding paragraph weighing the trade-offs to state whether the proposal should go ahead.</p>
+                </div>
+              </div>
             </div>
-
-          </div>
-
-          <!-- Model 8-Mark Response Breakdown -->
-          <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 14px; border: 1px solid rgba(255,255,255,0.1);">
-            <strong style="color: #FCD34D; font-size: 13px; display: block; margin-bottom: 6px;">💡 Annotated Level 3 Model Paragraph (School Laptop Upgrade):</strong>
-            <p style="font-size: 12.5px; color: #E2E8F0; line-height: 1.6; margin: 0;">
-              "<span style="color:#6EE7B7; font-weight:700;">[Environmental]</span> Replacing 500 desktops generates e-waste; the school must use accredited WEEE recyclers to prevent toxic lead leakage. However, laptops use 70% less energy during operation. 
-              <span style="color:#60A5FA; font-weight:700;">[Ethical / Stakeholder]</span> For pupils without home PCs, cloud laptops bridge the digital divide. However, the school must provide internet dongles to low-income families. 
-              <span style="color:#FCD34D; font-weight:700;">[Conclusion]</span> On balance, the upgrade is justified provided e-waste recycling and equal home internet access are enforced."
-            </p>
-          </div>
+          ` : ''}
         </div>
       `;
     }
@@ -4491,6 +4573,12 @@ class App {
       this.renderFocusedStudentLearning(panel, activeNote, content);
     });
     panel.querySelector('#focused-topics-btn')?.addEventListener('click', () => this.switchTab('stud-topics'));
+    panel.querySelectorAll('.essay-hub-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.essayHubTab = btn.getAttribute('data-tab');
+        this.renderFocusedStudentLearning(panel, activeNote, content);
+      });
+    });
     panel.querySelector('#focused-tool-btn')?.addEventListener('click', () => {
       this.activeSimTool = tool.id;
       this.switchTab('stud-simulators');
