@@ -3663,6 +3663,80 @@ class App {
         </div>
       `;
     }
+    if (id.includes('1.6.1') || id === '1.6.1') {
+      return `
+        <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 22px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h4 style="color: #2D9C91; font-size: 16px; margin: 0; font-weight: 700;">📝 OCR 8-Mark Extended Writing Essay Blueprint (Level 3 Guide)</h4>
+            <span class="badge badge-primary" style="font-size: 11px;">OCR Paper 1 8-Mark Mastery</span>
+          </div>
+
+          <!-- Level 3 Scoring Formula Banner -->
+          <div style="background: rgba(45, 156, 145, 0.12); border-left: 4px solid var(--teal); padding: 12px 16px; border-radius: 6px; margin-bottom: 16px;">
+            <strong style="color: #6EE7D8; font-size: 13.5px;">🏆 Examiner Level 3 Recipe (7–8 Marks):</strong>
+            <div style="font-size: 12.5px; color: #E2E8F0; margin-top: 4px; line-height: 1.5;">
+              <strong>1. Specific Stakeholders</strong> (who is affected?) &middot; 
+              <strong>2. Dual Perspective</strong> (+ Pros vs - Cons) &middot; 
+              <strong>3. Applied Scenario Context</strong> (refer back to the prompt!) &middot; 
+              <strong>4. Justified Conclusion</strong> (weigh trade-offs)
+            </div>
+          </div>
+
+          <!-- 4 Category Impact Grid -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 18px;">
+            
+            <!-- Environmental -->
+            <div style="background: #1E293B; border-top: 4px solid #10B981; padding: 12px; border-radius: 8px;">
+              <strong style="color: #6EE7B7; font-size: 13px; display: block; margin-bottom: 4px;">🌳 Environmental Impacts</strong>
+              <ul style="font-size: 12px; color: #E2E8F0; padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li><strong>E-Waste &amp; WEEE:</strong> Toxic heavy metals (lead/mercury) in discarded devices.</li>
+                <li><strong>Energy Consumption:</strong> 24/7 cloud data centers consume huge electricity.</li>
+                <li><strong>Finite Resources:</strong> Rare earth mining for batteries &amp; chips.</li>
+              </ul>
+            </div>
+
+            <!-- Ethical & Societal -->
+            <div style="background: #1E293B; border-top: 4px solid #3B82F6; padding: 12px; border-radius: 8px;">
+              <strong style="color: #60A5FA; font-size: 13px; display: block; margin-bottom: 4px;">⚖️ Ethical &amp; Societal Impacts</strong>
+              <ul style="font-size: 12px; color: #E2E8F0; padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li><strong>Digital Divide:</strong> Unequal access to hardware/fast internet excludes students.</li>
+                <li><strong>Automation:</strong> AI/robots replacing admin jobs vs creating tech roles.</li>
+                <li><strong>Wellbeing:</strong> 24/7 connectivity, screen fatigue &amp; burnout.</li>
+              </ul>
+            </div>
+
+            <!-- Cultural -->
+            <div style="background: #1E293B; border-top: 4px solid #F59E0B; padding: 12px; border-radius: 8px;">
+              <strong style="color: #FCD34D; font-size: 13px; display: block; margin-bottom: 4px;">🌐 Cultural &amp; Community Impacts</strong>
+              <ul style="font-size: 12px; color: #E2E8F0; padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li><strong>Globalisation:</strong> Instant global communication vs loss of local culture.</li>
+                <li><strong>Flexible Working:</strong> Remote working saves commuting but blurs home boundaries.</li>
+              </ul>
+            </div>
+
+            <!-- Privacy -->
+            <div style="background: #1E293B; border-top: 4px solid #EC4899; padding: 12px; border-radius: 8px;">
+              <strong style="color: #F472B6; font-size: 13px; display: block; margin-bottom: 4px;">🔒 Privacy &amp; Surveillance</strong>
+              <ul style="font-size: 12px; color: #E2E8F0; padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li><strong>Data Collection:</strong> Continuous location, facial recognition, &amp; cookies.</li>
+                <li><strong>Data Breaches:</strong> Centralised cloud storage risks leak of personal data.</li>
+              </ul>
+            </div>
+
+          </div>
+
+          <!-- Model 8-Mark Response Breakdown -->
+          <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 14px; border: 1px solid rgba(255,255,255,0.1);">
+            <strong style="color: #FCD34D; font-size: 13px; display: block; margin-bottom: 6px;">💡 Annotated Level 3 Model Paragraph (School Laptop Upgrade):</strong>
+            <p style="font-size: 12.5px; color: #E2E8F0; line-height: 1.6; margin: 0;">
+              "<span style="color:#6EE7B7; font-weight:700;">[Environmental]</span> Replacing 500 desktops generates e-waste; the school must use accredited WEEE recyclers to prevent toxic lead leakage. However, laptops use 70% less energy during operation. 
+              <span style="color:#60A5FA; font-weight:700;">[Ethical / Stakeholder]</span> For pupils without home PCs, cloud laptops bridge the digital divide. However, the school must provide internet dongles to low-income families. 
+              <span style="color:#FCD34D; font-weight:700;">[Conclusion]</span> On balance, the upgrade is justified provided e-waste recycling and equal home internet access are enforced."
+            </p>
+          </div>
+        </div>
+      `;
+    }
     if (id.startsWith('1.6') || id === '1.6' || id.includes('legislation') || id.includes('ethical')) {
       return `
         <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 22px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
