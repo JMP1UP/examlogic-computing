@@ -5564,8 +5564,8 @@ class App {
         <!-- STAGE 1: DECODE -->
         ${this.examTransferStage === 'decode' ? `
           <div class="form-group" style="margin-bottom: 16px;">
-            <label for="transfer-decode-response" style="font-weight: 700; font-size: 14px; display: block; margin-bottom: 6px;">In your own words, what does this question require?</label>
-            <textarea id="transfer-decode-response" class="form-control" rows="3" placeholder="For example: explain two reasons and link each one to the scenario." style="font-size: 14px; line-height: 1.6;"></textarea>
+            <label for="transfer-decode-response" style="font-weight: 700; font-size: 14px; display: block; margin-bottom: 6px;">Your Written Answer (${task.marks} Marks):</label>
+            <textarea id="transfer-decode-response" class="form-control" rows="6" placeholder="Write your answer here..." style="font-size: 14px; line-height: 1.6;"></textarea>
           </div>
           <button id="transfer-to-plan" class="btn btn-primary" style="min-height: 42px; font-weight: 700;">Next: Plan your answer &rarr;</button>
         ` : ''}
