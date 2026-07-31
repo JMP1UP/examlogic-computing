@@ -5348,32 +5348,178 @@ class App {
       ${this.activeSimTool === 'algorithms' ? `
         <div class="card" style="padding:24px;">
           <h2>📊 Search & Sort Trace Visualizer</h2>
-          <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">Watch Binary Search divide search space logarithmically vs Linear Search checking index by index.</p>
+          <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">Interactively trace OCR Paper 2 search &amp; sort algorithms with step-by-step visual pass diagrams.</p>
           
-          <div style="display:flex; gap:12px; margin-bottom:20px;">
-            <button class="btn ${this.algType === 'binary-search' ? 'btn-primary' : 'btn-secondary'} alg-type-btn" data-type="binary-search">Binary Search (Sorted)</button>
-            <button class="btn ${this.algType === 'linear-search' ? 'btn-primary' : 'btn-secondary'} alg-type-btn" data-type="linear-search">Linear Search</button>
+          <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+            <button class="btn ${(!this.algType || this.algType === 'binary-search') ? 'btn-primary' : 'btn-secondary'} alg-type-btn" data-type="binary-search" style="font-size:13px; font-weight:700;">Binary Search (Sorted)</button>
+            <button class="btn ${this.algType === 'linear-search' ? 'btn-primary' : 'btn-secondary'} alg-type-btn" data-type="linear-search" style="font-size:13px; font-weight:700;">Linear Search</button>
+            <button class="btn ${this.algType === 'bubble-sort' ? 'btn-primary' : 'btn-secondary'} alg-type-btn" data-type="bubble-sort" style="font-size:13px; font-weight:700;">Bubble Sort</button>
+            <button class="btn ${this.algType === 'merge-sort' ? 'btn-primary' : 'btn-secondary'} alg-type-btn" data-type="merge-sort" style="font-size:13px; font-weight:700;">Merge Sort (Divide &amp; Conquer)</button>
+            <button class="btn ${this.algType === 'insertion-sort' ? 'btn-primary' : 'btn-secondary'} alg-type-btn" data-type="insertion-sort" style="font-size:13px; font-weight:700;">Insertion Sort</button>
           </div>
 
-          <!-- Sorted Array Visual Bar -->
-          <div style="display:flex; justify-content:center; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
-            ${[3, 8, 14, 21, 35, 47, 59, 72, 88, 95].map((val, idx) => {
-              let isMatch = val === 47;
-              return `
-                <div style="text-align:center;">
-                  <div style="font-size:10px; color:var(--text-muted); font-weight:700;">Index ${idx}</div>
-                  <div style="width:46px; height:50px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; background:${isMatch ? 'var(--teal)' : 'var(--bg-main)'}; color:${isMatch ? '#fff' : 'var(--text-main)'}; border:2px solid ${isMatch ? 'var(--teal)' : 'var(--border-color)'};">${val}</div>
+          <!-- BUBBLE SORT VISUAL TRACE -->
+          ${this.algType === 'bubble-sort' ? `
+            <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--border-color); margin-bottom:16px;">
+              <h3 style="font-size:16px; font-weight:700; margin:0 0 10px 0; color:var(--text-main);">🫧 Bubble Sort Pass-by-Pass Trace</h3>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Compares adjacent pairs from left to right. Swaps if out of order. Largest un-sorted element "bubbles" to the end on each pass.</p>
+
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="padding:12px; background:var(--bg-card); border-radius:8px; border-left:4px solid var(--amber);">
+                  <strong style="font-size:13px; color:var(--text-main);">Initial Unsorted Array:</strong>
+                  <div style="display:flex; gap:6px; margin-top:6px;">
+                    ${[59, 21, 88, 14, 47].map(v => `<span style="padding:6px 12px; background:#F1F5F9; border-radius:6px; font-weight:700; font-size:14px; color:#475569;">${v}</span>`).join('')}
+                  </div>
                 </div>
-              `;
-            }).join('')}
-          </div>
 
-          <div style="background:rgba(45,156,145,0.08); border:1px solid var(--teal); padding:16px; border-radius:8px;">
-            <strong style="color:var(--teal);">Target Search Value: 47</strong>
-            <p style="font-size:13.5px; margin:4px 0 0 0; line-height:1.5;">
-              ${this.algType === 'binary-search' ? 'Binary Search divides the list in half. Mid index = 4 (value 35 < 47), so search narrows right to indices 5-9. Mid index = 7 (value 72 > 47), narrows left to index 5 (47). Found in 3 checks!' : 'Linear Search inspects index 0 (3), index 1 (8), index 2 (14), index 3 (21), index 4 (35), index 5 (47). Found in 6 sequential checks!'}
-            </p>
-          </div>
+                <div style="padding:12px; background:var(--bg-card); border-radius:8px; border-left:4px solid var(--teal);">
+                  <strong style="font-size:13px; color:var(--teal);">Pass 1 (Bubble 88 to end):</strong>
+                  <div style="display:flex; gap:6px; margin:6px 0;">
+                    ${[21, 59, 14, 47, 88].map((v, i) => `<span style="padding:6px 12px; background:${i === 4 ? 'var(--teal)' : '#F1F5F9'}; color:${i === 4 ? '#fff' : '#475569'}; border-radius:6px; font-weight:700; font-size:14px;">${v}</span>`).join('')}
+                  </div>
+                  <span style="font-size:12px; color:var(--text-muted);">Swapped (59,21) → (88,14) → (88,47). 88 is now locked in final position!</span>
+                </div>
+
+                <div style="padding:12px; background:var(--bg-card); border-radius:8px; border-left:4px solid var(--teal);">
+                  <strong style="font-size:13px; color:var(--teal);">Pass 2 (Bubble 59 into place):</strong>
+                  <div style="display:flex; gap:6px; margin:6px 0;">
+                    ${[21, 14, 47, 59, 88].map((v, i) => `<span style="padding:6px 12px; background:${i >= 3 ? 'var(--teal)' : '#F1F5F9'}; color:${i >= 3 ? '#fff' : '#475569'}; border-radius:6px; font-weight:700; font-size:14px;">${v}</span>`).join('')}
+                  </div>
+                  <span style="font-size:12px; color:var(--text-muted);">Swapped (21,14) → (59,47). 59 and 88 locked!</span>
+                </div>
+
+                <div style="padding:12px; background:var(--bg-card); border-radius:8px; border-left:4px solid #10B981;">
+                  <strong style="font-size:13px; color:#10B981;">Pass 3 (Final Check - Zero Swaps):</strong>
+                  <div style="display:flex; gap:6px; margin:6px 0;">
+                    ${[14, 21, 47, 59, 88].map(v => `<span style="padding:6px 12px; background:#10B981; color:#fff; border-radius:6px; font-weight:700; font-size:14px;">${v}</span>`).join('')}
+                  </div>
+                  <span style="font-size:12px; color:#10B981; font-weight:600;">✅ Array fully sorted in 3 passes!</span>
+                </div>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- MERGE SORT VISUAL TRACE -->
+          ${this.algType === 'merge-sort' ? `
+            <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--border-color); margin-bottom:16px;">
+              <h3 style="font-size:16px; font-weight:700; margin:0 0 10px 0; color:var(--text-main);">🌿 Merge Sort Tree Diagram (Divide &amp; Conquer)</h3>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Divides the list in half recursively until single elements remain, then merges sub-lists in ordered pairs.</p>
+
+              <div style="display:flex; flex-direction:column; align-items:center; gap:12px; font-family:monospace;">
+                <!-- Level 1: Full Unsorted List -->
+                <div style="text-align:center;">
+                  <span style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:2px;">Level 1 (Full Unsorted Array)</span>
+                  <div style="display:flex; gap:6px; padding:6px 14px; background:#07111F; color:#fff; border-radius:8px; font-weight:700;">
+                    [59, 21, 88, 14]
+                  </div>
+                </div>
+
+                <div style="color:var(--teal); font-weight:800; font-size:14px;">⬇️ DIVIDE IN HALF ⬇️</div>
+
+                <!-- Level 2: Sub-lists -->
+                <div style="display:flex; gap:32px;">
+                  <div style="padding:6px 12px; background:#1E293B; color:#38BDF8; border-radius:6px; font-weight:700;">[59, 21]</div>
+                  <div style="padding:6px 12px; background:#1E293B; color:#38BDF8; border-radius:6px; font-weight:700;">[88, 14]</div>
+                </div>
+
+                <div style="color:var(--teal); font-weight:800; font-size:14px;">⬇️ DIVIDE TO ATOMS ⬇️</div>
+
+                <!-- Level 3: Atomic Lists -->
+                <div style="display:flex; gap:16px;">
+                  <span style="padding:4px 10px; background:#F1F5F9; border-radius:4px; font-weight:700; color:#475569;">[59]</span>
+                  <span style="padding:4px 10px; background:#F1F5F9; border-radius:4px; font-weight:700; color:#475569;">[21]</span>
+                  <span style="padding:4px 10px; background:#F1F5F9; border-radius:4px; font-weight:700; color:#475569;">[88]</span>
+                  <span style="padding:4px 10px; background:#F1F5F9; border-radius:4px; font-weight:700; color:#475569;">[14]</span>
+                </div>
+
+                <div style="color:#10B981; font-weight:800; font-size:14px;">⬆️ MERGE ORDERED PAIRS ⬆️</div>
+
+                <!-- Level 4: Merged Pairs -->
+                <div style="display:flex; gap:32px;">
+                  <div style="padding:6px 12px; background:rgba(16, 185, 129, 0.15); color:#10B981; border:1px solid #10B981; border-radius:6px; font-weight:700;">[21, 59]</div>
+                  <div style="padding:6px 12px; background:rgba(16, 185, 129, 0.15); color:#10B981; border:1px solid #10B981; border-radius:6px; font-weight:700;">[14, 88]</div>
+                </div>
+
+                <div style="color:#10B981; font-weight:800; font-size:14px;">⬆️ FINAL MERGE ⬆️</div>
+
+                <!-- Level 5: Final Sorted List -->
+                <div style="padding:8px 18px; background:#10B981; color:#fff; border-radius:8px; font-weight:800; font-size:16px;">
+                  [14, 21, 59, 88]
+                </div>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- INSERTION SORT VISUAL TRACE -->
+          ${this.algType === 'insertion-sort' ? `
+            <div style="background:var(--bg-main); padding:20px; border-radius:12px; border:1px solid var(--border-color); margin-bottom:16px;">
+              <h3 style="font-size:16px; font-weight:700; margin:0 0 10px 0; color:var(--text-main);">📥 Insertion Sort Pass Trace</h3>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Takes elements one by one from the unsorted section and inserts them into their correct position in the sorted sub-list on the left.</p>
+
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="padding:12px; background:var(--bg-card); border-radius:8px; border-left:4px solid var(--amber);">
+                  <strong style="font-size:13px; color:var(--text-main);">Initial List:</strong>
+                  <div style="display:flex; gap:6px; margin-top:6px;">
+                    ${[59, 21, 88, 14, 47].map(v => `<span style="padding:6px 12px; background:#F1F5F9; border-radius:6px; font-weight:700; font-size:14px; color:#475569;">${v}</span>`).join('')}
+                  </div>
+                </div>
+
+                <div style="padding:12px; background:var(--bg-card); border-radius:8px; border-left:4px solid var(--teal);">
+                  <strong style="font-size:13px; color:var(--teal);">Pass 1: Insert 21 into sorted sub-list [59]</strong>
+                  <div style="display:flex; gap:6px; margin:6px 0;">
+                    <span style="padding:6px 12px; background:var(--teal); color:#fff; border-radius:6px; font-weight:700; font-size:14px;">21</span>
+                    <span style="padding:6px 12px; background:var(--teal); color:#fff; border-radius:6px; font-weight:700; font-size:14px;">59</span>
+                    <span style="padding:6px 12px; background:#F1F5F9; color:#475569; border-radius:6px; font-weight:700; font-size:14px;">88</span>
+                    <span style="padding:6px 12px; background:#F1F5F9; color:#475569; border-radius:6px; font-weight:700; font-size:14px;">14</span>
+                    <span style="padding:6px 12px; background:#F1F5F9; color:#475569; border-radius:6px; font-weight:700; font-size:14px;">47</span>
+                  </div>
+                  <span style="font-size:12px; color:var(--text-muted);">21 is smaller than 59, inserted at index 0.</span>
+                </div>
+
+                <div style="padding:12px; background:var(--bg-card); border-radius:8px; border-left:4px solid var(--teal);">
+                  <strong style="font-size:13px; color:var(--teal);">Pass 2: Insert 88 into [21, 59]</strong>
+                  <div style="display:flex; gap:6px; margin:6px 0;">
+                    <span style="padding:6px 12px; background:var(--teal); color:#fff; border-radius:6px; font-weight:700; font-size:14px;">21</span>
+                    <span style="padding:6px 12px; background:var(--teal); color:#fff; border-radius:6px; font-weight:700; font-size:14px;">59</span>
+                    <span style="padding:6px 12px; background:var(--teal); color:#fff; border-radius:6px; font-weight:700; font-size:14px;">88</span>
+                    <span style="padding:6px 12px; background:#F1F5F9; color:#475569; border-radius:6px; font-weight:700; font-size:14px;">14</span>
+                    <span style="padding:6px 12px; background:#F1F5F9; color:#475569; border-radius:6px; font-weight:700; font-size:14px;">47</span>
+                  </div>
+                  <span style="font-size:12px; color:var(--text-muted);">88 is greater than 59, stays at index 2.</span>
+                </div>
+
+                <div style="padding:12px; background:var(--bg-card); border-radius:8px; border-left:4px solid #10B981;">
+                  <strong style="font-size:13px; color:#10B981;">Final Pass: Insert 14 and 47 into place</strong>
+                  <div style="display:flex; gap:6px; margin:6px 0;">
+                    ${[14, 21, 47, 59, 88].map(v => `<span style="padding:6px 12px; background:#10B981; color:#fff; border-radius:6px; font-weight:700; font-size:14px;">${v}</span>`).join('')}
+                  </div>
+                  <span style="font-size:12px; color:#10B981; font-weight:600;">✅ Final array sorted in order!</span>
+                </div>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- SEARCH VISUAL TRACES (BINARY & LINEAR) -->
+          ${(!this.algType || ['binary-search', 'linear-search'].includes(this.algType)) ? `
+            <div style="display:flex; justify-content:center; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
+              ${[3, 8, 14, 21, 35, 47, 59, 72, 88, 95].map((val, idx) => {
+                let isMatch = val === 47;
+                return `
+                  <div style="text-align:center;">
+                    <div style="font-size:10px; color:var(--text-muted); font-weight:700;">Index ${idx}</div>
+                    <div style="width:46px; height:50px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; background:${isMatch ? 'var(--teal)' : 'var(--bg-main)'}; color:${isMatch ? '#fff' : 'var(--text-main)'}; border:2px solid ${isMatch ? 'var(--teal)' : 'var(--border-color)'};">${val}</div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+
+            <div style="background:rgba(45,156,145,0.08); border:1px solid var(--teal); padding:16px; border-radius:8px;">
+              <strong style="color:var(--teal);">Target Search Value: 47</strong>
+              <p style="font-size:13.5px; margin:4px 0 0 0; line-height:1.5;">
+                ${this.algType === 'binary-search' || !this.algType ? 'Binary Search divides the list in half. Mid index = 4 (value 35 < 47), so search narrows right to indices 5-9. Mid index = 7 (value 72 > 47), narrows left to index 5 (47). Found in 3 checks!' : 'Linear Search inspects index 0 (3), index 1 (8), index 2 (14), index 3 (21), index 4 (35), index 5 (47). Found in 6 sequential checks!'}
+              </p>
+            </div>
+          ` : ''}
         </div>
       ` : ''}
 
