@@ -372,27 +372,27 @@
         heading: 'Central Processing Unit (CPU) Core Components',
         body: 'The CPU is the primary processing unit that executes instructions. The Control Unit (CU) coordinates all CPU activities, decodes instructions, and sends control signals. The Arithmetic Logic Unit (ALU) performs mathematical calculations and logical comparisons. Cache memory is high-speed temporary storage positioned close to the processor to hold frequently accessed data and instructions.',
         html: `
-          <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px;">The CPU is the "brain" of the computer that processes data and instructions. It consists of three primary components:</p>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid var(--teal); padding: 12px; border-radius: 8px;">
-              <strong style="color: var(--teal); font-size: 13.5px; display: block; margin-bottom: 4px;">🕹️ Control Unit (CU)</strong>
-              <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+          <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">The CPU is the "brain" of the computer that processes data and instructions. It consists of three primary components:</p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid var(--teal); padding: 18px 20px; border-radius: 10px;">
+              <strong style="color: var(--teal); font-size: 15.5px; display: block; margin-bottom: 8px;">🕹️ Control Unit (CU)</strong>
+              <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
                 <li>Coordinates all CPU activities &amp; F-D-E cycle</li>
                 <li>Decodes fetched instructions</li>
                 <li>Sends control signals to hardware</li>
               </ul>
             </div>
-            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #3B82F6; padding: 12px; border-radius: 8px;">
-              <strong style="color: #60A5FA; font-size: 13.5px; display: block; margin-bottom: 4px;">🧮 Arithmetic Logic Unit (ALU)</strong>
-              <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #3B82F6; padding: 18px 20px; border-radius: 10px;">
+              <strong style="color: #60A5FA; font-size: 15.5px; display: block; margin-bottom: 8px;">🧮 Arithmetic Logic Unit (ALU)</strong>
+              <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
                 <li>Performs arithmetic math (+ - * /)</li>
                 <li>Performs logical decisions (AND, OR, NOT)</li>
                 <li>Sends output results to Accumulator</li>
               </ul>
             </div>
-            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #10B981; padding: 12px; border-radius: 8px;">
-              <strong style="color: #6EE7B7; font-size: 13.5px; display: block; margin-bottom: 4px;">⚡ Cache Memory</strong>
-              <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #10B981; padding: 18px 20px; border-radius: 10px;">
+              <strong style="color: #6EE7B7; font-size: 15.5px; display: block; margin-bottom: 8px;">⚡ Cache Memory</strong>
+              <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
                 <li>Extremely fast memory inside/near CPU</li>
                 <li>Stores frequently used data &amp; instructions</li>
                 <li>Faster access than RAM</li>
@@ -405,35 +405,35 @@
         heading: 'The 4 Special-Purpose Registers',
         body: 'Registers are small, extremely fast storage locations built directly into the CPU. The Program Counter (PC) holds the address of the next instruction. The Memory Address Register (MAR) holds any memory address currently being accessed. The Memory Data Register (MDR) holds the actual data or instruction value fetched from or written to RAM. The Accumulator (ACC) holds intermediate arithmetic results.',
         html: `
-          <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px;">Registers are superfast, tiny memory locations built directly inside the CPU chip:</p>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #F59E0B; padding: 12px; border-radius: 8px;">
-              <strong style="color: #FCD34D; font-size: 13px;">📍 Program Counter (PC)</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 4px 0 0 0; line-height: 1.4;">
+          <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">Registers are superfast, tiny memory locations built directly inside the CPU chip:</p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 20px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #F59E0B; padding: 18px 20px; border-radius: 10px;">
+              <strong style="color: #FCD34D; font-size: 15px; display: block; margin-bottom: 6px;">📍 Program Counter (PC)</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Holds the memory address of the <strong>NEXT instruction</strong> to be fetched from RAM. Increments by 1 after each fetch.
               </p>
             </div>
-            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #EC4899; padding: 12px; border-radius: 8px;">
-              <strong style="color: #F472B6; font-size: 13px;">🔍 Memory Address Register (MAR)</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 4px 0 0 0; line-height: 1.4;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #EC4899; padding: 18px 20px; border-radius: 10px;">
+              <strong style="color: #F472B6; font-size: 15px; display: block; margin-bottom: 6px;">🔍 Memory Address Register (MAR)</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Holds the memory <strong>address</strong> of the data or instruction currently being read from (or written to) RAM.
               </p>
             </div>
-            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #38BDF8; padding: 12px; border-radius: 8px;">
-              <strong style="color: #38BDF8; font-size: 13px;">📦 Memory Data Register (MDR)</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 4px 0 0 0; line-height: 1.4;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #38BDF8; padding: 18px 20px; border-radius: 10px;">
+              <strong style="color: #38BDF8; font-size: 15px; display: block; margin-bottom: 6px;">📦 Memory Data Register (MDR)</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Holds the actual <strong>data or instruction value</strong> fetched from RAM (or waiting to be written back to RAM).
               </p>
             </div>
-            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #10B981; padding: 12px; border-radius: 8px;">
-              <strong style="color: #6EE7B7; font-size: 13px;">🎯 Accumulator (ACC)</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 4px 0 0 0; line-height: 1.4;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #10B981; padding: 18px 20px; border-radius: 10px;">
+              <strong style="color: #6EE7B7; font-size: 15px; display: block; margin-bottom: 6px;">🎯 Accumulator (ACC)</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Temporarily holds the <strong>intermediate results</strong> of arithmetic calculations performed by the ALU.
               </p>
             </div>
           </div>
-          <div style="background: rgba(59, 130, 246, 0.08); border-left: 4px solid #3B82F6; padding: 10px 14px; border-radius: 0 8px 8px 0; margin-top: 12px; font-size: 12px; color: var(--text-main);">
-            <strong style="color: #60A5FA; display: block; margin-bottom: 3px;">💡 15-Second Desk Analogy for Revision:</strong>
+          <div style="background: rgba(59, 130, 246, 0.08); border-left: 4px solid #3B82F6; padding: 16px 20px; border-radius: 0 10px 10px 0; margin-top: 16px; font-size: 14.5px; color: var(--text-main); line-height: 1.6;">
+            <strong style="color: #60A5FA; font-size: 15px; display: block; margin-bottom: 6px;">💡 15-Second Desk Analogy for Revision:</strong>
             <strong>Registers</strong> = The pen in your active hand (instant access).<br>
             <strong>Cache</strong> = The pencil case open on your desk (super fast access).<br>
             <strong>RAM</strong> = The exercise book in your backpack (fast, but wiped clean when you leave!).<br>
@@ -445,9 +445,9 @@
         heading: 'Step-by-Step Fetch-Decode-Execute Cycle',
         body: 'In the Fetch phase, the address in the Program Counter is copied to the Memory Address Register, and the instruction is retrieved from RAM into the Memory Data Register before PC increments. In the Decode phase, the Control Unit decodes the instruction. In the Execute phase, the instruction is carried out and results are stored in the Accumulator.',
         html: `
-          <div style="background: rgba(45, 156, 145, 0.08); border: 1px solid var(--teal); padding: 14px; border-radius: 8px;">
-            <strong style="color: var(--teal); font-size: 13.5px; display: block; margin-bottom: 8px;">🔄 How Registers Work Together in the F-D-E Cycle:</strong>
-            <ol style="font-size: 12.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
+          <div style="background: rgba(45, 156, 145, 0.08); border: 1px solid var(--teal); padding: 18px 20px; border-radius: 10px;">
+            <strong style="color: var(--teal); font-size: 15.5px; display: block; margin-bottom: 10px;">🔄 How Registers Work Together in the F-D-E Cycle:</strong>
+            <ol style="font-size: 14.5px; color: var(--text-main); padding-left: 20px; margin: 0; line-height: 1.65;">
               <li><strong>Fetch:</strong> The address in <code>PC</code> is copied to <code>MAR</code>. The CPU fetches the instruction from RAM at that address into <code>MDR</code>. <code>PC</code> increments by 1.</li>
               <li><strong>Decode:</strong> The <code>Control Unit (CU)</code> decodes the instruction in <code>MDR</code> to determine the action required.</li>
               <li><strong>Execute:</strong> The instruction is executed (e.g. <code>ALU</code> performs math). Any intermediate calculation result is stored in the <code>Accumulator (ACC)</code>.</li>
@@ -461,26 +461,26 @@
         heading: '3 Factors Affecting CPU Performance',
         body: 'CPU performance is determined by three main hardware factors: Clock Speed (the number of F-D-E cycles executed per second in Hertz), Cache Size (fast memory buffer storing frequent instructions), and Number of Cores (independent processing units allowing parallel execution).',
         html: `
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <div style="border-top: 3px solid var(--teal); padding-top: 8px;">
-              <strong style="color: var(--teal); font-size: 13.5px; display: block; margin-bottom: 4px;">⏱️ Clock Speed (GHz)</strong>
-              <ul style="font-size: 12.5px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid var(--teal); padding: 18px 20px; border-radius: 10px;">
+              <strong style="color: var(--teal); font-size: 15.5px; display: block; margin-bottom: 8px;">⏱️ Clock Speed (GHz)</strong>
+              <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
                 <li>Number of F-D-E cycles executed per second.</li>
                 <li>1 GHz = 1 billion clock cycles per second.</li>
                 <li>Higher clock speed = more instructions processed per second.</li>
               </ul>
             </div>
-            <div style="border-top: 3px solid #3B82F6; padding-top: 8px;">
-              <strong style="color: #3B82F6; font-size: 13.5px; display: block; margin-bottom: 4px;">🧠 Number of CPU Cores</strong>
-              <ul style="font-size: 12.5px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #3B82F6; padding: 18px 20px; border-radius: 10px;">
+              <strong style="color: #3B82F6; font-size: 15.5px; display: block; margin-bottom: 8px;">🧠 Number of CPU Cores</strong>
+              <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
                 <li>Each core is an independent processor inside the CPU.</li>
                 <li>Dual-core (2) / Quad-core (4) allow parallel task processing.</li>
                 <li>Does not automatically multiply speed (software must support it).</li>
               </ul>
             </div>
-            <div style="border-top: 3px solid #10B981; padding-top: 8px;">
-              <strong style="color: #10B981; font-size: 13.5px; display: block; margin-bottom: 4px;">⚡ Cache Memory Size</strong>
-              <ul style="font-size: 12.5px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #10B981; padding: 18px 20px; border-radius: 10px;">
+              <strong style="color: #10B981; font-size: 15.5px; display: block; margin-bottom: 8px;">⚡ Cache Memory Size</strong>
+              <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
                 <li>Superfast memory buffer directly on the CPU chip.</li>
                 <li>Larger cache stores more frequent data near CPU.</li>
                 <li>Reduces slow data transfers from RAM.</li>
@@ -503,35 +503,35 @@
         heading: 'RAM vs ROM Comparison Matrix',
         body: 'RAM (Random Access Memory) is volatile temporary storage that holds the Operating System, open programs, and data currently in use. ROM (Read Only Memory) is non-volatile permanent storage that holds the BIOS startup instructions required to boot the computer.',
         html: `
-          <div style="overflow-x: auto; margin-bottom: 16px;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left;">
+          <div style="overflow-x: auto; margin-bottom: 20px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
               <thead>
                 <tr style="background: rgba(45, 156, 145, 0.12); color: var(--teal); border-bottom: 2px solid var(--teal);">
-                  <th style="padding: 8px 12px;">Feature</th>
-                  <th style="padding: 8px 12px;">⚡ RAM (Random Access Memory)</th>
-                  <th style="padding: 8px 12px;">🔒 ROM (Read Only Memory)</th>
+                  <th style="padding: 12px 14px; font-size: 14.5px;">Feature</th>
+                  <th style="padding: 12px 14px; font-size: 14.5px;">⚡ RAM (Random Access Memory)</th>
+                  <th style="padding: 12px 14px; font-size: 14.5px;">🔒 ROM (Read Only Memory)</th>
                 </tr>
               </thead>
               <tbody>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Volatility</td>
-                  <td style="padding: 8px 12px; color: #EF4444; font-weight: 600;">Volatile (Contents lost when power off)</td>
-                  <td style="padding: 8px 12px; color: #10B981; font-weight: 600;">Non-Volatile (Retains data when power off)</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Volatility</td>
+                  <td style="padding: 12px 14px; color: #EF4444; font-weight: 600;">Volatile (Contents lost when power off)</td>
+                  <td style="padding: 12px 14px; color: #10B981; font-weight: 600;">Non-Volatile (Retains data when power off)</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Read / Write</td>
-                  <td style="padding: 8px 12px; color: #3B82F6;">Read and Writeable</td>
-                  <td style="padding: 8px 12px; color: #F59E0B;">Read-Only (Factory written)</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Read / Write</td>
+                  <td style="padding: 12px 14px; color: #3B82F6;">Read and Writeable</td>
+                  <td style="padding: 12px 14px; color: #F59E0B;">Read-Only (Factory written)</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Primary Purpose</td>
-                  <td style="padding: 8px 12px; color: var(--text-main);">Stores active OS, open software &amp; data in use</td>
-                  <td style="padding: 8px 12px; color: var(--text-main);">Stores BIOS / Bootstrap bootup program</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Primary Purpose</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">Stores active OS, open software &amp; data in use</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">Stores BIOS / Bootstrap bootup program</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Capacity Size</td>
-                  <td style="padding: 8px 12px; color: var(--text-main);">Large (Typically 4GB – 32GB)</td>
-                  <td style="padding: 8px 12px; color: var(--text-main);">Small (Typically 4MB – 8MB)</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Capacity Size</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">Large (Typically 4GB – 32GB)</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">Small (Typically 4MB – 8MB)</td>
                 </tr>
               </tbody>
             </table>
@@ -542,12 +542,12 @@
         heading: 'Virtual Memory (When RAM fills up)',
         body: 'Virtual Memory is an area of secondary storage (HDD/SSD) used as temporary RAM when physical RAM is full. Operating systems swap inactive pages of data between RAM and Virtual Memory. The main disadvantage is disk thrashing and much slower performance compared to physical RAM.',
         html: `
-          <div style="border-left: 4px solid #F59E0B; padding-left: 14px; background: rgba(245, 158, 11, 0.05); border-radius: 0 8px 8px 0; padding: 12px;">
-            <strong style="color: #F59E0B; font-size: 13.5px; display: block; margin-bottom: 4px;">💾 How Virtual Memory Works:</strong>
-            <p style="font-size: 12.5px; color: var(--text-main); margin: 0 0 8px 0; line-height: 1.5;">
+          <div style="border-left: 4px solid #F59E0B; background: rgba(245, 158, 11, 0.05); border-radius: 0 10px 10px 0; padding: 18px 20px;">
+            <strong style="color: #F59E0B; font-size: 15.5px; display: block; margin-bottom: 8px;">💾 How Virtual Memory Works:</strong>
+            <p style="font-size: 14.5px; color: var(--text-main); margin: 0 0 12px 0; line-height: 1.6;">
               When physical RAM is completely filled by open applications, the Operating System allocates a portion of Secondary Storage (HDD/SSD) to act as <strong>Virtual Memory</strong>.
             </p>
-            <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+            <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
               <li><strong>Paging:</strong> Inactive data pages in RAM are moved ("swapped out") to Virtual Memory.</li>
               <li><strong>Recall:</strong> When needed again, data is swapped back into physical RAM.</li>
               <li><strong>Drawback:</strong> Secondary storage is significantly slower than RAM; excessive swapping causes <em>disk thrashing</em> and severe system slowdown.</li>
@@ -561,26 +561,26 @@
         heading: 'The 3 Main Storage Technologies (Magnetic, Optical, Solid State)',
         body: 'Secondary storage provides non-volatile storage to retain programs and data permanently when power is switched off. Magnetic storage (HDD) uses magnetic platters and moving heads for high capacity at low cost. Optical storage (CD/DVD/Blu-ray) uses laser beams to read pits and lands on discs for cheap distribution. Solid State storage (SSD/Flash) uses flash memory with no moving parts for maximum speed and physical durability.',
         html: `
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <div style="border-left: 4px solid var(--teal); padding-left: 12px; background: rgba(45, 156, 145, 0.05); border-radius: 0 6px 6px 0; padding: 10px;">
-              <strong style="color: var(--teal); font-size: 13.5px; display: block; margin-bottom: 4px;">🧲 Magnetic Storage (HDD / Tape)</strong>
-              <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid var(--teal); border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: var(--teal); font-size: 15.5px; display: block; margin-bottom: 8px;">🧲 Magnetic Storage (HDD / Tape)</strong>
+              <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
                 <li><strong>How it works:</strong> Magnetises mechanical spinning platters.</li>
                 <li><strong>Pros:</strong> High capacity (1TB–16TB+), cheap cost per GB.</li>
                 <li><strong>Cons:</strong> Mechanical moving parts; prone to damage if dropped.</li>
               </ul>
             </div>
-            <div style="border-left: 4px solid #3B82F6; padding-left: 12px; background: rgba(59, 130, 246, 0.05); border-radius: 0 6px 6px 0; padding: 10px;">
-              <strong style="color: #3B82F6; font-size: 13.5px; display: block; margin-bottom: 4px;">💿 Optical Storage (CD / DVD / Blu-ray)</strong>
-              <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #3B82F6; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #3B82F6; font-size: 15.5px; display: block; margin-bottom: 8px;">💿 Optical Storage (CD / DVD / Blu-ray)</strong>
+              <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
                 <li><strong>How it works:</strong> Lasers read physical pits &amp; lands on reflective disc.</li>
                 <li><strong>Pros:</strong> Very portable, cheap per disc, immune to water/magnets.</li>
                 <li><strong>Cons:</strong> Low capacity (700MB–50GB), slow read/write, easily scratched.</li>
               </ul>
             </div>
-            <div style="border-left: 4px solid #10B981; padding-left: 12px; background: rgba(16, 185, 129, 0.05); border-radius: 0 6px 6px 0; padding: 10px;">
-              <strong style="color: #10B981; font-size: 13.5px; display: block; margin-bottom: 4px;">⚡ Solid State Storage (SSD / USB Flash)</strong>
-              <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #10B981; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #10B981; font-size: 15.5px; display: block; margin-bottom: 8px;">⚡ Solid State Storage (SSD / USB Flash)</strong>
+              <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
                 <li><strong>How it works:</strong> Traps electrons in NAND flash memory chips.</li>
                 <li><strong>Pros:</strong> Extremely fast, highly durable (no moving parts), silent, low power.</li>
                 <li><strong>Cons:</strong> Expensive cost per GB, finite write cycle lifespan.</li>
@@ -593,52 +593,52 @@
         heading: '6 Key Storage Characteristics Comparison Matrix',
         body: 'OCR exam questions require evaluating storage choices using six characteristics: Capacity, Speed, Portability, Durability, Reliability, and Cost. For example, a handheld gaming console requires SSD storage due to portability, fast load speeds, and high durability against drops.',
         html: `
-          <div style="overflow-x: auto; margin-bottom: 16px;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left;">
+          <div style="overflow-x: auto; margin-bottom: 20px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
               <thead>
                 <tr style="background: rgba(45, 156, 145, 0.12); color: var(--teal); border-bottom: 2px solid var(--teal);">
-                  <th style="padding: 8px 12px;">Characteristic</th>
-                  <th style="padding: 8px 12px;">🧲 Magnetic (HDD)</th>
-                  <th style="padding: 8px 12px;">💿 Optical (DVD/BD)</th>
-                  <th style="padding: 8px 12px;">⚡ Solid State (SSD)</th>
+                  <th style="padding: 12px 14px; font-size: 14.5px;">Characteristic</th>
+                  <th style="padding: 12px 14px; font-size: 14.5px;">🧲 Magnetic (HDD)</th>
+                  <th style="padding: 12px 14px; font-size: 14.5px;">💿 Optical (DVD/BD)</th>
+                  <th style="padding: 12px 14px; font-size: 14.5px;">⚡ Solid State (SSD)</th>
                 </tr>
               </thead>
               <tbody>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">💾 Capacity</td>
-                  <td style="padding: 8px 12px; color: #10B981;">Very High (Up to 16TB)</td>
-                  <td style="padding: 8px 12px; color: #EF4444;">Low (700MB–50GB)</td>
-                  <td style="padding: 8px 12px; color: #3B82F6;">High (256GB–4TB)</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">💾 Capacity</td>
+                  <td style="padding: 12px 14px; color: #10B981;">Very High (Up to 16TB)</td>
+                  <td style="padding: 12px 14px; color: #EF4444;">Low (700MB–50GB)</td>
+                  <td style="padding: 12px 14px; color: #3B82F6;">High (256GB–4TB)</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">⚡ Speed</td>
-                  <td style="padding: 8px 12px; color: #F59E0B;">Medium (~100 MB/s)</td>
-                  <td style="padding: 8px 12px; color: #EF4444;">Slow (~10 MB/s)</td>
-                  <td style="padding: 8px 12px; color: #10B981;">Extremely Fast (500–7000 MB/s)</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">⚡ Speed</td>
+                  <td style="padding: 12px 14px; color: #F59E0B;">Medium (~100 MB/s)</td>
+                  <td style="padding: 12px 14px; color: #EF4444;">Slow (~10 MB/s)</td>
+                  <td style="padding: 12px 14px; color: #10B981;">Extremely Fast (500–7000 MB/s)</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">🎒 Portability</td>
-                  <td style="padding: 8px 12px; color: #F59E0B;">Heavy / Bulky</td>
-                  <td style="padding: 8px 12px; color: #10B981;">Very Portable (Small discs)</td>
-                  <td style="padding: 8px 12px; color: #10B981;">Highly Portable (Small / Light)</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">🎒 Portability</td>
+                  <td style="padding: 12px 14px; color: #F59E0B;">Heavy / Bulky</td>
+                  <td style="padding: 12px 14px; color: #10B981;">Very Portable (Small discs)</td>
+                  <td style="padding: 12px 14px; color: #10B981;">Highly Portable (Small / Light)</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">🛡️ Durability</td>
-                  <td style="padding: 8px 12px; color: #EF4444;">Low (Moving parts break if dropped)</td>
-                  <td style="padding: 8px 12px; color: #F59E0B;">Medium (Scratches easily)</td>
-                  <td style="padding: 8px 12px; color: #10B981;">Excellent (No moving parts)</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">🛡️ Durability</td>
+                  <td style="padding: 12px 14px; color: #EF4444;">Low (Moving parts break if dropped)</td>
+                  <td style="padding: 12px 14px; color: #F59E0B;">Medium (Scratches easily)</td>
+                  <td style="padding: 12px 14px; color: #10B981;">Excellent (No moving parts)</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">🔒 Reliability</td>
-                  <td style="padding: 8px 12px; color: #10B981;">High (Long lifespan if static)</td>
-                  <td style="padding: 8px 12px; color: #F59E0B;">Medium (Degrades in sunlight)</td>
-                  <td style="padding: 8px 12px; color: #10B981;">High (Limited write cycles)</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">🔒 Reliability</td>
+                  <td style="padding: 12px 14px; color: #10B981;">High (Long lifespan if static)</td>
+                  <td style="padding: 12px 14px; color: #F59E0B;">Medium (Degrades in sunlight)</td>
+                  <td style="padding: 12px 14px; color: #10B981;">High (Limited write cycles)</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">💰 Cost per GB</td>
-                  <td style="padding: 8px 12px; color: #10B981;">Very Cheap (~£0.02 / GB)</td>
-                  <td style="padding: 8px 12px; color: #10B981;">Cheap for small files</td>
-                  <td style="padding: 8px 12px; color: #EF4444;">Expensive (~£0.10 / GB)</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">💰 Cost per GB</td>
+                  <td style="padding: 12px 14px; color: #10B981;">Very Cheap (~£0.02 / GB)</td>
+                  <td style="padding: 12px 14px; color: #10B981;">Cheap for small files</td>
+                  <td style="padding: 12px 14px; color: #EF4444;">Expensive (~£0.10 / GB)</td>
                 </tr>
               </tbody>
             </table>
@@ -676,17 +676,17 @@
         heading: 'Network Types (LAN vs WAN)',
         body: 'A Local Area Network (LAN) covers a small geographical site like a school or office with hardware owned by the organisation. A Wide Area Network (WAN) connects networks across large geographical distances using external telecommunication infrastructure such as satellites or undersea fiber optic cables.',
         html: `
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <div style="border-top: 3px solid var(--teal); padding-top: 8px;">
-              <strong style="color: var(--teal); font-size: 13.5px; display: block; margin-bottom: 4px;">🏢 Local Area Network (LAN)</strong>
-              <ul style="font-size: 12.5px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid var(--teal); border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: var(--teal); font-size: 15.5px; display: block; margin-bottom: 8px;">🏢 Local Area Network (LAN)</strong>
+              <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
                 <li>Covers a small geographical site (e.g. school, office, home).</li>
                 <li>Hardware &amp; cabling owned and managed by one organisation.</li>
               </ul>
             </div>
-            <div style="border-top: 3px solid #3B82F6; padding-top: 8px;">
-              <strong style="color: #3B82F6; font-size: 13.5px; display: block; margin-bottom: 4px;">🌍 Wide Area Network (WAN)</strong>
-              <ul style="font-size: 12.5px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #3B82F6; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #3B82F6; font-size: 15.5px; display: block; margin-bottom: 8px;">🌍 Wide Area Network (WAN)</strong>
+              <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
                 <li>Connects networks across large geographical distances (cities/countries).</li>
                 <li>Uses third-party telecommunication infrastructure (e.g. satellites, undersea fiber).</li>
               </ul>
@@ -698,18 +698,18 @@
         heading: 'Client-Server vs Peer-to-Peer (P2P) Networks',
         body: 'In a Client-Server network, central servers manage files, security, backups, and user logins for client computers. In a Peer-to-Peer (P2P) network, all devices are equal (peers), sharing files directly with no central server or administration.',
         html: `
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <div style="border-left: 4px solid var(--teal); padding-left: 12px; background: rgba(45, 156, 145, 0.05); border-radius: 0 6px 6px 0; padding: 10px;">
-              <strong style="color: var(--teal); font-size: 13.5px; display: block; margin-bottom: 4px;">🖥️ Client-Server Network</strong>
-              <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid var(--teal); border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: var(--teal); font-size: 15.5px; display: block; margin-bottom: 8px;">🖥️ Client-Server Network</strong>
+              <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
                 <li><strong>Centralised control:</strong> Central server manages security, files &amp; user logins.</li>
                 <li><strong>Backups &amp; Software:</strong> Managed centrally from server.</li>
                 <li><strong>Drawback:</strong> Server failure disables whole network; expensive setup.</li>
               </ul>
             </div>
-            <div style="border-left: 4px solid #F59E0B; padding-left: 12px; background: rgba(245, 158, 11, 0.05); border-radius: 0 6px 6px 0; padding: 10px;">
-              <strong style="color: #F59E0B; font-size: 13.5px; display: block; margin-bottom: 4px;">🤝 Peer-to-Peer (P2P) Network</strong>
-              <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #F59E0B; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #F59E0B; font-size: 15.5px; display: block; margin-bottom: 8px;">🤝 Peer-to-Peer (P2P) Network</strong>
+              <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
                 <li><strong>Decentralised:</strong> All devices (peers) are equal and connect directly.</li>
                 <li><strong>No Central Server:</strong> Easy to set up and very cheap.</li>
                 <li><strong>Drawback:</strong> No central security or backup; files get duplicated.</li>
@@ -722,28 +722,28 @@
         heading: 'Essential Network Hardware & Roles',
         body: 'Switches connect devices inside a LAN by reading MAC addresses to direct data packets to specific target ports. Routers connect different networks together using IP addresses to route data across networks. Wireless Access Points (WAPs) convert wired network signals into Wi-Fi radio waves. Network Interface Controllers (NICs) allow devices to physically connect to a network.',
         html: `
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <div style="border-left: 3px solid var(--teal); padding-left: 12px;">
-              <strong style="color: var(--teal); font-size: 13px;">🔌 Switch</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid var(--teal); border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: var(--teal); font-size: 15px; display: block; margin-bottom: 6px;">🔌 Switch</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Connects devices inside a LAN. Reads MAC addresses to direct data packets to the specific target device.
               </p>
             </div>
-            <div style="border-left: 3px solid #3B82F6; padding-left: 12px;">
-              <strong style="color: #3B82F6; font-size: 13px;">🌐 Router</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #3B82F6; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #3B82F6; font-size: 15px; display: block; margin-bottom: 6px;">🌐 Router</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Connects different networks together (e.g. LAN to Internet). Routes data packets across networks using IP addresses.
               </p>
             </div>
-            <div style="border-left: 3px solid #10B981; padding-left: 12px;">
-              <strong style="color: #10B981; font-size: 13px;">📶 WAP (Wireless Access Point)</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #10B981; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #10B981; font-size: 15px; display: block; margin-bottom: 6px;">📶 WAP (Wireless Access Point)</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Converts wired network data into wireless radio signals (Wi-Fi) so mobile devices can connect to the LAN.
               </p>
             </div>
-            <div style="border-left: 3px solid #F59E0B; padding-left: 12px;">
-              <strong style="color: #F59E0B; font-size: 13px;">💳 NIC (Network Interface Controller)</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #F59E0B; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #F59E0B; font-size: 15px; display: block; margin-bottom: 6px;">💳 NIC (Network Interface Controller)</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Hardware component inside a computer that enables physical or wireless connection to a network.
               </p>
             </div>
@@ -754,16 +754,16 @@
         heading: 'Network Topologies: Star vs Mesh',
         body: 'In a Star topology, all devices connect to a central switch. If one cable fails, only that device is disconnected, but if the central switch fails, the entire network fails. In a Mesh topology, devices connect directly to multiple other nodes, creating high resilience without a single point of failure.',
         html: `
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
-            <div style="border-top: 3px solid #38BDF8; padding-top: 8px;">
-              <strong style="color: #38BDF8; font-size: 13.5px;">⭐ Star Topology</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 4px 0 0 0; line-height: 1.45;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #38BDF8; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #38BDF8; font-size: 15.5px; display: block; margin-bottom: 8px;">⭐ Star Topology</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 All devices connect individually to a central switch. If one cable fails, only that device is affected. However, if central switch fails, whole network goes down.
               </p>
             </div>
-            <div style="border-top: 3px solid #8B5CF6; padding-top: 8px;">
-              <strong style="color: #8B5CF6; font-size: 13.5px;">🕸️ Mesh Topology</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 4px 0 0 0; line-height: 1.45;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #8B5CF6; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #8B5CF6; font-size: 15.5px; display: block; margin-bottom: 8px;">🕸️ Mesh Topology</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Devices connect directly to multiple other nodes. Highly resilient with no single point of failure, but requires more cabling and setup cost.
               </p>
             </div>
@@ -776,30 +776,30 @@
         heading: 'MAC Address vs IP Address Comparison Matrix',
         body: 'A MAC Address is a unique 48-bit hexadecimal physical address burned into the Network Interface Card (NIC) at manufacture that does not change. An IP Address is a logical address assigned by a network router to identify a device on a network, which can be IPv4 or IPv6 and can change when connecting to different networks.',
         html: `
-          <div style="overflow-x: auto; margin-bottom: 16px;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left;">
+          <div style="overflow-x: auto; margin-bottom: 20px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
               <thead>
                 <tr style="background: rgba(45, 156, 145, 0.12); color: var(--teal); border-bottom: 2px solid var(--teal);">
-                  <th style="padding: 8px 12px;">Feature</th>
-                  <th style="padding: 8px 12px;">💳 MAC Address (Media Access Control)</th>
-                  <th style="padding: 8px 12px;">🌐 IP Address (Internet Protocol)</th>
+                  <th style="padding: 12px 14px; font-size: 14.5px;">Feature</th>
+                  <th style="padding: 12px 14px; font-size: 14.5px;">💳 MAC Address (Media Access Control)</th>
+                  <th style="padding: 12px 14px; font-size: 14.5px;">🌐 IP Address (Internet Protocol)</th>
                 </tr>
               </thead>
               <tbody>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Address Type</td>
-                  <td style="padding: 8px 12px; color: var(--teal); font-weight: 600;">Physical Hardware Address (Permanent)</td>
-                  <td style="padding: 8px 12px; color: #3B82F6; font-weight: 600;">Logical Network Address (Dynamic/Static)</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Address Type</td>
+                  <td style="padding: 12px 14px; color: var(--teal); font-weight: 600;">Physical Hardware Address (Permanent)</td>
+                  <td style="padding: 12px 14px; color: #3B82F6; font-weight: 600;">Logical Network Address (Dynamic/Static)</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Format &amp; Length</td>
-                  <td style="padding: 8px 12px; color: var(--text-main);">Hexadecimal (e.g. <code>00:1A:2B:3C:4D:5E</code>) - 48 bits</td>
-                  <td style="padding: 8px 12px; color: var(--text-main);">IPv4 (e.g. <code>192.168.1.1</code>) - 32 bits / IPv6 - 128 bits</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Format &amp; Length</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">Hexadecimal (e.g. <code>00:1A:2B:3C:4D:5E</code>) - 48 bits</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">IPv4 (e.g. <code>192.168.1.1</code>) - 32 bits / IPv6 - 128 bits</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Network Scope</td>
-                  <td style="padding: 8px 12px; color: var(--text-main);">Used by <strong>Switches</strong> inside a local LAN</td>
-                  <td style="padding: 8px 12px; color: var(--text-main);">Used by <strong>Routers</strong> to direct packets across WANs</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Network Scope</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">Used by <strong>Switches</strong> inside a local LAN</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">Used by <strong>Routers</strong> to direct packets across WANs</td>
                 </tr>
               </tbody>
             </table>
@@ -810,28 +810,28 @@
         heading: 'Network Protocols Cheatsheet (OCR Specification)',
         body: 'Protocols are sets of rules for data communication. TCP/IP splits data into packets and routes them. HTTP/HTTPS transfers web pages (HTTPS adds SSL/TLS encryption). FTP transfers files. SMTP sends email. POP downloads and deletes email from server; IMAP syncs email across devices.',
         html: `
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <div style="border-left: 3px solid var(--teal); padding-left: 12px;">
-              <strong style="color: var(--teal); font-size: 13px;">🌐 HTTP / HTTPS</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid var(--teal); border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: var(--teal); font-size: 15px; display: block; margin-bottom: 6px;">🌐 HTTP / HTTPS</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Transfers web content between client &amp; server. <strong>HTTPS</strong> adds SSL/TLS encryption for secure data transfer.
               </p>
             </div>
-            <div style="border-left: 3px solid #3B82F6; padding-left: 12px;">
-              <strong style="color: #3B82F6; font-size: 13px;">📁 FTP (File Transfer Protocol)</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #3B82F6; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #3B82F6; font-size: 15px; display: block; margin-bottom: 6px;">📁 FTP (File Transfer Protocol)</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Used to upload, download, and transfer files between computers across a network.
               </p>
             </div>
-            <div style="border-left: 3px solid #F59E0B; padding-left: 12px;">
-              <strong style="color: #F59E0B; font-size: 13px;">📧 SMTP (Simple Mail Transfer)</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #F59E0B; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #F59E0B; font-size: 15px; display: block; margin-bottom: 6px;">📧 SMTP (Simple Mail Transfer)</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Used exclusively to <strong>SEND</strong> emails from a client to a server, or between email servers.
               </p>
             </div>
-            <div style="border-left: 3px solid #EC4899; padding-left: 12px;">
-              <strong style="color: #EC4899; font-size: 13px;">📬 POP vs IMAP (Email Retrieval)</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #EC4899; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #EC4899; font-size: 15px; display: block; margin-bottom: 6px;">📬 POP vs IMAP (Email Retrieval)</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 <strong>POP:</strong> Downloads email &amp; deletes from server.<br>
                 <strong>IMAP:</strong> Syncs email live across multiple devices.
               </p>
@@ -845,28 +845,28 @@
         heading: '6 Major Cyber Security Threats',
         body: 'Cyber threats exploit technical and human vulnerabilities. Malware includes viruses, worms, and ransomware. Social engineering manipulates people (e.g. phishing emails). Brute force attacks repeatedly guess passwords. Denial of Service (DoS) floods servers with traffic. Data interception uses packet sniffers. SQL Injection inserts malicious code into database forms.',
         html: `
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <div style="border-top: 3px solid #EF4444; padding-top: 8px;">
-              <strong style="color: #EF4444; font-size: 13.5px; display: block; margin-bottom: 4px;">👾 Malware</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 0; line-height: 1.45;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #EF4444; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #EF4444; font-size: 15.5px; display: block; margin-bottom: 8px;">👾 Malware</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Hostile software including Viruses (attaches to files), Worms (self-replicating across networks), and Ransomware (encrypts files for money).
               </p>
             </div>
-            <div style="border-top: 3px solid #F59E0B; padding-top: 8px;">
-              <strong style="color: #F59E0B; font-size: 13.5px; display: block; margin-bottom: 4px;">🎣 Social Engineering (Phishing)</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 0; line-height: 1.45;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #F59E0B; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #F59E0B; font-size: 15.5px; display: block; margin-bottom: 8px;">🎣 Social Engineering (Phishing)</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Fake emails/websites posing as legitimate organisations to trick users into handing over login passwords or financial details.
               </p>
             </div>
-            <div style="border-top: 3px solid #8B5CF6; padding-top: 8px;">
-              <strong style="color: #8B5CF6; font-size: 13.5px; display: block; margin-bottom: 4px;">💉 SQL Injection</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 0; line-height: 1.45;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #8B5CF6; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #8B5CF6; font-size: 15.5px; display: block; margin-bottom: 8px;">💉 SQL Injection</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Attacker inputs malicious SQL code into unvalidated web input fields to manipulate or steal database records.
               </p>
             </div>
-            <div style="border-top: 3px solid #3B82F6; padding-top: 8px;">
-              <strong style="color: #3B82F6; font-size: 13.5px; display: block; margin-bottom: 4px;">🚫 Denial of Service (DoS / DDoS)</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 0; line-height: 1.45;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #3B82F6; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #3B82F6; font-size: 15.5px; display: block; margin-bottom: 8px;">🚫 Denial of Service (DoS / DDoS)</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Flooding a web server with fake requests from botnets to overwhelm CPU/bandwidth and crash the service for real users.
               </p>
             </div>
@@ -883,22 +883,22 @@
         heading: 'Technical Security Measures & Defences',
         body: 'Technical defenses protect hardware and data. Firewalls inspect network traffic against security rules. Anti-malware detects and quatantines viruses. Encryption scrambles data into ciphertext using a key. Passwords and Access Levels restrict data based on user roles. Penetration Testing is authorized simulated hacking to find weaknesses before criminals do.',
         html: `
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <div style="border-left: 3px solid var(--teal); padding-left: 12px;">
-              <strong style="color: var(--teal); font-size: 13px;">🛡️ Firewall</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid var(--teal); border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: var(--teal); font-size: 15px; display: block; margin-bottom: 6px;">🛡️ Firewall</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Monitors incoming &amp; outgoing network traffic and blocks unauthorized packets based on security rules.
               </p>
             </div>
-            <div style="border-left: 3px solid #10B981; padding-left: 12px;">
-              <strong style="color: #10B981; font-size: 13px;">🔐 Encryption</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #10B981; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #10B981; font-size: 15px; display: block; margin-bottom: 6px;">🔐 Encryption</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Scrambles plain text into unreadable ciphertext using an encryption key, rendering stolen data useless.
               </p>
             </div>
-            <div style="border-left: 3px solid #3B82F6; padding-left: 12px;">
-              <strong style="color: #3B82F6; font-size: 13px;">🎯 Penetration Testing</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #3B82F6; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #3B82F6; font-size: 15px; display: block; margin-bottom: 6px;">🎯 Penetration Testing</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Authorised ethical hacking tests that simulate real cyberattacks to discover system vulnerabilities.
               </p>
             </div>
@@ -915,22 +915,22 @@
         heading: 'The 5 Core Functions of an Operating System (OS)',
         body: 'An Operating System manages computer hardware and software. Its 5 core functions are: 1) User Interface (GUI/CLI), 2) Memory Management (RAM allocation & Virtual Memory), 3) Multitasking (CPU scheduling), 4) Peripheral & Driver Management, 5) User & File Management (access rights, files/folders).',
         html: `
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <div style="border-top: 3px solid var(--teal); padding-top: 8px;">
-              <strong style="color: var(--teal); font-size: 13px;">🖥️ User Interface (UI)</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">Provides GUI (windows, icons, menus) or CLI (command line) for user interaction.</p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid var(--teal); border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: var(--teal); font-size: 15px; display: block; margin-bottom: 6px;">🖥️ User Interface (UI)</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">Provides GUI (windows, icons, menus) or CLI (command line) for user interaction.</p>
             </div>
-            <div style="border-top: 3px solid #3B82F6; padding-top: 8px;">
-              <strong style="color: #3B82F6; font-size: 13px;">💾 Memory Management</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">Allocates RAM blocks to open applications and manages Virtual Memory paging.</p>
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #3B82F6; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #3B82F6; font-size: 15px; display: block; margin-bottom: 6px;">💾 Memory Management</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">Allocates RAM blocks to open applications and manages Virtual Memory paging.</p>
             </div>
-            <div style="border-top: 3px solid #F59E0B; padding-top: 8px;">
-              <strong style="color: #F59E0B; font-size: 13px;">⏱️ Multitasking &amp; CPU Scheduling</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">Schedules CPU time slices across multiple running programs simultaneously.</p>
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #F59E0B; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #F59E0B; font-size: 15px; display: block; margin-bottom: 6px;">⏱️ Multitasking &amp; CPU Scheduling</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">Schedules CPU time slices across multiple running programs simultaneously.</p>
             </div>
-            <div style="border-top: 3px solid #10B981; padding-top: 8px;">
-              <strong style="color: #10B981; font-size: 13px;">🔌 Peripheral Drivers &amp; Files</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">Uses device drivers to communicate with hardware, and manages user access rights &amp; file structures.</p>
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #10B981; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #10B981; font-size: 15px; display: block; margin-bottom: 6px;">🔌 Peripheral Drivers &amp; Files</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">Uses device drivers to communicate with hardware, and manages user access rights &amp; file structures.</p>
             </div>
           </div>
         `
@@ -945,16 +945,16 @@
         heading: 'Utility Software (Defragmentation, Encryption, Compression, Backup)',
         body: 'Utility software performs maintenance tasks to keep system software running efficiently. Defragmentation reorganises scattered file fragments on magnetic HDDs to speed up read times (note: SSDs do not need defragmentation). Compression reduces file sizes. Encryption secures data. Backup creates restore copies.',
         html: `
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <div style="border-left: 3px solid #F59E0B; padding-left: 12px;">
-              <strong style="color: #F59E0B; font-size: 13px;">🧩 Defragmentation (HDD Only!)</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.45;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #F59E0B; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #F59E0B; font-size: 15px; display: block; margin-bottom: 6px;">🧩 Defragmentation (HDD Only!)</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Reorganises fragmented file blocks on magnetic hard drives so related data is stored contiguously. <em>Exam Note: SSDs do NOT require defragmentation because they have no moving read head!</em>
               </p>
             </div>
-            <div style="border-left: 3px solid var(--teal); padding-left: 12px;">
-              <strong style="color: var(--teal); font-size: 13px;">📦 File Compression Utility</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.45;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid var(--teal); border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: var(--teal); font-size: 15px; display: block; margin-bottom: 6px;">📦 File Compression Utility</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Reduces file size so files consume less storage space and download faster across network connections.
               </p>
             </div>
@@ -975,18 +975,18 @@
         heading: 'UK Computing Legislation 4-Card Breakdown',
         body: '3 key UK laws protect digital data and systems: 1) Data Protection Act 2018 (GDPR principles for personal data), 2) Computer Misuse Act 1990 (makes unauthorized access, hacking, and malware creation illegal), 3) Copyright, Designs and Patents Act 1988 (protects intellectual property).',
         html: `
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <div style="border-top: 3px solid var(--teal); padding-top: 8px;">
-              <strong style="color: var(--teal); font-size: 13px;">📜 Data Protection Act 2018 (DPA / GDPR)</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">Governs fair, lawful &amp; secure handling of personal data by data controllers.</p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid var(--teal); border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: var(--teal); font-size: 15px; display: block; margin-bottom: 6px;">📜 Data Protection Act 2018 (DPA / GDPR)</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">Governs fair, lawful &amp; secure handling of personal data by data controllers.</p>
             </div>
-            <div style="border-top: 3px solid #EF4444; padding-top: 8px;">
-              <strong style="color: #EF4444; font-size: 13px;">⚖️ Computer Misuse Act 1990 (CMA)</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">Outlaws unauthorized access (hacking), unauthorized intent, and malware modification.</p>
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #EF4444; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #EF4444; font-size: 15px; display: block; margin-bottom: 6px;">⚖️ Computer Misuse Act 1990 (CMA)</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">Outlaws unauthorized access (hacking), unauthorized intent, and malware modification.</p>
             </div>
-            <div style="border-top: 3px solid #3B82F6; padding-top: 8px;">
-              <strong style="color: #3B82F6; font-size: 13px;">©️ Copyright, Designs &amp; Patents Act 1988</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">Protects software code, media, and creative works from illegal copying and piracy.</p>
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #3B82F6; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #3B82F6; font-size: 15px; display: block; margin-bottom: 6px;">©️ Copyright, Designs &amp; Patents Act 1988</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">Protects software code, media, and creative works from illegal copying and piracy.</p>
             </div>
           </div>
         `
@@ -1231,18 +1231,18 @@
         heading: 'High-Level vs Low-Level Languages',
         body: 'High-level languages (e.g. Python) use English-like syntax, are easy to read and write, and are portable across different CPU architectures. Low-level languages (Assembly and Machine Code) interact directly with CPU hardware registers and memory, offering maximum execution speed and direct memory control.',
         html: `
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <div style="border-top: 3px solid var(--teal); padding-top: 8px;">
-              <strong style="color: var(--teal); font-size: 13.5px; display: block; margin-bottom: 4px;">🐍 High-Level Languages (Python, Java, C#)</strong>
-              <ul style="font-size: 12.5px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid var(--teal); border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: var(--teal); font-size: 15.5px; display: block; margin-bottom: 8px;">🐍 High-Level Languages (Python, Java, C#)</strong>
+              <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
                 <li>English-like statements; easy to read, write, &amp; debug.</li>
                 <li>Portable across different types of computer CPU hardware.</li>
                 <li>Must be translated into machine code before CPU execution.</li>
               </ul>
             </div>
-            <div style="border-top: 3px solid #F59E0B; padding-top: 8px;">
-              <strong style="color: #F59E0B; font-size: 13.5px; display: block; margin-bottom: 4px;">⚙️ Low-Level Languages (Assembly &amp; Machine Code)</strong>
-              <ul style="font-size: 12.5px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #F59E0B; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #F59E0B; font-size: 15.5px; display: block; margin-bottom: 8px;">⚙️ Low-Level Languages (Assembly &amp; Machine Code)</strong>
+              <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
                 <li><strong>Assembly:</strong> Uses mnemonics (e.g. <code>INP</code>, <code>ADD</code>, <code>STA</code>).</li>
                 <li><strong>Machine Code:</strong> Raw binary <code>1s and 0s</code> executed directly by CPU.</li>
                 <li>Fast execution &amp; precise hardware/memory control.</li>
@@ -1255,35 +1255,35 @@
         heading: 'Compiler vs Interpreter Comparison Matrix',
         body: 'A Compiler translates the entire source code program into a standalone executable file in one go. An Interpreter translates and executes source code line-by-line, stopping immediately when an error is encountered.',
         html: `
-          <div style="overflow-x: auto; margin-bottom: 16px;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left;">
+          <div style="overflow-x: auto; margin-bottom: 20px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
               <thead>
                 <tr style="background: rgba(45, 156, 145, 0.12); color: var(--teal); border-bottom: 2px solid var(--teal);">
-                  <th style="padding: 8px 12px;">Feature</th>
-                  <th style="padding: 8px 12px;">📦 Compiler</th>
-                  <th style="padding: 8px 12px;">⚡ Interpreter</th>
+                  <th style="padding: 12px 14px; font-size: 14.5px;">Feature</th>
+                  <th style="padding: 12px 14px; font-size: 14.5px;">📦 Compiler</th>
+                  <th style="padding: 12px 14px; font-size: 14.5px;">⚡ Interpreter</th>
                 </tr>
               </thead>
               <tbody>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Translation Method</td>
-                  <td style="padding: 8px 12px; color: var(--teal); font-weight: 600;">Translates ENTIRE program at once</td>
-                  <td style="padding: 8px 12px; color: #3B82F6; font-weight: 600;">Translates and executes LINE-BY-LINE</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Translation Method</td>
+                  <td style="padding: 12px 14px; color: var(--teal); font-weight: 600;">Translates ENTIRE program at once</td>
+                  <td style="padding: 12px 14px; color: #3B82F6; font-weight: 600;">Translates and executes LINE-BY-LINE</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Output File</td>
-                  <td style="padding: 8px 12px; color: var(--text-main);">Produces standalone executable binary file (e.g. <code>.exe</code>)</td>
-                  <td style="padding: 8px 12px; color: var(--text-main);">No output file created; requires interpreter to run</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Output File</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">Produces standalone executable binary file (e.g. <code>.exe</code>)</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">No output file created; requires interpreter to run</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Execution Speed</td>
-                  <td style="padding: 8px 12px; color: #10B981; font-weight: 600;">Fast execution after initial compilation</td>
-                  <td style="padding: 8px 12px; color: #EF4444; font-weight: 600;">Slower execution (re-translates loops)</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Execution Speed</td>
+                  <td style="padding: 12px 14px; color: #10B981; font-weight: 600;">Fast execution after initial compilation</td>
+                  <td style="padding: 12px 14px; color: #EF4444; font-weight: 600;">Slower execution (re-translates loops)</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Error Reporting</td>
-                  <td style="padding: 8px 12px; color: var(--text-main);">Reports all errors together after whole program build</td>
-                  <td style="padding: 8px 12px; color: var(--text-main);">Stops immediately at first line containing an error</td>
+                  <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Error Reporting</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">Reports all errors together after whole program build</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">Stops immediately at first line containing an error</td>
                 </tr>
               </tbody>
             </table>
@@ -1296,28 +1296,28 @@
         heading: '4 Essential Features of an IDE (Integrated Development Environment)',
         body: 'An IDE is a software application providing comprehensive tools for programmers: 1) Code Editor (with line numbers & syntax highlighting), 2) Error Diagnostics (identifying syntax errors), 3) Run-time Environment (executing code within the IDE), 4) Translator & Debugger (compiling/interpreting code, setting breakpoints, and tracing variable values).',
         html: `
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <div style="border-left: 3px solid var(--teal); padding-left: 12px;">
-              <strong style="color: var(--teal); font-size: 13px;">📝 Code Editor</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid var(--teal); border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: var(--teal); font-size: 15px; display: block; margin-bottom: 6px;">📝 Code Editor</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Text editor with line numbering, automatic indentation, and syntax highlighting to colour-code keywords.
               </p>
             </div>
-            <div style="border-left: 3px solid #EF4444; padding-left: 12px;">
-              <strong style="color: #EF4444; font-size: 13px;">🚨 Error Diagnostics</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #EF4444; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #EF4444; font-size: 15px; display: block; margin-bottom: 6px;">🚨 Error Diagnostics</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Highlights syntax errors in real-time and provides clear error messages indicating line numbers.
               </p>
             </div>
-            <div style="border-left: 3px solid #10B981; padding-left: 12px;">
-              <strong style="color: #10B981; font-size: 13px;">▶️ Run-time Environment</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #10B981; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #10B981; font-size: 15px; display: block; margin-bottom: 6px;">▶️ Run-time Environment</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Allows programmers to execute code directly inside the IDE without opening external command prompts.
               </p>
             </div>
-            <div style="border-left: 3px solid #F59E0B; padding-left: 12px;">
-              <strong style="color: #F59E0B; font-size: 13px;">🐛 Translator &amp; Debugger</strong>
-              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #F59E0B; border-radius: 10px; padding: 18px 20px;">
+              <strong style="color: #F59E0B; font-size: 15px; display: block; margin-bottom: 6px;">🐛 Translator &amp; Debugger</strong>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
                 Built-in compiler/interpreter + debugging tools (breakpoints, variable stepping, watch windows).
               </p>
             </div>
