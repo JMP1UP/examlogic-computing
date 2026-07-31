@@ -4485,6 +4485,7 @@ class App {
       '2.4.1': { id: 'logic-gates', label: 'Open the logic-gates tool' }
     };
     const tool = contextualTools[content.id];
+    const topicTerms = window.db.getKeyTermsBySpecPoint(content.id) || [];
     panel.innerHTML = `
       <div class="student-page student-focused-learning">
         <header class="student-route-header student-route-header--quiet">
@@ -4504,6 +4505,35 @@ class App {
         <article class="card student-learning-content">
           <h2>Review this section</h2>
           <p>${this.escapeHTML(content.explanation)}</p>
+
+          ${topicTerms.length ? `
+            <div class="topic-key-terms-bar" style="margin: 18px 0; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 12px 0;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 16px;">📖</span>
+                  <strong style="color: var(--teal); font-size: 13.5px;">Topic Key Terms &amp; Definitions (${topicTerms.length})</strong>
+                  <span style="font-size: 11px; color: var(--text-muted);">(OCR Exam Definitions)</span>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" id="toggle-topic-terms-btn" style="font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 16px;">
+                  ${this.showTopicTerms ? 'Hide Key Terms' : 'Show Key Terms'}
+                </button>
+              </div>
+
+              ${this.showTopicTerms ? `
+                <div class="topic-terms-drawer" style="margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+                  ${topicTerms.map(t => `
+                    <div style="border-left: 3px solid var(--teal); padding: 8px 12px; background: rgba(45, 156, 145, 0.05); border-radius: 0 6px 6px 0;">
+                      <strong style="color: var(--teal); font-size: 13px;">${this.escapeHTML(t.term)}</strong>
+                      <p style="font-size: 12.5px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.45;">
+                        ${this.escapeHTML(t.definition)}
+                      </p>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+          ` : ''}
+
           ${this.getObjectiveDiagramSvg(content.id)}
           ${content.teachingSections?.length ? `
             <div class="student-teaching-sequence" aria-label="Step-by-step teaching">
@@ -4547,6 +4577,10 @@ class App {
           <button type="button" class="btn btn-link" id="focused-topics-btn">Back to Topics</button>
         </div>
       </div>`;
+    panel.querySelector('#toggle-topic-terms-btn')?.addEventListener('click', () => {
+      this.showTopicTerms = !this.showTopicTerms;
+      this.renderFocusedStudentLearning(panel, activeNote, content);
+    });
     panel.querySelector('#focused-exam-btn')?.addEventListener('click', () => {
       this.activeExamTransferId = task.id;
       this.examTransferStage = 'answer';

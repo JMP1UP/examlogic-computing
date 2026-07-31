@@ -370,6 +370,7 @@
     '1.1.1': [
       {
         heading: 'Central Processing Unit (CPU) Core Components',
+        body: 'The CPU is the primary processing unit that executes instructions. The Control Unit (CU) coordinates all CPU activities, decodes instructions, and sends control signals. The Arithmetic Logic Unit (ALU) performs mathematical calculations and logical comparisons. Cache memory is high-speed temporary storage positioned close to the processor to hold frequently accessed data and instructions.',
         html: `
           <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px;">The CPU is the "brain" of the computer that processes data and instructions. It consists of three primary components:</p>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
@@ -402,6 +403,7 @@
       },
       {
         heading: 'The 4 Special-Purpose Registers',
+        body: 'Registers are small, extremely fast storage locations built directly into the CPU. The Program Counter (PC) holds the address of the next instruction. The Memory Address Register (MAR) holds any memory address currently being accessed. The Memory Data Register (MDR) holds the actual data or instruction value fetched from or written to RAM. The Accumulator (ACC) holds intermediate arithmetic results.',
         html: `
           <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px;">Registers are superfast, tiny memory locations built directly inside the CPU chip:</p>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
@@ -434,6 +436,7 @@
       },
       {
         heading: 'Step-by-Step Fetch-Decode-Execute Cycle',
+        body: 'In the Fetch phase, the address in the Program Counter is copied to the Memory Address Register, and the instruction is retrieved from RAM into the Memory Data Register before PC increments. In the Decode phase, the Control Unit decodes the instruction. In the Execute phase, the instruction is carried out and results are stored in the Accumulator.',
         html: `
           <div style="background: rgba(45, 156, 145, 0.08); border: 1px solid var(--teal); padding: 14px; border-radius: 8px;">
             <strong style="color: var(--teal); font-size: 13.5px; display: block; margin-bottom: 8px;">🔄 How Registers Work Together in the F-D-E Cycle:</strong>
@@ -488,10 +491,80 @@
       { heading: 'Lossy and lossless', body: 'Lossy compression permanently removes data judged less important, often producing a smaller file but reducing quality. Lossless compression represents the same information more efficiently and can reconstruct the original exactly. Program code and other exact data require lossless compression; media may use either depending on its purpose.' }
     ],
     '1.3.1': [
-      { heading: 'Network size and ownership', body: 'A LAN covers a small area and is normally owned or managed by one organisation. A WAN connects networks across a larger geographical area and commonly uses infrastructure owned by telecommunications providers. The Internet is a worldwide network of networks, not simply another name for a WAN.' },
-      { heading: 'Roles and hardware', body: 'A client requests a service; a server provides and manages it. Peer-to-peer devices can both request and provide resources without a dedicated server. Switches connect devices inside a LAN, routers pass packets between networks, wireless access points connect wireless devices, and network interface controllers allow devices to connect.' },
-      { heading: 'Choosing a topology', body: 'In a star network, each device has its own connection to a central switch. One cable failure normally affects one device, but the central device is a single point of failure. A mesh provides multiple routes, improving resilience, but needs more connections and is more expensive and complex.' },
-      { heading: 'Client-server or peer-to-peer', body: 'Client-server networks support central accounts, access control, file storage and backup, but need server equipment and administration; server failure can remove shared services. Peer-to-peer networks can be cheaper for a very small group, but resources, security and backups are managed separately and become difficult to control as the network grows.' }
+      {
+        heading: 'Network Types (LAN vs WAN)',
+        body: 'A Local Area Network (LAN) covers a small geographical site like a school or office with hardware owned by the organisation. A Wide Area Network (WAN) connects networks across large geographical distances using external telecommunication infrastructure such as satellites or undersea fiber optic cables.',
+        html: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="border-top: 3px solid var(--teal); padding-top: 8px;">
+              <strong style="color: var(--teal); font-size: 13.5px; display: block; margin-bottom: 4px;">🏢 Local Area Network (LAN)</strong>
+              <ul style="font-size: 12.5px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li>Covers a small geographical site (e.g. school, office, home).</li>
+                <li>Hardware &amp; cabling owned and managed by one organisation.</li>
+              </ul>
+            </div>
+            <div style="border-top: 3px solid #3B82F6; padding-top: 8px;">
+              <strong style="color: #3B82F6; font-size: 13.5px; display: block; margin-bottom: 4px;">🌍 Wide Area Network (WAN)</strong>
+              <ul style="font-size: 12.5px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li>Connects networks across large geographical distances (cities/countries).</li>
+                <li>Uses third-party telecommunication infrastructure (e.g. satellites, undersea fiber).</li>
+              </ul>
+            </div>
+          </div>
+        `
+      },
+      {
+        heading: 'Essential Network Hardware & Roles',
+        body: 'Switches connect devices inside a LAN by reading MAC addresses to direct data packets to specific target ports. Routers connect different networks together using IP addresses to route data across networks. Wireless Access Points (WAPs) convert wired network signals into Wi-Fi radio waves. Network Interface Controllers (NICs) allow devices to physically connect to a network.',
+        html: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="border-left: 3px solid var(--teal); padding-left: 12px;">
+              <strong style="color: var(--teal); font-size: 13px;">🔌 Switch</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+                Connects devices inside a LAN. Reads MAC addresses to direct data packets to the specific target device.
+              </p>
+            </div>
+            <div style="border-left: 3px solid #3B82F6; padding-left: 12px;">
+              <strong style="color: #3B82F6; font-size: 13px;">🌐 Router</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+                Connects different networks together (e.g. LAN to Internet). Routes data packets across networks using IP addresses.
+              </p>
+            </div>
+            <div style="border-left: 3px solid #10B981; padding-left: 12px;">
+              <strong style="color: #10B981; font-size: 13px;">📶 WAP (Wireless Access Point)</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+                Converts wired network data into wireless radio signals (Wi-Fi) so mobile devices can connect to the LAN.
+              </p>
+            </div>
+            <div style="border-left: 3px solid #F59E0B; padding-left: 12px;">
+              <strong style="color: #F59E0B; font-size: 13px;">💳 NIC (Network Interface Controller)</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+                Hardware component inside a computer that enables physical or wireless connection to a network.
+              </p>
+            </div>
+          </div>
+        `
+      },
+      {
+        heading: 'Network Topologies: Star vs Mesh',
+        body: 'In a Star topology, all devices connect to a central switch. If one cable fails, only that device is disconnected, but if the central switch fails, the entire network fails. In a Mesh topology, devices connect directly to multiple other nodes, creating high resilience without a single point of failure.',
+        html: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+            <div style="border-top: 3px solid #38BDF8; padding-top: 8px;">
+              <strong style="color: #38BDF8; font-size: 13.5px;">⭐ Star Topology</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 4px 0 0 0; line-height: 1.45;">
+                All devices connect individually to a central switch. If one cable fails, only that device is affected. However, if central switch fails, whole network goes down.
+              </p>
+            </div>
+            <div style="border-top: 3px solid #8B5CF6; padding-top: 8px;">
+              <strong style="color: #8B5CF6; font-size: 13.5px;">🕸️ Mesh Topology</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 4px 0 0 0; line-height: 1.45;">
+                Devices connect directly to multiple other nodes. Highly resilient with no single point of failure, but requires more cabling and setup cost.
+              </p>
+            </div>
+          </div>
+        `
+      }
     ],
     '1.3.2': [
       { heading: 'Connections and addressing', body: 'Ethernet provides a wired connection, while Wi-Fi uses radio for local wireless networking and Bluetooth supports short-range device connections. An IP address identifies a device for communication across networks and may change; a MAC address identifies a network interface on the local network and is normally assigned to its hardware.' },
