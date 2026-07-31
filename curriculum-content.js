@@ -432,6 +432,13 @@
               </p>
             </div>
           </div>
+          <div style="background: rgba(59, 130, 246, 0.08); border-left: 4px solid #3B82F6; padding: 10px 14px; border-radius: 0 8px 8px 0; margin-top: 12px; font-size: 12px; color: var(--text-main);">
+            <strong style="color: #60A5FA; display: block; margin-bottom: 3px;">💡 15-Second Desk Analogy for Revision:</strong>
+            <strong>Registers</strong> = The pen in your active hand (instant access).<br>
+            <strong>Cache</strong> = The pencil case open on your desk (super fast access).<br>
+            <strong>RAM</strong> = The exercise book in your backpack (fast, but wiped clean when you leave!).<br>
+            <strong>Secondary Storage (SSD/HDD)</strong> = The school library down the corridor (huge &amp; permanent).
+          </div>
         `
       },
       {
