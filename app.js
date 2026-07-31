@@ -5260,57 +5260,62 @@ class App {
 
           <!-- Interactive Circuit Wire Canvas -->
           <div class="card" style="background:#FAF8F2; padding:28px; margin-bottom:24px; border:1px solid var(--border-color); border-radius:14px; box-shadow:0 4px 16px rgba(7, 17, 31, 0.04);">
-            <div style="display:flex; justify-content:center; align-items:center; gap:20px; flex-wrap:wrap;">
+            <div style="display:flex; justify-content:center; align-items:center; gap:24px; flex-wrap:wrap;">
               
-              <!-- Input A Switch -->
-              <div style="text-align:center;">
-                <label style="font-weight:700; font-size:13px; color:var(--text-main); display:block; margin-bottom:6px;">Input A</label>
-                <button id="toggle-input-a" class="btn" style="min-width:110px; height:46px; font-size:15px; font-weight:800; border-radius:10px; transition:all 0.2s ease; cursor:pointer; ${this.logicInputA === 1 ? 'background:#10B981; border-color:#10B981; color:#FFFFFF; box-shadow:0 4px 12px rgba(16, 185, 129, 0.3);' : 'background:#F1F5F9; border:1px solid #CBD5E1; color:#64748B;'}" aria-label="Toggle Input A, current state is ${this.logicInputA}">
-                  ${this.logicInputA === 1 ? '⚡ 1 (HIGH)' : '0 (LOW)'}
-                </button>
-              </div>
-
-              <!-- Wire A Signal Line -->
-              <div style="display:flex; align-items:center; gap:4px; font-weight:800; font-size:16px; color:${this.logicInputA === 1 ? '#10B981' : '#94A3B8'};">
-                <span style="font-size:18px;">${this.logicInputA === 1 ? '━━━▶' : '━━━▷'}</span>
-              </div>
-
-              ${this.logicGateType !== 'NOT' ? `
-                <!-- Input B Switch -->
-                <div style="text-align:center;">
-                  <label style="font-weight:700; font-size:13px; color:var(--text-main); display:block; margin-bottom:6px;">Input B</label>
-                  <button id="toggle-input-b" class="btn" style="min-width:110px; height:46px; font-size:15px; font-weight:800; border-radius:10px; transition:all 0.2s ease; cursor:pointer; ${this.logicInputB === 1 ? 'background:#10B981; border-color:#10B981; color:#FFFFFF; box-shadow:0 4px 12px rgba(16, 185, 129, 0.3);' : 'background:#F1F5F9; border:1px solid #CBD5E1; color:#64748B;'}" aria-label="Toggle Input B, current state is ${this.logicInputB}">
-                    ${this.logicInputB === 1 ? '⚡ 1 (HIGH)' : '0 (LOW)'}
-                  </button>
+              <!-- Stacked Vertical Inputs Column (Left Side) -->
+              <div style="display:flex; flex-direction:column; gap:16px; align-items:flex-end;">
+                
+                <!-- Input A Row -->
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <div style="text-align:right;">
+                    <label style="font-weight:700; font-size:12px; color:var(--text-main); display:block; margin-bottom:4px;">Input A</label>
+                    <button id="toggle-input-a" class="btn" style="min-width:110px; height:44px; font-size:14px; font-weight:800; border-radius:10px; transition:all 0.2s ease; cursor:pointer; ${this.logicInputA === 1 ? 'background:#10B981; border-color:#10B981; color:#FFFFFF; box-shadow:0 4px 12px rgba(16, 185, 129, 0.3);' : 'background:#F1F5F9; border:1px solid #CBD5E1; color:#64748B;'}" aria-label="Toggle Input A, current state is ${this.logicInputA}">
+                      ${this.logicInputA === 1 ? '⚡ 1 (HIGH)' : '0 (LOW)'}
+                    </button>
+                  </div>
+                  <div style="font-weight:800; font-size:18px; color:${this.logicInputA === 1 ? '#10B981' : '#94A3B8'};">
+                    ${this.logicInputA === 1 ? '━━━━▶' : '━━━━▷'}
+                  </div>
                 </div>
 
-                <!-- Wire B Signal Line -->
-                <div style="display:flex; align-items:center; gap:4px; font-weight:800; font-size:16px; color:${this.logicInputB === 1 ? '#10B981' : '#94A3B8'};">
-                  <span style="font-size:18px;">${this.logicInputB === 1 ? '━━━▶' : '━━━▷'}</span>
-                </div>
-              ` : ''}
+                <!-- Input B Row -->
+                ${this.logicGateType !== 'NOT' ? `
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="text-align:right;">
+                      <label style="font-weight:700; font-size:12px; color:var(--text-main); display:block; margin-bottom:4px;">Input B</label>
+                      <button id="toggle-input-b" class="btn" style="min-width:110px; height:44px; font-size:14px; font-weight:800; border-radius:10px; transition:all 0.2s ease; cursor:pointer; ${this.logicInputB === 1 ? 'background:#10B981; border-color:#10B981; color:#FFFFFF; box-shadow:0 4px 12px rgba(16, 185, 129, 0.3);' : 'background:#F1F5F9; border:1px solid #CBD5E1; color:#64748B;'}" aria-label="Toggle Input B, current state is ${this.logicInputB}">
+                        ${this.logicInputB === 1 ? '⚡ 1 (HIGH)' : '0 (LOW)'}
+                      </button>
+                    </div>
+                    <div style="font-weight:800; font-size:18px; color:${this.logicInputB === 1 ? '#10B981' : '#94A3B8'};">
+                      ${this.logicInputB === 1 ? '━━━━▶' : '━━━━▷'}
+                    </div>
+                  </div>
+                ` : ''}
+
+              </div>
 
               <!-- Central Logic Gate Chip -->
-              <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; background:#07111F; color:#FFFFFF; padding:12px 24px; border-radius:12px; border:2px solid var(--teal); box-shadow:0 6px 18px rgba(7, 17, 31, 0.18); min-width:110px;">
-                <span style="font-size:10px; font-weight:700; color:var(--teal); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:2px;">LOGIC GATE</span>
-                <strong style="font-size:22px; font-weight:800; letter-spacing:0.05em; font-family:monospace;">${this.logicGateType}</strong>
+              <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; background:#07111F; color:#FFFFFF; padding:16px 28px; border-radius:14px; border:2px solid var(--teal); box-shadow:0 6px 20px rgba(7, 17, 31, 0.2); min-width:120px;">
+                <span style="font-size:10px; font-weight:700; color:var(--teal); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px;">LOGIC GATE</span>
+                <strong style="font-size:24px; font-weight:800; letter-spacing:0.05em; font-family:monospace;">${this.logicGateType}</strong>
               </div>
 
-              <!-- Output Signal Line -->
-              <div style="display:flex; align-items:center; gap:4px; font-weight:800; font-size:16px; color:${gateResult === 1 ? '#10B981' : '#94A3B8'};">
-                <span style="font-size:18px;">${gateResult === 1 ? '━━━▶' : '━━━▷'}</span>
+              <!-- Output Wire Signal Line -->
+              <div style="font-weight:800; font-size:18px; color:${gateResult === 1 ? '#10B981' : '#94A3B8'};">
+                ${gateResult === 1 ? '━━━━▶' : '━━━━▷'}
               </div>
 
               <!-- Output Q Display -->
-              <div style="text-align:center;">
-                <label style="font-weight:700; font-size:13px; color:var(--text-main); display:block; margin-bottom:6px;">Output Q</label>
-                <div style="min-width:120px; height:46px; font-size:15px; font-weight:800; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; transition:all 0.2s ease; ${gateResult === 1 ? 'background:#10B981; color:#FFFFFF; box-shadow:0 4px 14px rgba(16, 185, 129, 0.35);' : 'background:#64748B; color:#FFFFFF;'}" role="status" aria-live="polite">
+              <div style="text-align:left;">
+                <label style="font-weight:700; font-size:12px; color:var(--text-main); display:block; margin-bottom:4px;">Output Q</label>
+                <div style="min-width:120px; height:44px; font-size:15px; font-weight:800; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; transition:all 0.2s ease; ${gateResult === 1 ? 'background:#10B981; color:#FFFFFF; box-shadow:0 4px 14px rgba(16, 185, 129, 0.35);' : 'background:#64748B; color:#FFFFFF;'}" role="status" aria-live="polite">
                   ${gateResult === 1 ? '⚡ 1 (HIGH)' : '0 (LOW)'}
                 </div>
               </div>
 
             </div>
-            <p style="margin:16px 0 0 0; font-size:12px; color:var(--text-muted); font-weight:500;">💡 Click on Input buttons above to toggle signals between 0 (LOW) and 1 (HIGH).</p>
+            <p style="margin:16px 0 0 0; font-size:12px; color:var(--text-muted); font-weight:500; text-align:center;">💡 Click on Input A or Input B buttons to toggle signals between 0 (LOW) and 1 (HIGH).</p>
           </div>
 
           <!-- Live Truth Table -->
