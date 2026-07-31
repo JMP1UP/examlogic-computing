@@ -368,9 +368,83 @@
   };
   const teachingSections = {
     '1.1.1': [
-      { heading: 'CPU components', body: 'The control unit coordinates the fetch-decode-execute cycle and sends control signals. The ALU performs arithmetic and logical operations. Cache stores frequently used data and instructions close to the processor. Registers are very small storage locations inside the CPU, each used for a particular role.' },
-      { heading: 'Registers during fetch', body: 'The program counter holds the address of the next instruction. That address is copied to the memory address register, which holds an address being accessed. The instruction returned from memory is held in the memory data register. The program counter is increased so it identifies the following instruction.' },
-      { heading: 'Decode and execute', body: 'The control unit decodes the fetched instruction to determine the operation and any data required. It coordinates the appropriate CPU components during execution. The accumulator stores intermediate arithmetic or logical results. Remember the distinction: the MAR holds an address, while the MDR holds data or an instruction.' }
+      {
+        heading: 'Central Processing Unit (CPU) Core Components',
+        html: `
+          <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px;">The CPU is the "brain" of the computer that processes data and instructions. It consists of three primary components:</p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid var(--teal); padding: 12px; border-radius: 8px;">
+              <strong style="color: var(--teal); font-size: 13.5px; display: block; margin-bottom: 4px;">🕹️ Control Unit (CU)</strong>
+              <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li>Coordinates all CPU activities &amp; F-D-E cycle</li>
+                <li>Decodes fetched instructions</li>
+                <li>Sends control signals to hardware</li>
+              </ul>
+            </div>
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #3B82F6; padding: 12px; border-radius: 8px;">
+              <strong style="color: #60A5FA; font-size: 13.5px; display: block; margin-bottom: 4px;">🧮 Arithmetic Logic Unit (ALU)</strong>
+              <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li>Performs arithmetic math (+ - * /)</li>
+                <li>Performs logical decisions (AND, OR, NOT)</li>
+                <li>Sends output results to Accumulator</li>
+              </ul>
+            </div>
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #10B981; padding: 12px; border-radius: 8px;">
+              <strong style="color: #6EE7B7; font-size: 13.5px; display: block; margin-bottom: 4px;">⚡ Cache Memory</strong>
+              <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li>Extremely fast memory inside/near CPU</li>
+                <li>Stores frequently used data &amp; instructions</li>
+                <li>Faster access than RAM</li>
+              </ul>
+            </div>
+          </div>
+        `
+      },
+      {
+        heading: 'The 4 Special-Purpose Registers',
+        html: `
+          <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px;">Registers are superfast, tiny memory locations built directly inside the CPU chip:</p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #F59E0B; padding: 12px; border-radius: 8px;">
+              <strong style="color: #FCD34D; font-size: 13px;">📍 Program Counter (PC)</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 4px 0 0 0; line-height: 1.4;">
+                Holds the memory address of the <strong>NEXT instruction</strong> to be fetched from RAM. Increments by 1 after each fetch.
+              </p>
+            </div>
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #EC4899; padding: 12px; border-radius: 8px;">
+              <strong style="color: #F472B6; font-size: 13px;">🔍 Memory Address Register (MAR)</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 4px 0 0 0; line-height: 1.4;">
+                Holds the memory <strong>address</strong> of the data or instruction currently being read from (or written to) RAM.
+              </p>
+            </div>
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #38BDF8; padding: 12px; border-radius: 8px;">
+              <strong style="color: #38BDF8; font-size: 13px;">📦 Memory Data Register (MDR)</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 4px 0 0 0; line-height: 1.4;">
+                Holds the actual <strong>data or instruction value</strong> fetched from RAM (or waiting to be written back to RAM).
+              </p>
+            </div>
+            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #10B981; padding: 12px; border-radius: 8px;">
+              <strong style="color: #6EE7B7; font-size: 13px;">🎯 Accumulator (ACC)</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 4px 0 0 0; line-height: 1.4;">
+                Temporarily holds the <strong>intermediate results</strong> of arithmetic calculations performed by the ALU.
+              </p>
+            </div>
+          </div>
+        `
+      },
+      {
+        heading: 'Step-by-Step Fetch-Decode-Execute Cycle',
+        html: `
+          <div style="background: rgba(45, 156, 145, 0.08); border: 1px solid var(--teal); padding: 14px; border-radius: 8px;">
+            <strong style="color: var(--teal); font-size: 13.5px; display: block; margin-bottom: 8px;">🔄 How Registers Work Together in the F-D-E Cycle:</strong>
+            <ol style="font-size: 12.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
+              <li><strong>Fetch:</strong> The address in <code>PC</code> is copied to <code>MAR</code>. The CPU fetches the instruction from RAM at that address into <code>MDR</code>. <code>PC</code> increments by 1.</li>
+              <li><strong>Decode:</strong> The <code>Control Unit (CU)</code> decodes the instruction in <code>MDR</code> to determine the action required.</li>
+              <li><strong>Execute:</strong> The instruction is executed (e.g. <code>ALU</code> performs math). Any intermediate calculation result is stored in the <code>Accumulator (ACC)</code>.</li>
+            </ol>
+          </div>
+        `
+      }
     ],
     '1.1.2': [
       { heading: 'Clock speed and cache', body: 'Clock speed is the number of processor cycles per second. A higher clock speed can allow more instructions to be processed in a given time, but comparison is meaningful only when other factors are considered. A larger cache can reduce the time spent waiting for instructions and data from slower main memory.' },
