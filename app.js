@@ -3918,61 +3918,103 @@ class App {
 
           <!-- TAB 2: MODEL ESSAY (OPEN & BREATHABLE) -->
           ${this.essayHubTab === 'model' ? `
-            <div style="margin-top: 8px;">
-              <!-- Scenario Box -->
-              <div style="border-left: 4px solid #F59E0B; padding: 10px 14px; margin-bottom: 18px; background: rgba(245, 158, 11, 0.05); border-radius: 0 8px 8px 0;">
-                <strong style="color: #F59E0B; font-size: 13px;">📋 Real OCR Exam Essay Prompt (8 Marks):</strong>
-                <p style="font-size: 13.5px; color: var(--text-main); margin: 4px 0 0 0; font-style: italic; font-weight: 500;">
+            <div style="margin-top: 12px;">
+              <!-- Scenario Box & View Mode Toggle -->
+              <div style="background: rgba(245, 158, 11, 0.06); border: 1px solid rgba(245, 158, 11, 0.25); border-left: 4px solid #F59E0B; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 6px;">
+                  <strong style="color: #F59E0B; font-size: 14.5px;">📋 Real OCR Exam Essay Prompt (8 Marks):</strong>
+                  <button type="button" class="btn btn-secondary essay-annotations-toggle-btn" style="font-size: 12px; font-weight: 600; padding: 5px 14px; border-radius: 16px; transition: all 0.2s;">
+                    ${this.hideEssayAnnotations ? '🔍 Load Side Annotations' : '📄 View Clean Essay Only'}
+                  </button>
+                </div>
+                <p style="font-size: 14.5px; color: var(--text-main); margin: 0; font-style: italic; line-height: 1.5;">
                   "A secondary school is replacing all 500 desktop PCs with cloud-connected laptops for students. Discuss the ethical, environmental and privacy issues raised by this decision."
                 </p>
               </div>
 
-              <!-- Essay Paragraphs with Left Color Border & Clean Notes -->
-              <div style="display: flex; flex-direction: column; gap: 18px;">
+              <!-- 2-COLUMN SIDE-BY-SIDE LAYOUT -->
+              <div style="display: grid; grid-template-columns: ${this.hideEssayAnnotations ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))'}; gap: 20px; align-items: start;">
                 
-                <!-- Para 1 -->
-                <div style="border-left: 4px solid #10B981; padding-left: 16px;">
-                  <span style="color: #10B981; font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px;">Paragraph 1 · Environmental Impact</span>
-                  <p style="font-size: 13.5px; color: var(--text-main); line-height: 1.65; margin: 6px 0 6px 0;">
-                    "Replacing 500 desktop computers generates significant electronic waste (e-waste). If disposed of improperly, toxic heavy metals such as lead and mercury can leach into soil. The school must ensure old PCs are handed to accredited WEEE (Waste Electrical and Electronic Equipment) recyclers. On the other hand, modern laptops use up to 70% less electricity than desktop towers during operation, reducing the school's carbon footprint."
-                  </p>
-                  <div style="font-size: 12px; color: #10B981; font-weight: 600;">
-                    📌 <strong>Examiner Note (Level 3):</strong> Precise technical terms (WEEE, heavy metals, operational energy) applied directly to the 500 PC scenario.
+                <!-- COLUMN 1: MODEL ESSAY -->
+                <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--teal); padding-bottom: 10px; margin-bottom: 16px;">
+                    <strong style="color: var(--teal); font-size: 15px;">📄 Full Candidate Essay (8/8 Marks - Level 3)</strong>
+                    <span style="background: rgba(45, 156, 145, 0.12); color: var(--teal); font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 12px;">Grade 9 Standard</span>
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; gap: 18px; font-size: 14.5px; color: var(--text-main); line-height: 1.7;">
+                    
+                    <!-- Para 1 -->
+                    <div>
+                      <span style="color: #10B981; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Paragraph 1 · Environmental Impact</span>
+                      Replacing 500 desktop computers generates significant electronic waste (<mark style="background: rgba(16,185,129,0.15); color: var(--text-main); font-weight: 600; padding: 1px 6px; border-radius: 4px;">e-waste</mark>). If disposed of improperly, toxic heavy metals such as lead and mercury can leach into soil. The school must ensure old PCs are handed to accredited <mark style="background: rgba(16,185,129,0.15); color: var(--text-main); font-weight: 600; padding: 1px 6px; border-radius: 4px;">WEEE recyclers</mark>. On the other hand, modern laptops use up to 70% less electricity than desktop towers during operation, reducing the school's carbon footprint.
+                    </div>
+
+                    <!-- Para 2 -->
+                    <div>
+                      <span style="color: #3B82F6; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Paragraph 2 · Ethical Impact &amp; Stakeholders</span>
+                      Ethically, providing laptops to all students promotes educational equality by <mark style="background: rgba(59,130,246,0.15); color: var(--text-main); font-weight: 600; padding: 1px 6px; border-radius: 4px;">bridging the digital divide</mark> for pupils from low-income families who may lack home computers. However, cloud-connected laptops require reliable home internet access. Disadvantaged students without home broadband will be unable to complete homework unless the school provides 4G mobile Wi-Fi dongles.
+                    </div>
+
+                    <!-- Para 3 -->
+                    <div>
+                      <span style="color: #EC4899; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Paragraph 3 · Privacy &amp; Data Security</span>
+                      Regarding privacy, cloud storage means student work and personal data are hosted on third-party servers, increasing vulnerability to cyberattacks or data breaches if cloud accounts are hacked. Furthermore, if the school installs <mark style="background: rgba(236,72,153,0.15); color: var(--text-main); font-weight: 600; padding: 1px 6px; border-radius: 4px;">remote monitoring software</mark> on student laptops, clear policies must prevent monitoring outside school hours to avoid invading family privacy.
+                    </div>
+
+                    <!-- Para 4 -->
+                    <div>
+                      <span style="color: #F59E0B; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Paragraph 4 · Justified Conclusion</span>
+                      In conclusion, replacing desktops with cloud laptops is beneficial because educational equity and operational energy savings outweigh the risks. However, to make this decision responsible, the school must mandate WEEE recycling for old PCs, provide 4G dongles for low-income pupils, and enforce strict encryption and privacy rules on cloud storage.
+                    </div>
+
                   </div>
                 </div>
 
-                <!-- Para 2 -->
-                <div style="border-left: 4px solid #3B82F6; padding-left: 16px;">
-                  <span style="color: #3B82F6; font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px;">Paragraph 2 · Ethical Impact &amp; Stakeholders</span>
-                  <p style="font-size: 13.5px; color: var(--text-main); line-height: 1.65; margin: 6px 0 6px 0;">
-                    "Ethically, providing laptops to all students promotes educational equality by bridging the digital divide for pupils from low-income families who may lack home computers. However, cloud-connected laptops require reliable home internet access. Disadvantaged students without home broadband will be unable to complete homework unless the school provides 4G mobile Wi-Fi dongles."
-                  </p>
-                  <div style="font-size: 12px; color: #3B82F6; font-weight: 600;">
-                    📌 <strong>Examiner Note (Level 3):</strong> Clear stakeholder identification (pupils/low-income families) showing dual-sided analysis (+ equality vs - digital divide).
-                  </div>
-                </div>
+                <!-- COLUMN 2: EXAMINER SIDE ANNOTATIONS -->
+                ${!this.hideEssayAnnotations ? `
+                  <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; position: sticky; top: 20px;">
+                    <div style="border-bottom: 2px solid #F59E0B; padding-bottom: 10px; margin-bottom: 16px;">
+                      <strong style="color: #F59E0B; font-size: 15px;">🔍 Examiner Mark Scheme Breakdown</strong>
+                    </div>
 
-                <!-- Para 3 -->
-                <div style="border-left: 4px solid #EC4899; padding-left: 16px;">
-                  <span style="color: #EC4899; font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px;">Paragraph 3 · Privacy &amp; Data Security</span>
-                  <p style="font-size: 13.5px; color: var(--text-main); line-height: 1.65; margin: 6px 0 6px 0;">
-                    "Regarding privacy, cloud storage means student work and personal data are hosted on third-party servers, increasing vulnerability to cyberattacks or data breaches if cloud accounts are hacked. Furthermore, if the school installs remote monitoring software on student laptops, clear policies must prevent monitoring outside school hours to avoid invading family privacy."
-                  </p>
-                  <div style="font-size: 12px; color: #EC4899; font-weight: 600;">
-                    📌 <strong>Examiner Note (Level 3):</strong> Direct privacy analysis linking cloud storage risks and remote monitoring software to student rights.
-                  </div>
-                </div>
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                      
+                      <!-- Annotation 1 -->
+                      <div style="border-left: 4px solid #10B981; background: rgba(16, 185, 129, 0.05); padding: 12px 14px; border-radius: 0 8px 8px 0;">
+                        <strong style="color: #10B981; font-size: 13.5px; display: block; margin-bottom: 4px;">🌿 Environmental Terms (Para 1)</strong>
+                        <p style="font-size: 13px; color: var(--text-main); margin: 0; line-height: 1.5;">
+                          Uses precise technical terms (WEEE, heavy metals, operational energy) applied directly to the 500 PC scenario.
+                        </p>
+                      </div>
 
-                <!-- Para 4 -->
-                <div style="border-left: 4px solid #F59E0B; padding-left: 16px;">
-                  <span style="color: #F59E0B; font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px;">Paragraph 4 · Justified Conclusion</span>
-                  <p style="font-size: 13.5px; color: var(--text-main); line-height: 1.65; margin: 6px 0 6px 0;">
-                    "In conclusion, replacing desktops with cloud laptops is beneficial because educational equity and operational energy savings outweigh the risks. However, to make this decision responsible, the school must mandate WEEE recycling for old PCs, provide 4G dongles for low-income pupils, and enforce strict encryption and privacy rules on cloud storage."
-                  </p>
-                  <div style="font-size: 12px; color: #F59E0B; font-weight: 600;">
-                    📌 <strong>Examiner Note (Level 3 - 8/8 Marks):</strong> Outstanding justified conclusion weighing trade-offs and recommending concrete mitigations.
+                      <!-- Annotation 2 -->
+                      <div style="border-left: 4px solid #3B82F6; background: rgba(59, 130, 246, 0.05); padding: 12px 14px; border-radius: 0 8px 8px 0;">
+                        <strong style="color: #3B82F6; font-size: 13.5px; display: block; margin-bottom: 4px;">👥 Stakeholder &amp; Dual Analysis (Para 2)</strong>
+                        <p style="font-size: 13px; color: var(--text-main); margin: 0; line-height: 1.5;">
+                          Identifies key stakeholders (pupils/low-income families) showing dual-sided analysis (+ equality vs - digital divide).
+                        </p>
+                      </div>
+
+                      <!-- Annotation 3 -->
+                      <div style="border-left: 4px solid #EC4899; background: rgba(236, 72, 153, 0.05); padding: 12px 14px; border-radius: 0 8px 8px 0;">
+                        <strong style="color: #EC4899; font-size: 13.5px; display: block; margin-bottom: 4px;">🔒 Privacy &amp; Rights (Para 3)</strong>
+                        <p style="font-size: 13px; color: var(--text-main); margin: 0; line-height: 1.5;">
+                          Direct privacy analysis linking cloud storage risks and remote monitoring software to student rights.
+                        </p>
+                      </div>
+
+                      <!-- Annotation 4 -->
+                      <div style="border-left: 4px solid #F59E0B; background: rgba(245, 158, 11, 0.05); padding: 12px 14px; border-radius: 0 8px 8px 0;">
+                        <strong style="color: #F59E0B; font-size: 13.5px; display: block; margin-bottom: 4px;">🏆 Level 3 Conclusion (Para 4 - 8/8 Marks)</strong>
+                        <p style="font-size: 13px; color: var(--text-main); margin: 0; line-height: 1.5;">
+                          Outstanding justified conclusion weighing trade-offs and recommending concrete mitigations.
+                        </p>
+                      </div>
+
+                    </div>
                   </div>
-                </div>
+                ` : ''}
 
               </div>
             </div>
@@ -4649,6 +4691,12 @@ class App {
     panel.querySelectorAll('.essay-hub-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         this.essayHubTab = btn.getAttribute('data-tab');
+        this.renderFocusedStudentLearning(panel, activeNote, content);
+      });
+    });
+    panel.querySelectorAll('.essay-annotations-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.hideEssayAnnotations = !this.hideEssayAnnotations;
         this.renderFocusedStudentLearning(panel, activeNote, content);
       });
     });
