@@ -450,20 +450,194 @@
       }
     ],
     '1.1.2': [
-      { heading: 'Clock speed and cache', body: 'Clock speed is the number of processor cycles per second. A higher clock speed can allow more instructions to be processed in a given time, but comparison is meaningful only when other factors are considered. A larger cache can reduce the time spent waiting for instructions and data from slower main memory.' },
-      { heading: 'Cores and limitations', body: 'Each processor core can execute its own instruction stream. Multiple cores can improve performance when software divides work into parts that can run at the same time. They do not automatically multiply speed: sequential work, coordination overhead and other system bottlenecks can limit the gain.' }
+      {
+        heading: '3 Factors Affecting CPU Performance',
+        body: 'CPU performance is determined by three main hardware factors: Clock Speed (the number of F-D-E cycles executed per second in Hertz), Cache Size (fast memory buffer storing frequent instructions), and Number of Cores (independent processing units allowing parallel execution).',
+        html: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="border-top: 3px solid var(--teal); padding-top: 8px;">
+              <strong style="color: var(--teal); font-size: 13.5px; display: block; margin-bottom: 4px;">⏱️ Clock Speed (GHz)</strong>
+              <ul style="font-size: 12.5px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li>Number of F-D-E cycles executed per second.</li>
+                <li>1 GHz = 1 billion clock cycles per second.</li>
+                <li>Higher clock speed = more instructions processed per second.</li>
+              </ul>
+            </div>
+            <div style="border-top: 3px solid #3B82F6; padding-top: 8px;">
+              <strong style="color: #3B82F6; font-size: 13.5px; display: block; margin-bottom: 4px;">🧠 Number of CPU Cores</strong>
+              <ul style="font-size: 12.5px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li>Each core is an independent processor inside the CPU.</li>
+                <li>Dual-core (2) / Quad-core (4) allow parallel task processing.</li>
+                <li>Does not automatically multiply speed (software must support it).</li>
+              </ul>
+            </div>
+            <div style="border-top: 3px solid #10B981; padding-top: 8px;">
+              <strong style="color: #10B981; font-size: 13.5px; display: block; margin-bottom: 4px;">⚡ Cache Memory Size</strong>
+              <ul style="font-size: 12.5px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li>Superfast memory buffer directly on the CPU chip.</li>
+                <li>Larger cache stores more frequent data near CPU.</li>
+                <li>Reduces slow data transfers from RAM.</li>
+              </ul>
+            </div>
+          </div>
+        `
+      },
+      {
+        heading: 'CPU Speed Trade-offs & Limitations',
+        body: 'Increasing clock speed generates significantly more heat and consumes more power. Doubling the number of cores does not double processing speed because many algorithms are sequential and cannot be split across cores. Furthermore, RAM bottlenecks can stall multi-core CPUs while waiting for data.'
+      }
     ],
     '1.1.3': [
       { heading: 'Purpose and characteristics', body: 'An embedded system is a computer built into a larger product to perform a dedicated function. Its hardware and software are selected for that job, often with limits on cost, power use, memory and processing. Unlike a general-purpose computer, it is not designed for the user to install many unrelated applications.' },
       { heading: 'Inputs, processing and outputs', body: 'Embedded systems commonly read sensors, process their data and control an output. A washing machine controller reads settings and sensors before controlling valves and a motor. A traffic-light controller reads timing or traffic inputs before changing lights. The whole product is not the embedded system; the controller inside it is.' }
     ],
     '1.2.1': [
-      { heading: 'RAM and ROM', body: 'RAM stores programs and data currently being used. It is volatile, so its contents are lost when power is removed, and it can be read from and written to. ROM is non-volatile and normally stores instructions that should remain available, such as startup instructions; its contents do not normally change during ordinary use.' },
-      { heading: 'Virtual memory and cache', body: 'When RAM is insufficient, the operating system can use part of secondary storage as virtual memory. This lets programs continue but is slower because secondary storage has a longer access time and data must be transferred between it and RAM. Cache is different: it is fast memory close to the CPU used to reduce waiting.' }
+      {
+        heading: 'RAM vs ROM Comparison Matrix',
+        body: 'RAM (Random Access Memory) is volatile temporary storage that holds the Operating System, open programs, and data currently in use. ROM (Read Only Memory) is non-volatile permanent storage that holds the BIOS startup instructions required to boot the computer.',
+        html: `
+          <div style="overflow-x: auto; margin-bottom: 16px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left;">
+              <thead>
+                <tr style="background: rgba(45, 156, 145, 0.12); color: var(--teal); border-bottom: 2px solid var(--teal);">
+                  <th style="padding: 8px 12px;">Feature</th>
+                  <th style="padding: 8px 12px;">⚡ RAM (Random Access Memory)</th>
+                  <th style="padding: 8px 12px;">🔒 ROM (Read Only Memory)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Volatility</td>
+                  <td style="padding: 8px 12px; color: #EF4444; font-weight: 600;">Volatile (Contents lost when power off)</td>
+                  <td style="padding: 8px 12px; color: #10B981; font-weight: 600;">Non-Volatile (Retains data when power off)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Read / Write</td>
+                  <td style="padding: 8px 12px; color: #3B82F6;">Read and Writeable</td>
+                  <td style="padding: 8px 12px; color: #F59E0B;">Read-Only (Factory written)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Primary Purpose</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Stores active OS, open software &amp; data in use</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Stores BIOS / Bootstrap bootup program</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Capacity Size</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Large (Typically 4GB – 32GB)</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Small (Typically 4MB – 8MB)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `
+      },
+      {
+        heading: 'Virtual Memory (When RAM fills up)',
+        body: 'Virtual Memory is an area of secondary storage (HDD/SSD) used as temporary RAM when physical RAM is full. Operating systems swap inactive pages of data between RAM and Virtual Memory. The main disadvantage is disk thrashing and much slower performance compared to physical RAM.',
+        html: `
+          <div style="border-left: 4px solid #F59E0B; padding-left: 14px; background: rgba(245, 158, 11, 0.05); border-radius: 0 8px 8px 0; padding: 12px;">
+            <strong style="color: #F59E0B; font-size: 13.5px; display: block; margin-bottom: 4px;">💾 How Virtual Memory Works:</strong>
+            <p style="font-size: 12.5px; color: var(--text-main); margin: 0 0 8px 0; line-height: 1.5;">
+              When physical RAM is completely filled by open applications, the Operating System allocates a portion of Secondary Storage (HDD/SSD) to act as <strong>Virtual Memory</strong>.
+            </p>
+            <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+              <li><strong>Paging:</strong> Inactive data pages in RAM are moved ("swapped out") to Virtual Memory.</li>
+              <li><strong>Recall:</strong> When needed again, data is swapped back into physical RAM.</li>
+              <li><strong>Drawback:</strong> Secondary storage is significantly slower than RAM; excessive swapping causes <em>disk thrashing</em> and severe system slowdown.</li>
+            </ul>
+          </div>
+        `
+      }
     ],
     '1.2.2': [
-      { heading: 'Storage technologies', body: 'Magnetic storage records data by magnetising a surface and often offers high capacity at low cost. Optical storage uses laser-readable marks on removable discs. Solid-state storage uses electronic circuits with no moving parts, making it fast, quiet and resistant to movement, although cost per unit of capacity may be higher.' },
-      { heading: 'Choosing storage in context', body: 'A justified choice must use the needs of the scenario. Compare capacity, speed, portability, durability, reliability and cost rather than claiming one technology is always best. An archive may prioritise capacity and cost, while a portable camera may prioritise low power use, durability and resistance to movement.' }
+      {
+        heading: 'The 3 Main Storage Technologies (Magnetic, Optical, Solid State)',
+        body: 'Secondary storage provides non-volatile storage to retain programs and data permanently when power is switched off. Magnetic storage (HDD) uses magnetic platters and moving heads for high capacity at low cost. Optical storage (CD/DVD/Blu-ray) uses laser beams to read pits and lands on discs for cheap distribution. Solid State storage (SSD/Flash) uses flash memory with no moving parts for maximum speed and physical durability.',
+        html: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="border-left: 4px solid var(--teal); padding-left: 12px; background: rgba(45, 156, 145, 0.05); border-radius: 0 6px 6px 0; padding: 10px;">
+              <strong style="color: var(--teal); font-size: 13.5px; display: block; margin-bottom: 4px;">🧲 Magnetic Storage (HDD / Tape)</strong>
+              <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li><strong>How it works:</strong> Magnetises mechanical spinning platters.</li>
+                <li><strong>Pros:</strong> High capacity (1TB–16TB+), cheap cost per GB.</li>
+                <li><strong>Cons:</strong> Mechanical moving parts; prone to damage if dropped.</li>
+              </ul>
+            </div>
+            <div style="border-left: 4px solid #3B82F6; padding-left: 12px; background: rgba(59, 130, 246, 0.05); border-radius: 0 6px 6px 0; padding: 10px;">
+              <strong style="color: #3B82F6; font-size: 13.5px; display: block; margin-bottom: 4px;">💿 Optical Storage (CD / DVD / Blu-ray)</strong>
+              <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li><strong>How it works:</strong> Lasers read physical pits &amp; lands on reflective disc.</li>
+                <li><strong>Pros:</strong> Very portable, cheap per disc, immune to water/magnets.</li>
+                <li><strong>Cons:</strong> Low capacity (700MB–50GB), slow read/write, easily scratched.</li>
+              </ul>
+            </div>
+            <div style="border-left: 4px solid #10B981; padding-left: 12px; background: rgba(16, 185, 129, 0.05); border-radius: 0 6px 6px 0; padding: 10px;">
+              <strong style="color: #10B981; font-size: 13.5px; display: block; margin-bottom: 4px;">⚡ Solid State Storage (SSD / USB Flash)</strong>
+              <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li><strong>How it works:</strong> Traps electrons in NAND flash memory chips.</li>
+                <li><strong>Pros:</strong> Extremely fast, highly durable (no moving parts), silent, low power.</li>
+                <li><strong>Cons:</strong> Expensive cost per GB, finite write cycle lifespan.</li>
+              </ul>
+            </div>
+          </div>
+        `
+      },
+      {
+        heading: '6 Key Storage Characteristics Comparison Matrix',
+        body: 'OCR exam questions require evaluating storage choices using six characteristics: Capacity, Speed, Portability, Durability, Reliability, and Cost. For example, a handheld gaming console requires SSD storage due to portability, fast load speeds, and high durability against drops.',
+        html: `
+          <div style="overflow-x: auto; margin-bottom: 16px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left;">
+              <thead>
+                <tr style="background: rgba(45, 156, 145, 0.12); color: var(--teal); border-bottom: 2px solid var(--teal);">
+                  <th style="padding: 8px 12px;">Characteristic</th>
+                  <th style="padding: 8px 12px;">🧲 Magnetic (HDD)</th>
+                  <th style="padding: 8px 12px;">💿 Optical (DVD/BD)</th>
+                  <th style="padding: 8px 12px;">⚡ Solid State (SSD)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">💾 Capacity</td>
+                  <td style="padding: 8px 12px; color: #10B981;">Very High (Up to 16TB)</td>
+                  <td style="padding: 8px 12px; color: #EF4444;">Low (700MB–50GB)</td>
+                  <td style="padding: 8px 12px; color: #3B82F6;">High (256GB–4TB)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">⚡ Speed</td>
+                  <td style="padding: 8px 12px; color: #F59E0B;">Medium (~100 MB/s)</td>
+                  <td style="padding: 8px 12px; color: #EF4444;">Slow (~10 MB/s)</td>
+                  <td style="padding: 8px 12px; color: #10B981;">Extremely Fast (500–7000 MB/s)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">🎒 Portability</td>
+                  <td style="padding: 8px 12px; color: #F59E0B;">Heavy / Bulky</td>
+                  <td style="padding: 8px 12px; color: #10B981;">Very Portable (Small discs)</td>
+                  <td style="padding: 8px 12px; color: #10B981;">Highly Portable (Small / Light)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">🛡️ Durability</td>
+                  <td style="padding: 8px 12px; color: #EF4444;">Low (Moving parts break if dropped)</td>
+                  <td style="padding: 8px 12px; color: #F59E0B;">Medium (Scratches easily)</td>
+                  <td style="padding: 8px 12px; color: #10B981;">Excellent (No moving parts)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">🔒 Reliability</td>
+                  <td style="padding: 8px 12px; color: #10B981;">High (Long lifespan if static)</td>
+                  <td style="padding: 8px 12px; color: #F59E0B;">Medium (Degrades in sunlight)</td>
+                  <td style="padding: 8px 12px; color: #10B981;">High (Limited write cycles)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">💰 Cost per GB</td>
+                  <td style="padding: 8px 12px; color: #10B981;">Very Cheap (~£0.02 / GB)</td>
+                  <td style="padding: 8px 12px; color: #10B981;">Cheap for small files</td>
+                  <td style="padding: 8px 12px; color: #EF4444;">Expensive (~£0.10 / GB)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `
+      }
     ],
     '1.2.3': [
       { heading: 'Units and binary storage', body: 'A bit is one binary digit and eight bits make one byte. Larger units are kilobyte, megabyte, gigabyte, terabyte and petabyte. Questions may state whether to use decimal multiples such as 1,000 or binary multiples such as 1,024; use the convention given and show each conversion with its unit.' },
@@ -508,6 +682,30 @@
               <ul style="font-size: 12.5px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
                 <li>Connects networks across large geographical distances (cities/countries).</li>
                 <li>Uses third-party telecommunication infrastructure (e.g. satellites, undersea fiber).</li>
+              </ul>
+            </div>
+          </div>
+        `
+      },
+      {
+        heading: 'Client-Server vs Peer-to-Peer (P2P) Networks',
+        body: 'In a Client-Server network, central servers manage files, security, backups, and user logins for client computers. In a Peer-to-Peer (P2P) network, all devices are equal (peers), sharing files directly with no central server or administration.',
+        html: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="border-left: 4px solid var(--teal); padding-left: 12px; background: rgba(45, 156, 145, 0.05); border-radius: 0 6px 6px 0; padding: 10px;">
+              <strong style="color: var(--teal); font-size: 13.5px; display: block; margin-bottom: 4px;">🖥️ Client-Server Network</strong>
+              <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li><strong>Centralised control:</strong> Central server manages security, files &amp; user logins.</li>
+                <li><strong>Backups &amp; Software:</strong> Managed centrally from server.</li>
+                <li><strong>Drawback:</strong> Server failure disables whole network; expensive setup.</li>
+              </ul>
+            </div>
+            <div style="border-left: 4px solid #F59E0B; padding-left: 12px; background: rgba(245, 158, 11, 0.05); border-radius: 0 6px 6px 0; padding: 10px;">
+              <strong style="color: #F59E0B; font-size: 13.5px; display: block; margin-bottom: 4px;">🤝 Peer-to-Peer (P2P) Network</strong>
+              <ul style="font-size: 12px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li><strong>Decentralised:</strong> All devices (peers) are equal and connect directly.</li>
+                <li><strong>No Central Server:</strong> Easy to set up and very cheap.</li>
+                <li><strong>Drawback:</strong> No central security or backup; files get duplicated.</li>
               </ul>
             </div>
           </div>
@@ -567,33 +765,229 @@
       }
     ],
     '1.3.2': [
-      { heading: 'Connections and addressing', body: 'Ethernet provides a wired connection, while Wi-Fi uses radio for local wireless networking and Bluetooth supports short-range device connections. An IP address identifies a device for communication across networks and may change; a MAC address identifies a network interface on the local network and is normally assigned to its hardware.' },
-      { heading: 'Protocols', body: 'Protocols define how communicating devices format and exchange data. TCP/IP supports communication across networks; HTTP and HTTPS transfer web content, with HTTPS adding encryption and authentication; FTP transfers files; SMTP sends email, while POP and IMAP retrieve or synchronise it. Each answer should link a named protocol to its actual purpose.' },
-      { heading: 'Standards and layers', body: 'Standards allow hardware and software from different organisations to work together. A layered protocol model separates communication into responsibilities. This supports independent development, replacement of one layer without redesigning everything, and easier fault finding. OCR does not require pupils to memorise the names and functions of every individual layer.' }
+      {
+        heading: 'MAC Address vs IP Address Comparison Matrix',
+        body: 'A MAC Address is a unique 48-bit hexadecimal physical address burned into the Network Interface Card (NIC) at manufacture that does not change. An IP Address is a logical address assigned by a network router to identify a device on a network, which can be IPv4 or IPv6 and can change when connecting to different networks.',
+        html: `
+          <div style="overflow-x: auto; margin-bottom: 16px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left;">
+              <thead>
+                <tr style="background: rgba(45, 156, 145, 0.12); color: var(--teal); border-bottom: 2px solid var(--teal);">
+                  <th style="padding: 8px 12px;">Feature</th>
+                  <th style="padding: 8px 12px;">💳 MAC Address (Media Access Control)</th>
+                  <th style="padding: 8px 12px;">🌐 IP Address (Internet Protocol)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Address Type</td>
+                  <td style="padding: 8px 12px; color: var(--teal); font-weight: 600;">Physical Hardware Address (Permanent)</td>
+                  <td style="padding: 8px 12px; color: #3B82F6; font-weight: 600;">Logical Network Address (Dynamic/Static)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Format &amp; Length</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Hexadecimal (e.g. <code>00:1A:2B:3C:4D:5E</code>) - 48 bits</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">IPv4 (e.g. <code>192.168.1.1</code>) - 32 bits / IPv6 - 128 bits</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Network Scope</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Used by <strong>Switches</strong> inside a local LAN</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Used by <strong>Routers</strong> to direct packets across WANs</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `
+      },
+      {
+        heading: 'Network Protocols Cheatsheet (OCR Specification)',
+        body: 'Protocols are sets of rules for data communication. TCP/IP splits data into packets and routes them. HTTP/HTTPS transfers web pages (HTTPS adds SSL/TLS encryption). FTP transfers files. SMTP sends email. POP downloads and deletes email from server; IMAP syncs email across devices.',
+        html: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="border-left: 3px solid var(--teal); padding-left: 12px;">
+              <strong style="color: var(--teal); font-size: 13px;">🌐 HTTP / HTTPS</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+                Transfers web content between client &amp; server. <strong>HTTPS</strong> adds SSL/TLS encryption for secure data transfer.
+              </p>
+            </div>
+            <div style="border-left: 3px solid #3B82F6; padding-left: 12px;">
+              <strong style="color: #3B82F6; font-size: 13px;">📁 FTP (File Transfer Protocol)</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+                Used to upload, download, and transfer files between computers across a network.
+              </p>
+            </div>
+            <div style="border-left: 3px solid #F59E0B; padding-left: 12px;">
+              <strong style="color: #F59E0B; font-size: 13px;">📧 SMTP (Simple Mail Transfer)</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+                Used exclusively to <strong>SEND</strong> emails from a client to a server, or between email servers.
+              </p>
+            </div>
+            <div style="border-left: 3px solid #EC4899; padding-left: 12px;">
+              <strong style="color: #EC4899; font-size: 13px;">📬 POP vs IMAP (Email Retrieval)</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+                <strong>POP:</strong> Downloads email &amp; deletes from server.<br>
+                <strong>IMAP:</strong> Syncs email live across multiple devices.
+              </p>
+            </div>
+          </div>
+        `
+      }
     ],
     '1.4.1': [
-      { heading: 'Attacks on systems', body: 'Malware is software created to cause harm or gain unauthorised access. Brute-force attacks repeatedly guess credentials. Denial-of-service attacks overwhelm a service with requests. Data may also be intercepted or stolen while stored or transmitted. For each threat, distinguish how the attack operates from the damage it may cause.' },
-      { heading: 'Attacks using people or input', body: 'Social engineering manipulates a person into revealing information or taking an unsafe action; phishing is one common method. SQL injection places malicious database instructions into unchecked input. These attacks exploit different weaknesses, so a useful explanation names the weakness, the attacker’s action and the intended outcome.' }
+      {
+        heading: '6 Major Cyber Security Threats',
+        body: 'Cyber threats exploit technical and human vulnerabilities. Malware includes viruses, worms, and ransomware. Social engineering manipulates people (e.g. phishing emails). Brute force attacks repeatedly guess passwords. Denial of Service (DoS) floods servers with traffic. Data interception uses packet sniffers. SQL Injection inserts malicious code into database forms.',
+        html: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="border-top: 3px solid #EF4444; padding-top: 8px;">
+              <strong style="color: #EF4444; font-size: 13.5px; display: block; margin-bottom: 4px;">👾 Malware</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 0; line-height: 1.45;">
+                Hostile software including Viruses (attaches to files), Worms (self-replicating across networks), and Ransomware (encrypts files for money).
+              </p>
+            </div>
+            <div style="border-top: 3px solid #F59E0B; padding-top: 8px;">
+              <strong style="color: #F59E0B; font-size: 13.5px; display: block; margin-bottom: 4px;">🎣 Social Engineering (Phishing)</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 0; line-height: 1.45;">
+                Fake emails/websites posing as legitimate organisations to trick users into handing over login passwords or financial details.
+              </p>
+            </div>
+            <div style="border-top: 3px solid #8B5CF6; padding-top: 8px;">
+              <strong style="color: #8B5CF6; font-size: 13.5px; display: block; margin-bottom: 4px;">💉 SQL Injection</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 0; line-height: 1.45;">
+                Attacker inputs malicious SQL code into unvalidated web input fields to manipulate or steal database records.
+              </p>
+            </div>
+            <div style="border-top: 3px solid #3B82F6; padding-top: 8px;">
+              <strong style="color: #3B82F6; font-size: 13.5px; display: block; margin-bottom: 4px;">🚫 Denial of Service (DoS / DDoS)</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 0; line-height: 1.45;">
+                Flooding a web server with fake requests from botnets to overwhelm CPU/bandwidth and crash the service for real users.
+              </p>
+            </div>
+          </div>
+        `
+      },
+      {
+        heading: 'Social Engineering & Human Vulnerabilities',
+        body: 'Human error and social manipulation remain the largest security threats to computer networks. Phishing tricks users into disclosing credentials via deceptive emails, shoulder surfing steals passwords by direct observation, and weak password policies enable brute-force automated dictionary attacks.'
+      }
     ],
     '1.4.2': [
-      { heading: 'Technical prevention', body: 'Anti-malware software detects or blocks malicious software. A firewall examines network traffic against configured rules. Encryption makes intercepted data unreadable without the key. Regular updates correct known weaknesses. Each measure reduces a particular risk but does not make a system immune to every attack.' },
-      { heading: 'People, access and testing', body: 'Strong authentication, passwords and access levels limit who can reach data and what an authorised account can do. Physical security protects equipment directly. Penetration testing is authorised security work that uses attack techniques to identify weaknesses so they can be corrected; permission separates it from an illegal attack.' }
+      {
+        heading: 'Technical Security Measures & Defences',
+        body: 'Technical defenses protect hardware and data. Firewalls inspect network traffic against security rules. Anti-malware detects and quatantines viruses. Encryption scrambles data into ciphertext using a key. Passwords and Access Levels restrict data based on user roles. Penetration Testing is authorized simulated hacking to find weaknesses before criminals do.',
+        html: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="border-left: 3px solid var(--teal); padding-left: 12px;">
+              <strong style="color: var(--teal); font-size: 13px;">🛡️ Firewall</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+                Monitors incoming &amp; outgoing network traffic and blocks unauthorized packets based on security rules.
+              </p>
+            </div>
+            <div style="border-left: 3px solid #10B981; padding-left: 12px;">
+              <strong style="color: #10B981; font-size: 13px;">🔐 Encryption</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+                Scrambles plain text into unreadable ciphertext using an encryption key, rendering stolen data useless.
+              </p>
+            </div>
+            <div style="border-left: 3px solid #3B82F6; padding-left: 12px;">
+              <strong style="color: #3B82F6; font-size: 13px;">🎯 Penetration Testing</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+                Authorised ethical hacking tests that simulate real cyberattacks to discover system vulnerabilities.
+              </p>
+            </div>
+          </div>
+        `
+      },
+      {
+        heading: 'Access Control, Passwords & Penetration Testing',
+        body: 'User access levels ensure employees can only view or modify files necessary for their job role, enforcing the principle of least privilege. Strong password requirements prevent automated guessing. Penetration testing systematically scans networks to uncover and patch security vulnerabilities before cybercriminals exploit them.'
+      }
     ],
     '1.5.1': [
-      { heading: 'Managing resources', body: 'An operating system provides a user interface and manages processor time, memory and multitasking. It allocates resources to running programs and keeps track of which memory is available. Multitasking rapidly schedules work from active programs; it does not mean one core literally executes every instruction at the same instant.' },
-      { heading: 'Devices, users and files', body: 'The operating system uses drivers to communicate with peripherals. It creates and manages user accounts and access rights, and provides file operations such as naming, organising, saving and deleting files. These are operating-system responsibilities, while applications perform the user’s specific productive tasks.' }
+      {
+        heading: 'The 5 Core Functions of an Operating System (OS)',
+        body: 'An Operating System manages computer hardware and software. Its 5 core functions are: 1) User Interface (GUI/CLI), 2) Memory Management (RAM allocation & Virtual Memory), 3) Multitasking (CPU scheduling), 4) Peripheral & Driver Management, 5) User & File Management (access rights, files/folders).',
+        html: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="border-top: 3px solid var(--teal); padding-top: 8px;">
+              <strong style="color: var(--teal); font-size: 13px;">🖥️ User Interface (UI)</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">Provides GUI (windows, icons, menus) or CLI (command line) for user interaction.</p>
+            </div>
+            <div style="border-top: 3px solid #3B82F6; padding-top: 8px;">
+              <strong style="color: #3B82F6; font-size: 13px;">💾 Memory Management</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">Allocates RAM blocks to open applications and manages Virtual Memory paging.</p>
+            </div>
+            <div style="border-top: 3px solid #F59E0B; padding-top: 8px;">
+              <strong style="color: #F59E0B; font-size: 13px;">⏱️ Multitasking &amp; CPU Scheduling</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">Schedules CPU time slices across multiple running programs simultaneously.</p>
+            </div>
+            <div style="border-top: 3px solid #10B981; padding-top: 8px;">
+              <strong style="color: #10B981; font-size: 13px;">🔌 Peripheral Drivers &amp; Files</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">Uses device drivers to communicate with hardware, and manages user access rights &amp; file structures.</p>
+            </div>
+          </div>
+        `
+      },
+      {
+        heading: 'Peripheral Drivers & File System Management',
+        body: 'Device drivers translate general operating system commands into hardware-specific instructions for peripherals like printers and graphics cards. The OS file manager organizes storage into directory hierarchies, tracks file locations, and enforces access control permissions.'
+      }
     ],
     '1.5.2': [
-      { heading: 'Utility software', body: 'Utilities perform maintenance or housekeeping tasks. Encryption utilities transform readable data so it needs the correct key; compression utilities reduce file size. Backup tools may also protect data in practice, but exam answers must use the utility functions named in the specification and match each one to its purpose.' },
-      { heading: 'Defragmentation', body: 'On magnetic disks, parts of a file may be stored in separated locations. Defragmentation rearranges file blocks so related blocks are closer together, reducing movement of the read-write head. It is not a useful speed treatment for solid-state storage because solid-state devices have no moving read head.' }
+      {
+        heading: 'Utility Software (Defragmentation, Encryption, Compression, Backup)',
+        body: 'Utility software performs maintenance tasks to keep system software running efficiently. Defragmentation reorganises scattered file fragments on magnetic HDDs to speed up read times (note: SSDs do not need defragmentation). Compression reduces file sizes. Encryption secures data. Backup creates restore copies.',
+        html: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="border-left: 3px solid #F59E0B; padding-left: 12px;">
+              <strong style="color: #F59E0B; font-size: 13px;">🧩 Defragmentation (HDD Only!)</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.45;">
+                Reorganises fragmented file blocks on magnetic hard drives so related data is stored contiguously. <em>Exam Note: SSDs do NOT require defragmentation because they have no moving read head!</em>
+              </p>
+            </div>
+            <div style="border-left: 3px solid var(--teal); padding-left: 12px;">
+              <strong style="color: var(--teal); font-size: 13px;">📦 File Compression Utility</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.45;">
+                Reduces file size so files consume less storage space and download faster across network connections.
+              </p>
+            </div>
+          </div>
+        `
+      },
+      {
+        heading: 'Defragmentation & Utility Housekeeping',
+        body: 'Defragmentation reorganises scattered file blocks on magnetic hard drives so related data is stored contiguously, reducing read-head movement. Defragmentation is unnecessary for SSDs because solid-state memory has no moving mechanical parts. File compression utilities reduce file size for storage and transmission.'
+      }
     ],
     '1.6.1': [
       { heading: 'People and society', body: 'Technology can affect privacy, employment, access to services, working patterns, culture and relationships. A balanced response identifies affected stakeholders and develops both benefits and harms in the given context. An unsupported list of generic issues is weaker than explaining how a specific design or use produces an effect.' },
       { heading: 'Environmental effects', body: 'Manufacturing devices consumes finite resources and energy, while operation and data centres consume electricity. Replacing equipment creates electronic waste, which can contain valuable and hazardous materials. Longer product life, repair, reuse, responsible recycling and lower-energy operation can reduce some effects but may involve trade-offs.' }
     ],
     '1.6.2': [
-      { heading: 'Data, access and creative work', body: 'The Data Protection Act 2018 governs responsible handling of personal data. The Computer Misuse Act 1990 addresses unauthorised access and related unauthorised acts. The Copyright, Designs and Patents Act 1988 protects creative work from unauthorised copying. Apply the correct law to the action rather than assuming every digital offence is “hacking”.' },
-      { heading: 'Software licences', body: 'A proprietary licence restricts use, modification and redistribution according to its terms, and source code is normally unavailable. Open-source licences make source code available under stated conditions and may permit modification and redistribution. Open source does not mean there are no licence conditions, and proprietary software is not automatically paid software.' }
+      {
+        heading: 'UK Computing Legislation 4-Card Breakdown',
+        body: '3 key UK laws protect digital data and systems: 1) Data Protection Act 2018 (GDPR principles for personal data), 2) Computer Misuse Act 1990 (makes unauthorized access, hacking, and malware creation illegal), 3) Copyright, Designs and Patents Act 1988 (protects intellectual property).',
+        html: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="border-top: 3px solid var(--teal); padding-top: 8px;">
+              <strong style="color: var(--teal); font-size: 13px;">📜 Data Protection Act 2018 (DPA / GDPR)</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">Governs fair, lawful &amp; secure handling of personal data by data controllers.</p>
+            </div>
+            <div style="border-top: 3px solid #EF4444; padding-top: 8px;">
+              <strong style="color: #EF4444; font-size: 13px;">⚖️ Computer Misuse Act 1990 (CMA)</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">Outlaws unauthorized access (hacking), unauthorized intent, and malware modification.</p>
+            </div>
+            <div style="border-top: 3px solid #3B82F6; padding-top: 8px;">
+              <strong style="color: #3B82F6; font-size: 13px;">©️ Copyright, Designs &amp; Patents Act 1988</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">Protects software code, media, and creative works from illegal copying and piracy.</p>
+            </div>
+          </div>
+        `
+      },
+      {
+        heading: 'Software Licences (Open Source vs Proprietary)',
+        body: 'Proprietary software keeps source code secret, charges licence fees, and forbids modification or redistribution. Open-source software provides public access to source code, allowing users to inspect, modify, and redistribute the program under specific licence terms.'
+      }
     ],
     '2.1.1': [
       { heading: 'Decomposition', body: 'Break the problem into parts that can be understood, designed and tested separately. The parts must still fit together: for a library system, searching, borrowing and returning books exchange shared data rather than behaving as unrelated mini-programs.' },
@@ -826,12 +1220,107 @@
       }
     ],
     '2.5.1': [
-      { heading: 'Language levels and translators', body: 'High-level languages are designed to be readable and portable, while low-level languages are closely related to processor instructions and hardware. A processor cannot directly execute high-level source code, so a translator converts it into machine code.' },
-      { heading: 'Compiler and interpreter', body: 'A compiler translates the whole program and reports errors after compilation, producing code that can run without the compiler. An interpreter translates and executes one statement at a time and normally stops at an error, which can support development. A justified choice depends on development, distribution and execution needs.' }
+      {
+        heading: 'High-Level vs Low-Level Languages',
+        body: 'High-level languages (e.g. Python) use English-like syntax, are easy to read and write, and are portable across different CPU architectures. Low-level languages (Assembly and Machine Code) interact directly with CPU hardware registers and memory, offering maximum execution speed and direct memory control.',
+        html: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="border-top: 3px solid var(--teal); padding-top: 8px;">
+              <strong style="color: var(--teal); font-size: 13.5px; display: block; margin-bottom: 4px;">🐍 High-Level Languages (Python, Java, C#)</strong>
+              <ul style="font-size: 12.5px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li>English-like statements; easy to read, write, &amp; debug.</li>
+                <li>Portable across different types of computer CPU hardware.</li>
+                <li>Must be translated into machine code before CPU execution.</li>
+              </ul>
+            </div>
+            <div style="border-top: 3px solid #F59E0B; padding-top: 8px;">
+              <strong style="color: #F59E0B; font-size: 13.5px; display: block; margin-bottom: 4px;">⚙️ Low-Level Languages (Assembly &amp; Machine Code)</strong>
+              <ul style="font-size: 12.5px; color: var(--text-main); padding-left: 16px; margin: 0; line-height: 1.5;">
+                <li><strong>Assembly:</strong> Uses mnemonics (e.g. <code>INP</code>, <code>ADD</code>, <code>STA</code>).</li>
+                <li><strong>Machine Code:</strong> Raw binary <code>1s and 0s</code> executed directly by CPU.</li>
+                <li>Fast execution &amp; precise hardware/memory control.</li>
+              </ul>
+            </div>
+          </div>
+        `
+      },
+      {
+        heading: 'Compiler vs Interpreter Comparison Matrix',
+        body: 'A Compiler translates the entire source code program into a standalone executable file in one go. An Interpreter translates and executes source code line-by-line, stopping immediately when an error is encountered.',
+        html: `
+          <div style="overflow-x: auto; margin-bottom: 16px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left;">
+              <thead>
+                <tr style="background: rgba(45, 156, 145, 0.12); color: var(--teal); border-bottom: 2px solid var(--teal);">
+                  <th style="padding: 8px 12px;">Feature</th>
+                  <th style="padding: 8px 12px;">📦 Compiler</th>
+                  <th style="padding: 8px 12px;">⚡ Interpreter</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Translation Method</td>
+                  <td style="padding: 8px 12px; color: var(--teal); font-weight: 600;">Translates ENTIRE program at once</td>
+                  <td style="padding: 8px 12px; color: #3B82F6; font-weight: 600;">Translates and executes LINE-BY-LINE</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Output File</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Produces standalone executable binary file (e.g. <code>.exe</code>)</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">No output file created; requires interpreter to run</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Execution Speed</td>
+                  <td style="padding: 8px 12px; color: #10B981; font-weight: 600;">Fast execution after initial compilation</td>
+                  <td style="padding: 8px 12px; color: #EF4444; font-weight: 600;">Slower execution (re-translates loops)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 8px 12px; font-weight: 700; color: var(--text-main);">Error Reporting</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Reports all errors together after whole program build</td>
+                  <td style="padding: 8px 12px; color: var(--text-main);">Stops immediately at first line containing an error</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `
+      }
     ],
     '2.5.2': [
-      { heading: 'Writing and running', body: 'An integrated development environment brings programming tools together. The editor supports entering and organising source code, syntax highlighting makes language elements easier to distinguish, and a translator or run-time environment allows the program to be executed during development.' },
-      { heading: 'Finding faults', body: 'Error diagnostics identify a type and location of a detected problem. Debugging tools can pause execution, step through instructions and inspect variable values. These tools provide evidence about where a fault occurs, but the programmer must still understand the intended behaviour and correct its cause.' }
+      {
+        heading: '4 Essential Features of an IDE (Integrated Development Environment)',
+        body: 'An IDE is a software application providing comprehensive tools for programmers: 1) Code Editor (with line numbers & syntax highlighting), 2) Error Diagnostics (identifying syntax errors), 3) Run-time Environment (executing code within the IDE), 4) Translator & Debugger (compiling/interpreting code, setting breakpoints, and tracing variable values).',
+        html: `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <div style="border-left: 3px solid var(--teal); padding-left: 12px;">
+              <strong style="color: var(--teal); font-size: 13px;">📝 Code Editor</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+                Text editor with line numbering, automatic indentation, and syntax highlighting to colour-code keywords.
+              </p>
+            </div>
+            <div style="border-left: 3px solid #EF4444; padding-left: 12px;">
+              <strong style="color: #EF4444; font-size: 13px;">🚨 Error Diagnostics</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+                Highlights syntax errors in real-time and provides clear error messages indicating line numbers.
+              </p>
+            </div>
+            <div style="border-left: 3px solid #10B981; padding-left: 12px;">
+              <strong style="color: #10B981; font-size: 13px;">▶️ Run-time Environment</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+                Allows programmers to execute code directly inside the IDE without opening external command prompts.
+              </p>
+            </div>
+            <div style="border-left: 3px solid #F59E0B; padding-left: 12px;">
+              <strong style="color: #F59E0B; font-size: 13px;">🐛 Translator &amp; Debugger</strong>
+              <p style="font-size: 12px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.4;">
+                Built-in compiler/interpreter + debugging tools (breakpoints, variable stepping, watch windows).
+              </p>
+            </div>
+          </div>
+        `
+      },
+      {
+        heading: 'Finding & Fixing Faults with IDE Debugging Tools',
+        body: 'Debugging tools allow programmers to pause program execution at breakpoints, step line-by-line through code, and inspect variable values in watch windows to isolate and correct logic errors.'
+      }
     ]
   };
   return content.map(item => ({

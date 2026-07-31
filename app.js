@@ -3704,6 +3704,45 @@ class App {
         </div>
       `;
     }
+    if (id.includes('1.2.2') || id === '1.2.2') {
+      return `
+        <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h4 style="color: #2D9C91; font-size: 15px; margin: 0; font-weight: 700;">📊 Secondary Storage Technologies Comparison (OCR 1.2.2)</h4>
+            <span class="badge badge-primary" style="font-size: 11px;">OCR 1.2.2 Storage Types</span>
+          </div>
+          <svg viewBox="0 0 700 210" style="width: 100%; height: auto; font-family: Inter, sans-serif;">
+            <!-- Magnetic -->
+            <g transform="translate(30, 15)">
+              <rect x="0" y="0" width="200" height="175" rx="8" fill="#1E293B" stroke="#2D9C91" stroke-width="2"/>
+              <text x="100" y="30" fill="#6EE7D8" font-size="14" font-weight="bold" text-anchor="middle">🧲 Magnetic (HDD)</text>
+              <circle cx="100" cy="85" r="32" fill="#0F172A" stroke="#2D9C91" stroke-width="2"/>
+              <line x1="100" y1="85" x2="125" y2="100" stroke="#FCD34D" stroke-width="3"/>
+              <text x="100" y="138" fill="#E2E8F0" font-size="11" text-anchor="middle">Spinning Platters &amp; Head</text>
+              <text x="100" y="158" fill="#10B981" font-size="11" font-weight="bold" text-anchor="middle">High Capacity / Low Cost</text>
+            </g>
+            <!-- Optical -->
+            <g transform="translate(250, 15)">
+              <rect x="0" y="0" width="200" height="175" rx="8" fill="#1E293B" stroke="#3B82F6" stroke-width="2"/>
+              <text x="100" y="30" fill="#60A5FA" font-size="14" font-weight="bold" text-anchor="middle">💿 Optical (CD/DVD/BD)</text>
+              <circle cx="100" cy="85" r="32" fill="#0F172A" stroke="#3B82F6" stroke-width="2"/>
+              <circle cx="100" cy="85" r="10" fill="#1E293B" stroke="#3B82F6"/>
+              <text x="100" y="138" fill="#E2E8F0" font-size="11" text-anchor="middle">Laser Pits &amp; Lands</text>
+              <text x="100" y="158" fill="#3B82F6" font-size="11" font-weight="bold" text-anchor="middle">Very Cheap / Portable</text>
+            </g>
+            <!-- Solid State -->
+            <g transform="translate(470, 15)">
+              <rect x="0" y="0" width="200" height="175" rx="8" fill="#1E293B" stroke="#10B981" stroke-width="2"/>
+              <text x="100" y="30" fill="#6EE7B7" font-size="14" font-weight="bold" text-anchor="middle">⚡ Solid State (SSD)</text>
+              <rect x="65" y="60" width="70" height="48" rx="4" fill="#0F172A" stroke="#10B981"/>
+              <text x="100" y="88" fill="#6EE7B7" font-size="11" font-weight="bold" text-anchor="middle">NAND Flash</text>
+              <text x="100" y="138" fill="#E2E8F0" font-size="11" text-anchor="middle">No Moving Parts</text>
+              <text x="100" y="158" fill="#10B981" font-size="11" font-weight="bold" text-anchor="middle">Fastest / Durable</text>
+            </g>
+          </svg>
+        </div>
+      `;
+    }
     if (id.startsWith('1.2') || id === '1.2') {
       return `
         <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
