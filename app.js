@@ -3495,6 +3495,64 @@ class App {
         </div>
       `;
     }
+    if (id.includes('1.2.3') || id.includes('sound')) {
+      return `
+        <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h4 style="color: #2D9C91; font-size: 15px; margin: 0; font-weight: 700;">🎵 Analogue Sound Wave &amp; Digital Sampling (Sample Rate &amp; Bit Depth)</h4>
+            <span class="badge badge-primary" style="font-size: 11px;">OCR 1.2.3 Sound Sampling</span>
+          </div>
+          <svg viewBox="0 0 740 270" style="width: 100%; height: auto; font-family: Inter, sans-serif;">
+            <line x1="60" y1="30" x2="60" y2="210" stroke="#475569" stroke-width="2"/>
+            <line x1="60" y1="210" x2="700" y2="210" stroke="#475569" stroke-width="2"/>
+            <text x="380" y="240" fill="#94A3B8" font-size="12" font-weight="bold" text-anchor="middle">Time (Sample Rate: Frequency of measurements per second in Hz)</text>
+            <text x="25" y="120" fill="#94A3B8" font-size="12" font-weight="bold" text-anchor="middle" transform="rotate(-90 25 120)">Amplitude (Bit Depth)</text>
+
+            <line x1="55" y1="50" x2="700" y2="50" stroke="#1E293B" stroke-dasharray="4,4"/>
+            <text x="48" y="54" fill="#CBD5E1" font-size="10" text-anchor="end">11 (Level 3)</text>
+            <line x1="55" y1="100" x2="700" y2="100" stroke="#1E293B" stroke-dasharray="4,4"/>
+            <text x="48" y="104" fill="#CBD5E1" font-size="10" text-anchor="end">10 (Level 2)</text>
+            <line x1="55" y1="150" x2="700" y2="150" stroke="#1E293B" stroke-dasharray="4,4"/>
+            <text x="48" y="154" fill="#CBD5E1" font-size="10" text-anchor="end">01 (Level 1)</text>
+            <line x1="55" y1="200" x2="700" y2="200" stroke="#1E293B" stroke-dasharray="4,4"/>
+            <text x="48" y="204" fill="#CBD5E1" font-size="10" text-anchor="end">00 (Level 0)</text>
+
+            <path d="M 60 130 Q 140 30 220 100 T 380 190 T 540 50 T 700 130" fill="none" stroke="#38BDF8" stroke-width="3" opacity="0.75"/>
+
+            <line x1="140" y1="50" x2="140" y2="210" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="3,3"/>
+            <circle cx="140" cy="50" r="6" fill="#10B981" stroke="#FFFFFF" stroke-width="2"/>
+            <text x="140" y="40" fill="#6EE7B7" font-size="11" font-weight="bold" text-anchor="middle">Sample 1: 11</text>
+
+            <line x1="220" y1="100" x2="220" y2="210" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="3,3"/>
+            <circle cx="220" cy="100" r="6" fill="#10B981" stroke="#FFFFFF" stroke-width="2"/>
+            <text x="220" y="90" fill="#6EE7B7" font-size="11" font-weight="bold" text-anchor="middle">Sample 2: 10</text>
+
+            <line x1="300" y1="150" x2="300" y2="210" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="3,3"/>
+            <circle cx="300" cy="150" r="6" fill="#10B981" stroke="#FFFFFF" stroke-width="2"/>
+            <text x="300" y="140" fill="#6EE7B7" font-size="11" font-weight="bold" text-anchor="middle">Sample 3: 01</text>
+
+            <line x1="380" y1="190" x2="380" y2="210" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="3,3"/>
+            <circle cx="380" cy="190" r="6" fill="#10B981" stroke="#FFFFFF" stroke-width="2"/>
+            <text x="380" y="180" fill="#6EE7B7" font-size="11" font-weight="bold" text-anchor="middle">Sample 4: 00</text>
+
+            <line x1="460" y1="100" x2="460" y2="210" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="3,3"/>
+            <circle cx="460" cy="100" r="6" fill="#10B981" stroke="#FFFFFF" stroke-width="2"/>
+            <text x="460" y="90" fill="#6EE7B7" font-size="11" font-weight="bold" text-anchor="middle">Sample 5: 10</text>
+
+            <line x1="540" y1="50" x2="540" y2="210" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="3,3"/>
+            <circle cx="540" cy="50" r="6" fill="#10B981" stroke="#FFFFFF" stroke-width="2"/>
+            <text x="540" y="40" fill="#6EE7B7" font-size="11" font-weight="bold" text-anchor="middle">Sample 6: 11</text>
+
+            <line x1="620" y1="100" x2="620" y2="210" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="3,3"/>
+            <circle cx="620" cy="100" r="6" fill="#10B981" stroke="#FFFFFF" stroke-width="2"/>
+            <text x="620" y="90" fill="#6EE7B7" font-size="11" font-weight="bold" text-anchor="middle">Sample 7: 10</text>
+          </svg>
+          <div style="font-size:12px; color:#94A3B8; margin-top:8px; line-height:1.5;">
+            💡 <strong>Formula:</strong> File Size (bits) = Sample Rate (Hz) × Sample Depth (bits) × Duration (seconds)
+          </div>
+        </div>
+      `;
+    }
     if (id.startsWith('1.2') || id === '1.2') {
       return `
         <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
