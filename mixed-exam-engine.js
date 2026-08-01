@@ -177,22 +177,25 @@
     createMixedExamSession(paperType = 'all', targetMinutes = 20, curriculumContent = [], examTransferTasks = [], examinerKnowledge = null, selectedStrandIds = null, sessionSeed = Date.now()) {
       const seed = String(sessionSeed);
       const duration = Math.max(5, Number(targetMinutes) || 20);
+      const maximumTaskMarks = duration <= 5 ? 5 : duration <= 10 ? 6 : Infinity;
       const taskPool = filterBySelection(examTransferTasks, paperType, selectedStrandIds, item => item.specificationPointId)
-        .filter(task => task?.question && Number(task.marks) > 0 && (duration > 10 || Number(task.marks) <= 6));
+        .filter(task => task?.question && Number(task.marks) > 0 && Number(task.marks) <= maximumTaskMarks);
 
       if (!taskPool.length) {
         return createDiagnosticFallback(paperType, Math.max(1, Math.round(duration / 2)), curriculumContent, selectedStrandIds, seed);
       }
 
-      const desiredShortParts = duration <= 10
+      const desiredShortParts = duration <= 5
+        ? 0
+        : duration <= 10
         ? 1
         : duration <= 20 && ['paper2', 'programming'].includes(paperType)
           ? 2
           : duration <= 20 ? 3 : 4;
       const ao3Required = (paperType === 'programming' || (paperType === 'paper2' && duration > 10)) && taskPool.some(task => isAO3Task(task) && /^2\.(1|2|3)/.test(task.specificationPointId));
       const markRange = {
-        minimum: (duration <= 10 ? 7 : duration <= 20 ? 15 : 32) - desiredShortParts,
-        maximum: (duration <= 10 ? 9 : duration <= 20 ? 18 : 36) - desiredShortParts
+        minimum: (duration <= 5 ? 4 : duration <= 10 ? 7 : duration <= 20 ? 15 : 32) - desiredShortParts,
+        maximum: (duration <= 5 ? 5 : duration <= 10 ? 9 : duration <= 20 ? 18 : 36) - desiredShortParts
       };
       const mixedPaperRequired = paperType === 'all';
       const requiredConstructedQuestions = paperType === 'paper2' && duration <= 10 ? 2 : null;
@@ -258,11 +261,11 @@
       const actualMinutes = constructedMinutes + shortQuestions.length;
       const totalMarks = questions.reduce((total, question) => total + question.marks, 0);
       const minimumUsefulTime = Math.ceil(duration * 0.8);
-      const minimumQuestions = duration <= 10 ? 2 : duration <= 20 ? 4 : 7;
-      const minimumFormats = duration <= 10 ? 2 : duration <= 20 ? 3 : 4;
+      const minimumQuestions = duration <= 5 ? 1 : duration <= 10 ? 2 : duration <= 20 ? 4 : 7;
+      const minimumFormats = duration <= 5 ? 1 : duration <= 10 ? 2 : duration <= 20 ? 3 : 4;
       const responseFormats = new Set([...selectedTasks.map(responseFamily), ...(shortQuestions.length ? ['short-selection'] : [])]);
-      const minimumMarks = duration <= 10 ? 7 : duration <= 20 ? 15 : 32;
-      const maximumMarks = duration <= 10 ? 9 : duration <= 20 ? 18 : 36;
+      const minimumMarks = duration <= 5 ? 4 : duration <= 10 ? 7 : duration <= 20 ? 15 : 32;
+      const maximumMarks = duration <= 5 ? 5 : duration <= 10 ? 9 : duration <= 20 ? 18 : 36;
       const ao3Available = ao3Required;
       const ao3Included = selectedTasks.some(isAO3Task);
       const includesBothPapers = new Set(selectedTasks.map(task => task.paper)).size >= 2;

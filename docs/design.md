@@ -118,9 +118,16 @@ self-checks and model answers are labelled as practice and must not imply an
 examiner-awarded mark.
 
 Custom tests are short digital exam-paper sections, not retrieval quizzes. A
+5-minute choice creates one focused constructed question worth about 4 to 5
+marks; it is not a shortened multiple-choice quiz. A
 10-minute set targets 7–9 marks and no more than one multiple-choice item; longer
 sets mix response demands and Paper 2 includes algorithmic work where available.
-The interface shows a question navigator with mark values and answered status.
+The generated paper shows its actual question count, marks and suggested time.
+The interface uses one calm paper surface and a question navigator with mark
+values plus explicit current, answered and unanswered states. Draft answers are
+saved for the browser session and can be resumed after leaving or reloading.
+Finishing with unanswered questions opens a review choice rather than trapping
+the learner or pretending that the question was attempted.
 If the selected topics cannot support the requested duration, the builder asks
 the learner to broaden the selection rather than padding the paper or claiming
 a misleading time. Constructed responses can open answer guidance, but the
