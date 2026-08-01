@@ -2904,21 +2904,23 @@ def calculate_area(width, height):
       id: 'pc_1',
       level: 1,
       concept: 'Variables & Output',
-      title: 'Reading Code: String Output',
-      instructions: 'Review the Python code below. Identify what the code will output when run.',
-      problem: 'Determine the printed output of this program:\n\n```python\nusername = "Harriet"\nsubject = "Computer Science"\nprint("Welcome " + username + " to " + subject)\n```',
-      code: 'username = "Harriet"\nsubject = "Computer Science"\nprint("Welcome " + username + " to " + subject)',
+      title: 'First edit: complete a welcome message',
+      instructions: 'Read the Python, predict what the unfinished version prints, then set subject so the complete welcome message passes the check.',
+      problem: 'The subject string is empty. Set it to "Computer Science" without changing the print statement.',
+      code: 'username = "Harriet"\nsubject = ""\nprint("Welcome " + username + " to " + subject)',
       expectedOutput: 'Welcome Harriet to Computer Science',
       supportLadder: [
         'The variable "username" stores "Harriet".',
-        'The variable "subject" stores "Computer Science".',
-        'The program concatenates the strings together with spaces in between.'
+        'The variable "subject" needs to store the missing subject name.',
+        'Put the text Computer Science between the quotation marks assigned to subject.'
       ],
       testCases: [
         { input: '', inputs: [], expected: 'Welcome Harriet to Computer Science' }
       ],
       explainQuestion: 'Explain why strings are concatenated using the + operator in Python.',
-      explainModelAnswer: 'The + operator is used to join or concatenate two or more strings together to create a single string.'
+      explainModelAnswer: 'The + operator is used to join or concatenate two or more strings together to create a single string.',
+      awardsCompletion: false,
+      learningMode: 'guided-reading'
     },
     {
       id: 'pc_2',
@@ -3547,6 +3549,14 @@ function applyContentMappings(data) {
     challenge.purpose = challenge.id === 'pc_9' ? 'exam-transfer' : 'application';
     challenge.programmingTechniques = PROGRAMMING_TECHNIQUE_MAP[challenge.id] || [];
     challenge.assessmentRoute = 'deterministic-tests-plus-explanation';
+    challenge.marks = challenge.marks || (challenge.purpose === 'exam-transfer' ? 6 : 4);
+    challenge.suggestedMinutes = challenge.suggestedMinutes || (challenge.purpose === 'exam-transfer' ? 12 : 10);
+    challenge.awardsCompletion = challenge.id === 'pc_1' ? false : challenge.awardsCompletion !== false;
+    challenge.learningMode = challenge.id === 'pc_1' ? 'guided-reading' : (challenge.learningMode || 'guided-code');
+    challenge.requiresCodeChange = challenge.requiresCodeChange !== false;
+    (challenge.testCases || []).forEach((testCase, index) => {
+      testCase.visibility = testCase.visibility || (index === 0 ? 'example' : 'hidden');
+    });
   });
   return data;
 }

@@ -5,6 +5,10 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Began the programming-pathway rebuild with separate supported, skill-choice
+  and independent exam-practice routes. Guided starter work is now formative,
+  assessed progress excludes it, and unseen program checks no longer disclose
+  their private inputs or expected outputs after a failed run.
 - Added an evidence-led class markbook and learner profiles that keep checked
   performance, self-rated flashcard confidence, awaiting-review work and teacher
   assessment reports distinct.

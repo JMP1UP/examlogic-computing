@@ -384,16 +384,17 @@ class App {
     return true;
   }
 
-  activateProgrammingChallenge(challengeId) {
+  activateProgrammingChallenge(challengeId, practiceMode = 'guided') {
     const challenge = window.db.getProgrammingChallenges().find(item => item.id === challengeId);
     if (!challenge) return false;
     this.activeChallengeId = challenge.id;
+    this.programmingPracticeMode = practiceMode;
     this.editorCode = challenge.code || '';
     this.supportLevelUsed = 0;
     this.lastProgrammingEvidence = [];
     this.lastProgrammingTestRun = null;
     this.aiTutorHintLevel = 1;
-    this.programmingStage = 'predict';
+    this.programmingStage = practiceMode === 'exam' ? 'run' : 'predict';
     this.revealedSupportStep = 1;
     this.activeSupportFeedback = {};
     this.predictInputValue = '';
@@ -6565,6 +6566,7 @@ class App {
   renderStudentProgrammingHub(panel) {
     const challenges = window.db.getProgrammingChallenges();
     const submissions = window.db.getProgrammingSubmissions().filter(item => item.studentId === this.currentUser.id);
+    const visitedChallengeIds = new Set(submissions.map(item => item.challengeId));
     const completedChallengeIds = new Set(submissions.filter(item => item.status === 'Passed' || item.status === 'Teacher Reviewed').map(item => item.challengeId));
     const pseudocodeAttempts = window.db.getAttempts().filter(item =>
       item.studentId === this.currentUser.id
@@ -6573,11 +6575,14 @@ class App {
       && this.parseDemonstratedScore(item)
     );
     const completedPseudocodeIds = new Set(pseudocodeAttempts.map(item => item.questionId));
-    const nextChallenge = challenges.find(item => !completedChallengeIds.has(item.id)) || challenges[challenges.length - 1];
+    const nextChallenge = challenges.find(item => !visitedChallengeIds.has(item.id)) || challenges.find(item => item.purpose === 'exam-transfer') || challenges[challenges.length - 1];
+    const firstSupportedChallenge = challenges.find(item => item.learningMode === 'guided-reading') || challenges[0];
+    const firstExamChallenge = challenges.find(item => item.purpose === 'exam-transfer') || challenges[challenges.length - 1];
     const pseudocodeSkills = ['Read', 'Trace', 'Complete', 'Write', 'Refine'];
     const nextPseudocodeIndex = pseudocodeSkills.findIndex((_, index) => !completedPseudocodeIds.has(`pseudocode_${index + 1}`));
     const recommendedPseudocodeIndex = nextPseudocodeIndex === -1 ? pseudocodeSkills.length - 1 : nextPseudocodeIndex;
-    const pythonPercent = Math.round((completedChallengeIds.size / challenges.length) * 100);
+    const assessedChallenges = challenges.filter(item => item.awardsCompletion !== false);
+    const pythonPercent = assessedChallenges.length ? Math.round((completedChallengeIds.size / assessedChallenges.length) * 100) : 0;
     const pseudocodePercent = Math.round((completedPseudocodeIds.size / pseudocodeSkills.length) * 100);
 
     panel.innerHTML = `
@@ -6588,16 +6593,38 @@ class App {
       </div>
 
       <div class="card" style="margin-bottom:24px; border-left:5px solid var(--teal);">
-        <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Recommended next · about 15 minutes</div>
+        <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Continue where you stopped · about 15 minutes</div>
         <h2 style="margin:7px 0 5px;">Python level ${nextChallenge.level}: ${this.escapeHTML(nextChallenge.title)}</h2>
         <p style="margin:0 0 14px;">You will read code, follow what it does, fix code, then write and test code. Support is available one step at a time.</p>
         <button class="btn btn-primary" id="programming-continue-python">Continue Python</button>
       </div>
 
+      <h2 style="margin:0 0 12px;">Choose how you want to practise</h2>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:16px; margin-bottom:24px;">
+        <section class="card" style="border-top:4px solid var(--teal);">
+          <span class="badge badge-primary">Start with support</span>
+          <h3 style="margin:10px 0 5px;">Build confidence step by step</h3>
+          <p style="font-size:13px; color:var(--text-muted);">Read a short example, make one change, run it and use a hint if you need one. Guided reading does not count as independently writing a program.</p>
+          <button class="btn btn-primary programming-route-btn" data-mode="supported" data-challenge-id="${firstSupportedChallenge.id}">Start supported practice</button>
+        </section>
+        <section class="card">
+          <span class="badge badge-primary">Practise a skill</span>
+          <h3 style="margin:10px 0 5px;">Choose Python or OCR pseudocode</h3>
+          <p style="font-size:13px; color:var(--text-muted);">Work on selection, loops, arrays, functions or another technique. Each task states which language to use.</p>
+          <button class="btn btn-secondary" id="programming-show-pathway">Choose a skill</button>
+        </section>
+        <section class="card" style="border-top:4px solid var(--amber);">
+          <span class="badge badge-warning">Exam questions</span>
+          <h3 style="margin:10px 0 5px;">Try an independent transfer task</h3>
+          <p style="font-size:13px; color:var(--text-muted);">Apply several techniques to an OCR-style requirement. Passing an example alone is not treated as proof of a general solution.</p>
+          <button class="btn btn-secondary programming-route-btn" data-mode="exam" data-challenge-id="${firstExamChallenge.id}">Open exam practice</button>
+        </section>
+      </div>
+
       <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; margin-bottom:24px;">
         <section class="card">
           <span class="badge badge-primary">Practical Python</span>
-          <h2 style="margin:10px 0 5px;">${completedChallengeIds.size} of ${challenges.length} stages completed</h2>
+          <h2 style="margin:10px 0 5px;">${completedChallengeIds.size} of ${assessedChallenges.length} assessed stages completed</h2>
           <div style="height:9px; background:var(--bg-main); border-radius:8px; overflow:hidden; margin:12px 0;"><div style="width:${pythonPercent}%; height:100%; background:var(--teal);"></div></div>
           <p style="font-size:13px; color:var(--text-muted);">Read code, follow what it does, complete it, fix faults, write it and test it in exam-style problems.</p>
           <button class="btn btn-secondary programming-open-strand" data-target="stud-programme">Open Python stages</button>
@@ -6611,10 +6638,10 @@ class App {
         </section>
       </div>
 
-      <details class="card" style="margin-bottom:20px;">
+      <details class="card" id="programming-full-pathway" style="margin-bottom:20px;">
         <summary style="cursor:pointer; font-weight:700;">View the full programming pathway</summary>
         <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:18px; margin-top:16px;">
-          <div><h3 style="font-size:16px;">Python</h3><ol style="padding-left:20px; line-height:1.8;">${challenges.map(item => `<li>${completedChallengeIds.has(item.id) ? '✓ ' : ''}${this.escapeHTML(item.title)}</li>`).join('')}</ol></div>
+          <div><h3 style="font-size:16px;">Python</h3><div style="display:grid; gap:8px;">${challenges.map(item => `<button type="button" class="btn btn-secondary programming-route-btn" data-mode="skill" data-challenge-id="${item.id}" style="text-align:left;">${completedChallengeIds.has(item.id) ? '✓ ' : ''}${this.escapeHTML(item.concept)}: ${this.escapeHTML(item.title)}</button>`).join('')}</div></div>
           <div><h3 style="font-size:16px;">OCR language</h3><ol style="padding-left:20px; line-height:1.8;">${pseudocodeSkills.map((skill, index) => `<li>${completedPseudocodeIds.has(`pseudocode_${index + 1}`) ? '✓ ' : ''}${skill}</li>`).join('')}</ol></div>
         </div>
       </details>
@@ -6628,6 +6655,19 @@ class App {
     document.getElementById('programming-continue-python').onclick = () => {
       this.activateProgrammingChallenge(nextChallenge.id);
       this.switchTab('stud-programme');
+    };
+    panel.querySelectorAll('.programming-route-btn').forEach(button => {
+      button.onclick = () => {
+        const mode = button.getAttribute('data-mode') || (button.textContent.includes('exam') ? 'exam' : 'supported');
+        this.activateProgrammingChallenge(button.getAttribute('data-challenge-id'), mode);
+        this.switchTab('stud-programme');
+      };
+    });
+    const pathwayButton = document.getElementById('programming-show-pathway');
+    if (pathwayButton) pathwayButton.onclick = () => {
+      const pathway = document.getElementById('programming-full-pathway');
+      pathway.open = true;
+      pathway.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
     panel.querySelectorAll('.programming-open-strand').forEach(button => {
       button.onclick = () => {
@@ -6839,9 +6879,9 @@ class App {
 
       workspaceHtml = `
         <div>
-          <div style="background-color: var(--bg-main); padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; border: 1px solid var(--border-color);">
+          ${this.programmingPracticeMode === 'exam' ? '' : `<div style="background-color: var(--bg-main); padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; border: 1px solid var(--border-color);">
             <strong>Your prediction:</strong> <span style="font-style: italic; color: var(--text-muted);">${this.escapeHTML(this.predictInputValue || 'No prediction entered.')}</span>
-          </div>
+          </div>`}
 
           <div class="code-editor-panel">
             <div class="editor-header">
@@ -6869,7 +6909,7 @@ class App {
           <!-- Support ladder card -->
           <div class="card" style="margin-bottom: 24px; padding: 16px;">
             <h3 style="font-size:16px; margin-bottom: 8px;">🧗 Support ladder</h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Need help? Reveal support progressively. Your teacher will see how much help was used.</p>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Hints are part of learning. Your teacher can use this information to choose useful support.</p>
             
             ${supportLadderButtonsHtml}
             
@@ -6896,8 +6936,8 @@ class App {
                 const borderColour = !evidence ? 'var(--border-color)' : evidence.passed ? 'var(--green)' : 'var(--red)';
                 return `
                 <div class="test-case-item" id="tc-card-${tcIdx}" style="padding: 10px; border-radius: 6px; background-color: var(--bg-main); border: 1px solid ${borderColour};">
-                  <strong>Test Case ${tcIdx + 1} ${tc.input ? '(Input: ' + tc.input + ')' : ''}</strong><br>
-                  Expected: <code>${this.escapeHTML(tc.expected)}</code><br>
+                  <strong>${tc.visibility === 'hidden' ? `Unseen check ${tcIdx}` : `Example check ${tcIdx + 1} ${tc.input ? '(Input: ' + tc.input + ')' : ''}`}</strong><br>
+                  ${tc.visibility === 'hidden' ? 'The input and expected result stay hidden so this checks your general solution.<br>' : `Expected: <code>${this.escapeHTML(tc.expected)}</code><br>`}
                   Outcome: <code id="tc-outcome-${tcIdx}" style="color:${evidenceColour}; font-weight:600;">${this.escapeHTML(outcome)}</code>
                 </div>
               `;}).join('')}
@@ -6943,9 +6983,10 @@ class App {
 
     panel.innerHTML = `
       <div style="margin-bottom: 24px;">
-        <span class="badge badge-primary">Level ${challenge.level}: ${challenge.concept}</span>
+        <span class="badge badge-primary">${this.programmingPracticeMode === 'exam' ? 'Independent exam practice' : `Level ${challenge.level}`}: ${challenge.concept}</span>
         <h1 style="margin-top: 8px;">💻 Programming: ${challenge.title}</h1>
         <p style="font-size: 16px; font-weight: 600; color: var(--text-main); margin-top: 6px; line-height: 1.5;">${challenge.instructions}</p>
+        ${this.programmingPracticeMode === 'exam' ? `<p style="font-size:13px; color:var(--text-muted); margin-top:8px;">OCR J277 · ${this.escapeHTML(challenge.specificationPointId || '2.2.PY')} · ${challenge.marks || 6} marks · about ${challenge.suggestedMinutes || 12} minutes · Python</p>` : ''}
       </div>
 
       <div style="display: grid; grid-template-columns: 260px 1.25fr 0.75fr; gap: 24px;">
@@ -7254,13 +7295,20 @@ class App {
         const actual = this.normaliseProgramOutput(result.output);
         const expected = this.normaliseProgramOutput(tc.expected);
         const cleanErr = this.formatPythonErrorForPupil(result.error);
-        const errorDetail = cleanErr || (actual === expected ? '' : `Expected “${expected}” but your program printed “${actual || '(nothing)'}”.`);
+        const hiddenCheck = tc.visibility === 'hidden';
+        const errorDetail = cleanErr || (actual === expected
+          ? ''
+          : hiddenCheck
+            ? 'This solution does not yet work for every unseen case. Check the algorithm, boundaries and return path rather than matching one example.'
+            : `Expected “${expected}” but your program printed “${actual || '(nothing)'}”.`);
         const passed = !errorDetail && actual === expected;
         const outcomeText = document.getElementById(`tc-outcome-${idx}`);
         const card = document.getElementById(`tc-card-${idx}`);
         allPassed = allPassed && passed;
         if (outcomeText) {
-          outcomeText.textContent = passed ? `Passed (printed: ${actual})` : `Failed — ${errorDetail}`;
+          outcomeText.textContent = passed
+            ? (hiddenCheck ? 'Passed' : `Passed (printed: ${actual})`)
+            : `Failed — ${errorDetail}`;
           outcomeText.style.color = passed ? 'var(--green)' : 'var(--red)';
         }
         if (card) card.style.borderColor = passed ? 'var(--green)' : 'var(--red)';
@@ -7275,6 +7323,9 @@ class App {
       if (status) status.textContent = 'Python runtime: run complete';
       if (consoleOutput) {
         consoleOutput.textContent = results.map((result, idx) => {
+          if (challenge.testCases[idx]?.visibility === 'hidden') {
+            return `Unseen check ${idx}: ${this.lastProgrammingEvidence[idx]?.passed ? 'passed' : 'needs another attempt'}`;
+          }
           const cleanErr = this.formatPythonErrorForPupil(result.error);
           return `Test ${idx + 1}:\n${result.output || cleanErr || '(no output)'}`;
         }).join('\n\n');
@@ -7351,23 +7402,34 @@ class App {
       return false;
     }
 
+    if (challenge.requiresCodeChange !== false && this.editorCode.trim() === String(challenge.code || '').trim()) {
+      this.alert('Make a meaningful change to the starter code, then run every test again. Reading and running starter code is useful practice, but it is not yet evidence that you can program.');
+      return false;
+    }
+
+    const formativeOnly = challenge.awardsCompletion === false;
+
     window.db.addProgrammingSubmission({
       studentId: this.currentUser.id,
       challengeId: challenge.id,
       code: this.editorCode,
-      status: 'Passed',
+      status: formativeOnly ? 'Formative Complete' : 'Passed',
       supportUsed: supportText,
-      explanationResponse: explanation
+      explanationResponse: explanation,
+      contributesToMastery: !formativeOnly,
+      evidenceLevel: formativeOnly ? 'guided-practice' : (supportText === 'None' ? 'independent' : 'completed-with-support')
     });
 
     // Award a badge only when the complete challenge has demonstrated passing evidence.
     const student = window.db.getStudents().find(s => s.id === this.currentUser.id);
     if (student) {
-      if (challenge.id === 'pc_3' && completePassingEvidence) this.grantAchievement(student, 'debugging-detective');
+      if (!formativeOnly && challenge.id === 'pc_3' && completePassingEvidence) this.grantAchievement(student, 'debugging-detective');
       window.db.saveData();
     }
 
-    this.alert('Your programming submission has been saved. You can view its status in Progress.');
+    this.alert(formativeOnly
+      ? 'Guided practice saved. Next, try a code-writing task to demonstrate the skill.'
+      : `Programming evidence saved${supportText === 'None' ? ' as an independent pass' : ' as completed with support'}.`);
     this.switchTab('stud-dashboard');
     return true;
   }

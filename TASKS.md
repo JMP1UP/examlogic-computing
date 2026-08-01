@@ -1,6 +1,12 @@
 # Current priorities — ExamLogic Computing
 
 ## Now
+- [x] Separate supported programming, construct practice and independent exam-practice entry routes.
+- [x] Prevent guided starter-code activity from creating demonstrated programming evidence.
+- [x] Redact unseen programming-test answers and reconcile the formative classification for existing schema-13 data.
+- [ ] Build worked-example → small edit → completion → independent transfer sequences for each required programming construct.
+- [ ] Expand the original, specification-mapped Python and OCR ERL question banks with multiple variants per construct and task type.
+- [ ] Replace linear stage-count reporting with technique-level independent/supported evidence.
 - [x] Add restrained section milestones derived only from demonstrated evidence.
 - [ ] Add sufficient specification-mapped assessment for `1.2.4c`, `1.5.2`, `2.1.1`, `2.2.2` and `2.2.PY` before enabling their section checkpoints.
 - [x] Establish 25Thirty Learning design standards in `docs/design.md`.

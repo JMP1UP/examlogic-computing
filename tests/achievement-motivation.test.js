@@ -150,6 +150,74 @@ describe('achievement motivation', () => {
     expect(app.currentUser.achievements).toEqual([]);
   });
 
+  test('does not turn unchanged guided starter code into programming completion', () => {
+    const { app, db } = loadApplication();
+    const challenge = db.getProgrammingChallenges().find(item => item.id === 'pc_1');
+    app.alert = jest.fn();
+    app.switchTab = jest.fn();
+    app.editorCode = challenge.code;
+    app.lastProgrammingEvidence = challenge.testCases.map(() => ({ passed: true }));
+    app.lastProgrammingTestRun = {
+      challengeId: challenge.id,
+      code: challenge.code,
+      testCount: challenge.testCases.length,
+      allPassed: true
+    };
+
+    expect(app.submitProgramChallenge(challenge, 'The strings are joined.')).toBe(false);
+    expect(db.getProgrammingSubmissions()).toHaveLength(0);
+    expect(app.alert).toHaveBeenCalledWith(expect.stringContaining('Make a meaningful change'));
+  });
+
+  test('stores guided completion separately from demonstrated programming evidence', () => {
+    const { app, db } = loadApplication();
+    const challenge = db.getProgrammingChallenges().find(item => item.id === 'pc_1');
+    app.alert = jest.fn();
+    app.switchTab = jest.fn();
+    app.editorCode = `${challenge.code}\n# I traced this example`;
+    app.lastProgrammingEvidence = challenge.testCases.map(() => ({ passed: true }));
+    app.lastProgrammingTestRun = {
+      challengeId: challenge.id,
+      code: app.editorCode,
+      testCount: challenge.testCases.length,
+      allPassed: true
+    };
+
+    expect(app.submitProgramChallenge(challenge, 'The strings are joined.')).toBe(true);
+    expect(db.getProgrammingSubmissions()[0]).toMatchObject({
+      status: 'Formative Complete',
+      contributesToMastery: false,
+      evidenceLevel: 'guided-practice'
+    });
+  });
+
+  test('opens exam programming directly in independent editor mode', () => {
+    const { app } = loadApplication();
+
+    expect(app.activateProgrammingChallenge('pc_9', 'exam')).toBe(true);
+    expect(app.programmingPracticeMode).toBe('exam');
+    expect(app.programmingStage).toBe('run');
+  });
+
+  test('does not reveal expected answers from unseen programming checks', async () => {
+    const { app } = loadApplication();
+    const challenge = {
+      id: 'hidden_test_challenge',
+      code: 'print("wrong")',
+      testCases: [{ input: 'private input', expected: 'private expected', visibility: 'hidden' }]
+    };
+    app.editorCode = challenge.code;
+    app.alert = jest.fn();
+    app.executePythonTests = jest.fn().mockResolvedValue([{ output: 'wrong', error: '' }]);
+
+    await app.runPythonCodeSandbox(challenge);
+
+    expect(app.lastProgrammingEvidence[0].passed).toBe(false);
+    expect(app.lastProgrammingEvidence[0].error).toContain('unseen case');
+    expect(app.lastProgrammingEvidence[0].error).not.toContain('private expected');
+    expect(app.lastProgrammingEvidence[0].error).not.toContain('private input');
+  });
+
   test('an edit made while tests run cannot inherit the earlier code results', async () => {
     const { app } = loadApplication();
     const challenge = { id: 'pc_3', testCases: [{ input: [], expected: 'ok' }] };

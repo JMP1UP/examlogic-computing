@@ -40,6 +40,19 @@ describe('GCSE learning design', () => {
     expect(appSource).not.toContain("score: 'model checked'");
   });
 
+  test('offers supported, skill and exam programming routes without presenting guided reading as mastery', () => {
+    expect(appSource).toContain('Start with support');
+    expect(appSource).toContain('Practise a skill');
+    expect(appSource).toContain('Exam questions');
+    expect(appSource).toContain("status: formativeOnly ? 'Formative Complete' : 'Passed'");
+    expect(appSource).toContain('contributesToMastery: !formativeOnly');
+    expect(databaseSource).toContain("learningMode: 'guided-reading'");
+    expect(databaseSource).toContain('awardsCompletion: false');
+    expect(appSource).toContain('data-mode="exam"');
+    expect(appSource).toContain('Independent exam practice');
+    expect(appSource).toContain('The input and expected result stay hidden');
+  });
+
   test('reports content-bank readiness separately from pupil mastery', () => {
     expect(appSource).toContain('getCurriculumCoverage()');
     expect(appSource).toContain('Content-bank readiness');
