@@ -23,18 +23,17 @@ Coverage is recorded per internal strand. A strand is not complete because it ha
 4. a suitable retrieval route, except for the separately assessed practical-programming pathway;
 5. a supported application or review route;
 6. explicit required-knowledge, required-skill and OCR assessment-mode metadata;
-7. a realistic core workload of no more than 15 minutes, with optional retrieval and retry work;
+7. a realistic core workload split into study sessions of about 10-12 minutes, with optional retrieval and retry work;
 8. qualified-teacher quality assurance.
 
 The evidence required depends on how OCR can validly assess the requirement. A uniform item-count threshold is not used as a proxy for depth. **Awaiting QA** means the implemented route is present and traceable; it does not claim that qualified-teacher review has happened. **Developing** and **Foundation** identify structural gaps.
 
-Every strand now has at least two explicitly mapped flashcards, sequenced
-teaching blocks and an exact exam-transfer route. This is a structured
-curriculum baseline, not a claim that two cards and one exam question sample
-every bullet or every valid assessment form in the specification. Routes that
-rely on earlier knowledge also carry explicit prerequisite strand IDs. Further
-qualified-teacher review, question variation and unseen mixed practice remain
-necessary before full curriculum readiness can be claimed.
+Every strand now has mapped flashcards, a consolidated teaching sequence and an
+exact exam-transfer route. The August 2026 theory audit also checks named OCR
+content bullets explicitly and adds worked representations where prose alone
+was insufficient. Routes that rely on earlier knowledge carry prerequisite
+strand IDs. Named qualified-teacher review, question variation and unseen mixed
+practice remain necessary before full curriculum readiness can be claimed.
 
 ## Current audited coverage
 

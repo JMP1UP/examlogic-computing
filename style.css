@@ -2858,3 +2858,118 @@ body.dark-mode .app-container[data-user-role="student"] {
   border-radius: 10px;
 }
 
+.student-teaching-sequence {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.student-review-instructions {
+  padding: 16px 18px;
+  border-left: 4px solid var(--teal);
+  background: rgba(45, 156, 145, 0.08);
+}
+.student-review-instructions ol { margin: 8px 0 0; padding-left: 22px; }
+.student-review-instructions li + li { margin-top: 5px; }
+.student-study-session {
+  margin-top: 18px;
+  padding-bottom: 7px;
+  border-bottom: 2px solid var(--lime);
+  color: var(--navy);
+  font-weight: 800;
+}
+
+.student-teaching-part {
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--teal);
+  border-radius: 10px;
+  background: var(--bg-card);
+  overflow: clip;
+}
+
+.student-teaching-part > summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  color: var(--text-main);
+}
+
+.student-teaching-part > summary:focus-visible {
+  outline: 3px solid var(--focus-ring, #1d70b8);
+  outline-offset: -3px;
+}
+
+.student-teaching-part-number,
+.student-teaching-part-time {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.student-teaching-part-content {
+  border-top: 1px solid var(--border-color);
+  padding: 16px;
+}
+
+.student-teaching-part-content > p {
+  max-width: 72ch;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.student-teaching-points {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+  margin: 14px 0 0;
+}
+
+.student-teaching-points > div {
+  border: 1px solid var(--border-color);
+  border-top: 3px solid var(--teal);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--bg-main);
+}
+
+.student-teaching-points dt {
+  color: var(--text-main);
+  font-weight: 800;
+  margin-bottom: 5px;
+}
+
+.student-teaching-points dd {
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.learning-visual {
+  margin: 18px 0;
+  padding: 18px;
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--teal);
+  background: var(--bg-card);
+}
+
+.learning-visual figcaption { margin-bottom: 12px; }
+.learning-visual p { margin: 12px 0 0; color: var(--text-muted); }
+.learning-visual-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.learning-visual-strip span,
+.learning-visual-grid span { padding: 8px 12px; border: 1px solid var(--border-color); background: var(--bg-main); font-weight: 700; }
+.learning-visual-grid { display: grid; max-width: 360px; gap: 4px; }
+.learning-visual-grid--four { grid-template-columns: repeat(4, minmax(44px, 1fr)); }
+
+@media (max-width: 520px) {
+  .student-teaching-part > summary {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .student-teaching-points {
+    grid-template-columns: 1fr;
+  }
+}

@@ -3454,6 +3454,9 @@ class App {
   getObjectiveDiagramSvg(strandId) {
     if (!strandId) return '';
     const id = String(strandId).trim();
+    // Legacy visual hubs are intentionally withheld: only the small, exact-strand
+    // learning visuals below have passed the current accuracy and clarity review.
+    if (!['1.2.3', '1.2.4a', '1.2.4b'].includes(id)) return '';
     if (id.includes('1.1.3') || id.includes('embedded')) {
       return `
         <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 22px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
@@ -3579,18 +3582,45 @@ class App {
         </div>
       `;
     }
-    if (id.includes('1.2.3') || id.includes('sound')) {
+    if (id === '1.2.3') {
+      return `
+        <figure class="learning-visual" aria-labelledby="units-visual-title">
+          <figcaption id="units-visual-title"><strong>Storage units: follow each step</strong></figcaption>
+          <div class="learning-visual-strip">
+            <span>8 bits</span><span aria-hidden="true">→</span><span>1 byte</span>
+            <span aria-hidden="true">→</span><span>÷ 1,000</span><span aria-hidden="true">→</span><span>next decimal unit</span>
+          </div>
+          <p>For example, 24,000 bits ÷ 8 = 3,000 bytes. Keep the unit beside every value.</p>
+        </figure>`;
+    }
+    if (id === '1.2.4a') {
+      return `
+        <figure class="learning-visual" aria-labelledby="number-visual-title">
+          <figcaption id="number-visual-title"><strong>Binary place values</strong></figcaption>
+          <div class="learning-visual-grid learning-visual-grid--four"><span>8</span><span>4</span><span>2</span><span>1</span><span>1</span><span>0</span><span>1</span><span>1</span></div>
+          <p>1011 = 8 + 2 + 1 = 11. Group four binary digits to convert one hexadecimal digit.</p>
+        </figure>`;
+    }
+    if (id === '1.2.4b') {
+      return `
+        <figure class="learning-visual" aria-labelledby="characters-visual-title">
+          <figcaption id="characters-visual-title"><strong>Characters are stored as codes</strong></figcaption>
+          <div class="learning-visual-strip"><span>character</span><span aria-hidden="true">→</span><span>character set</span><span aria-hidden="true">→</span><span>binary code</span></div>
+          <p>A larger character set needs more distinct codes, so each character may require more bits.</p>
+        </figure>`;
+    }
+    if (id === '1.2.4d' || id.includes('sound')) {
       return `
         <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <h4 style="color: #2D9C91; font-size: 15px; margin: 0; font-weight: 700;">🎵 Analogue Sound Wave &amp; Digital Sampling (Sample Rate &amp; Bit Depth)</h4>
-            <span class="badge badge-primary" style="font-size: 11px;">OCR 1.2.3 Sound Sampling</span>
+            <span class="badge badge-primary" style="font-size: 11px;">OCR 1.2.4d Sound Sampling</span>
           </div>
           <svg viewBox="0 0 740 270" style="width: 100%; height: auto; font-family: Inter, sans-serif;">
             <line x1="60" y1="30" x2="60" y2="210" stroke="#475569" stroke-width="2"/>
             <line x1="60" y1="210" x2="700" y2="210" stroke="#475569" stroke-width="2"/>
             <text x="380" y="240" fill="#94A3B8" font-size="12" font-weight="bold" text-anchor="middle">Time (Sample Rate: Frequency of measurements per second in Hz)</text>
-            <text x="25" y="120" fill="#94A3B8" font-size="12" font-weight="bold" text-anchor="middle" transform="rotate(-90 25 120)">Amplitude (Bit Depth)</text>
+            <text x="25" y="120" fill="#94A3B8" font-size="12" font-weight="bold" text-anchor="middle" transform="rotate(-90 25 120)">Amplitude / quantisation level</text>
 
             <line x1="55" y1="50" x2="700" y2="50" stroke="#1E293B" stroke-dasharray="4,4"/>
             <text x="48" y="54" fill="#CBD5E1" font-size="10" text-anchor="end">11 (Level 3)</text>
@@ -3632,17 +3662,18 @@ class App {
             <text x="620" y="90" fill="#6EE7B7" font-size="11" font-weight="bold" text-anchor="middle">Sample 7: 10</text>
           </svg>
           <div style="font-size:12px; color:#94A3B8; margin-top:8px; line-height:1.5;">
-            💡 <strong>Formula:</strong> File Size (bits) = Sample Rate (Hz) × Sample Depth (bits) × Duration (seconds)
+            <strong>Bit depth:</strong> more bits provide more available quantisation levels.<br>
+            <strong>Formula:</strong> File Size (bits) = Sample Rate (Hz) × Bit Depth (bits) × Duration (seconds)
           </div>
         </div>
       `;
     }
-    if (id.includes('1.2.4') || id.includes('image') || id.includes('bitmap')) {
+    if (id === '1.2.4c' || id.includes('image') || id.includes('bitmap')) {
       return `
         <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <h4 style="color: #2D9C91; font-size: 15px; margin: 0; font-weight: 700;">🖼️ Bitmap Image Grid, Resolution &amp; Color Depth (OCR 1.2.4)</h4>
-            <span class="badge badge-primary" style="font-size: 11px;">OCR 1.2.4 Bitmap Images</span>
+            <span class="badge badge-primary" style="font-size: 11px;">OCR 1.2.4c Bitmap Images</span>
           </div>
           <svg viewBox="0 0 740 240" style="width: 100%; height: auto; font-family: Inter, sans-serif;">
             <!-- 4x4 Pixel Grid -->
@@ -3812,12 +3843,12 @@ class App {
         </div>
       `;
     }
-    if (id.startsWith('2.3') || id === '2.3') {
+    if (id === '2.4.1' || id.includes('logic')) {
       return `
         <div class="card svg-diagram-container" style="background: #07111F; color: #FFFFFF; padding: 20px; border-radius: 12px; margin: 18px 0; border: 1px solid rgba(45, 156, 145, 0.4);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <h4 style="color: #2D9C91; font-size: 15px; margin: 0; font-weight: 700;">⚡ Logic Circuit &amp; Gate Symbols (AND, OR, NOT)</h4>
-            <span class="badge badge-primary" style="font-size: 11px;">OCR 2.3 Logic Gates</span>
+            <span class="badge badge-primary" style="font-size: 11px;">OCR 2.4.1 Logic Gates</span>
           </div>
           <svg viewBox="0 0 740 220" style="width: 100%; height: auto; font-family: Inter, sans-serif;">
             <g transform="translate(30, 30)">
@@ -4027,23 +4058,23 @@ class App {
               
               <div style="display: flex; flex-direction: column; gap: 14px;">
                 <div style="border-left: 4px solid #EF4444; padding-left: 14px;">
-                  <strong style="color: #EF4444; font-size: 13px;">1. Bullet-Point Lists (Capped at Level 1 - Max 3 Marks)</strong>
-                  <p style="font-size: 12.5px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.5;">Examiners cannot award Level 2 or 3 to bullet points. Write in continuous prose paragraphs with connectives (e.g., <em>However, Consequently, On the other hand</em>).</p>
+                  <strong style="color: #EF4444; font-size: 13px;">1. Undeveloped points</strong>
+                  <p style="font-size: 12.5px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.5;">Answers may use paragraphs, developed key points or a table. Marks depend on explaining each relevant point clearly, not on choosing one required layout.</p>
                 </div>
 
                 <div style="border-left: 4px solid #F59E0B; padding-left: 14px;">
-                  <strong style="color: #F59E0B; font-size: 13px;">2. Ignoring the Given Scenario (Capped at Level 2 - Max 5 Marks)</strong>
+                  <strong style="color: #F59E0B; font-size: 13px;">2. Ignoring the given scenario</strong>
                   <p style="font-size: 12.5px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.5;">Regurgitating general memory facts without linking them to the specific scenario (e.g., school, hospital, driverless cars) loses marks. Explicitly name the scenario!</p>
                 </div>
 
                 <div style="border-left: 4px solid #3B82F6; padding-left: 14px;">
-                  <strong style="color: #3B82F6; font-size: 13px;">3. One-Sided Arguments (No Counter-Perspective)</strong>
-                  <p style="font-size: 12.5px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.5;">Only listing benefits without discussing risks/harms (or vice versa) prevents reaching Level 3. Always include both pros and cons.</p>
+                  <strong style="color: #3B82F6; font-size: 13px;">3. An underdeveloped judgement</strong>
+                  <p style="font-size: 12.5px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.5;">Where the question asks you to discuss or evaluate, develop the relevant perspectives from the scenario before making a reasoned judgement. Do not add an artificial opposite point when it is not relevant.</p>
                 </div>
 
                 <div style="border-left: 4px solid #10B981; padding-left: 14px;">
-                  <strong style="color: #10B981; font-size: 13px;">4. Missing Justified Conclusion (Capped at 6 Marks)</strong>
-                  <p style="font-size: 12.5px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.5;">Level 3 requires a final concluding paragraph weighing the trade-offs to state whether the proposal should go ahead.</p>
+                  <strong style="color: #10B981; font-size: 13px;">4. A judgement without a reason</strong>
+                  <p style="font-size: 12.5px; color: var(--text-main); margin: 3px 0 0 0; line-height: 1.5;">When the question and level descriptors require a judgement, justify it using the evidence you have already applied to the scenario. A separate conclusion is useful only when it answers the command word clearly.</p>
                 </div>
               </div>
             </div>
@@ -4145,6 +4176,55 @@ class App {
   }
 
   // ==================== STUDENT LEARN THEORY HUB ====================
+  renderTeachingReviewPart(section, index, total, sections = []) {
+    const items = Array.isArray(section.items) ? section.items : [];
+    const itemMarkup = items.length ? `
+      <dl class="student-teaching-points">
+        ${items.map(item => `
+          <div>
+            <dt>${this.escapeHTML(item.label)}</dt>
+            <dd>${this.escapeHTML(item.text)}</dd>
+          </div>
+        `).join('')}
+      </dl>
+    ` : '';
+    const contentMarkup = section.html || `
+      <p>${this.escapeHTML(section.body)}</p>
+      ${itemMarkup}
+    `;
+    const sessionNumber = Math.floor(index / 2) + 1;
+    const totalSessions = Math.ceil(total / 2);
+    const sessionSections = sections.slice(index, index + 2);
+    const sessionMinutes = sessionSections.reduce((sum, part) => sum + (Number(part.minutes) || 3), 0);
+    const sequenceIntro = index === 0 ? `
+      <div class="student-review-instructions">
+        <strong>How to use this review</strong>
+        <ol>
+          <li>Open the parts in order and work through the examples inside them.</li>
+          <li>Pause at a session break if you need to; your next part is clearly numbered.</li>
+          <li>When ready, try the matching exam question. Flashcards are for later recall.</li>
+        </ol>
+      </div>` : '';
+    const sessionHeading = index % 2 === 0 ? `
+      <div class="student-study-session" role="heading" aria-level="3">
+        Study session ${sessionNumber} of ${totalSessions} · about ${sessionMinutes} minutes
+      </div>` : '';
+    return `
+      ${sequenceIntro}
+      ${sessionHeading}
+      <details class="student-teaching-part" ${index === 0 ? 'open' : ''}>
+        <summary>
+          <span class="student-teaching-part-number">Part ${index + 1} of ${total}</span>
+          <strong>${this.escapeHTML(section.heading)}</strong>
+          ${section.minutes ? `<span class="student-teaching-part-time">about ${Number(section.minutes)} min</span>` : ''}
+        </summary>
+        <div class="student-teaching-part-content">
+          ${contentMarkup}
+        </div>
+      </details>
+    `;
+  }
+
   renderStudentLearn(panel) {
     const theoryNotes = window.db.getTheoryNotes();
     const activeNote = window.db.getTheoryNoteByTopic(this.activeTopicId);
@@ -4213,15 +4293,10 @@ class App {
               </div>
             </div>
             <p style="line-height: 1.7; margin: 14px 0;">${this.escapeHTML(item.explanation)}</p>
-            ${this.getObjectiveDiagramSvg(item.id)}
+            ${['1.2.3', '1.2.4a', '1.2.4b'].includes(item.id) ? this.getObjectiveDiagramSvg(item.id) : ''}
             ${item.teachingSections?.length ? `
               <div class="student-teaching-sequence" aria-label="Step-by-step teaching">
-                ${item.teachingSections.map(section => `
-                  <section>
-                    <h4>${this.escapeHTML(section.heading)}</h4>
-                    <p>${this.escapeHTML(section.body)}</p>
-                  </section>
-                `).join('')}
+                ${item.teachingSections.map((section, index) => this.renderTeachingReviewPart(section, index, item.teachingSections.length, item.teachingSections)).join('')}
               </div>
             ` : ''}
             <div style="background: rgba(45, 156, 145, 0.08); border-left: 4px solid var(--teal); padding: 14px; border-radius: 0 8px 8px 0;">
@@ -4615,15 +4690,10 @@ class App {
             </div>
           ` : ''}
 
-          ${this.getObjectiveDiagramSvg(content.id)}
+          ${['1.2.3', '1.2.4a', '1.2.4b'].includes(content.id) ? this.getObjectiveDiagramSvg(content.id) : ''}
           ${content.teachingSections?.length ? `
             <div class="student-teaching-sequence" aria-label="Step-by-step teaching">
-              ${content.teachingSections.map(section => `
-                <section style="margin-bottom: 24px;">
-                  <h3 style="font-size: 16px; font-weight: 700; color: var(--teal); margin: 16px 0 8px 0;">${this.escapeHTML(section.heading)}</h3>
-                  ${section.html ? section.html : `<p>${this.escapeHTML(section.body)}</p>`}
-                </section>
-              `).join('')}
+              ${content.teachingSections.map((section, index) => this.renderTeachingReviewPart(section, index, content.teachingSections.length, content.teachingSections)).join('')}
             </div>
           ` : ''}
           <aside class="student-worked-example">

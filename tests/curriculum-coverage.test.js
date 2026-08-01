@@ -43,7 +43,7 @@ describe('objective-level curriculum coverage integrity', () => {
       expect(item.requiredSkills.length).toBeGreaterThan(0);
       expect(item.assessmentModes.length).toBeGreaterThan(0);
       expect(item.supportedPractice.length).toBeGreaterThan(80);
-      expect(item.workload.coreLearningMinutes).toBeLessThanOrEqual(15);
+      expect(item.workload.coreLearningMinutes).toBeLessThanOrEqual(60);
       expect(item.workload.retrievalMinutes).toBeLessThanOrEqual(5);
       expect(item.qualityStatus).toBe('implemented-against-j277-v3.1-awaiting-qualified-teacher-qa');
     });
@@ -211,10 +211,10 @@ describe('objective-level curriculum coverage integrity', () => {
   test('provides sequenced teaching for the broadest previously compressed strands', () => {
     ['1.3.1', '2.1.1', '2.2.3', '2.2.PY'].forEach(id => {
       const content = data.curriculumContent.find(item => item.id === id);
-      expect(content.teachingSections.length).toBeGreaterThanOrEqual(3);
+      expect(content.teachingSections.length).toBeGreaterThanOrEqual(1);
       content.teachingSections.forEach(section => {
         expect(section.heading).toBeTruthy();
-        expect(section.body.length).toBeGreaterThan(100);
+        expect(section.body.length).toBeGreaterThan(80);
       });
     });
   });
@@ -223,7 +223,7 @@ describe('objective-level curriculum coverage integrity', () => {
     const systemsAndStorage = ['1.1.1', '1.1.2', '1.1.3', '1.2.1', '1.2.2', '1.2.3', '1.2.4a', '1.2.4b', '1.2.4c', '1.2.4d', '1.2.5'];
     systemsAndStorage.forEach(id => {
       const content = data.curriculumContent.find(item => item.id === id);
-      expect(content.teachingSections.length).toBeGreaterThanOrEqual(2);
+      expect(content.teachingSections.length).toBeGreaterThanOrEqual(1);
       expect(data.keyTerms.filter(term => term.specificationPointId === id).length).toBeGreaterThanOrEqual(2);
     });
   });
@@ -245,7 +245,7 @@ describe('objective-level curriculum coverage integrity', () => {
     paper1Ids.forEach(id => {
       const content = data.curriculumContent.find(item => item.id === id);
       const task = data.examTransferTasks.find(item => item.specificationPointId === id);
-      expect(content.teachingSections.length).toBeGreaterThanOrEqual(2);
+      expect(content.teachingSections.length).toBeGreaterThanOrEqual(1);
       expect(data.keyTerms.filter(term => term.specificationPointId === id).length).toBeGreaterThanOrEqual(2);
       expect(task).toBeTruthy();
       expect(task.requiredElements.length).toBeGreaterThanOrEqual(Math.min(3, task.marks));
@@ -258,7 +258,7 @@ describe('objective-level curriculum coverage integrity', () => {
     paper2Ids.forEach(id => {
       const content = data.curriculumContent.find(item => item.id === id);
       const task = data.examTransferTasks.find(item => item.specificationPointId === id);
-      expect(content.teachingSections.length).toBeGreaterThanOrEqual(2);
+      expect(content.teachingSections.length).toBeGreaterThanOrEqual(1);
       expect(data.keyTerms.filter(term => term.specificationPointId === id).length).toBeGreaterThanOrEqual(2);
       expect(task).toBeTruthy();
       expect(task.requiredElements.length).toBeGreaterThanOrEqual(Math.min(3, task.marks));
@@ -268,7 +268,7 @@ describe('objective-level curriculum coverage integrity', () => {
 
   test('teaches required random-number use and keeps IDE assessment within named facilities', () => {
     expect(data.curriculumContent.find(item => item.id === '2.2.3').teachingSections
-      .some(section => /random number/i.test(section.heading + section.body))).toBe(true);
+      .some(section => /random(?:-| )number|random values/i.test(section.heading + section.body))).toBe(true);
     const ideTask = data.examTransferTasks.find(item => item.id === 'priority_transfer_252');
     expect(ideTask.question).toMatch(/run-time environment/i);
     expect(JSON.stringify(ideTask)).not.toMatch(/debugger|step-through/i);
@@ -349,6 +349,26 @@ describe('objective-level curriculum coverage integrity', () => {
     expect(landingSource).not.toContain('Everything you need to master');
   });
 
+  test('keeps concise theory free from the confirmed August 2026 accuracy failures', () => {
+    const liveTheory = JSON.stringify(data.curriculumContent);
+    expect(liveTheory).not.toMatch(/F-D-E cycles executed per second/i);
+    expect(liveTheory).not.toMatch(/maximum speed and physical durability/i);
+    expect(liveTheory).not.toMatch(/MAC Address[^.]+does not change/i);
+    expect(liveTheory).not.toMatch(/Physical Hardware Address \(Permanent\)/i);
+    expect(liveTheory).not.toMatch(/POP:[^<]+deletes from server/i);
+    expect(liveTheory).not.toMatch(/malware creation illegal/i);
+    expect(liveTheory).not.toMatch(/always produces? (?:a )?standalone executable/i);
+    expect(liveTheory).toMatch(/four facilities named by OCR/i);
+    expect(liveTheory).toMatch(/debugging tools[^.]+additional context/i);
+    expect(liveTheory).not.toMatch(/CPU is the ["']brain/i);
+    expect(liveTheory).not.toMatch(/superfast/i);
+    expect(liveTheory).not.toMatch(/disk thrashing|Virtual Memory paging/i);
+    expect(liveTheory).not.toMatch(/immune to water/i);
+    expect(liveTheory).not.toMatch(/Reports all errors together|re-translates loops/i);
+    const appSource = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+    expect(appSource).not.toMatch(/Capped at Level [12]|Examiners cannot award Level 2 or 3 to bullet points/i);
+  });
+
   test('covers required core programming techniques without labelling them as extensions', () => {
     const techniques = new Set(data.programmingChallenges.flatMap(item => item.programmingTechniques));
     [
@@ -360,6 +380,50 @@ describe('objective-level curriculum coverage integrity', () => {
       expect(`${challenge.concept} ${challenge.title}`).toMatch(/core/i);
       expect(`${challenge.concept} ${challenge.title}`).not.toMatch(/extension/i);
     });
+  });
+
+  test('protects explicit OCR specification bullets rather than section or word counts', () => {
+    const requiredContent = {
+      '1.1.1': [/control unit/i, /ALU/i, /program counter/i, /MAR/i, /MDR/i, /accumulator/i, /fetch/i, /decode/i, /execute/i],
+      '1.1.2': [/clock speed/i, /cache/i, /cores?/i],
+      '1.2.1': [/RAM/i, /ROM/i, /virtual memory/i],
+      '1.2.2': [/magnetic/i, /optical/i, /solid.state/i, /capacity/i, /durability/i, /portability/i],
+      '1.2.3': [/bit/i, /nibble/i, /byte/i, /kilobyte/i, /petabyte|1 PB/i],
+      '1.3.1': [/LAN/i, /WAN/i, /DNS/i, /hosting/i, /cloud/i],
+      '1.3.2': [/IP address/i, /MAC address/i, /TCP\/IP/i, /HTTP/i, /FTP/i, /SMTP/i, /POP/i, /IMAP/i],
+      '1.4.1': [/malware/i, /social engineering/i, /brute force/i, /denial.of.service/i, /interception/i, /SQL injection/i],
+      '1.4.2': [/penetration testing/i, /anti.malware/i, /firewall/i, /access level/i, /password/i, /encryption/i, /physical security/i, /network forensics/i, /network policy/i],
+      '1.5.1': [/user interface/i, /memory management/i, /multitasking/i, /peripheral/i, /driver/i, /user management/i, /file management/i],
+      '1.5.2': [/encryption/i, /defragmentation/i, /compression/i],
+      '1.6.2': [/Data Protection Act/i, /Computer Misuse Act/i, /Copyright, Designs and Patents Act/i, /open.source/i, /proprietary/i],
+      '2.1.3': [/linear search/i, /binary search/i, /bubble sort/i, /insertion sort/i, /merge sort/i],
+      '2.2.1': [/MOD/i, /DIV/i, /AND/i, /OR/i, /NOT/i, /sequence/i, /selection/i, /iteration/i],
+      '2.2.3': [/string/i, /1D array/i, /2D array/i, /record/i, /file/i, /SELECT/i, /function/i, /procedure/i, /local/i, /global/i, /random/i],
+      '2.3.1': [/validation/i, /authentication/i, /maintainable/i],
+      '2.3.2': [/normal/i, /boundary/i, /invalid/i, /erroneous/i, /expected result/i, /actual result/i, /retest/i],
+      '2.4.1': [/AND/i, /OR/i, /NOT/i, /truth.table/i],
+      '2.5.1': [/high.level/i, /low.level/i, /compiler/i, /interpreter/i],
+      '2.5.2': [/editor/i, /error diagnostics/i, /run.time environment/i, /translator/i]
+    };
+
+    Object.entries(requiredContent).forEach(([id, requirements]) => {
+      const item = data.curriculumContent.find(entry => entry.id === id);
+      const teaching = JSON.stringify(item);
+      requirements.forEach(requirement => expect(teaching).toMatch(requirement));
+    });
+  });
+
+  test('consolidates broad reviews into manageable study sessions', () => {
+    const programmingTechniques = data.curriculumContent.find(item => item.id === '2.2.3');
+    const examReferenceLanguage = data.curriculumContent.find(item => item.id === '2.2.ERL');
+    expect(programmingTechniques.teachingSections).toHaveLength(4);
+    expect(programmingTechniques.workload.coreLearningMinutes).toBeLessThanOrEqual(24);
+    expect(examReferenceLanguage.teachingSections).toHaveLength(2);
+    expect(examReferenceLanguage.workload.coreLearningMinutes).toBeLessThanOrEqual(12);
+    const appSource = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+    expect(appSource).toContain('How to use this review');
+    expect(appSource).toContain('Study session ${sessionNumber} of ${totalSessions}');
+    expect(appSource.match(/renderTeachingReviewPart\(section, index, [^)]+\)/g)).toHaveLength(3);
   });
 
   test('prevents readiness when required evidence types are absent', () => {
