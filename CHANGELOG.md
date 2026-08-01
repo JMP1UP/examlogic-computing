@@ -5,6 +5,12 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Hardened student assessment failure paths: incomplete structured number work
+  can no longer be converted into zero-filled evidence, and custom tests now
+  require an explicit topic selection and open the questions actually chosen.
+- Added contextual, keyboard-accessible validation for exam and programming
+  responses, plus session-level exam-answer draft recovery after an accidental
+  refresh or interruption.
 - Introduced a restrained Quiet Desk treatment on the student dashboard: the
   weekly plan now leads, with an accessible calendar and grouped flashcard deck
   on a shared calm study surface. Teacher pages are unchanged.

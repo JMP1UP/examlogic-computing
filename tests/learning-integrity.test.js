@@ -357,6 +357,17 @@ describe('learning-record integrity', () => {
     expect(database.saveData).toHaveBeenCalledTimes(1);
   });
 
+  test('does not turn blank structured number boxes into zero-valued evidence', () => {
+    const { app } = loadApp();
+
+    expect(app.normaliseNumberSkillAnswer({ inputType: 'hex' }, ['', ''])).toBeNull();
+    expect(app.normaliseNumberSkillAnswer({ inputType: 'binary' }, ['1', '', '0'])).toBeNull();
+    expect(app.normaliseNumberSkillAnswer({ inputType: 'standard' }, ['   '])).toBeNull();
+    expect(app.normaliseNumberSkillAnswer({ inputType: 'hex' }, ['a', 'f'])).toBe('AF');
+    expect(app.normaliseNumberSkillAnswer({ inputType: 'binary' }, ['1', '0', '1', '0'])).toBe('1010');
+    expect(app.normaliseNumberSkillAnswer({ inputType: 'binary-overflow' }, ['1', '0'], true)).toBe('10 - OVERFLOW');
+  });
+
   test('confidence cannot change attainment or completion calculations', () => {
     const { app } = loadApp();
     const attempt = {

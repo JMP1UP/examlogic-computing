@@ -41,6 +41,19 @@ describe('Senior Developer Pedagogical & Examiner Enhancements', () => {
       expect(result.percentage).toBe(100);
       expect(result.gradeEstimate).toBe('Grade 8/9');
     });
+
+    test('treats an explicit empty strand selection as no questions, not all questions', () => {
+      const curriculumContent = [
+        { id: '1.1.1', officialSpecificationPointId: '1.1.1', diagnostic: { question: 'Q1', options: ['A', 'B'], answer: 'A', explanation: 'E1' } }
+      ];
+
+      const emptySession = mixedExamEngine.createMixedExamSession('paper1', 5, curriculumContent, [], null, []);
+      const selectedSession = mixedExamEngine.createMixedExamSession('paper1', 5, curriculumContent, [], null, ['1.1.1']);
+
+      expect(emptySession.questions).toEqual([]);
+      expect(selectedSession.questions).toHaveLength(1);
+      expect(selectedSession.questions[0].strandId).toBe('1.1.1');
+    });
   });
 
   describe('Scaffolded 8 Mark Extended Response Builder', () => {

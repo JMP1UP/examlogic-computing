@@ -16,7 +16,7 @@
       const paper2Strands = ['2.1.1', '2.1.2', '2.1.3', '2.2.1', '2.2.2', '2.2.3', '2.2.PY', '2.2.ERL', '2.3.1', '2.3.2', '2.4.1', '2.5.1', '2.5.2'];
 
       let pool = curriculumContent;
-      if (Array.isArray(selectedStrandIds) && selectedStrandIds.length > 0) {
+      if (Array.isArray(selectedStrandIds)) {
         pool = curriculumContent.filter(item => selectedStrandIds.includes(item.id));
       } else if (paperType === 'paper1') {
         pool = curriculumContent.filter(item => paper1Strands.includes(item.id));

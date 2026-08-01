@@ -44,8 +44,10 @@ class App {
     this.activeWQuestionId = 'wq_1'; // default written question
     this.activeExamTransferId = 'transfer_1';
     this.examTransferStage = 'decode';
+    this.examTransferDecodeResponse = '';
     this.examTransferPlan = {};
     this.examTransferResponse = '';
+    this.examTransferRetryResponse = '';
     this.supportLevelUsed = 0; // support ladder level
     this.lastProgrammingEvidence = [];
     this.lastProgrammingTestRun = null;
@@ -61,6 +63,8 @@ class App {
     this.numberSkillsEvidenceSet = null;
     this.numberSkillsDifficulty = 'Supported'; // Guided, Supported, Independent, Challenge
     this.numberSkillsCalculations = {};
+    this.currentTestSession = null;
+    this.currentTestAnswers = [];
 
     // Theory Recall Quiz state
     this.quizQuestions = [];
@@ -929,6 +933,114 @@ class App {
     ];
   }
 
+  normaliseNumberSkillAnswer(question, rawValues = [], overflowChecked = false) {
+    const values = rawValues.map(value => String(value || '').trim());
+    if (!values.length || values.some(value => !value)) return null;
+    const joined = values.join('');
+    if (question?.inputType === 'hex') return joined.toUpperCase();
+    if (question?.inputType === 'binary-overflow') {
+      return `${joined}${overflowChecked ? ' - OVERFLOW' : ''}`;
+    }
+    return question?.inputType === 'standard' ? values[0].toUpperCase() : joined;
+  }
+
+  showInlineValidation(errorId, fieldId, message) {
+    const error = document.getElementById(errorId);
+    const field = document.getElementById(fieldId);
+    if (error) {
+      error.textContent = message;
+      error.hidden = false;
+    }
+    if (field) {
+      field.setAttribute?.('aria-invalid', 'true');
+      field.setAttribute?.('aria-describedby', errorId);
+      field.focus?.();
+    } else {
+      error?.focus?.();
+    }
+  }
+
+  getExamTransferDraftKey(studentId = this.currentUser?.id) {
+    return studentId ? `studyspice_exam_transfer_draft_${studentId}` : null;
+  }
+
+  getExamTransferDraft() {
+    const key = this.getExamTransferDraftKey();
+    if (!key || typeof sessionStorage === 'undefined' || typeof sessionStorage.getItem !== 'function') return null;
+    try {
+      const draft = JSON.parse(sessionStorage.getItem(key));
+      const allowedStages = new Set(['decode', 'plan', 'answer', 'check', 'retry']);
+      if (!draft || !draft.taskId || !allowedStages.has(draft.stage)) return null;
+      return {
+        taskId: String(draft.taskId),
+        stage: draft.stage,
+        decodeResponse: String(draft.decodeResponse || '').slice(0, 4000),
+        plan: draft.plan && typeof draft.plan === 'object' ? draft.plan : {},
+        response: String(draft.response || '').slice(0, 12000),
+        retryResponse: String(draft.retryResponse || '').slice(0, 12000)
+      };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  saveExamTransferDraft() {
+    const key = this.getExamTransferDraftKey();
+    if (!key || typeof sessionStorage === 'undefined' || typeof sessionStorage.setItem !== 'function') return;
+    const hasContent = Boolean(this.examTransferDecodeResponse.trim())
+      || Object.values(this.examTransferPlan || {}).some(Boolean)
+      || Boolean(this.examTransferResponse.trim())
+      || Boolean(this.examTransferRetryResponse.trim());
+    if (!hasContent) {
+      sessionStorage.removeItem?.(key);
+      return;
+    }
+    sessionStorage.setItem(key, JSON.stringify({
+      taskId: this.activeExamTransferId,
+      stage: this.examTransferStage,
+      decodeResponse: this.examTransferDecodeResponse,
+      plan: this.examTransferPlan,
+      response: this.examTransferResponse,
+      retryResponse: this.examTransferRetryResponse
+    }));
+  }
+
+  restoreExamTransferDraft() {
+    const draft = this.getExamTransferDraft();
+    if (!draft) return false;
+    this.activeExamTransferId = draft.taskId;
+    this.examTransferStage = draft.stage;
+    this.examTransferDecodeResponse = draft.decodeResponse;
+    this.examTransferPlan = draft.plan;
+    this.examTransferResponse = draft.response;
+    this.examTransferRetryResponse = draft.retryResponse;
+    return true;
+  }
+
+  clearExamTransferDraft() {
+    const key = this.getExamTransferDraftKey();
+    if (key && typeof sessionStorage !== 'undefined') sessionStorage.removeItem?.(key);
+    this.examTransferDecodeResponse = '';
+    this.examTransferPlan = {};
+    this.examTransferResponse = '';
+    this.examTransferRetryResponse = '';
+  }
+
+  captureExamTransferDraftFromDOM() {
+    if (this.activeTab !== 'stud-exam-transfer') return;
+    const decode = document.getElementById('transfer-decode-response');
+    const answer = document.getElementById('transfer-answer-response');
+    const retry = document.getElementById('transfer-retry-response');
+    if (decode) this.examTransferDecodeResponse = decode.value;
+    if (answer) this.examTransferResponse = answer.value;
+    if (retry) this.examTransferRetryResponse = retry.value;
+    document.querySelectorAll?.('[id^="transfer-plan-"]').forEach(element => {
+      const index = element.id.replace('transfer-plan-', '');
+      this.examTransferPlan[index] = element.value;
+    });
+    this.saveExamTransferDraft();
+  }
+
   getCommandWordMeaning(commandWord) {
     const meanings = {
       Identify: 'Give the required name or fact.',
@@ -1270,13 +1382,21 @@ class App {
     });
   }
 
+  prepareExamTransferTask(task, stage = 'answer') {
+    if (!task) return false;
+    this.clearExamTransferDraft();
+    this.activeExamTransferId = task.id;
+    this.activeTopicId = task.topicId;
+    this.activeObjectiveId = task.specificationPointId;
+    this.examTransferStage = stage;
+    this.saveExamTransferDraft();
+    return true;
+  }
+
   activateExamTransferForCurrentLearning() {
     const task = this.getMatchingExamTransferTask();
     if (!task) return false;
-    this.activeExamTransferId = task.id;
-    this.examTransferStage = 'decode';
-    this.examTransferPlan = {};
-    this.examTransferResponse = '';
+    this.prepareExamTransferTask(task, 'decode');
     this.switchTab('stud-exam-transfer');
     return true;
   }
@@ -1284,12 +1404,7 @@ class App {
   activateScheduledExamTransfer() {
     const task = this.getOrderedExamTransferTasks().find(item => item.marks >= 4 && item.marks <= 6);
     if (!task) return false;
-    this.activeTopicId = task.topicId;
-    this.activeObjectiveId = task.specificationPointId;
-    this.activeExamTransferId = task.id;
-    this.examTransferStage = 'decode';
-    this.examTransferPlan = {};
-    this.examTransferResponse = '';
+    this.prepareExamTransferTask(task, 'decode');
     this.switchTab('stud-exam-transfer');
     return true;
   }
@@ -1407,6 +1522,9 @@ class App {
     if (saved) {
       this.currentUser = JSON.parse(saved);
       this.activeTab = this.currentUser.role === 'student' ? 'stud-dashboard' : 'teach-overview';
+      if (this.currentUser.role === 'student' && this.restoreExamTransferDraft()) {
+        this.activeTab = 'stud-exam-transfer';
+      }
     }
   }
 
@@ -1576,6 +1694,9 @@ class App {
         const cleanDemoStudentId = 'student_release_fixture';
         window.db.resetCleanDemoLearnerData(cleanDemoStudentId);
         this.clearPracticeDrafts(cleanDemoStudentId);
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.removeItem?.(this.getExamTransferDraftKey(cleanDemoStudentId));
+        }
         this.resetLearnerSessionState();
         this.currentUser = {
           id: cleanDemoStudentId,
@@ -1645,13 +1766,14 @@ class App {
     this.numberSkillsAnswers = {};
     this.numberSkillsCalculations = {};
     this.numberSkillsEvidenceSet = null;
+    this.currentTestSession = null;
+    this.currentTestAnswers = [];
     this.writtenAttempted = false;
     this.writtenStage = 'plan';
     this.scaffoldPoints = { p1: '', exp1: '', p2: '', exp2: '', apply: '' };
     this.writtenResponseText = '';
     this.examTransferStage = 'decode';
-    this.examTransferPlan = {};
-    this.examTransferResponse = '';
+    this.clearExamTransferDraft();
     this.editorCode = '';
     this.messageDraft = '';
     this.selectedChatStudentId = null;
@@ -1803,9 +1925,18 @@ class App {
   }
 
   switchTab(tabId) {
+    if (this.activeTab === 'stud-exam-transfer' && tabId !== 'stud-exam-transfer') {
+      this.captureExamTransferDraftFromDOM();
+      if (this.getExamTransferDraft()) {
+        const discard = window.confirm('Leave this exam question and discard your unfinished work?');
+        if (!discard) return false;
+        this.clearExamTransferDraft();
+      }
+    }
     this.activeTab = tabId;
     this.render();
     this.focusMainContent();
+    return true;
   }
 
   getStudentRouteParent(tabId = this.activeTab) {
@@ -1824,6 +1955,8 @@ class App {
       'stud-dictionary': 'stud-practice',
       'stud-written': 'stud-practice',
       'stud-test-prep': 'stud-practice',
+      'stud-test-builder': 'stud-practice',
+      'stud-custom-test': 'stud-practice',
       'stud-exam-transfer': 'stud-practice',
       'stud-progress': 'stud-dashboard',
       'stud-messages': 'stud-messages'
@@ -2002,6 +2135,9 @@ class App {
         break;
       case 'stud-test-builder':
         this.renderStudentTestBuilder(mainPanel);
+        break;
+      case 'stud-custom-test':
+        this.renderStudentCustomTest(mainPanel);
         break;
       case 'stud-essay-practice':
         this.renderStudentEssayPractice(mainPanel);
@@ -3052,11 +3188,9 @@ class App {
     });
     panel.querySelectorAll('.objective-exam-btn').forEach(button => {
       button.onclick = () => {
-        this.activeExamTransferId = button.dataset.taskId;
-        const task = window.db.getExamTransferTasks().find(item => item.id === this.activeExamTransferId);
-        this.activeTopicId = task.topicId;
-        this.activeObjectiveId = task.specificationPointId;
-        this.examTransferStage = 'answer';
+        const task = window.db.getExamTransferTasks().find(item => item.id === button.dataset.taskId);
+        if (!task) return;
+        this.prepareExamTransferTask(task, 'answer');
         this.switchTab('stud-exam-transfer');
       };
     });
@@ -3080,7 +3214,7 @@ class App {
       { title: 'Flashcards', btnLabel: 'Start flashcards', copy: 'Quick recall checks to strengthen your memory.', route: 'stud-retrieval', time: '5 mins', icon: '🎴', color: '#2D9C91', bgGrad: 'rgba(45, 156, 145, 0.05)' },
       { title: 'Exam questions', btnLabel: 'Start exam questions', copy: 'Guided & independent practice for OCR GCSE questions.', route: 'stud-exam-transfer', time: '15 mins', icon: '📝', color: '#07111F', bgGrad: 'rgba(7, 17, 31, 0.04)' },
       { title: 'Essay & Discuss (8 marks)', btnLabel: 'Start essay practice', copy: 'Practise 8-mark OCR extended response questions (Ethics, Legal, Tech impacts).', route: 'stud-essay-practice', time: '15 mins', icon: '✍️', color: '#8B5CF6', bgGrad: 'rgba(139, 92, 246, 0.05)' },
-      { title: 'Custom test builder', btnLabel: 'Start test builder', copy: 'Build a custom mock test by paper or topic from OCR past papers.', route: 'stud-test-builder', time: '15–45 mins', icon: '📋', color: '#0284C7', bgGrad: 'rgba(2, 132, 199, 0.05)' },
+      { title: 'Custom test builder', btnLabel: 'Start test builder', copy: 'Build a practice test by paper or topic using original OCR-style questions.', route: 'stud-test-builder', time: '15–45 mins', icon: '📋', color: '#0284C7', bgGrad: 'rgba(2, 132, 199, 0.05)' },
       { title: 'Number skills', btnLabel: 'Start number skills', copy: 'Storage, binary addition, and calculation practice.', route: 'stud-practise', time: '10 mins', icon: '🔢', color: '#D97706', bgGrad: 'rgba(217, 119, 6, 0.05)' },
       { title: 'Programming', btnLabel: 'Start programming', copy: 'Python coding tasks and pseudocode challenges.', route: 'stud-programming', time: '15 mins', icon: '💻', color: '#7C3AED', bgGrad: 'rgba(124, 58, 237, 0.05)' }
     ];
@@ -3160,7 +3294,7 @@ class App {
         <header class="student-route-header" style="margin-bottom: 24px;">
           <span class="student-mode-label">Practice &middot; Mock Test Builder</span>
           <h1 style="font-size: 28px; font-weight: 800; margin: 6px 0;">Custom Exam Test Builder</h1>
-          <p style="font-size: 15px; color: var(--text-muted);">Build a tailored mock exam from OCR past papers & specification questions. Choose your topics, strands, and test length.</p>
+          <p style="font-size: 15px; color: var(--text-muted);">Build a tailored practice test from original OCR-style specification questions. Choose your topics and test length.</p>
         </header>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; align-items: start;">
@@ -3212,7 +3346,8 @@ class App {
               </label>
             </div>
 
-            <button type="button" id="start-built-test-btn" class="btn btn-primary" style="width: 100%; min-height: 46px; font-size: 16px; font-weight: 700; background: #0284C7; border-color: #0284C7;">
+                <div id="test-builder-error" class="form-error" role="alert" tabindex="-1" hidden style="margin-bottom:12px;"></div>
+                <button type="button" id="start-built-test-btn" class="btn btn-primary" style="width: 100%; min-height: 46px; font-size: 16px; font-weight: 700; background: #0284C7; border-color: #0284C7;">
               🚀 Generate and Start Custom Test &rarr;
             </button>
             <button type="button" id="builder-back-hub-btn" class="btn btn-link" style="width: 100%; margin-top: 10px;">Back to Practice menu</button>
@@ -3308,24 +3443,123 @@ class App {
       }
       this.renderStudentTestBuilder(panel);
     });
-    panel.querySelector('#start-built-test-btn').onclick = () => {
-      if (window.StudySpiceContent?.mixedExamEngine) {
-        const session = window.StudySpiceContent.mixedExamEngine.createMixedExamSession(
+      panel.querySelector('#start-built-test-btn').onclick = () => {
+        if (!config.selectedStrandIds.length) {
+          const error = panel.querySelector('#test-builder-error');
+          if (error) {
+            error.textContent = 'Choose at least one topic before starting the test.';
+            error.hidden = false;
+            error.focus?.();
+          }
+          return;
+        }
+        if (window.StudySpiceContent?.mixedExamEngine) {
+          const session = window.StudySpiceContent.mixedExamEngine.createMixedExamSession(
           config.paperType,
           config.questionCount,
           window.db.getCurriculumContent(),
           [],
           window.StudySpiceContent.examinerKnowledge,
-          config.selectedStrandIds
-        );
-        this.currentTestSession = session;
-        this.activeExamTransferId = session.questions[0]?.id || 'mixed_q_1';
-        this.switchTab('stud-exam-transfer');
-      } else {
-        this.switchTab('stud-exam-transfer');
-      }
-    };
+            config.selectedStrandIds
+          );
+          if (!session.questions.length) {
+            const error = panel.querySelector('#test-builder-error');
+            if (error) {
+              error.textContent = 'No questions are available for that selection yet. Choose another topic or test length.';
+              error.hidden = false;
+              error.focus?.();
+            }
+            return;
+          }
+          this.currentTestSession = session;
+          this.currentTestAnswers = [];
+          this.switchTab('stud-custom-test');
+        } else {
+          const error = panel.querySelector('#test-builder-error');
+          if (error) {
+            error.textContent = 'The custom-test questions could not be loaded. Return to Practice and try again.';
+            error.hidden = false;
+            error.focus?.();
+          }
+        }
+      };
     panel.querySelector('#builder-back-hub-btn').onclick = () => this.switchTab('stud-practice');
+  }
+
+  renderStudentCustomTest(panel) {
+    const session = this.currentTestSession;
+    if (!session?.questions?.length) {
+      panel.innerHTML = `
+        <section class="card" role="status">
+          <h1>Custom test unavailable</h1>
+          <p>No questions were loaded. Return to Practice and build a new test.</p>
+          <button type="button" class="btn btn-primary" id="custom-test-back-btn">Back to Practice</button>
+        </section>`;
+      panel.querySelector('#custom-test-back-btn')?.addEventListener('click', () => this.switchTab('stud-practice'));
+      return;
+    }
+
+    panel.innerHTML = `
+      <div class="student-page student-custom-test">
+        <header class="student-route-header">
+          <span class="student-mode-label">Custom test &middot; ${session.totalQuestions} questions &middot; about ${session.timeLimitMinutes} minutes</span>
+          <h1>Your selected-topic test</h1>
+          <p>Answer every question before submitting. This practice score does not change Progress.</p>
+        </header>
+        <form id="custom-test-form">
+          ${session.questions.map((question, questionIndex) => `
+            <fieldset class="card" data-custom-question="${questionIndex}" style="margin-bottom:20px; max-width:760px; padding:22px;">
+              <legend style="font-weight:700; line-height:1.5;">Question ${questionIndex + 1}: ${this.escapeHTML(question.question)}</legend>
+              ${question.options.map((option, optionIndex) => `
+                <label for="custom-q-${questionIndex}-${optionIndex}" style="display:block; margin:10px 0;">
+                  <input id="custom-q-${questionIndex}-${optionIndex}" type="radio" name="custom_q_${questionIndex}" value="${this.escapeHTML(option)}"> ${this.escapeHTML(option)}
+                </label>`).join('')}
+            </fieldset>`).join('')}
+          <div id="custom-test-error" class="form-error" role="alert" tabindex="-1" hidden style="margin-bottom:12px;"></div>
+          <button type="submit" class="btn btn-primary btn-lg">Submit test</button>
+          <button type="button" class="btn btn-secondary" id="custom-test-cancel-btn">Back to Practice</button>
+        </form>
+      </div>`;
+
+    panel.querySelector('#custom-test-cancel-btn')?.addEventListener('click', () => this.switchTab('stud-practice'));
+    panel.querySelector('#custom-test-form').onsubmit = event => {
+      event.preventDefault();
+      const answers = session.questions.map((question, index) => panel.querySelector(`input[name="custom_q_${index}"]:checked`)?.value || '');
+      const firstMissing = answers.findIndex(answer => !answer);
+      if (firstMissing >= 0) {
+        const error = panel.querySelector('#custom-test-error');
+        error.textContent = `Answer question ${firstMissing + 1} before submitting the test.`;
+        error.hidden = false;
+        const fieldset = panel.querySelector(`[data-custom-question="${firstMissing}"]`);
+        fieldset?.setAttribute('aria-describedby', 'custom-test-error');
+        fieldset?.querySelector('input')?.focus();
+        return;
+      }
+
+      this.currentTestAnswers = answers;
+      const result = window.StudySpiceContent.mixedExamEngine.evaluateExamPerformance(answers, session);
+      panel.innerHTML = `
+        <div class="student-route-header">
+          <span class="student-mode-label">Custom test complete &middot; practice only</span>
+          <h1>Your test result: ${result.score}/${result.total}</h1>
+          <p>This score does not change Progress. Use the feedback to choose what to review next.</p>
+        </div>
+        ${session.questions.map((question, index) => {
+          const correct = answers[index] === question.answer;
+          return `<article class="card" style="margin-bottom:14px; border-left:5px solid ${correct ? 'var(--green)' : 'var(--red)'};">
+            <h2 style="font-size:16px;">Question ${index + 1}</h2>
+            <p>${this.escapeHTML(question.question)}</p>
+            <p><strong>Your answer:</strong> ${this.escapeHTML(answers[index])} &mdash; ${correct ? 'Correct' : 'Not correct'}</p>
+            ${correct ? '' : `<p><strong>Review:</strong> ${this.escapeHTML(question.explanation || 'Review this specification point, then try a new test.')}</p>`}
+          </article>`;
+        }).join('')}
+        <button type="button" class="btn btn-primary" id="custom-test-again-btn">Build another test</button>
+        <button type="button" class="btn btn-secondary" id="custom-test-finish-btn">Back to Practice</button>`;
+      panel.querySelector('#custom-test-again-btn')?.addEventListener('click', () => this.switchTab('stud-test-builder'));
+      panel.querySelector('#custom-test-finish-btn')?.addEventListener('click', () => this.switchTab('stud-practice'));
+      this.focusMainContent();
+    };
+    this.focusMainContent();
   }
 
   renderStudentEssayPractice(panel) {
@@ -3433,12 +3667,7 @@ class App {
       this.switchTab('stud-practice');
       return false;
     }
-    this.activeExamTransferId = task.id;
-    this.activeTopicId = task.topicId;
-    this.activeObjectiveId = task.specificationPointId;
-    this.examTransferStage = 'answer';
-    this.examTransferPlan = {};
-    this.examTransferResponse = '';
+    this.prepareExamTransferTask(task, 'answer');
     this.switchTab('stud-exam-transfer');
     return true;
   }
@@ -4747,10 +4976,7 @@ class App {
       this.renderFocusedStudentLearning(panel, activeNote, content);
     });
     panel.querySelector('#focused-exam-btn')?.addEventListener('click', () => {
-      this.activeExamTransferId = task.id;
-      this.examTransferStage = 'answer';
-      this.examTransferPlan = {};
-      this.examTransferResponse = '';
+      this.prepareExamTransferTask(task, 'answer');
       this.switchTab('stud-exam-transfer');
     });
     panel.querySelectorAll('.focused-prerequisite-btn').forEach(button => {
@@ -4951,10 +5177,8 @@ class App {
       if (specId) this.activeObjectiveId = specId;
       const examTaskId = button.getAttribute('data-exam-task-id');
       if (examTaskId) {
-        this.activeExamTransferId = examTaskId;
-        this.examTransferStage = 'answer';
-        this.examTransferPlan = {};
-        this.examTransferResponse = '';
+        const task = window.db.getExamTransferTasks().find(item => item.id === examTaskId);
+        if (task) this.prepareExamTransferTask(task, 'answer');
       }
       this.switchTab(button.getAttribute('data-target-tab'));
     });
@@ -4974,10 +5198,7 @@ class App {
         this.activeObjectiveId = target.specificationPointId;
         return this.switchTab('stud-learn');
       }
-      this.activeTopicId = task.topicId;
-      this.activeObjectiveId = target.specificationPointId;
-      this.activeExamTransferId = task.id;
-      this.examTransferStage = 'answer';
+      this.prepareExamTransferTask(task, 'answer');
       this.switchTab('stud-exam-transfer');
     });
 
@@ -5173,7 +5394,7 @@ class App {
 
       <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px; align-items: start;">
         <div>
-          <form id="num-skills-form">
+          <form id="num-skills-form" novalidate>
             ${this.numberSkillsSet.map((q, idx) => `
               <div class="card" style="margin-bottom: 24px;">
                 <h3 style="margin-bottom: 8px;">Question ${idx + 1}: ${q.type}</h3>
@@ -5240,6 +5461,7 @@ class App {
               </div>
             `).join('')}
             
+            <div id="number-skills-error" class="form-error" role="alert" tabindex="-1" hidden style="margin-bottom:12px;"></div>
             <button type="submit" class="btn btn-primary btn-lg">Submit answers</button>
           </form>
         </div>
@@ -5265,41 +5487,44 @@ class App {
     if (numForm) {
       numForm.onsubmit = (e) => {
         e.preventDefault();
-        
+        const collectedAnswers = {};
+        const incompleteQuestions = [];
+
         this.numberSkillsSet.forEach((q, idx) => {
+          let answer = null;
           if (q.inputType === 'binary') {
             const inputs = document.querySelectorAll(`.num-ans-binary-input[data-idx="${idx}"]`);
-            let ans = '';
-            inputs.forEach(input => {
-              ans += input.value.trim() || '0';
-            });
-            this.numberSkillsAnswers[idx] = ans;
+            answer = this.normaliseNumberSkillAnswer(q, Array.from(inputs).map(input => input.value));
           } else if (q.inputType === 'hex') {
             const inputs = document.querySelectorAll(`.num-ans-hex-input[data-idx="${idx}"]`);
-            let ans = '';
-            inputs.forEach(input => {
-              ans += input.value.trim() || '0';
-            });
-            this.numberSkillsAnswers[idx] = ans.toUpperCase();
+            answer = this.normaliseNumberSkillAnswer(q, Array.from(inputs).map(input => input.value));
           } else if (q.inputType === 'binary-overflow') {
             const inputs = document.querySelectorAll(`.num-ans-binoverflow-input[data-idx="${idx}"]`);
-            let ans = '';
-            inputs.forEach(input => {
-              ans += input.value.trim() || '0';
-            });
             const chk = document.getElementById(`num-ans-overflow-chk-${idx}`);
-            if (chk && chk.checked) {
-              ans += ' - OVERFLOW';
-            }
-            this.numberSkillsAnswers[idx] = ans;
+            answer = this.normaliseNumberSkillAnswer(q, Array.from(inputs).map(input => input.value), Boolean(chk?.checked));
           } else {
             const input = document.querySelector(`.num-ans-standard-input[data-idx="${idx}"]`);
-            if (input) {
-              this.numberSkillsAnswers[idx] = input.value.trim().toUpperCase();
-            }
+            answer = this.normaliseNumberSkillAnswer(q, [input?.value || '']);
           }
+          if (answer === null) incompleteQuestions.push(idx + 1);
+          else collectedAnswers[idx] = answer;
         });
 
+        if (incompleteQuestions.length) {
+          const firstIndex = incompleteQuestions[0] - 1;
+          const firstField = document.querySelector(`[data-idx="${firstIndex}"]`);
+          const error = document.getElementById('number-skills-error');
+          if (error) {
+            error.textContent = `Complete question${incompleteQuestions.length === 1 ? '' : 's'} ${incompleteQuestions.join(', ')} before submitting. Blank boxes are not counted as answers.`;
+            error.hidden = false;
+          }
+          firstField?.setAttribute?.('aria-invalid', 'true');
+          firstField?.setAttribute?.('aria-describedby', 'number-skills-error');
+          firstField?.focus?.();
+          return;
+        }
+
+        this.numberSkillsAnswers = collectedAnswers;
         this.gradeNumberSkillsSet();
       };
     }
@@ -6364,7 +6589,7 @@ class App {
             <div style="position: absolute; right: 0; top: 24px; width: 320px; z-index: 50; padding: 10px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.12);">
               <label for="exam-transfer-task-select" style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 4px;">Select exam prompt:</label>
               <select id="exam-transfer-task-select" class="form-control" style="font-size: 12px;">
-                ${tasks.map(item => `<option value="${item.id}" ${item.id === task.id ? 'selected' : ''}>${item.paper} &middot; ${item.specificationPointId} &middot; ${item.commandWord} (${item.marks} Marks)</option>`).join('')}
+                ${tasks.map(item => `<option value="${item.id}" ${item.id === task.id ? 'selected' : ''}>${item.paper} &middot; ${item.specificationPointId} &middot; ${item.commandWord} (${item.marks} Marks) &mdash; ${this.escapeHTML(item.question.slice(0, 52))}${item.question.length > 52 ? '&hellip;' : ''}</option>`).join('')}
               </select>
             </div>
           </details>
@@ -6382,11 +6607,13 @@ class App {
           </div>
         </details>
 
+        <div id="exam-transfer-error" class="form-error" role="alert" tabindex="-1" hidden style="margin-bottom:12px;"></div>
+
         <!-- STAGE 1: DECODE -->
         ${this.examTransferStage === 'decode' ? `
           <div class="form-group" style="margin-bottom: 16px;">
-            <label for="transfer-decode-response" style="font-weight: 700; font-size: 14px; display: block; margin-bottom: 6px;">Your Written Answer (${task.marks} Marks):</label>
-            <textarea id="transfer-decode-response" class="form-control" rows="6" placeholder="Write your answer here..." style="font-size: 14px; line-height: 1.6;"></textarea>
+            <label for="transfer-decode-response" style="font-weight: 700; font-size: 14px; display: block; margin-bottom: 6px;">What is the question asking you to do?</label>
+            <textarea id="transfer-decode-response" class="form-control" rows="5" placeholder="Describe the calculation, explanation or decision you need to make..." style="font-size: 14px; line-height: 1.6;">${this.escapeHTML(this.examTransferDecodeResponse)}</textarea>
           </div>
           <button id="transfer-to-plan" class="btn btn-primary" style="min-height: 42px; font-weight: 700;">Next: Plan your answer &rarr;</button>
         ` : ''}
@@ -6452,7 +6679,7 @@ class App {
           <div>
             <span class="badge badge-warning" style="margin-bottom: 8px;">Optional independent practice</span>
             <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 8px 0;">${this.escapeHTML(task.retryQuestion)}</h3>
-            <textarea id="transfer-retry-response" class="form-control" rows="8" placeholder="Write your answer without help here..." style="font-size: 14px; line-height: 1.6;"></textarea>
+            <textarea id="transfer-retry-response" class="form-control" rows="8" placeholder="Write your answer without help here..." style="font-size: 14px; line-height: 1.6;">${this.escapeHTML(this.examTransferRetryResponse)}</textarea>
             <button id="transfer-finish" class="btn btn-primary" style="margin-top:16px; min-height: 44px; font-weight: 700;">Send answer for teacher review</button>
           </div>
         ` : ''}
@@ -6475,18 +6702,68 @@ class App {
         }
         this.activeExamTransferId = taskSelect.value;
         this.examTransferStage = 'decode';
-        this.examTransferPlan = {};
-        this.examTransferResponse = '';
+        this.clearExamTransferDraft();
         this.renderStudentExamTransfer(panel);
       };
     }
 
     const bind = (id, action) => { const element = document.getElementById(id); if (element) element.onclick = action; };
-    bind('transfer-to-plan', () => { const response = document.getElementById('transfer-decode-response').value.trim(); if (response.length < 5) return this.alert('Describe what the question requires before moving on.'); this.examTransferStage = 'plan'; this.renderStudentExamTransfer(panel); });
-    bind('transfer-back-decode', () => { this.examTransferStage = 'decode'; this.renderStudentExamTransfer(panel); });
-    bind('transfer-to-answer', () => { task.planningLabels.forEach((label, index) => { const el = document.getElementById(`transfer-plan-${index}`); if (el) this.examTransferPlan[index] = el.value.trim(); }); if (Object.values(this.examTransferPlan).filter(Boolean).length < 1) return this.alert('Add at least one planning note.'); this.examTransferStage = 'answer'; this.renderStudentExamTransfer(panel); });
-    bind('transfer-back-plan', () => { const el = document.getElementById('transfer-answer-response'); if (el) this.examTransferResponse = el.value; this.examTransferStage = 'plan'; this.renderStudentExamTransfer(panel); });
-    bind('transfer-to-check', () => { const el = document.getElementById('transfer-answer-response'); if (el) this.examTransferResponse = el.value.trim(); if (this.examTransferResponse.length < 15) return this.alert('Add at least one explained point before you check your answer.'); this.examTransferStage = 'check'; this.renderStudentExamTransfer(panel); });
+    const showExamError = (message, fieldId) => this.showInlineValidation('exam-transfer-error', fieldId, message);
+    const saveOnInput = (id, update) => {
+      const element = document.getElementById(id);
+      if (!element) return;
+      element.oninput = () => {
+        update(element.value);
+        this.saveExamTransferDraft();
+      };
+    };
+    saveOnInput('transfer-decode-response', value => { this.examTransferDecodeResponse = value; });
+    saveOnInput('transfer-answer-response', value => { this.examTransferResponse = value; });
+    saveOnInput('transfer-retry-response', value => { this.examTransferRetryResponse = value; });
+    task.planningLabels.forEach((label, index) => saveOnInput(`transfer-plan-${index}`, value => { this.examTransferPlan[index] = value; }));
+
+    bind('transfer-to-plan', () => {
+      const response = document.getElementById('transfer-decode-response').value.trim();
+      this.examTransferDecodeResponse = response;
+      if (!this.isMeaningfulLearnerResponse(response, 5)) return showExamError('Describe the calculation, explanation or decision the question requires.', 'transfer-decode-response');
+      this.examTransferStage = 'plan';
+      this.saveExamTransferDraft();
+      this.renderStudentExamTransfer(panel);
+    });
+    bind('transfer-back-decode', () => {
+      this.examTransferStage = 'decode';
+      this.saveExamTransferDraft();
+      this.renderStudentExamTransfer(panel);
+    });
+    bind('transfer-to-answer', () => {
+      task.planningLabels.forEach((label, index) => {
+        const el = document.getElementById(`transfer-plan-${index}`);
+        if (el) this.examTransferPlan[index] = el.value.trim();
+      });
+      if (!Object.values(this.examTransferPlan).some(value => this.isMeaningfulLearnerResponse(value, 3))) {
+        return showExamError('Add at least one useful planning note before writing your answer.', 'transfer-plan-0');
+      }
+      this.examTransferStage = 'answer';
+      this.saveExamTransferDraft();
+      this.renderStudentExamTransfer(panel);
+    });
+    bind('transfer-back-plan', () => {
+      const el = document.getElementById('transfer-answer-response');
+      if (el) this.examTransferResponse = el.value;
+      this.examTransferStage = 'plan';
+      this.saveExamTransferDraft();
+      this.renderStudentExamTransfer(panel);
+    });
+    bind('transfer-to-check', () => {
+      const el = document.getElementById('transfer-answer-response');
+      if (el) this.examTransferResponse = el.value.trim();
+      if (!this.isMeaningfulLearnerResponse(this.examTransferResponse, 15)) {
+        return showExamError('Add at least one explained point before you check your answer.', 'transfer-answer-response');
+      }
+      this.examTransferStage = 'check';
+      this.saveExamTransferDraft();
+      this.renderStudentExamTransfer(panel);
+    });
     bind('transfer-to-retry', () => {
       const evidenceCount = panel.querySelectorAll('.transfer-evidence-checkbox:checked').length;
       window.db.addAttempt({
@@ -6500,6 +6777,8 @@ class App {
         contributesToMastery: false
       });
       this.examTransferStage = 'retry';
+      this.examTransferRetryResponse = '';
+      this.saveExamTransferDraft();
       this.renderStudentExamTransfer(panel);
     });
     bind('transfer-finish-guided', () => {
@@ -6514,12 +6793,14 @@ class App {
         evidenceType: 'self_assessment',
         contributesToMastery: false
       });
+      this.clearExamTransferDraft();
       this.alert('Your practice has been saved. It will not change Progress. To send work for marking, try the exam question without the guided steps.');
       this.switchTab('stud-dashboard');
     });
     bind('transfer-finish', () => {
       const retry = document.getElementById('transfer-retry-response').value.trim();
-      if (!this.isMeaningfulLearnerResponse(retry, 20)) return this.alert('Write a full answer in your own words before sending it for review.');
+      this.examTransferRetryResponse = retry;
+      if (!this.isMeaningfulLearnerResponse(retry, 20)) return showExamError('Write a full answer in your own words before sending it for review.', 'transfer-retry-response');
       window.db.addAttempt({
         studentId: this.currentUser.id,
         type: 'exam_transfer_retry',
@@ -6532,8 +6813,7 @@ class App {
         contributesToMastery: false
       });
       this.examTransferStage = 'decode';
-      this.examTransferPlan = {};
-      this.examTransferResponse = '';
+      this.clearExamTransferDraft();
       this.alert('Your answer has been sent for review. It does not count towards Progress yet.');
       this.switchTab('stud-dashboard');
     });
@@ -6822,6 +7102,7 @@ class App {
             <p style="font-size: 13px; margin-bottom: 12px; color: var(--text-muted);">What value will be printed when this program runs? Write your prediction below.</p>
             <label for="predict-input" style="font-weight:600;">Your predicted output</label>
             <textarea id="predict-input" class="form-control" rows="4" placeholder="Write what you think the program will output, and why." style="font-size: 14px;"></textarea>
+            <div id="programming-prediction-error" class="form-error" role="alert" tabindex="-1" hidden style="margin-top:10px;"></div>
             <button class="btn btn-primary" id="confirm-predict-btn" style="margin-top: 16px; min-height: 40px; min-width: 200px;">Confirm prediction & proceed to Editor</button>
           </div>
         </div>
@@ -6931,6 +7212,7 @@ class App {
             <p style="font-size: 15px; font-weight: 500; color: var(--text-main); margin-bottom: 16px;">${challenge.explainQuestion}</p>
             <label for="coding-explanation-response" style="font-weight:600;">Explain how your solution works</label>
             <textarea id="coding-explanation-response" class="form-control" placeholder="Write your explanation here..." style="font-size: 14px; height: 120px; line-height: 1.6;"></textarea>
+            <div id="programming-explanation-error" class="form-error" role="alert" tabindex="-1" hidden style="margin-top:10px;"></div>
             <button class="btn btn-primary btn-lg" id="confirm-explain-btn" style="margin-top: 16px; min-height: 44px; min-width: 220px;">Submit explanation & check</button>
           </div>
         </div>
@@ -7022,7 +7304,7 @@ class App {
       confirmPredictBtn.onclick = () => {
         const val = document.getElementById('predict-input').value.trim();
         if (!val) {
-          alert('Please enter a prediction before proceeding.');
+          this.showInlineValidation('programming-prediction-error', 'predict-input', 'Write your prediction before opening the editor.');
           return;
         }
         this.predictInputValue = val;
@@ -7043,8 +7325,8 @@ class App {
     if (confirmExplainBtn) {
       confirmExplainBtn.onclick = () => {
         const val = document.getElementById('coding-explanation-response').value.trim();
-        if (!val) {
-          alert('Please enter a brief reflection before proceeding.');
+        if (!this.isMeaningfulLearnerResponse(val, 5)) {
+          this.showInlineValidation('programming-explanation-error', 'coding-explanation-response', 'Explain one useful point about how your solution works.');
           return;
         }
         this.codingExplanationValue = val;
@@ -7721,7 +8003,7 @@ class App {
         <div class="chat-input-area">
           <label class="sr-only" for="chat-text-input">Your message to ${this.escapeHTML(contactName)}</label>
           <input type="text" id="chat-text-input" class="form-control" placeholder="Type your question..." value="${this.escapeHTML(this.messageDraft)}">
-          <button class="btn btn-primary" id="chat-send-btn">Send</button>
+          <button class="btn btn-primary" id="chat-send-btn" ${this.messageDraft.trim() ? '' : 'disabled'}>Send</button>
         </div>
       </div>
       <p><button type="button" class="btn btn-secondary" id="messages-home-btn">Back to My desk</button></p>
@@ -7735,7 +8017,11 @@ class App {
     // Text tracking
     const textIn = document.getElementById('chat-text-input');
     if (textIn) {
-      textIn.oninput = (e) => { this.messageDraft = e.target.value; };
+      textIn.oninput = (e) => {
+        this.messageDraft = e.target.value;
+        const sendButton = document.getElementById('chat-send-btn');
+        if (sendButton) sendButton.disabled = !this.messageDraft.trim();
+      };
       textIn.onkeydown = (e) => {
         if (e.key === 'Enter') {
           this.sendMessage();
