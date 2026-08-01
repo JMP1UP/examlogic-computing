@@ -5,6 +5,13 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Rebuilt the student custom test builder as bounded OCR-style exam practice:
+  selected topics now produce realistic mark-and-time envelopes, mixed answer
+  formats and stable shuffled multiple-choice options. A sticky question list
+  shows marks and answered status and lets learners move around the paper.
+- Custom tests now refuse topic selections that cannot honestly fill the chosen
+  duration. Constructed answers receive review guidance without an automatic
+  mark, grade estimate or change to Progress.
 - Hardened student assessment failure paths: incomplete structured number work
   can no longer be converted into zero-filled evidence, and custom tests now
   require an explicit topic selection and open the questions actually chosen.

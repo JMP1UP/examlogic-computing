@@ -116,3 +116,12 @@ as met only when the current evidence rule is satisfied; the interface must not
 describe that as permanent mastery or full curriculum completion. Keyword matching,
 self-checks and model answers are labelled as practice and must not imply an
 examiner-awarded mark.
+
+Custom tests are short digital exam-paper sections, not retrieval quizzes. A
+10-minute set targets 7–9 marks and no more than one multiple-choice item; longer
+sets mix response demands and Paper 2 includes algorithmic work where available.
+The interface shows a question navigator with mark values and answered status.
+If the selected topics cannot support the requested duration, the builder asks
+the learner to broaden the selection rather than padding the paper or claiming
+a misleading time. Constructed responses can open answer guidance, but the
+system does not award a mark or grade from that self-review.

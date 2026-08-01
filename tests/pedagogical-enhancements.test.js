@@ -25,7 +25,7 @@ describe('Senior Developer Pedagogical & Examiner Enhancements', () => {
       const session = mixedExamEngine.createMixedExamSession('all', 3, curriculumContent, [], null);
       expect(session.questions).toHaveLength(3);
       expect(session.questions[0].displayTopicHeader).toBe('Section Question 1');
-      expect(session.questions[0].question).toBe('Q1');
+      expect(session.questions.map(question => question.question).sort()).toEqual(['Q1', 'Q2', 'Q3']);
     });
 
     test('evaluates exam performance and calculates grade estimates', () => {
@@ -42,6 +42,19 @@ describe('Senior Developer Pedagogical & Examiner Enhancements', () => {
       expect(result.gradeEstimate).toBe('Grade 8/9');
     });
 
+    test('never infers a grade from the auto-marked part of a custom exam session', () => {
+      const result = mixedExamEngine.evaluateExamPerformance(['Correct', 'A developed written response'], {
+        questionStyle: 'exam',
+        questions: [
+          { type: 'mcq', strandId: '1.1.1', marks: 1, answer: 'Correct' },
+          { type: 'constructed', strandId: '1.1.1', marks: 4 }
+        ]
+      });
+
+      expect(result.requiresSelfCheck).toBe(true);
+      expect(result.gradeEstimate).toBeNull();
+    });
+
     test('treats an explicit empty strand selection as no questions, not all questions', () => {
       const curriculumContent = [
         { id: '1.1.1', officialSpecificationPointId: '1.1.1', diagnostic: { question: 'Q1', options: ['A', 'B'], answer: 'A', explanation: 'E1' } }
@@ -53,6 +66,93 @@ describe('Senior Developer Pedagogical & Examiner Enhancements', () => {
       expect(emptySession.questions).toEqual([]);
       expect(selectedSession.questions).toHaveLength(1);
       expect(selectedSession.questions[0].strandId).toBe('1.1.1');
+    });
+
+    test('builds a timed OCR-style test from constructed exam questions and preserves specification mapping', () => {
+      const examTasks = [
+        { id: 'exam_111', specificationPointId: '1.1.1', topicId: 'topic_1_1', paper: 'Paper 1', commandWord: 'Explain', marks: 4, minutes: 6, question: 'Explain the register roles.', requiredElements: ['PC role', 'MAR role', 'MDR role', 'linked sequence'] },
+        { id: 'exam_112', specificationPointId: '1.1.2', topicId: 'topic_1_1', paper: 'Paper 1', commandWord: 'Compare', marks: 6, minutes: 9, question: 'Compare two processors.', requiredElements: ['clock speed', 'cache', 'cores'] },
+        { id: 'exam_113', specificationPointId: '1.1.3', topicId: 'topic_1_1', paper: 'Paper 1', commandWord: 'Explain', marks: 4, minutes: 6, question: 'Explain an embedded controller.', requiredElements: ['larger system', 'dedicated purpose'] }
+      ];
+      const curriculumContent = ['1.1.1', '1.1.2', '1.1.3'].map((id, index) => ({
+        id,
+        officialSpecificationPointId: id,
+        diagnostic: { question: `Short question ${index + 1}`, options: ['Correct', 'Wrong'], answer: 'Correct', explanation: 'Explanation' }
+      }));
+
+      const session = mixedExamEngine.createMixedExamSession('paper1', 10, curriculumContent, examTasks, null, ['1.1.1', '1.1.2', '1.1.3'], 'fixed-seed');
+
+      expect(session.questionStyle).toBe('exam');
+      expect(session.sufficientForRequestedTime).toBe(true);
+      expect(session.timeLimitMinutes).toBeGreaterThanOrEqual(8);
+      expect(session.timeLimitMinutes).toBeLessThanOrEqual(13);
+      expect(session.totalMarks).toBeGreaterThanOrEqual(7);
+      expect(session.totalMarks).toBeLessThanOrEqual(9);
+      expect(session.questions.length).toBeGreaterThanOrEqual(2);
+      expect(session.questions.length).toBeLessThanOrEqual(3);
+      expect(session.questions.filter(question => question.type === 'constructed').length).toBeGreaterThanOrEqual(1);
+      expect(session.questions.filter(question => question.type === 'mcq')).toHaveLength(1);
+      expect(session.questions.every(question => ['1.1.1', '1.1.2', '1.1.3'].includes(question.specificationPointId))).toBe(true);
+      expect(session.questions.every(question => /^1\.1\.[1-3]$/.test(question.officialSpecificationPointId))).toBe(true);
+      expect(session.questions.every(question => question.markScheme.length > 0)).toBe(true);
+    });
+
+    test('does not place the correct multiple-choice option in one fixed position', () => {
+      const curriculumContent = [
+        { id: '1.1.1', officialSpecificationPointId: '1.1.1', diagnostic: { question: 'Q1', options: ['Correct', 'B', 'C', 'D'], answer: 'Correct', explanation: 'E1' } }
+      ];
+      const positions = new Set(Array.from({ length: 40 }, (_, index) => `seed-${index}`).map(seed => {
+        const session = mixedExamEngine.createMixedExamSession('paper1', 5, curriculumContent, [], null, ['1.1.1'], seed);
+        return session.questions[0].options.indexOf('Correct');
+      }));
+
+      expect([...positions].sort()).toEqual([0, 1, 2, 3]);
+    });
+
+    test('refuses a misleading duration when a narrow topic has too little exam material', () => {
+      const task = { id: 'only_task', specificationPointId: '1.1.1', topicId: 'topic_1_1', paper: 'Paper 1', commandWord: 'Explain', marks: 4, minutes: 6, question: 'Explain one CPU process.', requiredElements: ['point one', 'point two', 'point three', 'point four'] };
+      const curriculum = [{ id: '1.1.1', officialSpecificationPointId: '1.1.1', diagnostic: { question: 'Short check', options: ['Correct', 'Wrong'], answer: 'Correct', explanation: 'Why' } }];
+
+      const session = mixedExamEngine.createMixedExamSession('paper1', 20, curriculum, [task], null, ['1.1.1'], 'narrow');
+
+      expect(session.timeLimitMinutes).toBeLessThan(16);
+      expect(session.sufficientForRequestedTime).toBe(false);
+    });
+
+    test('includes AO3 algorithm work in a viable Paper 2 programming test', () => {
+      const tasks = [
+        { id: 'p2_explain', specificationPointId: '2.2.2', topicId: 'topic_2_2', paper: 'Paper 2', commandWord: 'Explain', marks: 4, minutes: 6, question: 'Explain data types.', requiredElements: ['one', 'two', 'three', 'four'] },
+        { id: 'p2_compare', specificationPointId: '2.1.1', topicId: 'topic_2_1', paper: 'Paper 2', commandWord: 'Compare', marks: 6, minutes: 9, question: 'Compare approaches.', requiredElements: ['one', 'two', 'three', 'four', 'five', 'six'] },
+        { id: 'p2_write', specificationPointId: '2.2.1', topicId: 'topic_2_2', paper: 'Paper 2', commandWord: 'Write', marks: 6, minutes: 9, question: 'Write an algorithm.', requiredElements: ['one', 'two', 'three', 'four', 'five', 'six'] }
+      ];
+      const curriculum = tasks.map(task => ({ id: task.specificationPointId, officialSpecificationPointId: task.specificationPointId, diagnostic: { question: `Short ${task.id}`, options: ['Correct', 'Wrong'], answer: 'Correct', explanation: 'Why' } }));
+
+      const session = mixedExamEngine.createMixedExamSession('paper2', 20, curriculum, tasks, null, tasks.map(task => task.specificationPointId), 'paper-two');
+
+      expect(session.sufficientForRequestedTime).toBe(true);
+      expect(session.includesAO3).toBe(true);
+      expect(session.questions.some(question => question.commandWord === 'Write')).toBe(true);
+      expect(session.responseFormatCount).toBeGreaterThanOrEqual(3);
+      expect(session.totalMarks).toBeGreaterThanOrEqual(15);
+      expect(session.totalMarks).toBeLessThanOrEqual(18);
+    });
+
+    test('builds honest ten-minute Paper 2 and mixed-paper shapes', () => {
+      const tasks = [
+        { id: 'p1_a', specificationPointId: '1.1.1', paper: 'Paper 1', commandWord: 'Explain', marks: 4, question: 'Explain one CPU feature.', requiredElements: ['one', 'two', 'three', 'four'] },
+        { id: 'p2_a', specificationPointId: '2.1.1', paper: 'Paper 2', commandWord: 'Explain', marks: 4, question: 'Explain one algorithm feature.', requiredElements: ['one', 'two', 'three', 'four'] },
+        { id: 'p2_b', specificationPointId: '2.2.2', paper: 'Paper 2', commandWord: 'Compare', marks: 4, question: 'Compare two data types.', requiredElements: ['one', 'two', 'three', 'four'] },
+        { id: 'p2_oversized', specificationPointId: '2.2.3', paper: 'Paper 2', commandWord: 'Write', marks: 8, question: 'Write a long file algorithm.', requiredElements: ['one'] }
+      ];
+      const curriculum = tasks.map(task => ({ id: task.specificationPointId, officialSpecificationPointId: task.specificationPointId, diagnostic: { question: `Short ${task.id}`, options: ['Correct', 'B', 'C', 'D'], answer: 'Correct', explanation: 'Why' } }));
+      const paper2 = mixedExamEngine.createMixedExamSession('paper2', 10, curriculum, tasks, null, ['2.1.1', '2.2.2', '2.2.3'], 'short-p2');
+      const mixed = mixedExamEngine.createMixedExamSession('all', 10, curriculum, tasks, null, ['1.1.1', '2.1.1'], 'short-mixed');
+
+      expect(paper2.sufficientForRequestedTime).toBe(true);
+      expect(paper2.questions.filter(question => question.type === 'constructed')).toHaveLength(2);
+      expect(Math.max(...paper2.questions.filter(question => question.type === 'constructed').map(question => question.marks))).toBeLessThanOrEqual(6);
+      expect(mixed.sufficientForRequestedTime).toBe(true);
+      expect(new Set(mixed.questions.map(question => question.paper))).toEqual(new Set(['Paper 1', 'Paper 2']));
     });
   });
 

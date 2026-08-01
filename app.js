@@ -3272,11 +3272,12 @@ class App {
     if (!this.testBuilderConfig) {
       this.testBuilderConfig = {
         paperType: 'paper1',
-        questionCount: 10,
+        durationMinutes: 20,
         selectedStrandIds: null
       };
     }
     const config = this.testBuilderConfig;
+    if (!config.durationMinutes) config.durationMinutes = Number(config.questionCount) || 20;
     const units = window.db.getUnits();
     const paper1Units = units.filter(u => u.paper.includes('Paper 1'));
     const paper2Units = units.filter(u => u.paper.includes('Paper 2'));
@@ -3292,8 +3293,8 @@ class App {
     panel.innerHTML = `
       <div class="student-page student-test-builder">
         <header class="student-route-header" style="margin-bottom: 24px;">
-          <span class="student-mode-label">Practice &middot; Mock Test Builder</span>
-          <h1 style="font-size: 28px; font-weight: 800; margin: 6px 0;">Custom Exam Test Builder</h1>
+          <span class="student-mode-label">Practice &middot; Exam Test Builder</span>
+          <h1 style="font-size: 28px; font-weight: 800; margin: 6px 0;">Build an exam-style test</h1>
           <p style="font-size: 15px; color: var(--text-muted);">Build a tailored practice test from original OCR-style specification questions. Choose your topics and test length.</p>
         </header>
 
@@ -3318,30 +3319,33 @@ class App {
               <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.paperType === 'all' ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
                 <input type="radio" name="builder-paper" value="all" ${config.paperType === 'all' ? 'checked' : ''}>
                 <div>
-                  <strong style="display: block; font-size: 15px;">🎓 Full Specification Mock (Combined)</strong>
-                  <span style="font-size: 12px; color: var(--text-muted);">Comprehensive test across both Paper 1 & Paper 2</span>
+                  <strong style="display: block; font-size: 15px;">Mixed Paper 1 and Paper 2 practice</strong>
+                  <span style="font-size: 12px; color: var(--text-muted);">Choose topics from both papers for a mixed practice set</span>
                 </div>
               </label>
             </div>
 
             <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-main);">2. Select Test Length</h2>
             <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
-              <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.questionCount === 5 ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
-                <input type="radio" name="builder-length" value="5" ${config.questionCount === 5 ? 'checked' : ''}>
+              <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.durationMinutes === 10 ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
+                <input type="radio" name="builder-length" value="10" ${config.durationMinutes === 10 ? 'checked' : ''}>
                 <div>
-                  <strong style="display: block; font-size: 14px;">⚡ Quick Check (5 questions &middot; ~10 mins)</strong>
+                  <strong style="display: block; font-size: 14px;">Short exam practice (about 10 minutes)</strong>
+                  <span style="font-size:12px; color:var(--text-muted);">Usually 2–3 linked parts worth about 7–9 marks</span>
                 </div>
               </label>
-              <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.questionCount === 10 ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
-                <input type="radio" name="builder-length" value="10" ${config.questionCount === 10 ? 'checked' : ''}>
+              <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.durationMinutes === 20 ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
+                <input type="radio" name="builder-length" value="20" ${config.durationMinutes === 20 ? 'checked' : ''}>
                 <div>
-                  <strong style="display: block; font-size: 14px;">📝 Standard Test (10 questions &middot; ~20 mins)</strong>
+                  <strong style="display: block; font-size: 14px;">Focused exam test (about 20 minutes)</strong>
+                  <span style="font-size:12px; color:var(--text-muted);">A mixed set of short and longer exam questions</span>
                 </div>
               </label>
-              <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.questionCount === 20 ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
-                <input type="radio" name="builder-length" value="20" ${config.questionCount === 20 ? 'checked' : ''}>
+              <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.durationMinutes === 40 ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
+                <input type="radio" name="builder-length" value="40" ${config.durationMinutes === 40 ? 'checked' : ''}>
                 <div>
-                  <strong style="display: block; font-size: 14px;">🎓 Full Mock Paper (20 questions &middot; ~40 mins)</strong>
+                  <strong style="display: block; font-size: 14px;">Extended exam test (about 40 minutes)</strong>
+                  <span style="font-size:12px; color:var(--text-muted);">A substantial section, not a full 90-minute paper</span>
                 </div>
               </label>
             </div>
@@ -3404,7 +3408,7 @@ class App {
     });
     panel.querySelectorAll('input[name="builder-length"]').forEach(radio => {
       radio.onchange = () => {
-        config.questionCount = parseInt(radio.value, 10);
+        config.durationMinutes = parseInt(radio.value, 10);
         this.renderStudentTestBuilder(panel);
       };
     });
@@ -3456,16 +3460,25 @@ class App {
         if (window.StudySpiceContent?.mixedExamEngine) {
           const session = window.StudySpiceContent.mixedExamEngine.createMixedExamSession(
           config.paperType,
-          config.questionCount,
+          config.durationMinutes,
           window.db.getCurriculumContent(),
-          [],
+          window.db.getExamTransferTasks(),
           window.StudySpiceContent.examinerKnowledge,
             config.selectedStrandIds
           );
-          if (!session.questions.length) {
+          if (!session.questions.length || session.questionStyle !== 'exam') {
             const error = panel.querySelector('#test-builder-error');
             if (error) {
-              error.textContent = 'No questions are available for that selection yet. Choose another topic or test length.';
+              error.textContent = 'No exam-style questions are available for that selection yet. Choose another topic.';
+              error.hidden = false;
+              error.focus?.();
+            }
+            return;
+          }
+          if (!session.sufficientForRequestedTime) {
+            const error = panel.querySelector('#test-builder-error');
+            if (error) {
+              error.textContent = `That selection only provides about ${session.timeLimitMinutes} minutes of exam practice. Select more topics for a ${config.durationMinutes}-minute test.`;
               error.hidden = false;
               error.focus?.();
             }
@@ -3502,55 +3515,106 @@ class App {
     panel.innerHTML = `
       <div class="student-page student-custom-test">
         <header class="student-route-header">
-          <span class="student-mode-label">Custom test &middot; ${session.totalQuestions} questions &middot; about ${session.timeLimitMinutes} minutes</span>
+          <span class="student-mode-label">OCR-style practice &middot; ${session.totalMarks} marks &middot; about ${session.timeLimitMinutes} minutes</span>
           <h1>Your selected-topic test</h1>
-          <p>Answer every question before submitting. This practice score does not change Progress.</p>
+          <p>Answer the questions as you would in an exam. This is self-check practice and does not change Progress.</p>
         </header>
-        <form id="custom-test-form">
+        <form id="custom-test-form" class="custom-test-layout" novalidate>
+          <nav class="custom-test-navigator" aria-label="Test questions">
+            <strong>Questions</strong>
+            <p>Choose a number to jump to it.</p>
+            <ol>
+              ${session.questions.map((question, questionIndex) => `
+                <li><button type="button" class="custom-test-nav-item" data-jump-question="${questionIndex}" aria-label="Question ${questionIndex + 1}, ${question.marks} mark${question.marks === 1 ? '' : 's'}, not answered">
+                  <span>Q${questionIndex + 1}</span><span>${question.marks}m</span><span class="custom-test-nav-status" aria-hidden="true">○</span>
+                </button></li>`).join('')}
+            </ol>
+          </nav>
+          <div class="custom-test-paper">
           ${session.questions.map((question, questionIndex) => `
-            <fieldset class="card" data-custom-question="${questionIndex}" style="margin-bottom:20px; max-width:760px; padding:22px;">
-              <legend style="font-weight:700; line-height:1.5;">Question ${questionIndex + 1}: ${this.escapeHTML(question.question)}</legend>
-              ${question.options.map((option, optionIndex) => `
+            <fieldset id="custom-test-question-${questionIndex}" class="card custom-test-question" data-custom-question="${questionIndex}">
+              <legend style="font-weight:700; line-height:1.5; width:100%;">
+                <span style="display:flex; justify-content:space-between; gap:16px;">
+                  <span>Question ${questionIndex + 1}</span>
+                  <span>[${question.marks} mark${question.marks === 1 ? '' : 's'}]</span>
+                </span>
+              </legend>
+              <p style="font-weight:650; line-height:1.6;">${this.escapeHTML(question.question)}</p>
+              ${question.type === 'mcq' ? question.options.map((option, optionIndex) => `
                 <label for="custom-q-${questionIndex}-${optionIndex}" style="display:block; margin:10px 0;">
                   <input id="custom-q-${questionIndex}-${optionIndex}" type="radio" name="custom_q_${questionIndex}" value="${this.escapeHTML(option)}"> ${this.escapeHTML(option)}
-                </label>`).join('')}
+                </label>`).join('') : `
+                <label for="custom-q-${questionIndex}" style="display:block; font-weight:650; margin-top:14px;">Your answer</label>
+                <textarea id="custom-q-${questionIndex}" name="custom_q_${questionIndex}" class="form-control" rows="${Math.min(12, Math.max(4, question.marks + 2))}" placeholder="Write your answer${question.responseForm === 'calculation' ? ' and show your working' : ''} here..."></textarea>
+                <p style="font-size:12px; color:var(--text-muted); margin-top:6px;">Suggested time: about ${question.minutes} minute${question.minutes === 1 ? '' : 's'}</p>`}
             </fieldset>`).join('')}
           <div id="custom-test-error" class="form-error" role="alert" tabindex="-1" hidden style="margin-bottom:12px;"></div>
-          <button type="submit" class="btn btn-primary btn-lg">Submit test</button>
+          <button type="submit" class="btn btn-primary btn-lg">Finish and open self-check</button>
           <button type="button" class="btn btn-secondary" id="custom-test-cancel-btn">Back to Practice</button>
+          </div>
         </form>
       </div>`;
 
+    const updateQuestionNavigator = questionIndex => {
+      const question = session.questions[questionIndex];
+      const answered = question.type === 'mcq'
+        ? Boolean(panel.querySelector(`input[name="custom_q_${questionIndex}"]:checked`))
+        : Boolean(panel.querySelector(`textarea[name="custom_q_${questionIndex}"]`)?.value.trim());
+      const button = panel.querySelector(`[data-jump-question="${questionIndex}"]`);
+      if (!button) return;
+      button.classList.toggle('is-answered', answered);
+      button.querySelector('.custom-test-nav-status').textContent = answered ? '✓' : '○';
+      button.setAttribute('aria-label', `Question ${questionIndex + 1}, ${question.marks} mark${question.marks === 1 ? '' : 's'}, ${answered ? 'answered' : 'not answered'}`);
+    };
+    panel.querySelectorAll('[data-jump-question]').forEach(button => {
+      button.addEventListener('click', () => {
+        const questionIndex = Number(button.dataset.jumpQuestion);
+        panel.querySelector(`#custom-test-question-${questionIndex}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+    session.questions.forEach((question, questionIndex) => {
+      const selector = question.type === 'mcq' ? `input[name="custom_q_${questionIndex}"]` : `textarea[name="custom_q_${questionIndex}"]`;
+      panel.querySelectorAll(selector).forEach(control => control.addEventListener(question.type === 'mcq' ? 'change' : 'input', () => updateQuestionNavigator(questionIndex)));
+    });
     panel.querySelector('#custom-test-cancel-btn')?.addEventListener('click', () => this.switchTab('stud-practice'));
     panel.querySelector('#custom-test-form').onsubmit = event => {
       event.preventDefault();
-      const answers = session.questions.map((question, index) => panel.querySelector(`input[name="custom_q_${index}"]:checked`)?.value || '');
-      const firstMissing = answers.findIndex(answer => !answer);
+      const answers = session.questions.map((question, index) => question.type === 'mcq'
+        ? panel.querySelector(`input[name="custom_q_${index}"]:checked`)?.value || ''
+        : panel.querySelector(`textarea[name="custom_q_${index}"]`)?.value.trim() || '');
+      const firstMissing = answers.findIndex((answer, index) => session.questions[index].type === 'mcq'
+        ? !answer
+        : !this.isMeaningfulLearnerResponse(answer, 8));
       if (firstMissing >= 0) {
         const error = panel.querySelector('#custom-test-error');
-        error.textContent = `Answer question ${firstMissing + 1} before submitting the test.`;
+        error.textContent = `Write a meaningful answer for question ${firstMissing + 1} before opening the self-check.`;
         error.hidden = false;
         const fieldset = panel.querySelector(`[data-custom-question="${firstMissing}"]`);
         fieldset?.setAttribute('aria-describedby', 'custom-test-error');
-        fieldset?.querySelector('input')?.focus();
+        fieldset?.querySelector('textarea, input')?.focus();
         return;
       }
 
       this.currentTestAnswers = answers;
-      const result = window.StudySpiceContent.mixedExamEngine.evaluateExamPerformance(answers, session);
       panel.innerHTML = `
         <div class="student-route-header">
-          <span class="student-mode-label">Custom test complete &middot; practice only</span>
-          <h1>Your test result: ${result.score}/${result.total}</h1>
-          <p>This score does not change Progress. Use the feedback to choose what to review next.</p>
+          <span class="student-mode-label">Self-check &middot; ${session.totalMarks} marks &middot; practice only</span>
+          <h1>Check your exam answers</h1>
+          <p>Compare each answer with the guidance. This is not teacher marking and does not change Progress.</p>
         </div>
         ${session.questions.map((question, index) => {
-          const correct = answers[index] === question.answer;
-          return `<article class="card" style="margin-bottom:14px; border-left:5px solid ${correct ? 'var(--green)' : 'var(--red)'};">
-            <h2 style="font-size:16px;">Question ${index + 1}</h2>
+          const isMcq = question.type === 'mcq';
+          const correct = isMcq && answers[index] === question.answer;
+          return `<article class="card custom-test-self-check" style="margin-bottom:18px; border-left:5px solid var(--teal);">
+            <h2 style="font-size:17px; display:flex; justify-content:space-between; gap:12px;"><span>Question ${index + 1}</span><span>[${question.marks}]</span></h2>
             <p>${this.escapeHTML(question.question)}</p>
-            <p><strong>Your answer:</strong> ${this.escapeHTML(answers[index])} &mdash; ${correct ? 'Correct' : 'Not correct'}</p>
-            ${correct ? '' : `<p><strong>Review:</strong> ${this.escapeHTML(question.explanation || 'Review this specification point, then try a new test.')}</p>`}
+            <div class="custom-test-answer-copy"><strong>Your answer</strong><p>${this.escapeHTML(answers[index])}</p></div>
+            ${isMcq ? `<p><strong>${correct ? 'Correct.' : 'Not correct.'}</strong> ${correct ? '' : this.escapeHTML(question.explanation || '')}</p>` : `
+              <details>
+                <summary style="font-weight:700; cursor:pointer;">Open answer guidance</summary>
+                <p style="font-size:13px; color:var(--text-muted);">Use these points to review what you included. They are guidance, not a complete OCR mark scheme, so StudySpice does not award a mark.</p>
+                <ul>${question.markScheme.map(point => `<li>${this.escapeHTML(point)}</li>`).join('')}</ul>
+              </details>`}
           </article>`;
         }).join('')}
         <button type="button" class="btn btn-primary" id="custom-test-again-btn">Build another test</button>

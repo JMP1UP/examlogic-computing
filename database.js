@@ -3949,9 +3949,9 @@ class LocalDB {
     return [];
   }
 
-  createMixedExamSession(paperType = 'all', questionCount = 10) {
+  createMixedExamSession(paperType = 'all', durationMinutes = 20) {
     if (mixedExamEngine && typeof mixedExamEngine.createMixedExamSession === 'function') {
-      return mixedExamEngine.createMixedExamSession(paperType, questionCount, curriculumContent, priorityAssessments, examinerKnowledge);
+      return mixedExamEngine.createMixedExamSession(paperType, durationMinutes, curriculumContent, priorityAssessments.examTransferTasks || [], examinerKnowledge);
     }
     return null;
   }
