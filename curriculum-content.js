@@ -300,7 +300,7 @@
   ];
 
   const supportedPractice = {
-    '1.1.1': 'Draw a three-step flow diagram for the fetch stage. Show the address moving from the PC to the MAR, then the instruction moving from memory to the MDR and on to the control unit. Add where the PC increases. Finish with one sentence explaining the difference between the MAR and MDR.',
+    '1.1.1': 'Draw five boxes: PC, MAR, Memory (RAM), MDR and Control Unit.|Draw an arrow from the PC to the MAR. Label it “address”.|Draw arrows from Memory (RAM) to the MDR, then to the Control Unit. Label them “instruction”.|Show when the PC increases.|Write one sentence: What is the difference between the MAR and MDR?',
     '1.1.2': 'Compare two processors for a video-editing task. Change one characteristic at a time, explain the likely effect, then explain why software that cannot run work in parallel may gain little from extra cores.',
     '1.1.3': 'For a washing machine, games console and desktop PC, identify the larger device, the computing purpose and whether users can choose many unrelated tasks. Justify which examples are embedded systems.',
     '1.2.1': 'Complete a RAM-versus-ROM table for volatility, purpose and typical contents. Then trace what happens when several applications fill RAM and explain why repeated virtual-memory transfers reduce performance.',
@@ -1364,7 +1364,7 @@
       },
       {
         heading: 'Make a recommendation from the scenario', minutes: 4,
-        body: 'Compare capacity, speed, portability, durability, reliability and cost using evidence from the scenario. Name what matters, link the technology to that need and acknowledge a relevant drawback. A wildlife camera may value low power use, portability and durability; a large backup archive may give greater weight to capacity and cost.',
+        body: 'Choose the features that matter in the scenario: capacity, speed, portability, durability, reliability or cost. Explain how your choice meets the user’s needs. Then give one relevant drawback. For example, a wildlife camera needs low power use, portability and durability. A large backup archive may need capacity and low cost instead.',
         items: [
           { label: 'Need', text: 'Identify which comparison factors matter for this user and task.' },
           { label: 'Evidence', text: 'Explain how a named device or medium meets those particular needs.' },
@@ -1568,7 +1568,7 @@
         ]
       },
       {
-        heading: 'Develop a contextual impact', minutes: 4,
+        heading: 'Explain how the technology affects someone', minutes: 4,
         body: 'Name an affected stakeholder, describe the immediate change and then explain a consequence. For example, remote monitoring may let a patient receive support at home, but collection of detailed health data can create privacy and security risks. Generic claims earn little unless they are linked to the technology and people in the scenario.',
         items: [
           { label: 'Stakeholder', text: 'Identify the person, group or organisation affected.' },
@@ -1581,7 +1581,7 @@
         body: 'Consider the relevant benefits, harms and alternatives, then decide which matter most in the stated context. A strong conclusion follows from the developed points; it is not a new unsupported opinion. OCR does not require one fixed layout: paragraphs, developed key points or a table can all communicate a reasoned response.',
         items: [
           { label: 'Balance', text: 'Consider relevant competing effects rather than forcing an artificial equal list.' },
-          { label: 'Judgement', text: 'State a decision and justify it using the most important contextual evidence.' }
+          { label: 'Judgement', text: 'Give your decision. Support it with the most important facts from the scenario.' }
         ]
       }
     ],

@@ -43,24 +43,28 @@ describe('Senior Developer Pedagogical & Examiner Enhancements', () => {
     });
   });
 
-  describe('Scaffolded 6-8 Mark Extended Response Builder', () => {
-    test('provides structured ladder scaffold for 1.6.1 Ethical & Environmental Impacts', () => {
+  describe('Scaffolded 8 Mark Extended Response Builder', () => {
+    test('provides one coherent facial-recognition scaffold for 1.6.1', () => {
       const scaffold = extendedWritingBuilder.getExtendedWritingScaffold('1.6.1');
-      expect(scaffold.marks).toBe(6);
+      expect(scaffold.marks).toBe(8);
       expect(scaffold.scaffoldLadder).toHaveLength(4);
+      expect(scaffold.scenario).toContain('facial recognition');
+      expect(JSON.stringify(scaffold)).not.toMatch(/500|laptop|e-waste/i);
     });
 
-    test('evaluates student 4-stage selections against marking criteria', () => {
+    test('keeps the planning scaffold formative rather than awarding automatic marks', () => {
       const scaffold = extendedWritingBuilder.getExtendedWritingScaffold('1.6.1');
       const selections = {
         stage1: [scaffold.scaffoldLadder[0].correctSelections[0]],
         stage2: [scaffold.scaffoldLadder[1].correctSelections[0]],
-        stage3Text: 'Laptops allow pupils to work from home, but those without internet face digital divide.',
-        stage4Text: 'In conclusion, e-waste recycling ensures environmental benefit outweighs cost.'
+        stage3Text: 'An incorrect match could mark a pupil absent, so staff need a way to check the record.',
+        stage4Text: 'The school should use a less intrusive attendance method unless it can justify storing biometric data.'
       };
 
       const result = extendedWritingBuilder.evaluateExtendedResponse('1.6.1', selections);
-      expect(result.marksAwarded).toBeGreaterThanOrEqual(4);
+      expect(result.marksAwarded).toBeNull();
+      expect(result.reviewStatus).toBe('practice_only');
+      expect(result.totalMarks).toBe(8);
       expect(result.feedback.length).toBeGreaterThan(2);
     });
   });

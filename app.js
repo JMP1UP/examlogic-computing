@@ -919,13 +919,33 @@ class App {
 
   getExamTechniqueCatalogue() {
     return [
-      { id: 'command-words', label: 'Command words', support: 'Underline the command word and match the depth of the response to describe, explain, compare, discuss or evaluate.' },
+      { id: 'command-words', label: 'Command words', support: 'Describe: say what happens. Explain: say how or why. Compare: identify relevant similarities and/or differences, linking the same feature on both sides. Discuss: develop relevant points. Evaluate: weigh the evidence and give a supported judgement.' },
       { id: 'show-working', label: 'Show calculation working', support: 'Write the formula or values, show each conversion and finish with the requested unit.' },
       { id: 'apply-scenario', label: 'Apply points to the scenario', support: 'Connect each technical point to the named person, system or consequence in the question.' },
       { id: 'extended-judgement', label: 'Build a justified conclusion', support: 'Develop relevant arguments, weigh them for the scenario and finish with a supported judgement.' },
       { id: 'precise-terminology', label: 'Use precise computing terms', support: 'Replace vague wording with the exact component, process, data structure or security control.' },
       { id: 'time-and-marks', label: 'Use marks and time well', support: 'Use the mark total to judge how many developed points or stages the examiner expects.' }
     ];
+  }
+
+  getCommandWordMeaning(commandWord) {
+    const meanings = {
+      Identify: 'Give the required name or fact.',
+      State: 'Give a short, clear fact.',
+      Describe: 'Say what happens or what something is like.',
+      Explain: 'Say how or why. Link a cause to its effect.',
+      Compare: 'Identify relevant similarities and/or differences. Link the same feature on both sides.',
+      Calculate: 'Show your working and include the requested unit.',
+      Trace: 'Follow the values or steps in order.',
+      Complete: 'Add the missing code, algorithm or table content.',
+      Write: 'Write the requested code or answer.',
+      Refine: 'Improve or correct the given solution without changing its purpose.',
+      Design: 'Create a solution that meets the stated requirements.',
+      Recommend: 'Choose an option and justify it using the scenario.',
+      Discuss: 'Develop relevant points and apply them to the scenario.',
+      Evaluate: 'Weigh the relevant evidence and reach a supported judgement.'
+    };
+    return meanings[commandWord] || 'Follow the instruction word and use the mark total to judge the depth needed.';
   }
 
   getTeacherLearnerSummary(student) {
@@ -2422,11 +2442,11 @@ class App {
             <h2 class="student-section-label" style="font-size:18px; margin-bottom:12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">This week</h2>
             <div class="card card-progress student-status-rail" style="margin-bottom: 20px; padding: 20px;">
               <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Work that counts</h3>
-              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 0;">${demonstratedProgress.evidenceCount} checked ${demonstratedProgress.evidenceCount === 1 ? 'activity is' : 'activities are'} contributing to your progress.</p>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 0;">${demonstratedProgress.evidenceCount} checked ${demonstratedProgress.evidenceCount === 1 ? 'activity counts' : 'activities count'} towards Progress.</p>
             </div>
             <div class="card milestone-dashboard-card student-checkpoint-card" style="margin-bottom: 20px; padding: 20px;">
-              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Your next section goal</h3>
-              <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 10px;">${securedMilestones.length} of ${availableMilestones.length} available section goals met through checked work.</p>
+              <h3 style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Your next section</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 10px;">${securedMilestones.length} of ${availableMilestones.length} section goals met through checked work.</p>
               ${nextMilestone ? `
                 <div style="font-size:13px; margin-bottom:10px;">
                   <strong>Next:</strong> ${this.escapeHTML(nextMilestone.id)} · ${this.escapeHTML(nextMilestone.name)}
@@ -2989,9 +3009,9 @@ class App {
             <span style="font-size: 12px; font-weight: 500; color: var(--text-muted);">(click for 3-step guide)</span>
           </summary>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; font-size: 13px; color: var(--text-muted); margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
-            <div><strong style="color: var(--text-main);">1. My Desk:</strong> Click <strong>+ Add to desk</strong> to practice daily.</div>
-            <div><strong style="color: var(--text-main);">2. Memory Score:</strong> Review cards to build 🟢 <strong>Strong</strong> recall.</div>
-            <div><strong style="color: var(--text-main);">3. Exam Goal:</strong> Complete exam questions to earn 🎯 <strong>Met</strong> badges.</div>
+            <div><strong style="color: var(--text-main);">1. Add a topic:</strong> Add topics you have covered at school to your flashcard deck.</div>
+            <div><strong style="color: var(--text-main);">2. Review flashcards:</strong> After each card, tell us how easy it was to remember.</div>
+            <div><strong style="color: var(--text-main);">3. Show what you can do:</strong> Answer checked exam questions.</div>
           </div>
         </details>
 
@@ -3347,7 +3367,7 @@ class App {
         <header class="student-route-header" style="margin-bottom: 24px;">
           <span class="student-mode-label">Practice &middot; 8-Mark Extended Response Essay</span>
           <h1 style="font-size: 28px; font-weight: 800; margin: 6px 0;">Make a case about a real computing decision</h1>
-          <p>Use accurate computing knowledge, apply it to the people in the scenario, and justify your view.</p>
+          <p>Plan and write an answer to an OCR-style question. This practice is not marked automatically.</p>
         </header>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; align-items: start;">
@@ -3370,19 +3390,14 @@ class App {
 
               <div class="form-group" style="margin-bottom: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
-                  <label for="essay-response-textarea" style="font-weight: 700; font-size: 14px; margin: 0;">Your Written Essay Response (8 Marks):</label>
-                  <label class="btn btn-secondary btn-sm" style="font-size: 12px; cursor: pointer; padding: 4px 10px; min-height: 32px; display: inline-flex; align-items: center; gap: 6px; background: rgba(139, 92, 246, 0.08); border-color: #8B5CF6; color: #7C3AED; font-weight: 700;">
-                    📷 Snap / Upload Photo of Handwritten Essay
-                    <input type="file" id="essay-photo-upload-input" accept="image/*" capture="environment" style="display: none;">
-                  </label>
+                  <label for="essay-response-textarea" style="font-weight: 700; font-size: 14px; margin: 0;">Your answer to this 8-mark question</label>
                 </div>
                 <textarea id="essay-response-textarea" class="form-control" rows="8" placeholder="Write your answer here. Apply each point to this school and the people affected." style="font-size: 16px; line-height: 1.6;">${this.escapeHTML(state.essayText)}</textarea>
-                <div id="photo-upload-status" style="font-size: 12px; font-weight: 600; color: var(--teal); margin-top: 6px; display: none;"></div>
               </div>
 
               <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button type="button" id="evaluate-essay-btn" class="btn btn-primary" style="background: #8B5CF6; border-color: #8B5CF6; font-weight: 700; padding: 10px 20px; min-height: 42px;">
-                  ✔ Check Against OCR 8-Mark Criteria
+                  Save draft — practice only
                 </button>
                 <button type="button" id="essay-back-hub-btn" class="btn btn-secondary" style="min-height: 42px;">Back to Practice</button>
               </div>
@@ -3400,25 +3415,10 @@ class App {
                 <li><strong>Justify your judgement</strong> using the scenario.</li>
               </ol>
               
-              <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px;">
-                <div style="padding: 10px; background: rgba(0,0,0,0.02); border-radius: 6px; border: 1px solid var(--border-color);">
-                  <strong style="color: var(--teal); display: block; margin-bottom: 4px;">Level 3 (6–8 Marks): Thorough & Balanced</strong>
-                  <p style="margin: 0; color: var(--text-muted); line-height: 1.4;">Comprehensive evaluation covering 2+ opposing viewpoints (e.g. e-waste vs energy efficiency), technical depth, and a clear justified conclusion.</p>
-                </div>
-                <div style="padding: 10px; background: rgba(0,0,0,0.02); border-radius: 6px; border: 1px solid var(--border-color);">
-                  <strong style="color: var(--text-main); display: block; margin-bottom: 4px;">Level 2 (3–5 Marks): Reasonable Explanation</strong>
-                  <p style="margin: 0; color: var(--text-muted); line-height: 1.4;">Explains specific impacts with some technical terminology, but lacks a complete conclusion or covers only one perspective.</p>
-                </div>
-                <div style="padding: 10px; background: rgba(0,0,0,0.02); border-radius: 6px; border: 1px solid var(--border-color);">
-                  <strong style="color: var(--text-muted); display: block; margin-bottom: 4px;">Level 1 (1–2 Marks): Basic Statements</strong>
-                  <p style="margin: 0; color: var(--text-muted); line-height: 1.4;">General statements without technical detail or scenario application.</p>
-                </div>
-              </div>
-
               ${state.evaluated ? `
                 <div style="margin-top: 20px; padding: 14px; background: rgba(45, 156, 145, 0.1); border-radius: 8px; border: 1px solid var(--teal);">
-                  <strong style="color: var(--teal); font-size: 14px;">Response Recorded!</strong>
-                  <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-main);">Your response has been saved and checked against your learning record.</p>
+                  <strong style="color: var(--teal); font-size: 14px;">Draft saved</strong>
+                  <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-main);">This is practice only. It does not change Progress and has not been marked.</p>
                 </div>
               ` : ''}
             </div>
@@ -3430,30 +3430,6 @@ class App {
     const textarea = panel.querySelector('#essay-response-textarea');
     if (textarea) {
       textarea.oninput = (e) => { state.essayText = e.target.value; };
-    }
-    const photoInput = panel.querySelector('#essay-photo-upload-input');
-    const photoStatus = panel.querySelector('#photo-upload-status');
-    if (photoInput) {
-      photoInput.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        if (photoStatus) {
-          photoStatus.style.display = 'block';
-          photoStatus.style.color = '#7C3AED';
-          photoStatus.textContent = '⏳ Processing handwritten essay photo with OCR text recognition...';
-        }
-        setTimeout(() => {
-          const sampleTranscribedText = `[Handwritten Essay Transcribed from ${file.name}]:\nReplacing desktop computers with cloud-connected laptops has significant environmental and ethical implications. Environmentally, disposing of 500 desktops generates considerable electronic waste (e-waste) containing toxic heavy metals such as lead and mercury if not recycled via WEEE directives. However, newer laptops are far more energy efficient, reducing overall school carbon footprint. Ethically, cloud laptops enable students without home PCs to access online learning tools, reducing the digital divide, provided the school ensures equal home internet access. In conclusion, the transition is beneficial if e-waste disposal is responsibly managed.`;
-          if (textarea) {
-            state.essayText = textarea.value.trim() ? textarea.value + '\n\n' + sampleTranscribedText : sampleTranscribedText;
-            textarea.value = state.essayText;
-          }
-          if (photoStatus) {
-            photoStatus.style.color = 'var(--teal)';
-            photoStatus.textContent = '✅ Handwritten photo transcribed successfully! Click "Check Against OCR 8-Mark Criteria" below for instant AI feedback.';
-          }
-        }, 1000);
-      };
     }
     panel.querySelector('#evaluate-essay-btn').onclick = () => {
       state.evaluated = true;
@@ -4256,9 +4232,11 @@ class App {
       <div class="student-review-instructions">
         <strong>How to use this review</strong>
         <ol>
-          <li>Open the parts in order and work through the examples inside them.</li>
-          <li>Pause at a session break if you need to; your next part is clearly numbered.</li>
-          <li>When ready, try the matching exam question. Flashcards are for later recall.</li>
+          <li>Open Part 1 and read the example.</li>
+          <li>Complete each part in order.</li>
+          <li>You can stop at a session break and return later.</li>
+          <li>At the end, try the exam question.</li>
+          <li>Use flashcards later to help you remember the topic.</li>
         </ol>
       </div>` : '';
     const sessionHeading = index % 2 === 0 ? `
@@ -4383,7 +4361,7 @@ class App {
               </div>
               <div id="try-status-${item.id}" style="font-size: 12px; color: var(--teal); margin-top: 6px; display: none; font-weight: 600;"></div>
             </div>
-            <p style="font-size: 13px; margin: 12px 0 0;"><strong>Reading:</strong> about ${item.workload.coreLearningMinutes} minutes. <strong>Extended guided practice:</strong> complete one clearly chosen step now, or allow 20-40 minutes for the whole multi-part task. <strong>Optional quick recall:</strong> up to ${item.workload.retrievalMinutes} minutes.</p>
+            <p class="student-workload-breakdown"><strong>Reading:</strong> about ${item.workload.coreLearningMinutes} minutes.<br><strong>Practice:</strong> try one step now. The full task may take 20–40 minutes.<br><strong>Flashcards:</strong> up to ${item.workload.retrievalMinutes} minutes.</p>
             <p style="font-size: 13px; margin: 6px 0;"><strong>How this may appear in an OCR exam:</strong> ${item.assessmentModes.map(mode => this.escapeHTML(mode)).join(', ')}.</p>
             <p style="margin: 14px 0 8px;"><strong>A common mistake to avoid:</strong> ${this.escapeHTML(item.misconception)}</p>
             <div style="display: flex; flex-wrap: wrap; gap: 6px;" aria-label="Key terms">
@@ -4460,7 +4438,7 @@ class App {
           <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px; color: var(--text-main);">${activeNote.title}</h2>
           <p style="font-size: 15px; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px;">${activeNote.summary}</p>
           <div style="font-size: 13px; color: var(--text-main); margin-bottom: 16px; background: var(--bg-main); padding: 8px 12px; border-radius: 6px; display: inline-block;">
-            <strong>Core guided learning:</strong> about ${totalCoreMins} minutes across ${allObjectiveTeaching.length} sections. Optional notes and quick recall are additional.
+            <strong>Topic review:</strong> about ${totalCoreMins} minutes across ${allObjectiveTeaching.length} sections. Notes and flashcards are optional extras.
           </div>
           
           <!-- Specification Points Covered -->
@@ -4757,11 +4735,13 @@ class App {
             <p>${this.escapeHTML(content.workedExample)}</p>
           </aside>
           <details class="student-method-practice">
-            <summary>Practise the method first</summary>
-            <p>${this.escapeHTML(content.supportedPractice)}</p>
-            <p><strong>Practice only:</strong> use paper or your own notes. This does not update Progress.</p>
+            <summary>Try it one step at a time</summary>
+            ${content.supportedPractice.includes('|')
+              ? `<ol>${content.supportedPractice.split('|').map(step => `<li>${this.escapeHTML(step)}</li>`).join('')}</ol>`
+              : `<p>${this.escapeHTML(content.supportedPractice)}</p>`}
+            <p><strong>This is practice.</strong> Write it on paper or in your notes. It will not change your Progress score.</p>
           </details>
-          <p><strong>Common mistake:</strong> ${this.escapeHTML(content.misconception)}</p>
+          <p><strong>Remember:</strong> ${content.id === '1.1.1' ? 'The MAR holds an address. The MDR holds the data or instruction stored at that address.' : this.escapeHTML(content.misconception)}</p>
         </article>
         ${tool ? `
           <aside class="card student-context-tool" style="padding: 22px 26px; border-left: 6px solid var(--teal); background: linear-gradient(135deg, rgba(45, 156, 145, 0.08) 0%, rgba(255, 255, 255, 1) 100%); border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
@@ -5100,14 +5080,14 @@ class App {
           <option value="all">All topics on your desk</option>
           ${topics.filter(topic => eligibleTopics.has(topic.id)).map(topic => `<option value="${this.escapeHTML(topic.id)}" ${topic.id === this.retrievalDeckTopicId ? 'selected' : ''}>${this.escapeHTML(topic.name)}</option>`).join('')}
         </select>
-        <p id="retrieval-filter-status" style="font-size:12px; color:var(--text-muted); margin:8px 0 0;">${this.retrievalDeckRatedCount > 0 ? 'Topic is fixed until this short session is complete. Pausing preserves your place.' : dueCards.length ? `${dueCards.length} ${dueCards.length === 1 ? 'card is' : 'cards are'} ready to practise now.` : `All cards up to date!`}</p>
+        <p id="retrieval-filter-status" style="font-size:12px; color:var(--text-muted); margin:8px 0 0;">${this.retrievalDeckRatedCount > 0 ? 'Finish or pause this short set before changing topic. If you pause, you can continue later.' : dueCards.length ? `${dueCards.length} ${dueCards.length === 1 ? 'card is' : 'cards are'} ready to practise now.` : `All cards up to date!`}</p>
       </div>
       ${showCompletion ? `
         <article class="card" role="status" style="max-width: 680px; padding: 28px; text-align: center; margin: 0 auto;">
           <div style="font-size: 32px; margin-bottom: 8px;">🎉</div>
           <span class="student-mode-label" style="display: inline-block; margin-bottom: 6px;">Section review complete</span>
           <h2 style="font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 8px;">You're all up to date!</h2>
-          <p style="font-size: 15px; color: var(--text-main); line-height: 1.5; margin-bottom: 20px;">You reviewed ${this.retrievalDeckRatedCount} ${this.retrievalDeckRatedCount === 1 ? 'card' : 'cards'} in this session. Cards have been scheduled based on how easy you found recall.</p>
+          <p style="font-size: 15px; color: var(--text-main); line-height: 1.5; margin-bottom: 20px;">You reviewed ${this.retrievalDeckRatedCount} ${this.retrievalDeckRatedCount === 1 ? 'card' : 'cards'} in this session. Your rating decides when each card comes back. Hard cards return sooner.</p>
           <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;">
             <button type="button" class="btn btn-primary" id="retrieval-session-back-btn" style="min-height: 44px; padding-inline: 24px;">Return to My desk</button>
             <button type="button" class="btn btn-secondary" id="retrieval-extra-btn" style="min-height: 44px;">Repeat review / extra cards</button>
@@ -6419,7 +6399,8 @@ class App {
         <details style="margin-bottom: 16px; background: rgba(45, 156, 145, 0.05); border: 1px solid rgba(45, 156, 145, 0.2); border-radius: 8px; padding: 8px 12px;">
           <summary style="cursor: pointer; font-size: 13px; font-weight: 600; color: var(--teal);">💡 Examiner Advice & Command Word Tip (${task.commandWord})</summary>
           <div style="font-size: 13px; color: var(--text-main); margin-top: 8px; line-height: 1.5; border-top: 1px dashed rgba(45, 156, 145, 0.2); padding-top: 8px;">
-            <strong>Command word: ${task.commandWord}</strong> — ${this.escapeHTML(task.decodePrompt)}
+            <strong>Command word: ${task.commandWord}</strong> — ${this.escapeHTML(this.getCommandWordMeaning(task.commandWord))}
+            <p>${this.escapeHTML(task.decodePrompt)}</p>
           </div>
         </details>
 
@@ -6527,7 +6508,7 @@ class App {
     bind('transfer-back-decode', () => { this.examTransferStage = 'decode'; this.renderStudentExamTransfer(panel); });
     bind('transfer-to-answer', () => { task.planningLabels.forEach((label, index) => { const el = document.getElementById(`transfer-plan-${index}`); if (el) this.examTransferPlan[index] = el.value.trim(); }); if (Object.values(this.examTransferPlan).filter(Boolean).length < 1) return this.alert('Add at least one planning note.'); this.examTransferStage = 'answer'; this.renderStudentExamTransfer(panel); });
     bind('transfer-back-plan', () => { const el = document.getElementById('transfer-answer-response'); if (el) this.examTransferResponse = el.value; this.examTransferStage = 'plan'; this.renderStudentExamTransfer(panel); });
-    bind('transfer-to-check', () => { const el = document.getElementById('transfer-answer-response'); if (el) this.examTransferResponse = el.value.trim(); if (this.examTransferResponse.length < 15) return this.alert('Develop your answer before checking it.'); this.examTransferStage = 'check'; this.renderStudentExamTransfer(panel); });
+    bind('transfer-to-check', () => { const el = document.getElementById('transfer-answer-response'); if (el) this.examTransferResponse = el.value.trim(); if (this.examTransferResponse.length < 15) return this.alert('Add at least one explained point before you check your answer.'); this.examTransferStage = 'check'; this.renderStudentExamTransfer(panel); });
     bind('transfer-to-retry', () => {
       const evidenceCount = panel.querySelectorAll('.transfer-evidence-checkbox:checked').length;
       window.db.addAttempt({
@@ -6555,12 +6536,12 @@ class App {
         evidenceType: 'self_assessment',
         contributesToMastery: false
       });
-      this.alert('Guided practice saved as self-review only. It does not change Progress. You can try an independent question later if you want evidence sent for review.');
+      this.alert('Your practice has been saved. It will not change Progress. To send work for marking, try the exam question without the guided steps.');
       this.switchTab('stud-dashboard');
     });
     bind('transfer-finish', () => {
       const retry = document.getElementById('transfer-retry-response').value.trim();
-      if (!this.isMeaningfulLearnerResponse(retry, 20)) return this.alert('Write a meaningful retry before submitting it for review.');
+      if (!this.isMeaningfulLearnerResponse(retry, 20)) return this.alert('Write a full answer in your own words before sending it for review.');
       window.db.addAttempt({
         studentId: this.currentUser.id,
         type: 'exam_transfer_retry',
@@ -7792,10 +7773,10 @@ class App {
                   ? `${item.evidenceSourceCount} checked ${item.evidenceSourceCount === 1 ? 'activity' : 'activities'}`
                   : 'No checked activity yet',
                 item.latestDate ? `Latest ${new Date(item.latestDate).toLocaleDateString()}` : null,
-                demonstrated.length ? `Shown so far: ${demonstrated.join(', ')}` : null,
-                remaining.length ? `Still to show: ${remaining.join(', ')}` : null
+                demonstrated.length ? `You have shown: ${demonstrated.join(', ')}` : null,
+                remaining.length ? `You still need to show: ${remaining.join(', ')}` : null
               ].filter(Boolean).join(' · ')
-              : 'There are not yet enough suitable checked questions for this section, so it is not included in the section total.';
+              : 'This section is not included in your total yet because StudySpice does not have enough checked questions for it.';
             return `
             <div class="milestone-list-row">
               <div class="milestone-list-heading">
@@ -7846,9 +7827,9 @@ class App {
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px;">
         <div class="card" style="padding: 20px; text-align: center; border-top: 4px solid var(--teal);">
-          <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">Overall Readiness</div>
+          <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">Section goals met with checked work</div>
           <div style="font-size: 32px; font-weight: 800; color: var(--teal);">${milestonePercent}%</div>
-          <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">${securedCount} of ${availableMilestones.length || 32} section goals met</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">${securedCount} of ${availableMilestones.length || 32} current goals met</div>
         </div>
         <div class="card" style="padding: 20px; text-align: center; border-top: 4px solid var(--teal);">
           <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">Paper 1 (Systems)</div>
@@ -7865,24 +7846,24 @@ class App {
         <div class="card" style="padding: 22px; margin-bottom: 32px; border-top: 4px solid var(--teal); background: var(--bg-card);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <div>
-              <span style="font-size: 11px; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 0.5px;">Mastery Showcase</span>
-              <h2 style="font-size: 19px; font-weight: 800; margin: 2px 0 0 0; color: var(--text-main);">🏆 Your Specification Badges</h2>
+              <span style="font-size: 11px; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 0.5px;">Achievements</span>
+              <h2 style="font-size: 19px; font-weight: 800; margin: 2px 0 0 0; color: var(--text-main);">Your topic achievements</h2>
             </div>
-            <span class="badge badge-primary" style="font-size: 12px; padding: 4px 10px;">${milestones.filter(m => m.state === 'checkpoint_secured').length} Badges Secured</span>
+            <span class="badge badge-primary" style="font-size: 12px; padding: 4px 10px;">${milestones.filter(m => m.state === 'checkpoint_secured').length} achievements earned</span>
           </div>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px;">
             <div style="padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(45, 156, 145, 0.04); display: flex; align-items: center; gap: 10px;">
               <span style="font-size: 24px;">📄</span>
               <div>
                 <strong style="display: block; font-size: 13px; color: var(--text-main);">Paper 1 Systems Master</strong>
-                <span style="font-size: 11px; color: var(--text-muted);">${milestones.filter(m => m.paper === 'Paper 1' && m.state === 'checkpoint_secured').length}/19 Strands Met</span>
+                <span style="font-size: 11px; color: var(--text-muted);">${milestones.filter(m => m.paper === 'Paper 1' && m.state === 'checkpoint_secured').length}/19 section goals met</span>
               </div>
             </div>
             <div style="padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(45, 156, 145, 0.04); display: flex; align-items: center; gap: 10px;">
               <span style="font-size: 24px;">💻</span>
               <div>
                 <strong style="display: block; font-size: 13px; color: var(--text-main);">Paper 2 Logic Ace</strong>
-                <span style="font-size: 11px; color: var(--text-muted);">${milestones.filter(m => m.paper === 'Paper 2' && m.state === 'checkpoint_secured').length}/13 Strands Met</span>
+                <span style="font-size: 11px; color: var(--text-muted);">${milestones.filter(m => m.paper === 'Paper 2' && m.state === 'checkpoint_secured').length}/13 section goals met</span>
               </div>
             </div>
             <div style="padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(45, 156, 145, 0.04); display: flex; align-items: center; gap: 10px;">
@@ -7905,7 +7886,7 @@ class App {
       <div class="student-progress-layout">
         <div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h2 style="font-size: 20px; font-weight: 700; color: var(--text-main); margin: 0;">Active Topic Status</h2>
+            <h2 style="font-size: 20px; font-weight: 700; color: var(--text-main); margin: 0;">Your latest results by topic</h2>
             <button type="button" class="btn btn-link" id="goto-topics-btn" style="font-size: 13px; font-weight: 600;">View full specification →</button>
           </div>
           

@@ -65,7 +65,7 @@ describe('objective-level curriculum coverage integrity', () => {
   test('keeps the CPU fetch guided task focused on one clear learner output', () => {
     const cpuPurpose = data.curriculumContent.find(item => item.id === '1.1.1');
 
-    expect(cpuPurpose.supportedPractice).toContain('three-step flow diagram');
+    expect(cpuPurpose.supportedPractice).toContain('Draw five boxes: PC, MAR, Memory (RAM), MDR and Control Unit.');
     expect(cpuPurpose.supportedPractice).toContain('difference between the MAR and MDR');
     expect(cpuPurpose.supportedPractice).not.toContain('four-column table');
     expect(cpuPurpose.supportedPractice).not.toContain('decode, execute and store');

@@ -2871,6 +2871,9 @@ body.dark-mode .app-container[data-user-role="student"] {
 }
 .student-review-instructions ol { margin: 8px 0 0; padding-left: 22px; }
 .student-review-instructions li + li { margin-top: 5px; }
+.student-workload-breakdown { font-size: 14px; line-height: 1.7; margin: 12px 0 0; }
+.student-method-practice ol { margin: 12px 0; padding-left: 24px; }
+.student-method-practice li { margin: 8px 0; line-height: 1.55; }
 .student-study-session {
   margin-top: 18px;
   padding-bottom: 7px;
@@ -2983,7 +2986,6 @@ body.dark-mode .app-container[data-user-role="student"] {
 .essay-scenario-facts span { padding: 7px 10px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 14px; }
 .essay-writing-guide { border-left: 4px solid var(--teal); padding: 4px 0 4px 18px; }
 .essay-writing-guide li { margin: 8px 0; color: var(--text-main); line-height: 1.5; }
-.essay-writing-guide + div { display: none !important; }
 
 @media (max-width: 520px) {
   .student-teaching-part > summary {

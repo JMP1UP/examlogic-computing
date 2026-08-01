@@ -35,7 +35,8 @@ describe('pupil-facing plain-language integrity', () => {
     expect(appSource).toContain('Section goal met');
     expect(appSource).not.toContain('Section complete');
     expect(appSource).not.toContain('available sections completed');
-    expect(appSource).toContain('do not claim that you will remember it permanently');
+    expect(appSource).not.toContain('Topic mastered');
+    expect(appSource).toContain('section goals met through checked work');
   });
 
   test('uses one consistent pupil-facing name for recall and the exam-answer sequence', () => {
@@ -45,16 +46,42 @@ describe('pupil-facing plain-language integrity', () => {
     expect(databaseSource).not.toContain('Spaced Theory Check');
     expect(appSource).toContain('Quick recall completed');
     expect(appSource).toContain('Understand, plan, answer and self-check one question.');
-    expect(appSource).toContain('Optional independent question');
+    expect(appSource).toContain('Optional independent practice');
     expect(appSource).not.toContain('Decode, Plan, Answer, Check and Retry');
   });
 
   test('describes workload and practice drafts without implying extra credit or a false total', () => {
-    expect(appSource).toContain('Core guided learning:');
-    expect(appSource).toContain('Optional notes and quick recall are additional.');
+    expect(appSource).toContain('Topic review:');
+    expect(appSource).toContain('Notes and flashcards are optional extras.');
     expect(appSource).toContain('Save draft — practice only');
     expect(appSource).not.toContain('Topic Workload:');
     expect(databaseSource).not.toContain("summary: 'Master how");
+  });
+
+  test('chunks pupil instructions and explains visible progress rules', () => {
+    expect(appSource).toContain('Try it one step at a time');
+    expect(appSource).toContain("content.supportedPractice.split('|')");
+    expect(appSource).toContain('It will not change your Progress score.');
+    expect(appSource).toContain('Add at least one explained point before you check your answer.');
+    expect(appSource).not.toContain('Write a meaningful retry');
+    expect(appSource).not.toContain('contributing to your progress');
+  });
+
+  test('keeps OCR command words and gives each a plain explanation', () => {
+    ['Describe', 'Explain', 'Compare', 'Calculate', 'Trace', 'Refine', 'Discuss', 'Evaluate'].forEach(word => {
+      expect(appSource).toContain(`${word}:`);
+    });
+    expect(appSource).toContain('Link a cause to its effect.');
+    expect(appSource).toContain('Show your working and include the requested unit.');
+  });
+
+  test('does not pretend the extended-writing draft is automatically marked', () => {
+    expect(appSource).toContain('This practice is not marked automatically.');
+    expect(appSource).toContain('Save draft — practice only');
+    expect(appSource).toContain('It does not change Progress and has not been marked.');
+    expect(appSource).not.toContain('instant AI feedback');
+    expect(appSource).not.toContain('Processing handwritten essay photo with OCR');
+    expect(appSource).not.toContain('e-waste vs energy efficiency');
   });
 
   test('gives each pseudocode task a concept-specific answer-safe hint', () => {
@@ -75,7 +102,7 @@ describe('pupil-facing plain-language integrity', () => {
 
   test('makes repeated official references distinguishable by section scope', () => {
     expect(appSource).toContain('${this.escapeHTML(item.officialSpecificationPointId)} — ${this.escapeHTML(item.scope)}');
-    expect(appSource).toContain('Included as your latest checked result');
+    expect(appSource).toContain('Your latest checked result can contribute to Progress.');
     expect(appSource).not.toContain('Counts towards Progress');
   });
 });

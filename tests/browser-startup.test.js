@@ -601,7 +601,7 @@ describe('production browser startup', () => {
     expect(panel.innerHTML).toContain('Useful first');
     expect(panel.innerHTML).toContain('Review 1.2.3');
     expect(panel.innerHTML).toContain('You can continue with this topic');
-    expect(panel.innerHTML).toContain('Practise the method first');
+    expect(panel.innerHTML).toContain('Try it one step at a time');
     expect(panel.innerHTML).toContain('Try a 5-mark exam question');
   });
 
