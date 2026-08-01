@@ -4230,16 +4230,11 @@ class App {
     const sessionSections = sections.slice(index, index + 2);
     const sessionMinutes = sessionSections.reduce((sum, part) => sum + (Number(part.minutes) || 3), 0);
     const sequenceIntro = index === 0 ? `
-      <div class="student-review-instructions">
-        <strong>How to use this review</strong>
-        <ol>
-          <li>Open Part 1 and read the example.</li>
-          <li>Complete each part in order.</li>
-          <li>You can stop at a session break and return later.</li>
-          <li>At the end, try the exam question.</li>
-          <li>Use flashcards later to help you remember the topic.</li>
-        </ol>
-      </div>` : '';
+      <p class="student-review-guidance">
+        ${totalSessions > 1
+          ? `Work through one study session at a time, then try the exam question after the final session.`
+          : `Read both parts, then try the exam question.`}
+      </p>` : '';
     const sessionHeading = index % 2 === 0 ? `
       <div class="student-study-session" role="heading" aria-level="3">
         Study session ${sessionNumber} of ${totalSessions} · about ${sessionMinutes} minutes

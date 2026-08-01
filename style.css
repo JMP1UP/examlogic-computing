@@ -2864,13 +2864,11 @@ body.dark-mode .app-container[data-user-role="student"] {
   margin: 18px 0;
 }
 
-.student-review-instructions {
-  padding: 16px 18px;
-  border-left: 4px solid var(--teal);
-  background: rgba(45, 156, 145, 0.08);
+.student-review-guidance {
+  margin: 0 0 18px;
+  color: var(--text-muted);
+  font-size: 14px;
 }
-.student-review-instructions ol { margin: 8px 0 0; padding-left: 22px; }
-.student-review-instructions li + li { margin-top: 5px; }
 .student-workload-breakdown { font-size: 14px; line-height: 1.7; margin: 12px 0 0; }
 .student-method-practice ol { margin: 12px 0; padding-left: 24px; }
 .student-method-practice li { margin: 8px 0; line-height: 1.55; }

@@ -421,7 +421,8 @@ describe('objective-level curriculum coverage integrity', () => {
     expect(examReferenceLanguage.teachingSections).toHaveLength(2);
     expect(examReferenceLanguage.workload.coreLearningMinutes).toBeLessThanOrEqual(12);
     const appSource = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
-    expect(appSource).toContain('How to use this review');
+    expect(appSource).toContain('Read both parts, then try the exam question.');
+    expect(appSource).toContain('Work through one study session at a time');
     expect(appSource).toContain('Study session ${sessionNumber} of ${totalSessions}');
     expect(appSource.match(/renderTeachingReviewPart\(section, index, [^)]+\)/g)).toHaveLength(3);
   });
