@@ -138,7 +138,7 @@
       totalQuestions: selected.length,
       totalMarks: selected.length,
       questionStyle: 'diagnostic',
-      sufficientForRequestedTime: selected.length > 0,
+      sufficientForRequestedTime: false,
       questions: selected
     };
   }

@@ -66,6 +66,8 @@ describe('Senior Developer Pedagogical & Examiner Enhancements', () => {
       expect(emptySession.questions).toEqual([]);
       expect(selectedSession.questions).toHaveLength(1);
       expect(selectedSession.questions[0].strandId).toBe('1.1.1');
+      expect(selectedSession.questionStyle).toBe('diagnostic');
+      expect(selectedSession.sufficientForRequestedTime).toBe(false);
     });
 
     test('builds a timed OCR-style test from constructed exam questions and preserves specification mapping', () => {
