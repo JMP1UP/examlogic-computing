@@ -3327,10 +3327,10 @@ class App {
 
   renderStudentEssayPractice(panel) {
     const scaffold = window.db.getExtendedWritingScaffold('1.6.1') || {
-      title: 'Ethical, Cultural & Environmental Impacts of Digital Tech',
-      commandWord: 'Evaluate',
+      title: 'Should a school use facial recognition for attendance?',
+      commandWord: 'Discuss',
       marks: 8,
-      scenario: 'A secondary school is replacing all 500 student desktop computers with cloud-connected laptops. Evaluate the environmental, ethical, and cultural impacts of this decision on the school community and wider environment.'
+      scenario: 'A secondary school is considering cameras that use facial recognition to record when pupils enter the site. Face templates and entry times would be stored online. Discuss the ethical, legal, cultural and privacy issues raised by this proposal.'
     };
 
     if (!this.essayPracticeState) {
@@ -3346,8 +3346,8 @@ class App {
       <div class="student-page student-essay-practice">
         <header class="student-route-header" style="margin-bottom: 24px;">
           <span class="student-mode-label">Practice &middot; 8-Mark Extended Response Essay</span>
-          <h1 style="font-size: 28px; font-weight: 800; margin: 6px 0;">OCR 8-Mark "Discuss & Evaluate" Essay Practice</h1>
-          <p style="font-size: 15px; color: var(--text-muted);">Practise structuring high-scoring 8-mark OCR extended response answers with automatic mark scheme criteria.</p>
+          <h1 style="font-size: 28px; font-weight: 800; margin: 6px 0;">Make a case about a real computing decision</h1>
+          <p>Use accurate computing knowledge, apply it to the people in the scenario, and justify your view.</p>
         </header>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; align-items: start;">
@@ -3358,8 +3358,14 @@ class App {
                 <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">OCR Paper 1 Topic 1.6.1</span>
               </div>
               <h2 style="font-size: 18px; font-weight: 800; margin: 0 0 8px 0;">${scaffold.title}</h2>
-              <div style="padding: 14px; background: rgba(139, 92, 246, 0.06); border-radius: 8px; border-left: 4px solid #8B5CF6; font-size: 14px; line-height: 1.6; color: var(--text-main); margin-bottom: 16px;">
-                <strong>Exam Scenario:</strong> ${scaffold.scenario}
+              <div class="essay-scenario-brief">
+                <strong>Decision for the school</strong>
+                <div class="essay-scenario-facts" aria-label="Key scenario facts">
+                  <span>People: pupils and staff</span>
+                  <span>Technology: facial recognition</span>
+                  <span>Data: face templates and entry times</span>
+                </div>
+                <p><strong>Question:</strong> ${scaffold.scenario}</p>
               </div>
 
               <div class="form-group" style="margin-bottom: 16px;">
@@ -3370,7 +3376,7 @@ class App {
                     <input type="file" id="essay-photo-upload-input" accept="image/*" capture="environment" style="display: none;">
                   </label>
                 </div>
-                <textarea id="essay-response-textarea" class="form-control" rows="8" placeholder="Structure your response: 1) Technical facts & environmental points, 2) Ethical & stakeholder perspectives, 3) Cultural impact (digital divide), 4) Justified conclusion..." style="font-size: 14px; line-height: 1.6;">${this.escapeHTML(state.essayText)}</textarea>
+                <textarea id="essay-response-textarea" class="form-control" rows="8" placeholder="Write your answer here. Apply each point to this school and the people affected." style="font-size: 16px; line-height: 1.6;">${this.escapeHTML(state.essayText)}</textarea>
                 <div id="photo-upload-status" style="font-size: 12px; font-weight: 600; color: var(--teal); margin-top: 6px; display: none;"></div>
               </div>
 
@@ -3385,7 +3391,14 @@ class App {
 
           <div>
             <div class="card" style="padding: 24px; border-left: 4px solid var(--teal);">
-              <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 12px 0;">OCR 8-Mark Mark Scheme Rubric</h3>
+              <h3 style="font-size: 18px; font-weight: 700; margin: 0 0 12px 0;">Build an answer that earns credit</h3>
+              <ol class="essay-writing-guide">
+                <li><strong>Name a stakeholder</strong> and the data or technology that affects them.</li>
+                <li><strong>Describe a change</strong> the system could cause.</li>
+                <li><strong>Explain a consequence</strong> in this school, not just in general.</li>
+                <li><strong>Consider another relevant view</strong> or limitation.</li>
+                <li><strong>Justify your judgement</strong> using the scenario.</li>
+              </ol>
               
               <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px;">
                 <div style="padding: 10px; background: rgba(0,0,0,0.02); border-radius: 6px; border: 1px solid var(--border-color);">
@@ -3474,6 +3487,29 @@ class App {
   getObjectiveDiagramSvg(strandId) {
     if (!strandId) return '';
     const id = String(strandId).trim();
+    if (id === '1.1.1') {
+      return `
+        <figure class="learning-visual" aria-labelledby="cpu-fetch-caption">
+          <figcaption id="cpu-fetch-caption"><strong>See it: where an instruction goes during fetch</strong></figcaption>
+          <div class="learning-visual-flow" aria-hidden="true">
+            <div class="learning-visual-node"><strong>PC</strong><small>Address of the next instruction</small></div><span class="learning-visual-arrow">&rarr;</span>
+            <div class="learning-visual-node"><strong>MAR</strong><small>Address being accessed</small></div><span class="learning-visual-arrow">&rarr;</span>
+            <div class="learning-visual-node"><strong>Memory</strong><small>Supplies the instruction</small></div><span class="learning-visual-arrow">&rarr;</span>
+            <div class="learning-visual-node"><strong>MDR</strong><small>Instruction being transferred</small></div><span class="learning-visual-arrow">&rarr;</span>
+            <div class="learning-visual-node"><strong>Control unit</strong><small>Decodes and coordinates it</small></div>
+          </div>
+          <p>The PC supplies the next address. The address is copied to the MAR; memory returns the instruction through the MDR to the control unit. The PC is then updated ready for the next fetch.</p>
+        </figure>`;
+    }
+    if (id === '1.2.4c') {
+      return `
+        <figure class="learning-visual" aria-labelledby="bitmap-caption">
+          <figcaption id="bitmap-caption"><strong>See it: pixels, resolution and colour depth</strong></figcaption>
+          <div class="learning-pixel-demo" aria-hidden="true">${'<span></span>'.repeat(16)}</div>
+          <p>This 4 by 4 image has 16 pixels. Resolution tells us how many pixels there are; colour depth tells us how many bits store each pixel's colour.</p>
+          <div class="learning-formula">file size in bits = width &times; height &times; colour depth</div>
+        </figure>`;
+    }
     // Legacy visual hubs are intentionally withheld: only the small, exact-strand
     // learning visuals below have passed the current accuracy and clarity review.
     if (!['1.2.3', '1.2.4a', '1.2.4b'].includes(id)) return '';
@@ -4313,7 +4349,7 @@ class App {
               </div>
             </div>
             <p style="line-height: 1.7; margin: 14px 0;">${this.escapeHTML(item.explanation)}</p>
-            ${['1.2.3', '1.2.4a', '1.2.4b'].includes(item.id) ? this.getObjectiveDiagramSvg(item.id) : ''}
+            ${['1.1.1', '1.2.3', '1.2.4a', '1.2.4b', '1.2.4c'].includes(item.id) ? this.getObjectiveDiagramSvg(item.id) : ''}
             ${item.teachingSections?.length ? `
               <div class="student-teaching-sequence" aria-label="Step-by-step teaching">
                 ${item.teachingSections.map((section, index) => this.renderTeachingReviewPart(section, index, item.teachingSections.length, item.teachingSections)).join('')}
@@ -4710,7 +4746,7 @@ class App {
             </div>
           ` : ''}
 
-          ${['1.2.3', '1.2.4a', '1.2.4b'].includes(content.id) ? this.getObjectiveDiagramSvg(content.id) : ''}
+          ${['1.1.1', '1.2.3', '1.2.4a', '1.2.4b', '1.2.4c'].includes(content.id) ? this.getObjectiveDiagramSvg(content.id) : ''}
           ${content.teachingSections?.length ? `
             <div class="student-teaching-sequence" aria-label="Step-by-step teaching">
               ${content.teachingSections.map((section, index) => this.renderTeachingReviewPart(section, index, content.teachingSections.length, content.teachingSections)).join('')}

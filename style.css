@@ -2880,11 +2880,11 @@ body.dark-mode .app-container[data-user-role="student"] {
 }
 
 .student-teaching-part {
-  border: 1px solid var(--border-color);
-  border-left: 4px solid var(--teal);
-  border-radius: 10px;
-  background: var(--bg-card);
-  overflow: clip;
+  border: 0;
+  border-left: 3px solid var(--teal);
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 0;
+  background: transparent;
 }
 
 .student-teaching-part > summary {
@@ -2905,13 +2905,13 @@ body.dark-mode .app-container[data-user-role="student"] {
 .student-teaching-part-number,
 .student-teaching-part-time {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 14px;
+  line-height: 1.5;
   font-weight: 700;
 }
 
 .student-teaching-part-content {
-  border-top: 1px solid var(--border-color);
-  padding: 16px;
+  padding: 4px 16px 18px;
 }
 
 .student-teaching-part-content > p {
@@ -2928,11 +2928,11 @@ body.dark-mode .app-container[data-user-role="student"] {
 }
 
 .student-teaching-points > div {
-  border: 1px solid var(--border-color);
-  border-top: 3px solid var(--teal);
-  border-radius: 8px;
-  padding: 12px;
-  background: var(--bg-main);
+  border: 0;
+  border-top: 2px solid var(--border-color);
+  border-radius: 0;
+  padding: 12px 2px 2px;
+  background: transparent;
 }
 
 .student-teaching-points dt {
@@ -2942,10 +2942,15 @@ body.dark-mode .app-container[data-user-role="student"] {
 }
 
 .student-teaching-points dd {
-  color: var(--text-muted);
+  color: var(--text-main);
   line-height: 1.55;
   margin: 0;
 }
+
+/* Curriculum HTML predates the accessible colour tokens. Bright accents remain
+   useful as decoration, but instructional text always uses a readable colour. */
+.student-teaching-part-content :is(p, li, dd) { color: var(--text-main) !important; }
+.student-teaching-part-content :is(strong, h3, h4, dt) { color: var(--text-main) !important; }
 
 .learning-visual {
   margin: 18px 0;
@@ -2962,6 +2967,23 @@ body.dark-mode .app-container[data-user-role="student"] {
 .learning-visual-grid span { padding: 8px 12px; border: 1px solid var(--border-color); background: var(--bg-main); font-weight: 700; }
 .learning-visual-grid { display: grid; max-width: 360px; gap: 4px; }
 .learning-visual-grid--four { grid-template-columns: repeat(4, minmax(44px, 1fr)); }
+.learning-visual-flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; }
+.learning-visual-node { flex: 1 1 130px; padding: 10px; border: 2px solid var(--teal); background: var(--bg-main); }
+.learning-visual-node strong { display: block; color: var(--text-main); }
+.learning-visual-node small { display: block; margin-top: 4px; color: var(--text-main); font-size: 14px; line-height: 1.45; }
+.learning-visual-arrow { align-self: center; color: var(--text-main); font-size: 20px; font-weight: 800; }
+.learning-pixel-demo { display: grid; grid-template-columns: repeat(4, 30px); gap: 3px; width: max-content; margin-bottom: 12px; }
+.learning-pixel-demo span { width: 30px; height: 30px; border: 1px solid var(--navy); background: var(--teal); }
+.learning-pixel-demo span:nth-child(3n) { background: var(--lime); }
+.learning-formula { display: inline-block; padding: 8px 10px; border-left: 4px solid var(--teal); background: var(--bg-main); font-weight: 800; }
+
+.essay-scenario-brief { padding: 18px; border-left: 4px solid var(--teal); background: rgba(45, 156, 145, 0.08); }
+.essay-scenario-brief p { max-width: 68ch; color: var(--text-main); line-height: 1.65; }
+.essay-scenario-facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.essay-scenario-facts span { padding: 7px 10px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 14px; }
+.essay-writing-guide { border-left: 4px solid var(--teal); padding: 4px 0 4px 18px; }
+.essay-writing-guide li { margin: 8px 0; color: var(--text-main); line-height: 1.5; }
+.essay-writing-guide + div { display: none !important; }
 
 @media (max-width: 520px) {
   .student-teaching-part > summary {

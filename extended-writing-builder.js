@@ -12,10 +12,10 @@
   const extendedScaffolds = {
     '1.6.1': {
       strandId: '1.6.1',
-      title: 'Ethical, Cultural & Environmental Impacts of Digital Tech',
-      commandWord: 'Evaluate',
+      title: 'Should a school use facial recognition for attendance?',
+      commandWord: 'Discuss',
       marks: 6,
-      scenario: 'A school is replacing all 500 student desktop computers with new cloud-connected laptops. Evaluate the environmental, ethical, and cultural impacts of this decision on the school community and wider environment.',
+      scenario: 'A secondary school is considering cameras that use facial recognition to record when pupils enter the site. Face templates and entry times would be stored online. Discuss the ethical, legal, cultural and privacy issues raised by this proposal.',
       scaffoldLadder: [
         {
           stage: 1,
