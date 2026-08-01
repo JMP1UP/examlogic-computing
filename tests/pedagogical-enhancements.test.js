@@ -99,6 +99,27 @@ describe('Senior Developer Pedagogical & Examiner Enhancements', () => {
       expect(session.questions.every(question => question.markScheme.length > 0)).toBe(true);
     });
 
+    test('builds a genuine five-minute single-question practice instead of a disguised short paper', () => {
+      const examTasks = [
+        { id: 'exam_111', specificationPointId: '1.1.1', paper: 'Paper 1', commandWord: 'Explain', marks: 4, question: 'Explain the register roles.', requiredElements: ['PC role', 'MAR role', 'MDR role', 'linked sequence'] },
+        { id: 'exam_112', specificationPointId: '1.1.2', paper: 'Paper 1', commandWord: 'Compare', marks: 6, question: 'Compare two processors.', requiredElements: ['clock speed', 'cache', 'cores'] }
+      ];
+      const curriculum = examTasks.map(task => ({
+        id: task.specificationPointId,
+        officialSpecificationPointId: task.specificationPointId,
+        diagnostic: { question: `Short ${task.id}`, options: ['Correct', 'Wrong'], answer: 'Correct', explanation: 'Why' }
+      }));
+
+      const session = mixedExamEngine.createMixedExamSession('paper1', 5, curriculum, examTasks, null, ['1.1.1', '1.1.2'], 'five-minute');
+
+      expect(session.sufficientForRequestedTime).toBe(true);
+      expect(session.targetMinutes).toBe(5);
+      expect(session.timeLimitMinutes).toBe(5);
+      expect(session.totalMarks).toBe(4);
+      expect(session.questions).toHaveLength(1);
+      expect(session.questions[0]).toMatchObject({ id: 'exam_111', type: 'constructed' });
+    });
+
     test('does not place the correct multiple-choice option in one fixed position', () => {
       const curriculumContent = [
         { id: '1.1.1', officialSpecificationPointId: '1.1.1', diagnostic: { question: 'Q1', options: ['Correct', 'B', 'C', 'D'], answer: 'Correct', explanation: 'E1' } }

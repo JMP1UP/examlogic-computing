@@ -6,6 +6,8 @@ node_modules/
 .DS_Store
 dist/
 build/
+.scratch/
+scratch/extracted_topic_content.txt
 .env
 .env.local
 .vercel/
