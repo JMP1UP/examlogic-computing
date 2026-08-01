@@ -94,6 +94,15 @@ The student routes use three deliberate intensity levels:
 - Learn uses a literal Read → Try → Check sequence; optional tools use bounded briefs and clear stopping points.
 - Student styling remains scoped beneath the authenticated student shell and must not alter teacher routes.
 
+My desk uses a restrained **Quiet Desk** layer beneath the dominant required task.
+The weekly notebook comes first, dates use a compact calendar form and the
+learner's flashcards sit together as a card stack. A shared warm surface connects
+these objects without literal bedroom scenery, characters, animation or decorative
+clutter. The object metaphor must improve recognition and priority: it must not
+make tasks look optional, reduce text contrast or push the weekly plan beneath the
+flashcard deck. On narrow screens, objects become a simple single column and lose
+rotation and stacked-paper effects.
+
 ## 9. Pupil language
 
 Student instructions use direct verbs, short sentences and one clear next action.

@@ -5,6 +5,9 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Introduced a restrained Quiet Desk treatment on the student dashboard: the
+  weekly plan now leads, with an accessible calendar and grouped flashcard deck
+  on a shared calm study surface. Teacher pages are unchanged.
 - Began the programming-pathway rebuild with separate supported, skill-choice
   and independent exam-practice routes. Guided starter work is now formative,
   assessed progress excludes it, and unseen program checks no longer disclose

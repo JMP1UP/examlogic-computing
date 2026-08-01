@@ -2539,7 +2539,7 @@ class App {
           type: 'Teacher Test Prep',
           icon: '📝',
           tagClass: 'badge-primary',
-          details: `Teacher Test Prep · ${prep.specificationPointIds?.length || 0} points`
+          details: `Test preparation · ${prep.specificationPointIds?.length || 0} points`
         });
       }
     });
@@ -2554,7 +2554,7 @@ class App {
           type: 'Assignment',
           icon: '📋',
           tagClass: isOverdue ? 'badge-warning' : 'badge-secondary',
-          details: `Teacher Assignment · ${assign.estimatedMinutes || 10} mins`
+          details: `Assignment · ${assign.estimatedMinutes || 10} mins`
         });
       }
     });
@@ -2580,46 +2580,35 @@ class App {
     }
 
     const upcomingDatesHtml = `
-      <section class="card student-upcoming-dates" aria-labelledby="upcoming-dates-heading" style="padding: 22px; border-top: 4px solid #07111F; background: #FFFFFF; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(7, 17, 31, 0.04);">
-        <header style="margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
-          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
-            <span style="font-size: 18px;">📅</span>
-            <span class="student-kicker" style="font-weight: 700; color: #07111F; text-transform: uppercase; font-size: 11px;">Desk Calendar</span>
-          </div>
-          <h2 id="upcoming-dates-heading" style="margin: 0; font-size: 18px; font-weight: 800; color: var(--text-main);">Upcoming dates</h2>
+      <section class="student-upcoming-dates" aria-labelledby="upcoming-dates-heading">
+        <header class="student-upcoming-dates__header">
+          <span class="student-object-label">Calendar</span>
+          <h2 id="upcoming-dates-heading">Upcoming dates</h2>
         </header>
-        <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div class="student-upcoming-dates__events">
           ${upcomingEvents.map(evt => `
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(7, 17, 31, 0.02); border-radius: 8px; border: 1px solid var(--border-color); border-left: 4px solid #07111F;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 18px;">${evt.icon}</span>
-                <div>
-                  <strong style="font-size: 14px; color: var(--text-main); display: block;">${this.escapeHTML(evt.title)}</strong>
-                  <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">${this.escapeHTML(evt.details)}</span>
-                </div>
+            <article class="student-calendar-event">
+              <span class="student-calendar-date">${this.escapeHTML(evt.dateLabel)}</span>
+              <div class="student-calendar-event__copy">
+                <strong>${this.escapeHTML(evt.title)}</strong>
+                <span>${this.escapeHTML(evt.details)}</span>
               </div>
-              <div style="text-align: right;">
-                <span class="badge ${evt.tagClass}" style="font-size: 12px; font-weight: 700; padding: 4px 10px; letter-spacing: 0.02em;">${this.escapeHTML(evt.dateLabel)}</span>
-              </div>
-            </div>
+            </article>
           `).join('')}
         </div>
       </section>
     `;
 
     const weeklyRhythmHtml = `
-      <section class="card student-weekly-notebook" aria-labelledby="weekly-rhythm-heading" style="padding: 24px; border-top: 4px solid #D97706; border-left: 4px solid #D97706; background: #FFFFFF; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.04);">
-        <header class="student-weekly-notebook__header" style="border-bottom: 1px dashed var(--border-color); padding-bottom: 12px; margin-bottom: 14px;">
+      <section class="student-weekly-notebook" aria-labelledby="weekly-rhythm-heading">
+        <header class="student-weekly-notebook__header">
           <div>
-            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
-              <span style="font-size: 18px;">📓</span>
-              <span class="student-kicker" style="font-weight: 700; color: #D97706; text-transform: uppercase; font-size: 11px;">Spiral Notebook &middot; resets Monday</span>
-            </div>
-            <h2 id="weekly-rhythm-heading" style="margin: 0; font-size: 20px; font-weight: 800; color: var(--text-main);">My notebook</h2>
+            <span class="student-object-label">Weekly plan &middot; resets Monday</span>
+            <h2 id="weekly-rhythm-heading">My notebook</h2>
           </div>
-          <span class="student-weekly-notebook__count" style="font-weight: 700; color: #D97706; background: rgba(217, 119, 6, 0.08); padding: 4px 10px; border-radius: 12px; font-size: 12px;">${practiceRhythm.completedCount}/${practiceRhythm.items.length} done &middot; ~${practiceRhythm.totalMinutes} min</span>
+          <span class="student-weekly-notebook__count">${practiceRhythm.completedCount}/${practiceRhythm.items.length} done &middot; ~${practiceRhythm.totalMinutes} min</span>
         </header>
-        ${requiredTaskActive ? '<p class="student-weekly-notebook__priority" style="font-size: 13px; color: var(--text-muted); margin: 0 0 14px 0;"><strong>First:</strong> complete your teacher assignment or test prep above. These smaller tasks can be spread across the week.</p>' : ''}
+        ${requiredTaskActive ? '<p class="student-weekly-notebook__priority"><strong>First:</strong> complete your teacher assignment or test prep above. These smaller tasks can be spread across the week.</p>' : ''}
         ${upcomingTestNotebook && !hasActiveTestPrep ? `
           <aside class="student-notebook-test" aria-labelledby="upcoming-test-heading">
             <div>
@@ -2654,55 +2643,47 @@ class App {
               </li>`;
           }).join('')}
         </ul>
-        <p class="student-weekly-notebook__note" style="margin-top: 14px; font-size: 12px; color: var(--text-muted);">Flashcards count on two different days. Only marked work changes Progress.</p>
-        ${practiceRhythm.habitAchieved ? '<p style="font-size: 12px; color: var(--green-text); margin-top: 6px;"><strong>Weekly habit complete.</strong> This recognises regular study, not mastery.</p>' : ''}
+        <p class="student-weekly-notebook__note">Flashcards count on two different days. Only marked work changes Progress.</p>
+        ${practiceRhythm.habitAchieved ? '<p style="font-size: 14px; color: var(--green-text); margin-top: 6px;"><strong>Weekly habit complete.</strong> This recognises regular study, not mastery.</p>' : ''}
       </section>
     `;
     const totalCardCount = deskSummary.totalCardCount;
     const totalDueCount = deskSummary.totalDueCount;
     const myDeckHtml = deskTopics.length ? `
-      <section class="card student-my-deck" aria-labelledby="my-deck-heading" style="padding: 24px; border-top: 4px solid var(--teal); background: #FFFFFF; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 14px rgba(7, 17, 31, 0.04);">
-        <header class="student-my-deck__header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 18px;">
+      <section class="student-my-deck" aria-labelledby="my-deck-heading">
+        <header class="student-my-deck__header">
           <div>
-            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
-              <span style="font-size: 18px;">🎴</span>
-              <span class="student-kicker" style="font-weight: 700; color: var(--teal); text-transform: uppercase; font-size: 11px;">Flashcard Deck Box</span>
-            </div>
-            <h2 id="my-deck-heading" style="margin: 0 0 4px 0; font-size: 20px; font-weight: 800; color: var(--text-main);">Flashcards on your desk</h2>
-            <p style="margin: 0; color: var(--text-muted); font-size: 14px;">The topics you have chosen to keep fresh alongside school.</p>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
-              <span class="badge ${totalDueCount > 0 ? 'badge-primary' : 'badge-success'}" style="font-size: 12px; padding: 4px 10px; font-weight: 600;">
-                ${totalDueCount > 0 ? `⚡ ${totalDueCount} ${totalDueCount === 1 ? 'card' : 'cards'} ready for review` : `✓ All cards up to date`}
+            <h2 id="my-deck-heading">Flashcards on your desk</h2>
+            <p>The topics you have chosen to keep fresh alongside school.</p>
+            <div class="student-my-deck__summary">
+              <span class="badge ${totalDueCount > 0 ? 'badge-primary' : 'badge-success'}" style="font-size: 14px; padding: 4px 10px; font-weight: 600;">
+                ${totalDueCount > 0 ? `${totalDueCount} ${totalDueCount === 1 ? 'card' : 'cards'} ready for review` : `All cards up to date`}
               </span>
-              <span class="badge badge-secondary" style="font-size: 12px; padding: 4px 10px; font-weight: 600;">
-                🎴 ${totalCardCount} total ${totalCardCount === 1 ? 'card' : 'cards'} on desk
+              <span class="badge badge-secondary" style="font-size: 14px; padding: 4px 10px; font-weight: 600;">
+                ${totalCardCount} total ${totalCardCount === 1 ? 'card' : 'cards'} on desk
               </span>
             </div>
           </div>
-          <button type="button" class="btn btn-secondary" id="manage-deck-btn" style="font-size: 13px; min-height: 38px;">Organise my topics</button>
+          <button type="button" class="btn btn-secondary" id="manage-deck-btn">Organise my topics</button>
         </header>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+        <div class="student-my-deck__topics">
             ${deskTopics.map(topic => `
-              <article style="display: flex; flex-direction: column; justify-content: space-between; gap: 12px; padding: 16px; border: 1px solid var(--border-color); border-left: 4px solid var(--teal); border-radius: 10px; background: #FFFFFF; box-shadow: 0 2px 8px rgba(7, 17, 31, 0.03);">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+              <article class="student-deck-card">
+                <div>
                   <div>
-                    <div style="font-size: 10px; font-weight: 700; color: var(--teal); text-transform: uppercase; margin-bottom: 2px;">🎴 Revision Card</div>
-                    <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: var(--text-main); line-height: 1.3;">${this.escapeHTML(topic.topicName)}</h3>
-                    <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">${topic.dueCount} of ${topic.cards.length} cards due right now</span>
+                    <h3>${this.escapeHTML(topic.topicName)}</h3>
+                    <span class="student-deck-card__due">${topic.dueCount} of ${topic.cards.length} cards due right now</span>
                   </div>
-                  <span class="badge ${topic.dueCount > 0 ? 'badge-primary' : 'badge-success'}" style="font-size: 11px; white-space: nowrap;">
-                    ${topic.dueCount > 0 ? `⚡ ${topic.dueCount} due` : `✓ Up to date`}
-                  </span>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(45, 156, 145, 0.05); padding: 8px 12px; border-radius: 6px; font-size: 12px;">
+                <div class="student-deck-card__confidence">
                   <span style="color: var(--text-muted);">Card confidence:</span>
                   <strong style="color: var(--text-main); font-weight: 700;">${this.escapeHTML(topic.strength)}</strong>
                 </div>
-                <button type="button" class="btn btn-primary deck-topic-review-btn" data-topic-id="${this.escapeHTML(topic.topicId)}" style="width: 100%; min-height: 38px; font-weight: 600;" aria-label="Review ${this.escapeHTML(topic.topicName)} flashcards">Review flashcards</button>
+                <button type="button" class="btn btn-primary deck-topic-review-btn" data-topic-id="${this.escapeHTML(topic.topicId)}" aria-label="Review ${this.escapeHTML(topic.topicName)} flashcards">Review flashcards</button>
               </article>
             `).join('')}
         </div>
-        ${hiddenDeskTopicCount ? `<p class="student-my-deck__more" style="margin-top: 14px; font-size: 13px; color: var(--text-muted);">${hiddenDeskTopicCount} more ${hiddenDeskTopicCount === 1 ? 'topic is' : 'topics are'} on your desk (${deskSummary.allTopicsCount} topics total). Use Organise my topics to see all of them.</p>` : ''}
+        ${hiddenDeskTopicCount ? `<p class="student-my-deck__more" style="margin-top: 14px; font-size: 14px; color: var(--text-muted);">${hiddenDeskTopicCount} more ${hiddenDeskTopicCount === 1 ? 'topic is' : 'topics are'} on your desk (${deskSummary.allTopicsCount} topics total). Use Organise my topics to see all of them.</p>` : ''}
       </section>
     ` : '';
 
@@ -2732,10 +2713,9 @@ class App {
 
         <div class="student-dashboard__flow">
           ${dominantTaskHtml}
-          ${myDeckHtml}
-
-          <div class="student-desk-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; align-items: start;">
-            <!-- Left Main Column: Revision Desk (Flashcards + Notebook) -->
+          <div class="student-desk-surface">
+          <div class="student-desk-grid">
+            <!-- Weekly plan remains the first desk object and primary study orientation. -->
             <div style="display: flex; flex-direction: column; gap: 20px;">
               ${weeklyRhythmHtml}
             </div>
@@ -2744,6 +2724,8 @@ class App {
             <div>
               ${upcomingDatesHtml}
             </div>
+          </div>
+          ${myDeckHtml}
           </div>
         </div>
       </div>
