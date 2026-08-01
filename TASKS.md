@@ -1,6 +1,11 @@
 # Current priorities — ExamLogic Computing
 
 ## Now
+- [x] Establish a reviewed two-year question-bank architecture and bounded AI policy.
+- [x] Add original linear search, binary search, bubble sort, insertion sort and merge sort trace/application evidence.
+- [x] Add a bounded 10/20-minute programming-practice paper option.
+- [ ] Build reviewed question variants towards the documented 400–600-item two-year capacity target; do not bulk-generate live questions.
+- [ ] Add versioned per-learner question and variant-family exposure records before claiming long-term non-repetition.
 - [x] Separate supported programming, construct practice and independent exam-practice entry routes.
 - [x] Prevent guided starter-code activity from creating demonstrated programming evidence.
 - [x] Redact unseen programming-test answers and reconcile the formative classification for existing schema-13 data.

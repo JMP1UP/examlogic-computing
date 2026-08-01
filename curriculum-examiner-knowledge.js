@@ -118,8 +118,8 @@
       commonErrors: [
         {
           error: 'Assuming ASCII can represent all world languages',
-          explanation: 'Standard ASCII uses 7/8 bits (128-256 characters) for basic Latin alphabet. Unicode uses 16/32 bits for global scripts.',
-          examinerAdvice: 'Unicode uses more bits per character to support global character sets and symbols.'
+          explanation: 'ASCII represents a limited range of characters. Unicode can represent a much wider range of writing systems and symbols. Neither should be described using one fixed number of bits per character.',
+          examinerAdvice: 'Explain that more available bit patterns allow more different characters. In an OCR exam, any ASCII binary code shown will use eight bits.'
         }
       ]
     },
@@ -514,10 +514,10 @@
       strandId: '1.1.2',
       specificationPointId: '1.1.2',
       term: 'Clock Speed',
-      definition: 'The number of fetch-decode-execute cycles a CPU can perform per second, measured in Hertz (Hz) or Gigahertz (GHz).',
+      definition: 'The number of clock cycles a CPU performs each second, measured in Hertz (Hz).',
       flashcard: {
         front: 'Define Clock Speed.',
-        back: 'The frequency of fetch-execute cycles per second (GHz). Higher clock speed allows more instructions per second.'
+        back: 'The number of clock cycles per second. A higher clock speed can improve performance when other factors are comparable, but it does not guarantee the same increase in instructions completed.'
       }
     },
     {
@@ -554,10 +554,10 @@
       strandId: '1.2.1',
       specificationPointId: '1.2.1',
       term: 'ROM (Read Only Memory)',
-      definition: 'Non-volatile memory storing non-modifiable boot instructions (BIOS/firmware).',
+      definition: 'Non-volatile memory that stores instructions or data that must remain available when power is removed, such as startup firmware.',
       flashcard: {
         front: 'What is ROM used for?',
-        back: 'Non-volatile memory that permanently holds startup instructions needed to boot the computer.'
+        back: 'ROM is non-volatile, so its contents remain when power is removed. It commonly stores instructions needed when a computer starts.'
       }
     },
     {
@@ -614,20 +614,20 @@
       strandId: '1.2.4b',
       specificationPointId: '1.2.4',
       term: 'ASCII',
-      definition: 'American Standard Code for Information Interchange; a 7/8-bit character set representing 128-256 characters.',
+      definition: 'A character set that assigns binary codes to a limited range of letters, digits, punctuation and control characters.',
       flashcard: {
         front: 'What is ASCII?',
-        back: 'A character encoding standard using 7 or 8 bits per character, supporting English letters and basic symbols.'
+        back: 'ASCII assigns binary codes to a limited range of characters. In an OCR exam, ASCII binary codes are shown using eight bits.'
       }
     },
     {
       strandId: '1.2.4b',
       specificationPointId: '1.2.4',
       term: 'Unicode',
-      definition: 'A 16/32-bit character set capable of representing characters and symbols across all global languages.',
+      definition: 'A character set designed to represent characters and symbols from a much wider range of writing systems than ASCII.',
       flashcard: {
         front: 'Why is Unicode preferred over ASCII for international applications?',
-        back: 'Unicode uses 16 or 32 bits per character, supporting thousands of global alphabets and emojis.'
+        back: 'Unicode supports far more characters and writing systems than ASCII. It is not defined by one fixed number of bits per character.'
       }
     },
     {
@@ -893,7 +893,7 @@
   ];
 
   const blueprintGenerators = {
-    '1.2.3': function generateStorageCalculation(seed) {
+    '1.2.4c': function generateStorageCalculation(seed) {
       const width = 800 + (seed % 5) * 200;
       const height = 600 + (seed % 4) * 200;
       const depth = (seed % 2 === 0) ? 8 : 24;
@@ -901,7 +901,7 @@
       const totalBytes = totalBits / 8;
       const totalKB = totalBytes / 1000;
       return {
-        strandId: '1.2.3',
+        strandId: '1.2.4c',
         title: 'Image File Size Calculation',
         questionStem: `Calculate the file size in Kilobytes (KB) for an uncompressed bitmap image with dimensions ${width} x ${height} pixels and a colour depth of ${depth} bits. Show your working and state the units.`,
         workingSteps: [
@@ -935,7 +935,7 @@
       };
     },
     '2.4.1': function generateLogicGateTruthTable(seed) {
-      const gates = ['AND', 'OR', 'XOR'];
+      const gates = ['AND', 'OR'];
       const gate = gates[seed % gates.length];
       const outputs = [];
       for (let a = 0; a <= 1; a++) {
@@ -943,7 +943,6 @@
           let out = 0;
           if (gate === 'AND') out = (a && b) ? 1 : 0;
           if (gate === 'OR') out = (a || b) ? 1 : 0;
-          if (gate === 'XOR') out = (a !== b) ? 1 : 0;
           outputs.push({ a, b, out });
         }
       }

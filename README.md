@@ -2,11 +2,11 @@
 
 ## Workspace information
 
-**Purpose:** See the product and repository documentation above. Confirm the product purpose with stakeholders before changing behaviour.
+**Purpose:** GCSE Computer Science revision and assessment platform with deterministic activities, review-held responses, curriculum coverage, and teacher insight.
 
 **Current status:** Active repository; review `TASKS.md` and `docs/roadmap.md` for current priorities.
 
-**Technology stack:** JavaScript web application.
+**Technology stack:** Browser JavaScript, Vercel server functions, Jest, and a Supabase-compatible persistence layer.
 
 **Local setup:**
 

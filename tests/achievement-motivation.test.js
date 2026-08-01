@@ -76,11 +76,10 @@ describe('achievement motivation', () => {
     const { app } = loadApplication();
     const html = app.renderStudentAchievementPanel({ achievements: [] });
 
-    expect(html).toContain('Your first badges are ready to work towards');
-    expect(html).toContain('Badges you can earn next');
-    expect(html).toContain('Complete the Number skills activity, then retry anything you miss');
-    expect(html).toContain('Fix the counting loop so it prints 1 to 5');
-    expect((html.match(/Not earned yet/g) || [])).toHaveLength(2);
+    expect(html).toContain('Next badges to earn');
+    expect(html).toContain('Complete the Number skills activity');
+    expect(html).toContain('Fix loop &amp; pass tests');
+    expect((html.match(/student-achievement-card--next/g) || [])).toHaveLength(2);
     expect(html).not.toContain('<span class="student-achievement-state">Earned</span>');
   });
 
@@ -148,6 +147,21 @@ describe('achievement motivation', () => {
     expect(app.submitProgramChallenge(challenge, 'I changed it after testing.')).toBe(false);
     expect(db.getProgrammingSubmissions()).toHaveLength(0);
     expect(app.currentUser.achievements).toEqual([]);
+  });
+
+  test.each([
+    ['pc_14', 'def binary_search(values, target):\n    return values.index(target)', ['\\.index\\s*\\(']],
+    ['pc_15', 'def bubble_sort(values):\n    return sorted(values)', ['\\bsorted\\s*\\(', '\\.sort\\s*\\(']]
+  ])('does not award %s algorithm evidence for a built-in shortcut', (id, code, forbiddenCompletionPatterns) => {
+    const { app } = loadApplication();
+    const challenge = { id, code: 'pass', testCases: [{ expected: 'ok' }], forbiddenCompletionPatterns };
+    app.alert = jest.fn();
+    app.editorCode = code;
+    app.lastProgrammingEvidence = [{ passed: true }];
+    app.lastProgrammingTestRun = { challengeId: id, code, testCount: 1, allPassed: true };
+
+    expect(app.submitProgramChallenge(challenge, 'I used the named algorithm.')).toBe(false);
+    expect(app.alert).toHaveBeenCalledWith(expect.stringContaining('algorithm named in the task'));
   });
 
   test('does not turn unchanged guided starter code into programming completion', () => {

@@ -4,7 +4,7 @@
 
 **Detected stack:** JavaScript web application
 
-Confirm supported runtime versions against package metadata and deployment settings.
+The product uses browser JavaScript, Node-compatible Vercel functions, Jest, and a Supabase-compatible data layer. Runtime support is governed by the deployed Vercel/Node environment and the checked-in package lock.
 
 ## Frontend
 
@@ -25,7 +25,7 @@ Describe server components, services, jobs, and business-logic boundaries.
 
 ## Authentication and authorization
 
-Document identity providers, session handling, roles, and permission enforcement.
+Server routes support application sessions plus Microsoft and Google identity integrations. Session validation, school scope, roles, and administrative permissions must be enforced in server helpers and APIs; browser role state and the demo boundary are not authorization.
 
 ## Database
 
@@ -134,11 +134,11 @@ or scheduling history.
 
 ## APIs and integrations
 
-List internal APIs and external services without recording credentials.
+Current integrations include the configured database/Supabase service, Microsoft and Google identity, translation support, real-time messaging helpers, and AI-assisted programming or writing feedback routes. All keys remain server-side, and AI routes receive the minimum response context required.
 
 ## Hosting and environments
 
-Document hosting, development, test, staging, and production environments.
+Static assets and server functions are configured for Vercel. Local development uses the repository files and Jest suite. Demo mode must stay clearly separated from authenticated school data; production requires verified identity, database, tenant, secret, and monitoring configuration.
 
 ## Logging and monitoring
 

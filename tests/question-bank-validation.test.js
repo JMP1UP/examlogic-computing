@@ -83,9 +83,12 @@ describe('question-bank identifier and mapping integrity', () => {
 
   test('requires answer-safe actionable guidance for every reachable recall question', () => {
     const reachable = database.enumerateReachableRecallQuestions(data);
-    expect(reachable).toHaveLength(84);
+    expect(reachable).toHaveLength(86);
     expect(reachable.map(question => question.id)).toContain('q_1_1_a');
-    expect(new Set(reachable.map(question => question.retryHint)).size).toBe(84);
+    expect(new Set(reachable.map(question => question.retryHint)).size).toBe(86);
+    expect(reachable.map(question => question.id)).toEqual(expect.arrayContaining([
+      'priority_213_linear', 'priority_213_insertion', 'priority_213_bubble_pass'
+    ]));
     reachable.forEach(question => {
       expect(Object.prototype.hasOwnProperty.call(question, 'retryHint')).toBe(true);
       expect(question.retryHint).toEqual(expect.any(String));
@@ -185,6 +188,37 @@ describe('question-bank identifier and mapping integrity', () => {
           expect(selected.every(question => question.specificationPointId === objective.id)).toBe(true);
         });
       });
+    });
+  });
+
+  test('keeps reviewed factual corrections and OCR mappings in the live banks', () => {
+    const question = id => data.questions.find(item => item.id === id);
+    const written = id => data.writtenQuestions.find(item => item.id === id);
+    const task = id => data.examTransferTasks.find(item => item.id === id);
+
+    expect(question('q_1_2_a').explanation).not.toMatch(/permanent/i);
+    expect(question('q_1_2_ram_rom_difference_alt').explanation).not.toMatch(/permanent/i);
+    expect(question('q_1_2_d').explanation).not.toMatch(/1,?024/);
+    expect(written('curriculum_app_1_3_2').question).not.toMatch(/fixed|permanent/i);
+    expect(written('curriculum_app_1_6_2').rubric.join(' ')).toMatch(/Computer Misuse Act/i);
+    expect(written('curriculum_app_1_6_2').rubric.join(' ')).not.toMatch(/Copyright|Data Protection/i);
+    expect(written('curriculum_app_2_5_2').question).not.toMatch(/syntax highlighting/i);
+    ['priority_transfer_231', 'priority_transfer_223', 'priority_transfer_erl', 'priority_transfer_212', 'transfer_3']
+      .forEach(id => expect(task(id).assessmentObjective).toBe('AO3'));
+  });
+
+  test('keeps the reviewed short Paper 1 comparison alternatives markable', () => {
+    const alternatives = data.examTransferTasks.filter(task =>
+      task.paper === 'Paper 1' && task.commandWord === 'Compare' && task.marks === 3
+    );
+
+    expect(alternatives.map(task => task.id)).toEqual(expect.arrayContaining([
+      'transfer_6', 'transfer_6_storage_compare'
+    ]));
+    alternatives.forEach(task => {
+      expect(task.variantFamilyId).toEqual(expect.any(String));
+      expect(task.requiredElements.length).toBeGreaterThanOrEqual(3);
+      expect(task.retryQuestion).toEqual(expect.any(String));
     });
   });
 });

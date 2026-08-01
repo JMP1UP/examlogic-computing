@@ -96,7 +96,7 @@ describe('chaos-path integrity guards', () => {
     expect(source).toContain('custom-test-navigator');
     expect(source).toContain('data-jump-question');
     expect(source).toContain("button.classList.toggle('is-answered', answered)");
-    expect(source).toContain('Write a meaningful answer for question ${firstMissing + 1} before opening the self-check.');
+    expect(source).toContain('Write an answer to question ${firstMissing + 1} before opening the self-check.');
     expect(source).toContain('<form id="num-skills-form" novalidate>');
     expect(source).toContain('Blank boxes are not counted as answers.');
     expect(source).not.toContain("alert('Please enter a prediction before proceeding.')");

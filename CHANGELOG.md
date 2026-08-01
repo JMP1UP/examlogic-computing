@@ -5,6 +5,27 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Established the two-year question-bank strategy, including review metadata,
+  staged capacity targets and strict limits on AI-generated assessment content.
+- Added a 10/20-minute supplementary programming-practice paper route, new
+  original search/sort trace questions and executable binary-search and
+  bubble-sort challenges.
+- Expanded the 2.1.3 checkpoint evidence model to cover all five OCR algorithms.
+
+### Fixed
+- Corrected CPU clock-speed, ROM, ASCII and Unicode explanations identified by
+  independent OCR subject review.
+- Corrected OCR mapping and markability defects in bitmap, networking, legal,
+  CPU-register, testing and programming questions; Paper 2 generated logic-gate
+  questions now stay within the J277 AND/OR/NOT requirement.
+- Rewrote overloaded question prompts into clearly labelled parts and added
+  explicit AO3 metadata where learners must design, refine or reason about an
+  algorithm.
+- Removed the invariant question from short Paper 1 generation by adding a
+  reviewed storage comparison alternative and varying equally strong paper
+  combinations deterministically by session seed.
+
+### Added
 - Rebuilt the student custom test builder as bounded OCR-style exam practice:
   selected topics now produce realistic mark-and-time envelopes, mixed answer
   formats and stable shuffled multiple-choice options. A sticky question list

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Describe the application purpose and the people it serves.
+ExamLogic Computing is a GCSE Computer Science revision and assessment platform for students and teachers. Preserve curriculum accuracy, distinguish deterministic marking from review-required responses, and never overstate mastery from incomplete evidence.
 
 ## Non-negotiable product rules
 

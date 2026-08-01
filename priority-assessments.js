@@ -113,7 +113,7 @@
       options: ['During development as modules are produced', 'Only after the product is released', 'Only before any code is written', 'After deleting the source code'],
       answer: 'During development as modules are produced',
       explanation: 'Iterative testing checks parts of the program throughout development.',
-      retryHint: 'Think about a cycle in which a programmer changes a module, tests it, and uses the result to guide the next change before the product is finished.'
+      retryHint: 'Iterative testing happens while the program is being developed. Which option describes testing after a programmer changes one part?'
     },
     {
       id: 'priority_232_2', topicId: 'topic_2_3', specificationPointId: '2.3.2', purpose: 'retrieval', type: 'mcq',
@@ -128,13 +128,34 @@
       options: ['Test data and expected result', 'Variable name and file size', 'Username and password', 'Source code and compiler name'],
       answer: 'Test data and expected result',
       explanation: 'The expected result is needed so the actual behaviour can be judged.'
+    },
+    {
+      id: 'priority_213_linear', topicId: 'topic_2_1', specificationPointId: '2.1.3', purpose: 'retrieval', type: 'mcq',
+      question: 'A linear search looks for 7 in [4, 7, 7, 9]. Which index is returned if the algorithm stops at the first match and indexing starts at 0?',
+      options: ['1', '2', '0', '3'], answer: '1',
+      explanation: 'The values at indexes 0 and 1 are checked in order, and the first 7 is at index 1.',
+      retryHint: 'Trace from the beginning of the list, writing down each position checked. Stop the trace as soon as the target is encountered.'
+    },
+    {
+      id: 'priority_213_insertion', topicId: 'topic_2_1', specificationPointId: '2.1.3', purpose: 'retrieval', type: 'mcq',
+      question: 'Insertion sort has the ordered section [3, 8, 12] and the next value is 6. What does the ordered section become?',
+      options: ['[3, 6, 8, 12]', '[6, 3, 8, 12]', '[3, 8, 12, 6]', '[3, 8, 6, 12]'], answer: '[3, 6, 8, 12]',
+      explanation: 'Insertion sort places the next value into its correct position in the already ordered section.',
+      retryHint: 'Keep the existing ordered section in sequence, then compare the new item backwards until you find the gap where it belongs.'
+    },
+    {
+      id: 'priority_213_bubble_pass', topicId: 'topic_2_1', specificationPointId: '2.1.3', purpose: 'retrieval', type: 'mcq',
+      question: 'After a complete bubble-sort pass makes no swaps, what should the algorithm do?',
+      options: ['Stop because the list is sorted', 'Repeat until the largest value changes', 'Run binary search', 'Split the list into single items'], answer: 'Stop because the list is sorted',
+      explanation: 'No swaps during a complete pass means every adjacent pair is already in the required order.',
+      retryHint: 'A full pass checked every neighbouring pair. If none needed swapping, could another pass change the order?'
     }
   ],
   writtenQuestions: [
     {
       id: 'priority_app_223_1', topicId: 'topic_2_2', specificationPointId: '2.2.3', purpose: 'application',
       commandWord: 'Write', marks: 5,
-      question: 'Write an SQL query that returns Title and Author from a table called Book for books whose Genre is "Mystery". Explain the role of each clause.',
+      question: 'Write an SQL query that returns Title and Author from a table called Book for books whose Genre is "Mystery". Then explain what SELECT, FROM and WHERE do.',
       scenario: 'A library searches its Book table by genre.',
       indicativeContent: ['SELECT Title, Author', 'FROM Book', 'WHERE Genre = "Mystery"', 'SELECT chooses fields, FROM chooses the table and WHERE filters records'],
       rubric: ['1-3 marks: one mark for each correct clause.', '4-5 marks: accurate explanation of the roles of the clauses.'],
@@ -144,7 +165,7 @@
     {
       id: 'priority_app_223_2', topicId: 'topic_2_2', specificationPointId: '2.2.3', purpose: 'application',
       commandWord: 'Design', marks: 6,
-      question: 'A program stores temperatures for seven days. Design a solution using an array and a function that returns the highest temperature. State why the array and function are suitable.',
+      question: 'Design a function that receives an array of seven temperatures and returns the highest value. Explain why an array and a function are suitable.',
       scenario: 'A weekly weather program processes seven temperature values.',
       indicativeContent: ['fixed one-dimensional array of seven numeric values', 'function accepts the array as a parameter', 'iteration examines every element', 'running maximum is updated', 'function returns the maximum', 'array groups same-type values and function supports reuse'],
       rubric: ['1-2 marks: identifies an array or maximum process.', '3-4 marks: coherent function design with iteration.', '5-6 marks: complete design plus justified data structure and subprogram choices.'],
@@ -174,7 +195,7 @@
     {
       id: 'priority_app_212_1', topicId: 'topic_2_1', specificationPointId: '2.1.2', purpose: 'application',
       commandWord: 'Design', marks: 6,
-      question: 'A cinema charges £7 for a child ticket and £11 for an adult ticket. Identify the inputs, processes and outputs for an algorithm that calculates the total price for a group.',
+      question: 'Inputs: child tickets cost £7; adult tickets cost £11. Identify the inputs, processing and output needed to calculate a group\'s total price.',
       scenario: 'A booking algorithm calculates a group ticket price.',
       indicativeContent: ['inputs: child count and adult count', 'multiply child count by 7', 'multiply adult count by 11', 'add subtotals', 'output total price', 'appropriate numeric values'],
       rubric: ['1-2 marks: identifies some IPO elements.', '3-4 marks: mostly complete calculation.', '5-6 marks: complete, correctly ordered and clearly classified design.'],
@@ -204,7 +225,7 @@
     {
       id: 'priority_app_221_2', topicId: 'topic_2_2', specificationPointId: '2.2.1', purpose: 'application',
       commandWord: 'Explain', marks: 4,
-      question: 'A program tests `age >= 13 OR age <= 17` to decide whether an age is from 13 to 17 inclusive. Explain why this logic is incorrect and give the corrected condition.',
+      question: 'The program uses `age >= 13 OR age <= 17`.\n(a) Explain why this accepts values outside 13 to 17.\n(b) Write the corrected condition.',
       scenario: 'A compound Boolean condition validates an age range.',
       indicativeContent: ['OR requires only one comparison to be true', 'almost every number passes', 'both boundaries must be satisfied', 'age >= 13 AND age <= 17'],
       rubric: ['1-2 marks: identifies OR as wrong or gives corrected condition.', '3-4 marks: explains why and supplies the inclusive correction.'],
@@ -214,7 +235,7 @@
     {
       id: 'priority_app_232_1', topicId: 'topic_2_3', specificationPointId: '2.3.2', purpose: 'application',
       commandWord: 'Design', marks: 6,
-      question: 'Design a test plan for an integer month input that accepts values 1 to 12 inclusive. Include normal, both boundaries, invalid and erroneous data with expected results.',
+      question: 'Complete a test plan for a whole-number month from 1 to 12. Include one normal value, both boundary values, one invalid value and one erroneous value. Give the expected result for each.',
       scenario: 'A date program validates a month number.',
       indicativeContent: ['normal e.g. 6 accepted', 'boundary 1 accepted', 'boundary 12 accepted', 'invalid 0 or 13 rejected', 'erroneous text rejected', 'expected result for each'],
       rubric: ['1 mark for each suitable category/value and complete expected results.'],
@@ -233,6 +254,56 @@
     }
   ],
   examTransferTasks: [
+    {
+      id: 'priority_transfer_213_linear', specificationPointId: '2.1.3', topicId: 'topic_2_1', paper: 'Paper 2', purpose: 'exam-transfer',
+      commandWord: 'Trace', marks: 4, minutes: 5, responseForm: 'algorithm-trace', variantFamilyId: 'search-linear-trace',
+      question: 'Trace a linear search for 12 in [5, 12, 9, 12, 20]. Indexing starts at 0 and the algorithm stops at the first match. State each value checked, the returned index and how the result would change if the target were 7.',
+      decodePrompt: 'Follow the array from index 0. Keep the found and absent cases separate.',
+      requiredElements: ['checks 5 at index 0', 'checks 12 at index 1', 'returns index 1 for the first match', 'search for 7 checks every item and returns not found or -1'],
+      planningLabels: ['First check', 'Matching check', 'Returned index', 'Absent target'],
+      modelPlan: ['index 0 contains 5', 'index 1 contains 12', 'return 1 immediately', '7 is absent so all five values are checked before -1/not found'],
+      retryQuestion: 'Trace a linear search for 4 in [8, 6, 4, 4, 1], then state what happens when searching for 9.'
+    },
+    {
+      id: 'priority_transfer_213_binary', specificationPointId: '2.1.3', topicId: 'topic_2_1', paper: 'Paper 2', purpose: 'exam-transfer',
+      commandWord: 'Trace', marks: 5, minutes: 6, responseForm: 'algorithm-trace', variantFamilyId: 'search-binary-trace',
+      question: '(a) Trace a binary search for 26 in [3, 8, 14, 19, 26, 31, 42, 55]. When two middle positions are available, use the lower one. State each middle value checked.\n(b) State the final index.\n(c) Explain why an unsorted list is unsuitable for binary search.',
+      decodePrompt: 'Record the remaining search area after each comparison and use zero-based indexes.',
+      requiredElements: ['first checks 19 at index 3', 'keeps indexes 4 to 7', 'checks 31 at index 5 then keeps index 4', 'finds 26 at index 4', 'explains that order is needed to decide which half cannot contain the target'],
+      planningLabels: ['First middle', 'Remaining half', 'Next comparison', 'Result and prerequisite'],
+      modelPlan: ['middle index 3 gives 19', '26 is larger so keep indexes 4-7', 'lower middle is index 5 giving 31, so keep index 4', 'index 4 is 26', 'without sorted data a comparison cannot justify discarding either half'],
+      retryQuestion: 'Using the lower middle when needed, trace a binary search for 7 in [1, 4, 7, 11, 18, 25].'
+    },
+    {
+      id: 'priority_transfer_213_bubble', specificationPointId: '2.1.3', topicId: 'topic_2_1', paper: 'Paper 2', purpose: 'exam-transfer',
+      commandWord: 'Complete', marks: 5, minutes: 6, responseForm: 'algorithm-trace', variantFamilyId: 'sort-bubble-trace',
+      question: 'Apply bubble sort in ascending order to [6, 2, 5, 1]. Show the list after each complete pass and include the final pass that proves the algorithm can stop.',
+      decodePrompt: 'Compare adjacent pairs from left to right. A stopping pass must contain no swaps.',
+      requiredElements: ['after pass 1: [2, 5, 1, 6]', 'after pass 2: [2, 1, 5, 6]', 'after pass 3: [1, 2, 5, 6]', 'performs or states a complete no-swap pass', 'links the no-swap pass to stopping'],
+      planningLabels: ['Pass 1', 'Pass 2', 'Pass 3', 'Stopping check'],
+      modelPlan: ['[2,5,1,6]', '[2,1,5,6]', '[1,2,5,6]', 'one further complete pass makes no swaps, so stop'],
+      retryQuestion: 'Apply bubble sort to [4, 3, 1, 2], showing each full pass and the no-swap stopping pass.'
+    },
+    {
+      id: 'priority_transfer_213_insertion', specificationPointId: '2.1.3', topicId: 'topic_2_1', paper: 'Paper 2', purpose: 'exam-transfer',
+      commandWord: 'Complete', marks: 5, minutes: 6, responseForm: 'algorithm-trace', variantFamilyId: 'sort-insertion-trace',
+      question: 'Complete an insertion-sort trace for [7, 3, 5, 2] in ascending order. Show the initial ordered section, then show it after inserting each new value.',
+      decodePrompt: 'Treat the first item as the initial ordered section, then insert one value at a time.',
+      requiredElements: ['initial ordered section [7]', 'after inserting 3: [3, 7]', 'after inserting 5: [3, 5, 7]', 'after inserting 2: [2, 3, 5, 7]', 'intermediate states are clearly associated with the inserted values'],
+      planningLabels: ['Initial section', 'Insert 3', 'Insert 5', 'Insert 2'],
+      modelPlan: ['[7]', '[3,7]', '[3,5,7]', '[2,3,5,7]'],
+      retryQuestion: 'Apply insertion sort to [8, 4, 6, 1], showing the ordered section after each insertion.'
+    },
+    {
+      id: 'priority_transfer_213_merge', specificationPointId: '2.1.3', topicId: 'topic_2_1', paper: 'Paper 2', purpose: 'exam-transfer',
+      commandWord: 'Complete', marks: 6, minutes: 7, responseForm: 'algorithm-trace', variantFamilyId: 'sort-merge-trace',
+      question: 'Apply merge sort in ascending order to [9, 4, 7, 2, 6]. Show the split into single-item lists, the ordered merges and the final list.',
+      decodePrompt: 'The list has an odd number of items. Keep every item and show that ordering happens while lists are merged.',
+      requiredElements: ['all five values split until each is in a single-item list', 'first ordered merges include [4,9] and [2,7] or an equivalent valid split', 'remaining single value 6 is retained', 'ordered sublists are merged by comparing their front values', 'final list [2,4,6,7,9]', 'intermediate split and merge stages are coherent'],
+      planningLabels: ['Split stages', 'First merges', 'Merge remaining value', 'Final merge'],
+      modelPlan: ['split until [9] [4] [7] [2] [6]', 'merge to ordered groups such as [4,9], [2,7] and [6]', 'merge the ordered groups by taking the smallest front value', '[2,4,6,7,9]'],
+      retryQuestion: 'Apply merge sort to [5, 1, 8, 3, 2], showing all split and ordered merge stages.'
+    },
     {
       id: 'priority_transfer_112', specificationPointId: '1.1.2', topicId: 'topic_1_1', paper: 'Paper 1', purpose: 'exam-transfer',
       commandWord: 'Compare', marks: 6, minutes: 9, responseForm: 'explanation',
@@ -276,7 +347,7 @@
     {
       id: 'priority_transfer_131', specificationPointId: '1.3.1', topicId: 'topic_1_4', paper: 'Paper 1', purpose: 'exam-transfer',
       commandWord: 'Recommend', marks: 6, minutes: 9, responseForm: 'explanation',
-      question: 'A school is replacing a peer-to-peer network with a client-server network using a star topology. Recommend whether this change is suitable, explaining benefits and drawbacks for the school.',
+      question: 'A school plans to replace its peer-to-peer network with a client-server network in a star topology. Recommend whether it should make this change. Explain relevant benefits and drawbacks.',
       decodePrompt: 'Consider central management, security, backup and performance as well as the central server, switch and cabling risks or costs.',
       requiredElements: ['central user or security management benefit', 'central file storage or backup benefit', 'server can provide shared services or resources', 'server failure can make services unavailable', 'central switch failure can disrupt the star network', 'cost or administration comparison linked to the school'],
       planningLabels: ['Client-server benefits', 'Star benefits', 'Failure risks', 'Recommendation'],
@@ -296,7 +367,7 @@
     {
       id: 'priority_transfer_142', specificationPointId: '1.4.2', topicId: 'topic_1_5', paper: 'Paper 1', purpose: 'exam-transfer',
       commandWord: 'Recommend', marks: 6, minutes: 9, responseForm: 'explanation',
-      question: 'A clinic stores sensitive records and allows staff to connect over a network. Recommend security measures that reduce unauthorised access and protect data if network traffic is intercepted.',
+      question: 'A clinic stores sensitive records and allows staff to connect over a network. Recommend three complementary security measures. Include a way to control access and a way to protect data sent across the network.',
       decodePrompt: 'Choose complementary measures and explain the mechanism of each. Include access control and protection for transmitted data.',
       requiredElements: ['strong authentication or passwords reduce unauthorised login', 'access levels limit records or actions available to each role', 'firewall filters network traffic using rules', 'encryption makes intercepted data unreadable without the key', 'updates or anti-malware reduce exploitation or malicious software', 'measures are combined because each addresses a different risk'],
       planningLabels: ['Login protection', 'Access after login', 'Network boundary', 'Data and layered protection'],
@@ -326,7 +397,7 @@
     {
       id: 'priority_transfer_162', specificationPointId: '1.6.2', topicId: 'topic_1_7', paper: 'Paper 1', purpose: 'exam-transfer',
       commandWord: 'Explain', marks: 6, minutes: 9, responseForm: 'explanation',
-      question: 'An employee uses another person’s password to enter a company system and copies customer records and licensed software. Explain how two named laws and software licensing are relevant.',
+      question: 'An employee uses another person\'s password to enter a company system. Explain how each issue applies.\n(a) Unauthorised system access.\n(b) Copying customer personal data.\n(c) Copying licensed software.',
       decodePrompt: 'Match each action to the correct legal or licensing concern. Do not describe every action as the same offence.',
       requiredElements: ['Computer Misuse Act linked to unauthorised system access', 'using a known password does not make access authorised', 'Data Protection Act linked to handling or copying customer personal data', 'organisation must process personal data lawfully and securely', 'copyright or licence terms restrict unauthorised software copying', 'actions are distinguished and applied to the scenario'],
       planningLabels: ['Unauthorised access', 'Personal data', 'Software copying', 'Applied distinction'],
@@ -356,12 +427,12 @@
     {
       id: 'priority_transfer_124a', specificationPointId: '1.2.4a', topicId: 'topic_1_3', paper: 'Paper 1', purpose: 'exam-transfer',
       commandWord: 'Complete', marks: 5, minutes: 8, responseForm: 'number-representation',
-      question: 'An 8-bit register stores 10110110. Convert this value to denary and hexadecimal. The value is then shifted one place to the left. State the stored result, the usual numerical effect of a left shift and whether a significant bit is discarded.',
-      decodePrompt: 'Treat each requested representation and the shift as a separate part. Check the bit discarded from the left of the fixed-width register without calling shift data loss binary-addition overflow.',
+      question: '(a) Convert 10110110 to denary.\n(b) Convert it to hexadecimal.\n(c) Shift it one place left and state the stored 8-bit result.\n(d) State the usual numerical effect of a one-place left shift.\n(e) State whether a significant bit is discarded.',
+      decodePrompt: 'Answer each part separately. For the shift, check whether the left-most bit is lost. Do not call this binary-addition overflow.',
       requiredElements: ['denary value 182', 'hexadecimal value B6', 'left shift gives 01101100 in 8 bits', 'a one-place left shift usually multiplies an unsigned value by two', 'the leading 1 is discarded so the fixed-width stored result does not represent 364'],
       planningLabels: ['Binary to denary', 'Binary to hexadecimal', 'Shifted 8-bit result', 'Effect and discarded bit'],
       modelPlan: ['128 + 32 + 16 + 4 + 2 = 182', '1011 0110 = B6', 'shift left gives 01101100', 'a leading 1 is discarded, so the stored 8-bit result is not the full doubled value'],
-      retryQuestion: 'Convert 11100101 to denary and hexadecimal, then shift it one place left in an 8-bit register. State the stored result, the usual numerical effect and whether a significant bit is discarded.'
+      retryQuestion: '(a) Convert 11100101 to denary.\n(b) Convert it to hexadecimal.\n(c) Shift it one place left and state the stored 8-bit result.\n(d) State the usual numerical effect.\n(e) State whether a significant bit is discarded.'
     },
     {
       id: 'priority_transfer_124a_add', specificationPointId: '1.2.4a', topicId: 'topic_1_3', paper: 'Paper 1', purpose: 'exam-transfer',
@@ -376,7 +447,7 @@
     {
       id: 'priority_transfer_124b', specificationPointId: '1.2.4b', topicId: 'topic_1_3', paper: 'Paper 1', purpose: 'exam-transfer',
       commandWord: 'Explain', marks: 4, minutes: 7, responseForm: 'explanation',
-      question: 'A messaging service must store text written in many languages and include emoji. Explain why Unicode is more suitable than ASCII and how the number of bits used for each character can affect file size.',
+      question: 'A messaging service stores text in many languages and includes emoji. Explain why Unicode is more suitable than ASCII. Explain how using more bits per character affects file size.',
       decodePrompt: 'Link the size of the character set to the available symbols, then link bits per character to storage.',
       requiredElements: ['characters are represented using binary codes', 'Unicode can represent a wider range of characters than ASCII', 'the wider range supports multiple writing systems or emoji', 'using more bits per character can increase the storage required for the same number of characters'],
       planningLabels: ['How characters are represented', 'Character-set range', 'Application to the service', 'Storage consequence'],
@@ -415,18 +486,18 @@
     },
     {
       id: 'priority_transfer_22py', specificationPointId: '2.2.PY', topicId: 'topic_2_2', paper: 'Paper 2', purpose: 'exam-transfer',
-      commandWord: 'Write', marks: 6, minutes: 10, responseForm: 'constructed',
-      question: 'Write a Python function count_above(values, limit) that returns how many values in a list are greater than limit. Include two suitable test calls with expected results.',
+      commandWord: 'Write', marks: 6, minutes: 10, responseForm: 'constructed', assessmentObjective: 'AO3',
+      question: 'Write a Python function count_above(values, limit) that returns how many values in a list are greater than limit. Give two test calls and the expected result for each.',
       decodePrompt: 'The response must be executable Python, use both parameters, examine every list item, return a count and include tests.',
       requiredElements: ['valid Python function with both parameters', 'counter initialised before the loop', 'iteration through every value', 'selection tests value greater than limit', 'counter returned after the loop', 'two test calls with stated expected results including a useful edge case'],
       planningLabels: ['Function and parameters', 'Loop and condition', 'Return', 'Tests and expected results'],
       modelPlan: ['def count_above(values, limit):', 'start count at zero and loop through values', 'increment where value > limit and return after the loop', 'test a mixed list and an empty or no-match list'],
-      retryQuestion: 'Write a Python function count_negative(values) that returns the number of negative values in a list. Include two suitable test calls with expected results.'
+      retryQuestion: 'Write a Python function count_negative(values) that returns the number of negative values in a list. Give two test calls and the expected result for each, including an empty list or a list with no negative values.'
     },
     {
       id: 'priority_transfer_231', specificationPointId: '2.3.1', topicId: 'topic_2_3', paper: 'Paper 2', purpose: 'exam-transfer',
-      commandWord: 'Design', marks: 6, minutes: 9, responseForm: 'constructed',
-      question: 'Using OCR Exam Reference Language, design a defensive input routine for creating a pupil username. It must check identity before the change, accept usernames of 6 to 20 characters and remain easy to maintain.',
+      commandWord: 'Design', marks: 6, minutes: 9, responseForm: 'constructed', assessmentObjective: 'AO3',
+      question: 'Using OCR Exam Reference Language, design a routine for creating a pupil username. Check the user\'s identity first. Accept usernames from 6 to 20 characters. Use a named subprogram for the validation so the rule can be changed in one place.',
       decodePrompt: 'Write OCR Exam Reference Language that separates authentication from validation and uses maintainable names and structure.',
       requiredElements: ['authenticate the user before allowing the change', 'length validation accepts 6 to 20 characters inclusive', 'rejects or repeats input outside the range', 'clear meaningful variable or subprogram names', 'routine split into suitable subprograms or reusable checks', 'indentation or purposeful comments support maintainability'],
       planningLabels: ['Authentication', 'Validation', 'Response to invalid input', 'Maintainability'],
@@ -436,12 +507,12 @@
     {
       id: 'priority_transfer_241', specificationPointId: '2.4.1', topicId: 'topic_2_4', paper: 'Paper 2', purpose: 'exam-transfer',
       commandWord: 'Complete', marks: 5, minutes: 8, responseForm: 'constructed',
-      question: 'A door opens when card A is valid AND code B is valid, provided override C is NOT active. Write the Boolean expression and evaluate the output for A=1, B=1, C=0 and for A=1, B=1, C=1.',
+      question: '(a) Write the Boolean expression for a door that opens when card A AND code B are valid and override C is NOT active.\n(b) Evaluate it for A=1, B=1, C=0.\n(c) Evaluate it for A=1, B=1, C=1.',
       decodePrompt: 'Translate the two-part access rule first, apply NOT to the override, then evaluate one intermediate result at a time.',
       requiredElements: ['expression includes A AND B', 'expression applies NOT to C', 'complete expression is (A AND B) AND NOT C or equivalent', 'first input set evaluates to 1 or door open', 'second input set evaluates to 0 or door closed'],
       planningLabels: ['Access condition', 'Override condition', 'Combined expression', 'Two evaluations'],
       modelPlan: ['valid access is A AND B', 'enabled state is NOT C', 'combine as (A AND B) AND NOT C', '1,1,0 gives 1; 1,1,1 gives 0'],
-      retryQuestion: 'An alarm sounds when sensor A OR sensor B is active, provided disable switch C is NOT active. Write the Boolean expression and evaluate it for A=0, B=1, C=0 and A=0, B=1, C=1.'
+      retryQuestion: 'An alarm sounds when sensor A OR sensor B is active, provided disable switch C is NOT active.\n(a) Write the Boolean expression.\n(b) Evaluate it for A=0, B=1, C=0.\n(c) Evaluate it for A=0, B=1, C=1.'
     },
     {
       id: 'priority_transfer_252', specificationPointId: '2.5.2', topicId: 'topic_2_5', paper: 'Paper 2', purpose: 'exam-transfer',
@@ -455,7 +526,7 @@
     },
     {
       id: 'priority_transfer_223', specificationPointId: '2.2.3', topicId: 'topic_2_2', paper: 'Paper 2', purpose: 'exam-transfer',
-      commandWord: 'Write', marks: 8, minutes: 12,
+      commandWord: 'Write', marks: 8, minutes: 12, assessmentObjective: 'AO3',
       question: 'A file contains one integer score on each line. Write an OCR Exam Reference Language algorithm that reads every score, counts scores of 50 or more, closes the file and prints the count.',
       decodePrompt: 'Identify the required file operations, loop condition, selection and accumulator.',
       requiredElements: ['open the file and store it in a variable', 'loop while NOT endOfFile()', 'read each line', 'cast or treat the score as an integer', 'test score >= 50', 'increment a counter', 'close the file', 'print the counter'],
@@ -465,9 +536,9 @@
     },
     {
       id: 'priority_transfer_erl', specificationPointId: '2.2.ERL', topicId: 'topic_2_2', paper: 'Paper 2', purpose: 'exam-transfer',
-      commandWord: 'Write', marks: 7, minutes: 11,
+      commandWord: 'Write', marks: 7, minutes: 11, assessmentObjective: 'AO3',
       question: 'Using OCR Exam Reference Language, write a function `countEven(values, numberOfValues)` that receives an array and its number of elements, counts the even values and returns the count.',
-      decodePrompt: 'The response must be OCR Exam Reference Language, use both parameters, examine every valid index, test with MOD and return a value.',
+      decodePrompt: 'Use OCR Exam Reference Language. Use both parameters, check every valid array index, use MOD to test each value, and return the count.',
       requiredElements: ['function declaration with both parameters', 'counter initialised to zero', 'loop from index 0 to numberOfValues - 1', 'MOD 2 == 0 test', 'counter increment', 'return counter', 'endfunction'],
       planningLabels: ['Function and parameter', 'Initialise', 'Loop and condition', 'Return and close'],
       modelPlan: ['function countEven(values, numberOfValues)', 'count = 0', 'for index=0 to numberOfValues - 1; if values[index] MOD 2 == 0 then increment', 'return count; endfunction'],
@@ -475,8 +546,8 @@
     },
     {
       id: 'priority_transfer_212', specificationPointId: '2.1.2', topicId: 'topic_2_1', paper: 'Paper 2', purpose: 'exam-transfer',
-      commandWord: 'Refine', marks: 6, minutes: 9,
-      question: 'The following OCR Exam Reference Language should input five integers and output how many are positive:\n\ncount = 1\nfor index = 1 to 5\n    value = input("Integer")\n    if value >= 0 then\n        count = count + 1\n    endif\nnext index\nprint(count)\n\nTrace it for 4, 0, -2, 7, 1. Identify both faulty lines and write their corrected versions.',
+      commandWord: 'Refine', marks: 6, minutes: 9, assessmentObjective: 'AO3',
+      question: 'The OCR Exam Reference Language below should input five integers and output how many are positive.\n\ncount = 1\nfor index = 1 to 5\n    value = input("Integer")\n    if value >= 0 then\n        count = count + 1\n    endif\nnext index\nprint(count)\n\n(a) Trace the code using 4, 0, -2, 7 and 1.\n(b) State the output.\n(c) Find the two faulty lines.\n(d) Write the two corrected lines.',
       decodePrompt: 'Record the count after each input, compare the output with the intended result, then correct the initial value and positive-number condition.',
       requiredElements: ['trace begins from the stated incorrect count of 1', 'zero is counted by the incorrect condition', 'incorrect final count is identified as 5', 'correct number of positive inputs is 3', 'refine count initialisation from 1 to 0', 'refine the condition so only values greater than zero are counted'],
       planningLabels: ['Trace values', 'Incorrect output', 'First fault and correction', 'Second fault and correction'],
@@ -485,7 +556,7 @@
     },
     {
       id: 'priority_transfer_221', specificationPointId: '2.2.1', topicId: 'topic_2_2', paper: 'Paper 2', purpose: 'exam-transfer',
-      commandWord: 'Write', marks: 6, minutes: 9,
+      commandWord: 'Write', marks: 6, minutes: 9, assessmentObjective: 'AO3',
       question: 'Write an algorithm that repeatedly inputs a positive integer, outputs whether it is even or odd, and stops only after the user enters 0.',
       decodePrompt: 'Choose a condition-controlled loop, place the sentinel check correctly and use MOD for parity.',
       requiredElements: ['input a number', 'condition-controlled repetition', '0 acts as the stopping value', 'MOD 2 tests parity', 'outputs even for non-zero even values', 'outputs odd for odd values'],

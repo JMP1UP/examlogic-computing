@@ -28,12 +28,16 @@ Coverage is recorded per internal strand. A strand is not complete because it ha
 
 The evidence required depends on how OCR can validly assess the requirement. A uniform item-count threshold is not used as a proxy for depth. **Awaiting QA** means the implemented route is present and traceable; it does not claim that qualified-teacher review has happened. **Developing** and **Foundation** identify structural gaps.
 
-Every strand now has mapped flashcards, a consolidated teaching sequence and an
-exact exam-transfer route. The August 2026 theory audit also checks named OCR
+Every strand has mapped flashcards, a consolidated teaching sequence and a
+mapped exam-transfer route, but the number and variety of questions remain
+uneven. The August 2026 theory audit also checks named OCR
 content bullets explicitly and adds worked representations where prose alone
 was insufficient. Routes that rely on earlier knowledge carry prerequisite
 strand IDs. Named qualified-teacher review, question variation and unseen mixed
-practice remain necessary before full curriculum readiness can be claimed.
+practice remain necessary before full curriculum readiness can be claimed. The
+reviewed expansion and release rules are defined in
+`docs/question-bank-strategy.md`; its capacity targets are not a statement of
+current coverage.
 
 ## Current audited coverage
 

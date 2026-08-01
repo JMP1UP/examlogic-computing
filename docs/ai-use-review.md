@@ -12,6 +12,9 @@ StudySpice uses optional model assistance in two bounded formative workflows:
 Both routes treat learner input as untrusted content, use structured outputs,
 have deterministic fallbacks and avoid target-grade claims, complete solutions
 and automatic mastery. Checked evidence remains the source for attainment.
+Requests are pupil initiated, rate limited and capped to short structured
+responses. The reviewed question bank remains the source for custom papers;
+models do not generate live pupil assessment items.
 
 ## Effective boundaries
 
@@ -29,6 +32,9 @@ and automatic mastery. Checked evidence remains the source for attainment.
    unnecessary pupil text.
 5. Require teacher moderation before an AI estimate can become a summative mark.
 6. Do not generate class summaries until every claim cites correctable evidence.
+7. Add a durable school-level spend ceiling before increasing request volume.
+8. Any teacher-facing question draft must remain unpublished until a subject
+   specialist has checked its originality, mapping, answer and mark scheme.
 
 ## Decision
 

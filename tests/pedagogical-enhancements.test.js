@@ -125,7 +125,7 @@ describe('Senior Developer Pedagogical & Examiner Enhancements', () => {
       const tasks = [
         { id: 'p2_explain', specificationPointId: '2.2.2', topicId: 'topic_2_2', paper: 'Paper 2', commandWord: 'Explain', marks: 4, minutes: 6, question: 'Explain data types.', requiredElements: ['one', 'two', 'three', 'four'] },
         { id: 'p2_compare', specificationPointId: '2.1.1', topicId: 'topic_2_1', paper: 'Paper 2', commandWord: 'Compare', marks: 6, minutes: 9, question: 'Compare approaches.', requiredElements: ['one', 'two', 'three', 'four', 'five', 'six'] },
-        { id: 'p2_write', specificationPointId: '2.2.1', topicId: 'topic_2_2', paper: 'Paper 2', commandWord: 'Write', marks: 6, minutes: 9, question: 'Write an algorithm.', requiredElements: ['one', 'two', 'three', 'four', 'five', 'six'] }
+        { id: 'p2_write', specificationPointId: '2.2.1', topicId: 'topic_2_2', paper: 'Paper 2', commandWord: 'Write', assessmentObjective: 'AO3', marks: 6, minutes: 9, question: 'Write an algorithm.', requiredElements: ['one', 'two', 'three', 'four', 'five', 'six'] }
       ];
       const curriculum = tasks.map(task => ({ id: task.specificationPointId, officialSpecificationPointId: task.specificationPointId, diagnostic: { question: `Short ${task.id}`, options: ['Correct', 'Wrong'], answer: 'Correct', explanation: 'Why' } }));
 
@@ -211,6 +211,109 @@ describe('Senior Developer Pedagogical & Examiner Enhancements', () => {
       expect(db.getExtendedWritingScaffold('1.6.1')).not.toBeNull();
       expect(db.simulateBinaryShift('00000010', 'left', 1)).not.toBeNull();
       expect(db.simulateLogicGate('OR', 1, 0)).not.toBeNull();
+    });
+  });
+
+  describe('Programming practice paper', () => {
+    test('classifies executable search and sort challenges as exam-transfer evidence', () => {
+      const challenges = require('../database').defaultDatabase.programmingChallenges;
+      ['pc_14', 'pc_15'].forEach(id => {
+        const challenge = challenges.find(item => item.id === id);
+        expect(challenge).toMatchObject({ purpose: 'exam-transfer', marks: 6, suggestedMinutes: 12 });
+        expect(challenge.forbiddenCompletionPatterns.length).toBeGreaterThan(0);
+      });
+    });
+
+    test.each([10, 20])('builds honest %i-minute supplementary papers with genuine AO3 work across seeds', duration => {
+      const data = require('../database').defaultDatabase;
+      const programmingStrands = ['2.1.2', '2.1.3', '2.2.1', '2.2.2', '2.2.3', '2.2.PY', '2.2.ERL', '2.3.1', '2.3.2'];
+      for (let seedIndex = 0; seedIndex < 12; seedIndex += 1) {
+        const session = mixedExamEngine.createMixedExamSession(
+          'programming', duration, data.curriculumContent, data.examTransferTasks,
+          data.questions, programmingStrands, `programming-${duration}-${seedIndex}`
+        );
+
+        expect(session.sufficientForRequestedTime).toBe(true);
+        expect(session.includesAO3).toBe(true);
+        expect(session.targetMinutes).toBe(duration);
+        expect(session.questions.some(question => question.assessmentObjective === 'AO3')).toBe(true);
+        expect(session.questions.every(question => programmingStrands.includes(question.strandId))).toBe(true);
+        if (duration === 20) {
+          expect(session.questions.some(question => question.responseForm === 'algorithm-trace')).toBe(true);
+        }
+      }
+    });
+
+    test('keeps every broad 20-minute Paper 2 and programming paper sufficient, AO3-led and algorithmic', () => {
+      const data = require('../database').defaultDatabase;
+      const programmingStrands = ['2.1.2', '2.1.3', '2.2.1', '2.2.2', '2.2.3', '2.2.PY', '2.2.ERL', '2.3.1', '2.3.2'];
+      const reachedAlgorithms = new Set();
+
+      ['paper2', 'programming'].forEach(paperType => {
+        for (let seedIndex = 0; seedIndex < 200; seedIndex += 1) {
+          const session = mixedExamEngine.createMixedExamSession(
+            paperType, 20, data.curriculumContent, data.examTransferTasks,
+            data.questions, null,
+            `${paperType}-shape-${seedIndex}`
+          );
+          expect(session.sufficientForRequestedTime).toBe(true);
+          expect(session.includesAO3).toBe(true);
+          expect(session.questions.some(question => question.responseForm === 'algorithm-trace')).toBe(true);
+          if (paperType === 'programming') {
+            expect(session.questions.every(question => programmingStrands.includes(question.strandId))).toBe(true);
+          }
+          session.questions
+            .filter(question => question.responseForm === 'algorithm-trace')
+            .forEach(question => reachedAlgorithms.add(question.id));
+        }
+      });
+
+      expect(reachedAlgorithms).toEqual(new Set([
+        'priority_transfer_213_linear',
+        'priority_transfer_213_binary',
+        'priority_transfer_213_bubble',
+        'priority_transfer_213_insertion',
+        'priority_transfer_213_merge'
+      ]));
+    });
+  });
+
+  describe('Custom paper variation', () => {
+    test('does not force one constructed task into every unrestricted short Paper 1 paper', () => {
+      const data = require('../database').defaultDatabase;
+      const appearances = new Map();
+      const generatedSets = new Set();
+
+      for (let seedIndex = 0; seedIndex < 200; seedIndex += 1) {
+        const session = mixedExamEngine.createMixedExamSession(
+          'paper1', 10, data.curriculumContent, data.examTransferTasks,
+          data.questions, null, `paper1-variation-${seedIndex}`
+        );
+        const taskIds = session.questions
+          .filter(question => question.type === 'constructed')
+          .map(question => question.id);
+        generatedSets.add([...taskIds].sort().join('|'));
+        taskIds.forEach(id => appearances.set(id, (appearances.get(id) || 0) + 1));
+      }
+
+      expect(generatedSets.size).toBeGreaterThanOrEqual(10);
+      expect(Math.max(...appearances.values())).toBeLessThan(200);
+    });
+
+    test('does not place a diagnostic from the same section immediately before a constructed answer', () => {
+      const data = require('../database').defaultDatabase;
+      for (let seedIndex = 0; seedIndex < 100; seedIndex += 1) {
+        const session = mixedExamEngine.createMixedExamSession(
+          'paper2', 20, data.curriculumContent, data.examTransferTasks,
+          data.questions, null, `answer-cue-${seedIndex}`
+        );
+        session.questions.slice(0, -1).forEach((question, index) => {
+          const nextQuestion = session.questions[index + 1];
+          if (question.type === 'mcq' && nextQuestion.type === 'constructed') {
+            expect(question.specificationPointId).not.toBe(nextQuestion.specificationPointId);
+          }
+        });
+      }
     });
   });
 });

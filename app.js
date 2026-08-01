@@ -3278,11 +3278,16 @@ class App {
     }
     const config = this.testBuilderConfig;
     if (!config.durationMinutes) config.durationMinutes = Number(config.questionCount) || 20;
+    if (config.paperType === 'programming' && config.durationMinutes > 20) config.durationMinutes = 20;
     const units = window.db.getUnits();
     const paper1Units = units.filter(u => u.paper.includes('Paper 1'));
     const paper2Units = units.filter(u => u.paper.includes('Paper 2'));
-    const activeUnits = config.paperType === 'paper1' ? paper1Units : config.paperType === 'paper2' ? paper2Units : units;
-    const allActiveTopics = activeUnits.flatMap(u => u.topics);
+    const programmingPracticeStrands = new Set(['2.1.2', '2.1.3', '2.2.1', '2.2.2', '2.2.3', '2.2.PY', '2.2.ERL', '2.3.1', '2.3.2']);
+    const activeUnits = config.paperType === 'paper1' ? paper1Units : ['paper2', 'programming'].includes(config.paperType) ? paper2Units : units;
+    const allActiveTopics = activeUnits.flatMap(u => u.topics).map(topic => ({
+      ...topic,
+      objectives: config.paperType === 'programming' ? topic.objectives.filter(objective => programmingPracticeStrands.has(objective.id)) : topic.objectives
+    })).filter(topic => topic.objectives.length);
     const allActiveStrands = allActiveTopics.flatMap(t => t.objectives);
 
     if (!config.selectedStrandIds || config.lastPaperType !== config.paperType) {
@@ -3295,12 +3300,12 @@ class App {
         <header class="student-route-header" style="margin-bottom: 24px;">
           <span class="student-mode-label">Practice &middot; Exam Test Builder</span>
           <h1 style="font-size: 28px; font-weight: 800; margin: 6px 0;">Build an exam-style test</h1>
-          <p style="font-size: 15px; color: var(--text-muted);">Build a tailored practice test from original OCR-style specification questions. Choose your topics and test length.</p>
+          <p style="font-size: 15px; color: var(--text-muted);">Choose OCR topics and a test length. StudySpice will create a practice test using original exam-style questions.</p>
         </header>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; align-items: start;">
           <div class="card" style="padding: 24px; border-top: 5px solid #0284C7;">
-            <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-main);">1. Select Exam Paper</h2>
+            <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-main);">1. Choose a paper</h2>
             <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
               <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.paperType === 'paper1' ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
                 <input type="radio" name="builder-paper" value="paper1" ${config.paperType === 'paper1' ? 'checked' : ''}>
@@ -3323,9 +3328,16 @@ class App {
                   <span style="font-size: 12px; color: var(--text-muted);">Choose topics from both papers for a mixed practice set</span>
                 </div>
               </label>
+              <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.paperType === 'programming' ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
+                <input type="radio" name="builder-paper" value="programming" ${config.paperType === 'programming' ? 'checked' : ''}>
+                <div>
+                  <strong style="display: block; font-size: 15px;">Programming practice</strong>
+                  <span style="font-size: 12px; color: var(--text-muted);">Extra practice in algorithms, programming and testing. This is not an official OCR paper.</span>
+                </div>
+              </label>
             </div>
 
-            <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-main);">2. Select Test Length</h2>
+            <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-main);">2. Choose a length</h2>
             <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
               <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.durationMinutes === 10 ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
                 <input type="radio" name="builder-length" value="10" ${config.durationMinutes === 10 ? 'checked' : ''}>
@@ -3341,25 +3353,25 @@ class App {
                   <span style="font-size:12px; color:var(--text-muted);">A mixed set of short and longer exam questions</span>
                 </div>
               </label>
-              <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.durationMinutes === 40 ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
+              ${config.paperType === 'programming' ? '' : `<label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.durationMinutes === 40 ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
                 <input type="radio" name="builder-length" value="40" ${config.durationMinutes === 40 ? 'checked' : ''}>
                 <div>
                   <strong style="display: block; font-size: 14px;">Extended exam test (about 40 minutes)</strong>
                   <span style="font-size:12px; color:var(--text-muted);">A substantial section, not a full 90-minute paper</span>
                 </div>
-              </label>
+              </label>`}
             </div>
 
                 <div id="test-builder-error" class="form-error" role="alert" tabindex="-1" hidden style="margin-bottom:12px;"></div>
                 <button type="button" id="start-built-test-btn" class="btn btn-primary" style="width: 100%; min-height: 46px; font-size: 16px; font-weight: 700; background: #0284C7; border-color: #0284C7;">
-              🚀 Generate and Start Custom Test &rarr;
+              Build practice paper &rarr;
             </button>
             <button type="button" id="builder-back-hub-btn" class="btn btn-link" style="width: 100%; margin-top: 10px;">Back to Practice menu</button>
           </div>
 
           <div class="card" style="padding: 24px; background: rgba(0,0,0,0.01);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-              <h3 style="font-size: 16px; font-weight: 700; margin: 0;">3. Filter Strands & Substrands (${config.selectedStrandIds.length}/${allActiveStrands.length})</h3>
+              <h3 style="font-size: 16px; font-weight: 700; margin: 0;">3. Choose topics (${config.selectedStrandIds.length}/${allActiveStrands.length})</h3>
               <button type="button" id="toggle-all-topics-btn" class="btn btn-link" style="font-size: 12px; padding: 0;">
                 ${config.selectedStrandIds.length === allActiveStrands.length ? 'Deselect all' : 'Select all'}
               </button>
@@ -3370,13 +3382,13 @@ class App {
                 const selectedCount = topicStrandIds.filter(id => config.selectedStrandIds.includes(id)).length;
                 const isAllSelected = selectedCount === topicStrandIds.length;
                 return `
-                  <details open style="border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-card); padding: 10px 14px;">
+                  <details style="border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-card); padding: 10px 14px;">
                     <summary style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 14px; font-weight: 700; color: var(--text-main);">
                       <div style="display: flex; align-items: center; gap: 8px;">
                         <input type="checkbox" class="topic-parent-checkbox" data-topic-code="${t.code}" ${isAllSelected ? 'checked' : ''}>
                         <span><strong>${t.code}</strong> ${this.escapeHTML(t.name)}</span>
                       </div>
-                      <span class="badge ${selectedCount > 0 ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px;">${selectedCount}/${t.objectives.length} strands</span>
+                      <span class="badge ${selectedCount > 0 ? 'badge-primary' : 'badge-secondary'}" style="font-size: 11px;">${selectedCount}/${t.objectives.length} sections</span>
                     </summary>
                     <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border-color); padding-left: 24px;">
                       ${t.objectives.map(obj => {
@@ -3587,7 +3599,7 @@ class App {
         : !this.isMeaningfulLearnerResponse(answer, 8));
       if (firstMissing >= 0) {
         const error = panel.querySelector('#custom-test-error');
-        error.textContent = `Write a meaningful answer for question ${firstMissing + 1} before opening the self-check.`;
+        error.textContent = `Write an answer to question ${firstMissing + 1} before opening the self-check.`;
         error.hidden = false;
         const fieldset = panel.querySelector(`[data-custom-question="${firstMissing}"]`);
         fieldset?.setAttribute('aria-describedby', 'custom-test-error');
@@ -7004,7 +7016,7 @@ class App {
       { level: 2, skill: 'Trace', title: 'Selection and iteration', code: 'total = 0\nfor i=1 to 4\n    if i MOD 2 == 0 then\n        total = total + i\n    endif\nnext i\nprint(total)', prompt: 'Trace i and total. What is printed?', answer: '6 is printed. Only the even values 2 and 4 are added.', hint: 'Make a two-column trace table for i and total. Update total only on iterations where the MOD condition is true.' },
       { level: 3, skill: 'Complete', title: 'Input validation', code: 'age = input("Age")\nwhile __________\n    age = input("Try again")\nendwhile', prompt: 'Complete the condition so only ages from 11 to 16 inclusive are accepted.', answer: 'age < 11 OR age > 16', hint: 'A validation loop repeats while an input is invalid. Consider separately what makes an age too low and what makes it too high.' },
       { level: 4, skill: 'Write', title: 'Count-controlled algorithm', code: '// Write OCR Exam Reference Language here', prompt: 'Input five scores, calculate the total and print the mean.', answer: 'total = 0\nfor i=1 to 5\n    score = int(input("Score"))\n    total = total + score\nnext i\nprint(total / 5)', hint: 'Plan three steps: start an accumulator, repeat the input and addition a fixed number of times, then calculate the mean after the loop.' },
-      { level: 5, skill: 'Refine', title: 'Find and correct errors', code: 'for i=0 to names.length\n    if names[i] = target then\n        print("Found")\n    end if\nnext', prompt: 'Refine the algorithm to use valid OCR Exam Reference Language and avoid an array-bound error.', answer: 'for i=0 to names.length - 1\n    if names[i] == target then\n        print("Found")\n    endif\nnext i', hint: 'Check the final valid array index, the equality operator, and the exact words used to close the selection and loop.' }
+      { level: 5, skill: 'Refine', title: 'Find and correct errors', code: 'for i=0 to names.length\n    if names[i] = target then\n        print("Found")\n    end if\nnext', prompt: 'Find and correct the errors. Use valid OCR Exam Reference Language and make sure the loop does not go past the last array item.', answer: 'for i=0 to names.length - 1\n    if names[i] == target then\n        print("Found")\n    endif\nnext i', hint: 'Check the final valid array index, the equality operator, and the exact words used to close the selection and loop.' }
     ];
     const task = tasks[this.activePseudocodeTask] || tasks[0];
     panel.innerHTML = `
@@ -7062,7 +7074,7 @@ class App {
     document.getElementById('pseudocode-check-btn').onclick = () => {
       const feedback = document.getElementById('pseudocode-feedback');
       const response = document.getElementById('pseudocode-response').value.trim();
-      if (!this.isMeaningfulLearnerResponse(response, 3)) return this.alert('Write a meaningful answer before checking it.');
+      if (!this.isMeaningfulLearnerResponse(response, 3)) return this.alert('Write an answer to the question before checking it.');
       const isCorrect = this.assessPseudocodeResponse(response, task.answer);
       feedback.style.display = 'block';
       if (!isCorrect) {
@@ -7727,6 +7739,14 @@ class App {
 
     if (challenge.requiresCodeChange !== false && this.editorCode.trim() === String(challenge.code || '').trim()) {
       this.alert('Make a meaningful change to the starter code, then run every test again. Reading and running starter code is useful practice, but it is not yet evidence that you can program.');
+      return false;
+    }
+
+    const forbiddenCompletionPattern = (challenge.forbiddenCompletionPatterns || [])
+      .map(pattern => new RegExp(pattern, 'i'))
+      .find(pattern => pattern.test(this.editorCode));
+    if (forbiddenCompletionPattern) {
+      this.alert('Use the algorithm named in the task rather than a built-in search or sort shortcut, then run every test again.');
       return false;
     }
 

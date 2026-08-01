@@ -32,10 +32,10 @@ describe('User experience regression checks', () => {
   });
 
   test('updated interface assets use the current cache-busting release', () => {
-    expect(html).toContain('style.css?v=1.6.15');
-    expect(html).toContain('curriculum-content.js?v=1.0.2');
-    expect(html).toContain('database.js?v=1.6.15');
-    expect(html).toContain('app.js?v=1.6.15');
+    expect(html).toContain('style.css?v=2.0.8_01082026');
+    expect(html).toContain('curriculum-content.js?v=1.0.3_01082026');
+    expect(html).toContain('database.js?v=2.0.8_01082026');
+    expect(html).toContain('app.js?v=2.0.8_01082026');
   });
 
   test('describes recommendations without unsupported memory or scheduling claims', () => {

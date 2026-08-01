@@ -46,9 +46,9 @@ describe('Curriculum Knowledge Base & Examiner Intelligence', () => {
   });
 
   test('generates parametric blueprint questions with valid structures', () => {
-    const qStorage = examinerKnowledge.generateBlueprintQuestion('1.2.3', 2);
+    const qStorage = examinerKnowledge.generateBlueprintQuestion('1.2.4c', 2);
     expect(qStorage).not.toBeNull();
-    expect(qStorage.strandId).toBe('1.2.3');
+    expect(qStorage.strandId).toBe('1.2.4c');
     expect(qStorage.workingSteps.length).toBeGreaterThan(0);
     expect(qStorage.finalAnswer).toContain('KB');
 
@@ -81,7 +81,7 @@ describe('Curriculum Knowledge Base & Examiner Intelligence', () => {
     const db = global.window.db;
     expect(db.getExaminerInsights('1.1.1')).toBeDefined();
     expect(db.getCommandWordRubric('Explain')).toBeDefined();
-    expect(db.generateBlueprintQuestion('1.2.3', 10)).not.toBeNull();
+    expect(db.generateBlueprintQuestion('1.2.4c', 10)).not.toBeNull();
     expect(db.getKeyTermsBySpecPoint('1.1.1').length).toBeGreaterThan(0);
     expect(db.getFlashcardsByStrand('1.1.1').length).toBeGreaterThan(0);
   });

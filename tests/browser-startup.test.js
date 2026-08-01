@@ -181,7 +181,7 @@ describe('production browser startup', () => {
 
     expect(target.innerHTML).toContain('&lt;img src=x onerror=&quot;alert(1)&quot;&gt; Revision');
     expect(target.innerHTML).not.toContain('<img src=x onerror=');
-    expect(target.innerHTML).toContain('topic_1_3&quot; autofocus onfocus=&quot;alert(2)');
+    expect(target.innerHTML).not.toContain('topic_1_3" autofocus onfocus="alert(2)');
     expect(JSON.stringify(hostileAssignment)).toBe(before);
   });
 
@@ -821,5 +821,26 @@ describe('production browser startup', () => {
     context.app.activeTopicId = 'topic_missing';
     context.app.renderStudentLearn(missingPanel);
     expect(missingPanel.innerHTML).toContain('Topic review unavailable');
+  });
+
+  test('shows programming practice with paper choices rather than length choices', () => {
+    const context = loadProductionScripts();
+    const control = { addEventListener: jest.fn() };
+    const panel = {
+      innerHTML: '',
+      querySelector: () => control,
+      querySelectorAll: () => []
+    };
+
+    context.app.renderStudentTestBuilder(panel);
+
+    const paperStep = panel.innerHTML.indexOf('1. Choose a paper');
+    const programmingChoice = panel.innerHTML.indexOf('Programming practice');
+    const lengthStep = panel.innerHTML.indexOf('2. Choose a length');
+    expect(paperStep).toBeGreaterThanOrEqual(0);
+    expect(programmingChoice).toBeGreaterThan(paperStep);
+    expect(programmingChoice).toBeLessThan(lengthStep);
+    expect(panel.innerHTML.slice(lengthStep)).not.toContain('name="builder-paper"');
+    expect(panel.innerHTML).not.toContain(' strands</span>');
   });
 });

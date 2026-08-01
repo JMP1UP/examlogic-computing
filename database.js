@@ -69,7 +69,7 @@ const CHECKPOINT_RULES = {
   '1.6.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['electronic-waste', 'resource-extraction'] },
   '1.6.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['computer-misuse-law', 'data-protection-law'] },
   '2.1.2': { version: 1, minimumRatio: 0.8, requiredFocuses: ['trace-table-use', 'input-process-output', 'flowchart-representation'] },
-  '2.1.3': { version: 1, minimumRatio: 0.8, requiredFocuses: ['binary-search', 'bubble-sort', 'merge-sort'] },
+  '2.1.3': { version: 2, minimumRatio: 0.8, requiredFocuses: ['linear-search', 'binary-search', 'bubble-sort', 'insertion-sort', 'merge-sort'] },
   '2.2.1': { version: 1, minimumRatio: 0.8, requiredFocuses: ['variables-and-constants', 'operators', 'control-structures'] },
   '2.2.3': { version: 1, minimumRatio: 0.8, requiredFocuses: ['string-operations', 'sql-querying', 'subprograms', 'two-dimensional-arrays'] },
   '2.2.ERL': { version: 1, minimumRatio: 0.8, requiredFocuses: ['language-separation', 'erl-control-structures', 'erl-string-operations'] },
@@ -125,9 +125,11 @@ const QUESTION_FOCUS_GROUPS = [
   ['trace-table-use', ['diagnostic_2_1_2', 'priority_212_2']],
   ['input-process-output', ['priority_212_1']],
   ['flowchart-representation', ['priority_212_3', 'q_2_1_e']],
-  ['binary-search', ['diagnostic_2_1_3', 'q_2_1_b', 'q_5']],
-  ['bubble-sort', ['q_2_1_c']],
-  ['merge-sort', ['q_2_1_d']],
+  ['linear-search', ['priority_213_linear', 'priority_transfer_213_linear']],
+  ['binary-search', ['diagnostic_2_1_3', 'q_2_1_b', 'q_5', 'priority_transfer_213_binary']],
+  ['bubble-sort', ['q_2_1_c', 'priority_213_bubble_pass', 'priority_transfer_213_bubble']],
+  ['insertion-sort', ['priority_213_insertion', 'priority_transfer_213_insertion']],
+  ['merge-sort', ['q_2_1_d', 'priority_transfer_213_merge']],
   ['operators', ['diagnostic_2_2_1', 'priority_221_2', 'q_2_2_c', 'q_2_2_d']],
   ['control-structures', ['priority_221_1', 'priority_221_3', 'q_2_2_b']],
   ['variables-and-constants', ['q_2_2_a']],
@@ -1315,7 +1317,7 @@ def calculate_area(width, height):
       retryQuestion: 'A pupil enters a domain name for the school website. Explain how DNS and an IP address help the browser reach the correct server.'
     },
     {
-      id: 'transfer_3', specificationPointId: '2.3.2', topicId: 'topic_2_3', paper: 'Paper 2', commandWord: 'Design', marks: 6, minutes: 9,
+      id: 'transfer_3', specificationPointId: '2.3.2', topicId: 'topic_2_3', paper: 'Paper 2', commandWord: 'Design', assessmentObjective: 'AO3', marks: 6, minutes: 9,
       question: 'A program accepts an exam mark from 0 to 100. Design a test plan containing normal, boundary, invalid and erroneous test data. Give an expected result for each test.',
       decodePrompt: 'Separate the four requested test-data categories. Every test needs both a value and an expected result.',
       requiredElements: ['normal value within range', 'boundary value such as 0 or 100', 'invalid value outside range', 'erroneous value of the wrong data type', 'expected result for every test'],
@@ -1328,6 +1330,11 @@ def calculate_area(width, height):
       question: 'A school is considering using facial-recognition cameras to record attendance. Discuss ethical, legal and privacy issues the school should consider.',
       decodePrompt: 'A discussion needs developed arguments on more than one side, application to the school, and a justified conclusion.',
       requiredElements: ['privacy or surveillance concern', 'personal/biometric data', 'data protection responsibilities', 'accuracy or bias', 'potential benefit', 'justified conclusion'],
+      levelDescriptors: [
+        '1-2 marks: identifies relevant issues with limited development or application.',
+        '3-5 marks: explains several relevant issues and applies them to the school, with some balance.',
+        '6-8 marks: develops a balanced, well-structured discussion and reaches a justified conclusion grounded in the scenario.'
+      ],
       planningLabels: ['Potential benefit', 'Privacy risk', 'Legal/data issue', 'Accuracy or bias', 'Conclusion'],
       modelPlan: ['efficient attendance/safeguarding benefit', 'continuous monitoring may feel intrusive', 'biometric data needs lawful secure handling', 'false matches may affect groups unfairly', 'weigh safeguards against benefit'],
       retryQuestion: 'Discuss whether a school should use monitoring software on every pupil-owned device connected to its Wi-Fi.'
@@ -1343,12 +1350,36 @@ def calculate_area(width, height):
     },
     {
       id: 'transfer_6', specificationPointId: '1.2.1', topicId: 'topic_1_2', paper: 'Paper 1', commandWord: 'Compare', marks: 3, minutes: 5, purpose: 'exam-transfer',
+      variantFamilyId: 'memory-ram-rom-compare',
+      selectionFamilyId: 'paper1-short-three-mark',
       question: 'Compare RAM and ROM in terms of volatility, access rights, and primary function within a computer system.',
       decodePrompt: 'A comparison requires contrasting pairs of points for both memory types.',
       requiredElements: ['RAM is volatile, ROM is non-volatile', 'RAM is read-write, ROM is normally read-only', 'RAM holds active programs and data, ROM holds startup or boot instructions'],
       planningLabels: ['Volatility contrast', 'Access rights contrast', 'Function contrast'],
       modelPlan: ['RAM volatile loses contents / ROM non-volatile retains data', 'RAM read/write / ROM normally read-only', 'RAM stores active programs and data / ROM stores startup instructions'],
       retryQuestion: 'Compare RAM and ROM in terms of whether their contents are lost without power, whether their contents normally change, and what each stores.'
+    },
+    {
+      id: 'transfer_6_storage_compare', specificationPointId: '1.2.2', topicId: 'topic_1_2', paper: 'Paper 1', commandWord: 'Compare', marks: 3, minutes: 5, purpose: 'exam-transfer',
+      variantFamilyId: 'storage-hdd-ssd-compare',
+      selectionFamilyId: 'paper1-short-three-mark',
+      question: 'A student needs storage for a laptop that is carried to school each day. Compare a magnetic hard disk drive (HDD) with a solid-state drive (SSD).',
+      decodePrompt: 'Make linked comparisons. State a difference, then explain why it matters for this laptop.',
+      requiredElements: ['an SSD has no moving parts, so is more resistant to physical shock when the laptop is carried', 'an SSD normally reads and writes data faster', 'an HDD normally offers more capacity for the same price'],
+      planningLabels: ['Durability', 'Speed', 'Capacity or cost', 'Link to the laptop'],
+      modelPlan: ['SSD has no moving parts so is less likely to be damaged when carried', 'SSD normally loads files faster', 'HDD may provide more storage for the same budget', 'recommendation justified using the student scenario'],
+      retryQuestion: 'Compare an HDD and an SSD for a laptop that is moved between home and school. Include durability, speed and capacity or cost.'
+    },
+    {
+      id: 'transfer_p1_protocol_layers', specificationPointId: '1.3.2', topicId: 'topic_1_4', paper: 'Paper 1', commandWord: 'Explain', marks: 3, minutes: 5, purpose: 'exam-transfer',
+      variantFamilyId: 'network-protocol-layers-benefits',
+      selectionFamilyId: 'paper1-short-three-mark',
+      question: '(a) Explain one benefit of using layers when network protocols are designed.\n(b) State one other benefit.',
+      decodePrompt: 'For part (a), name a benefit and explain how separate layers produce it. Give a different valid benefit for part (b).',
+      requiredElements: ['identifies a valid benefit for part (a)', 'explains how separating responsibilities between layers produces that benefit', 'states a different valid benefit, such as compatibility, easier development or easier fault-finding'],
+      planningLabels: ['Benefit for part (a)', 'How layers produce it', 'Different benefit for part (b)'],
+      modelPlan: ['separate responsibilities between layers', 'a change within one layer need not alter the whole system', 'agreed interfaces support compatible products', 'smaller parts make development and fault-finding manageable'],
+      retryQuestion: '(a) Explain one way that a layered protocol model helps developers update networked systems.\n(b) State one other benefit of using layers.'
     },
     {
       id: 'transfer_7', specificationPointId: '2.1.3', topicId: 'topic_2_1', paper: 'Paper 2', commandWord: 'Explain', marks: 4, minutes: 6, purpose: 'exam-transfer',
@@ -1361,7 +1392,7 @@ def calculate_area(width, height):
     },
     {
       id: 'transfer_8', specificationPointId: '2.5.1', topicId: 'topic_2_5', paper: 'Paper 2', commandWord: 'Discuss', marks: 6, minutes: 9, purpose: 'exam-transfer',
-      question: 'A software company is choosing how to translate a commercial video game during development and for its final release. Discuss the use of a compiler and an interpreter in this scenario.',
+      question: 'A software company is choosing how to translate a commercial video game. Discuss using a compiler or interpreter (a) during development and (b) for the final release.',
       decodePrompt: 'Consider relevant benefits and drawbacks of each translator during development and release, then give a justified recommendation.',
       requiredElements: ['Compiler translates the whole program and reports errors after compilation', 'Compiled code can run without the translator', 'Interpreter translates and executes one statement at a time', 'Interpreter can support testing by stopping at an error', 'Recommendation linked to development or release needs'],
       planningLabels: ['Compiler benefit or drawback', 'Interpreter benefit or drawback', 'Development context', 'Release context', 'Justified recommendation'],
@@ -1527,7 +1558,7 @@ def calculate_area(width, height):
         "RAM is secondary storage; ROM is primary memory"
       ],
       "answer": "RAM is volatile and read/write; ROM is non-volatile and read-only",
-      "explanation": "RAM loses its data when power is lost (volatile). ROM retains data permanently (non-volatile) and stores bootloader instructions.",
+      "explanation": "RAM loses its data when power is lost. ROM is non-volatile, so its contents remain when power is removed; it commonly stores startup firmware or instructions.",
       "retryHint": "Compare what happens to each memory type when power is removed and whether the processor can normally change the stored contents."
     },
     {
@@ -2192,7 +2223,7 @@ def calculate_area(width, height):
             "RAM is secondary storage while ROM is primary memory"
       ],
       "answer": "RAM is volatile (loses data when powered off) while ROM is non-volatile",
-      "explanation": "RAM requires continuous electrical power to retain its data, making it volatile. ROM holds permanent startup instructions (BIOS) and is non-volatile."
+      "explanation": "RAM requires power to retain its data. ROM is non-volatile, so its contents remain when power is removed; it commonly stores startup firmware or instructions."
 },
     {
       "id": "q_1_2_virtual_memory",
@@ -2236,7 +2267,7 @@ def calculate_area(width, height):
             "Gigabyte, Megabyte, Kilobyte, Terabyte, Petabyte"
       ],
       "answer": "Kilobyte, Megabyte, Gigabyte, Terabyte, Petabyte",
-      "explanation": "Data storage capacities scale by factors of 1000 (or 1024) in the sequence: KB < MB < GB < TB < PB."
+      "explanation": "For OCR calculations, storage capacities use decimal units: 1 KB = 1,000 bytes, 1 MB = 1,000 KB, then GB, TB and PB in ascending order."
 },
     {
       "id": "q_1_2_e",
@@ -2281,15 +2312,15 @@ def calculate_area(width, height):
       "topicId": "topic_1_3",
       "specificationPointId": "1.2.4b",
       "type": "mcq",
-      "question": "Why is Unicode preferred over ASCII in modern systems?",
+      "question": "Why is Unicode useful in systems used around the world?",
       "options": [
-            "It uses more bits (e.g., 16/32) allowing it to represent characters from all global languages",
+            "It can represent characters and symbols from a much wider range of writing systems than ASCII",
             "It uses fewer bits, reducing the file sizes of text documents",
             "It is executed directly by the CPU ALU without decoding",
             "It prevents cybercriminals from intercepting text communications"
       ],
-      "answer": "It uses more bits (e.g., 16/32) allowing it to represent characters from all global languages",
-      "explanation": "ASCII is limited to 7 or 8 bits (128-256 characters), which only covers English and some European letters. Unicode can represent thousands of characters, including foreign scripts and emojis."
+      "answer": "It can represent characters and symbols from a much wider range of writing systems than ASCII",
+      "explanation": "ASCII represents a limited range of characters. Unicode supports a much wider range of writing systems and symbols. Unicode should not be described as using one fixed number of bits per character."
 },
     {
       "id": "q_1_3_sampling_rate",
@@ -2760,7 +2791,7 @@ def calculate_area(width, height):
       "question": "A school ICT technician is choosing new CPUs for the computer labs. Explain how CPU clock speed, the number of cores, and cache size affect CPU performance.",
       "scenario": "Comparing CPU specifications (clock speed, cores, cache) for school lab workstations.",
       "indicativeContent": [
-            "Clock speed: Determines the number of fetch-decode-execute cycles per second. Higher clock speed means faster instruction processing.",
+            "Clock speed: The number of clock cycles per second. A higher clock speed can improve performance when other factors are comparable, but the improvement is not guaranteed to match the change in clock speed.",
             "Cores: Multiple cores allow parallel processing (executing different instructions simultaneously) or multitasking. More cores increase throughput for multi-threaded applications, but performance doesn't scale linearly if software isn't optimized.",
             "Cache: Extremely fast memory built into the CPU. Larger cache means more instructions/data are stored locally, reducing the frequency of slower RAM access."
       ],
@@ -2769,7 +2800,7 @@ def calculate_area(width, height):
             "3-4 Marks: Explains how one or two characteristics affect performance with moderate technical detail.",
             "5-6 Marks: Explains all three characteristics (clock speed, cores, cache) clearly, demonstrating a thorough understanding of their impact on CPU processing speeds."
       ],
-      "modelAnswer": "Clock speed determines how many fetch-decode-execute cycles a CPU can perform per second (measured in Gigahertz). A higher clock speed means instructions are processed faster. Increasing the number of cores allows the CPU to process multiple instructions in parallel or run different tasks simultaneously, boosting multitasking speed. Cache is small, high-speed memory on the CPU chip. A larger cache size stores more frequently used instructions closer to the core, which speeds up processing by reducing the time spent fetching data from the slower main RAM.",
+      "modelAnswer": "Clock speed is the number of clock cycles per second. A higher clock speed can improve CPU performance when other factors are comparable, but it does not guarantee the same increase in completed instructions. Increasing the number of cores can allow instructions or tasks to be processed in parallel when software supports this. Cache is small, fast memory close to the CPU. A larger cache can keep more frequently used instructions and data nearby, reducing slower accesses to main memory.",
       "misconceptions": [
             {
                   "phrase": "double the speed",
@@ -2991,7 +3022,7 @@ def calculate_area(width, height):
       concept: 'File Handling & Loops',
       title: 'Writing Code: File Total',
       instructions: 'Write a Python program that opens a file named "scores.txt", reads each line (containing an integer score), calculates the sum, and prints the total.',
-      problem: 'Implement the file opening, reading loop, casting to integer, accumulating the sum, and printing it.',
+      problem: 'Read each line as a number, add the scores, and print the total.',
       code: '# Open scores.txt, read line by line, accumulate sum and print it\ntotal = 0\n# Write your code here',
       expectedOutput: '150',
       supportLadder: [
@@ -3032,7 +3063,7 @@ def calculate_area(width, height):
       explainQuestion: 'Explain why `return -1` must be placed after the loop.', explainModelAnswer: 'The complete list must be checked before the program can conclude that the target is absent.'
     },
     {
-      id: 'pc_10', level: 10, concept: 'Core: 2D Array Search', title: 'Core Practice: 2D Grid Search', instructions: 'Write `search_grid(grid, target)` to return the coordinate list [row, col] of the target in a 2D grid, or [-1, -1] if not found.', problem: 'Iterate through nested 2D array rows and columns.',
+      id: 'pc_10', level: 10, concept: 'Core: 2D Array Search', title: 'Core Practice: 2D Grid Search', instructions: 'Write `search_grid(grid, target)` to return a two-item list `[row, column]` showing where the target was found. Return `[-1, -1]` when it is not found.', problem: 'Use nested loops to check the rows and columns of the grid.',
       code: 'def search_grid(grid, target):\n    # Return [row, col] or [-1, -1]\n    pass', expectedOutput: '[1, 0]', supportLadder: ['Use nested loops: `for r in range(len(grid)):` and `for c in range(len(grid[r])):`', 'Access elements using `grid[r][c]`.', 'Return `[r, c]` as soon as `grid[r][c] == target`.'],
       testCases: [{ input: 'grid=[[1,2],[5,6]], target=5', inputs: [], functionName: 'search_grid', functionArgs: [[[1,2],[5,6]], 5], expected: '[1, 0]' }, { input: 'grid=[[1,2],[5,6]], target=9', inputs: [], functionName: 'search_grid', functionArgs: [[[1,2],[5,6]], 9], expected: '[-1, -1]' }],
       explainQuestion: 'Explain how 2D array indexing differs from 1D array indexing.', explainModelAnswer: '1D arrays require a single index `arr[i]` to access a row element; 2D arrays require two indexes `grid[row][col]` to specify both the row and column coordinates.'
@@ -3044,10 +3075,10 @@ def calculate_area(width, height):
         { input: "['Harriet','Dev','Alex'], [85,40,92], 50", inputs: [], functionName: 'get_high_scorers', functionArgs: [['Harriet', 'Dev', 'Alex'], [85, 40, 92], 50], expected: "['Harriet', 'Alex']" },
         { input: "['Sam','Lee'], [49,50], 50", inputs: [], functionName: 'get_high_scorers', functionArgs: [['Sam', 'Lee'], [49, 50], 50], expected: "['Lee']" }
       ],
-      explainQuestion: 'Explain why return values are preferable to global variable mutations in modular programming.', explainModelAnswer: 'Return values allow functions to pass data cleanly back to callers without creating side-effects or mutating global states.'
+      explainQuestion: 'Why is returning the result from this function better than changing a global list?', explainModelAnswer: 'Returning the result gives the calling code the value without unexpectedly changing shared data elsewhere in the program.'
     },
     {
-      id: 'pc_12', level: 12, concept: 'Core: Random Number Generation', title: 'Core Practice: Reproducible Dice Roll', instructions: 'Write `roll_die(seed_value)` so it seeds Python’s random generator and returns an integer from 1 to 6 inclusive.', problem: 'Import random, seed the generator with the parameter and return a bounded random integer.',
+      id: 'pc_12', level: 12, concept: 'Core: Random Number Generation', title: 'Core Practice: Reproducible Dice Roll', instructions: 'Write `roll_die(seed_value)`. Use `random.seed(seed_value)` first so the same input produces a repeatable test result. Then return a random integer from 1 to 6.', problem: 'Import random, set the seed from the parameter and return a whole number from 1 to 6.',
       code: 'def roll_die(seed_value):\n    # Seed the generator, then return an integer from 1 to 6\n    pass', expectedOutput: '4', supportLadder: ['Import the random module.', 'Call `random.seed(seed_value)` so tests are reproducible.', 'Use `random.randint(1, 6)` and return the result.'],
       testCases: [{ input: 'seed 0', inputs: [], functionName: 'roll_die', functionArgs: [0], expected: '4' }, { input: 'seed 1', inputs: [], functionName: 'roll_die', functionArgs: [1], expected: '2' }],
       explainQuestion: 'Why must both bounds be stated when generating a simulated die roll?', explainModelAnswer: 'The program must restrict generated integers to the six valid outcomes, 1 through 6 inclusive.'
@@ -3061,6 +3092,36 @@ def calculate_area(width, height):
         { input: 'unknown user', inputs: [], functionName: 'authenticate', functionArgs: [['sam', 'lee'], ['red7', 'blue9'], 'alex', 'blue9'], expected: 'False' }
       ],
       explainQuestion: 'Why is checking that a password appears anywhere in the password list insecure?', explainModelAnswer: 'Authentication must verify that the password belongs to the same record as the entered username; an unrelated user’s password must not grant access.'
+    },
+    {
+      id: 'pc_14', level: 14, concept: 'Exam Transfer: Binary Search', title: 'Exam Bridge: Binary Search',
+      instructions: 'Write `binary_search(values, target)` for an ascending sorted list. Return the matching zero-based index, or -1 if the target is absent.',
+      forbiddenCompletionPatterns: ['\\.index\\s*\\('],
+      problem: 'Use lower and upper search boundaries, repeatedly check a middle item and discard the half that cannot contain the target.',
+      code: 'def binary_search(values, target):\n    # values is already sorted in ascending order\n    pass', expectedOutput: '4',
+      supportLadder: ['Keep lower and upper indexes for the remaining search area.', 'Use integer division to calculate a middle index.', 'After a comparison, move one boundary past the middle; return -1 only when no search area remains.'],
+      testCases: [
+        { input: '[3, 8, 14, 19, 26, 31, 42], 26', inputs: [], functionName: 'binary_search', functionArgs: [[3, 8, 14, 19, 26, 31, 42], 26], expected: '4' },
+        { input: '[2, 5, 9, 13, 18, 27], 2', inputs: [], functionName: 'binary_search', functionArgs: [[2, 5, 9, 13, 18, 27], 2], expected: '0' },
+        { input: '[2, 5, 9, 13, 18, 27], 11', inputs: [], functionName: 'binary_search', functionArgs: [[2, 5, 9, 13, 18, 27], 11], expected: '-1' }
+      ],
+      explainQuestion: 'Explain why binary search requires sorted data.',
+      explainModelAnswer: 'The comparison with the middle item is used to decide which half cannot contain the target. That decision is only reliable when the values are ordered.'
+    },
+    {
+      id: 'pc_15', level: 15, concept: 'Exam Transfer: Bubble Sort', title: 'Exam Bridge: Bubble Sort',
+      instructions: 'Write `bubble_sort(values)` to return the values in ascending order. Stop when a complete pass makes no swaps.',
+      forbiddenCompletionPatterns: ['\\bsorted\\s*\\(', '\\.sort\\s*\\('],
+      problem: 'Compare adjacent values, swap those in the wrong order and repeat complete passes until the stopping condition is met.',
+      code: 'def bubble_sort(values):\n    # Return the list in ascending order\n    pass', expectedOutput: '[1, 2, 5, 6]',
+      supportLadder: ['A pass compares positions 0 and 1, then 1 and 2, and so on.', 'Record whether any swap happens during the pass.', 'When a whole pass makes no swaps, return the list.'],
+      testCases: [
+        { input: '[6, 2, 5, 1]', inputs: [], functionName: 'bubble_sort', functionArgs: [[6, 2, 5, 1]], expected: '[1, 2, 5, 6]' },
+        { input: '[1, 2, 3]', inputs: [], functionName: 'bubble_sort', functionArgs: [[1, 2, 3]], expected: '[1, 2, 3]' },
+        { input: '[4, 4, 2, 4]', inputs: [], functionName: 'bubble_sort', functionArgs: [[4, 4, 2, 4]], expected: '[2, 4, 4, 4]' }
+      ],
+      explainQuestion: 'Why does a complete pass with no swaps prove that bubble sort can stop?',
+      explainModelAnswer: 'Every adjacent pair was already in ascending order during the pass, so no value needs to move and the whole list is sorted.'
     }
   ],
   attempts: [
@@ -3142,14 +3203,15 @@ const applicationCommandWord = modes => {
 };
 const concreteApplicationDetails = {
   '1.1.1': {
-    question: 'A CPU fetches an instruction from memory location 4. Trace the fetch cycle by describing the specific contents of the PC, MAR, MDR, and Control Unit during this step, and explain which register stores an address versus actual data.',
+    question: 'A CPU fetches an instruction from memory location 4. Explain how the PC, MAR and MDR are used during the fetch. Then explain the role of the Control Unit in coordinating the process.',
     scenario: 'Tracing the CPU fetch-execute cycle for address 4.',
     rubric: [
       'States that PC contains address 4 initially.',
       'Explains that address 4 is copied to MAR while the instruction at address 4 is loaded into MDR.',
-      'Identifies PC and MAR as address registers, whereas MDR holds data/instructions.'
+      'Identifies PC and MAR as address registers, whereas MDR holds data/instructions.',
+      'Explains that the Control Unit coordinates the fetch and sends control signals.'
     ],
-    modelAnswer: 'The PC starts holding address 4. To fetch the instruction, address 4 is copied into the MAR. The CPU reads memory address 4 and copies the instruction content into the MDR. The PC is then incremented to 5. MAR and PC store memory addresses, while MDR stores the data or instruction fetched.'
+    modelAnswer: 'The PC starts with address 4. This address is copied to the MAR. The instruction stored at address 4 is transferred to the MDR, and the PC is incremented to 5. The PC and MAR store addresses, while the MDR stores the instruction being transferred. The Control Unit coordinates the fetch and sends the required control signals.'
   },
   '1.1.3': {
     question: 'Compare a washing machine controller, a PlayStation 5, and an office desktop PC. Identify which device contains an embedded system and justify your choice based on hardware flexibility, purpose, and operating system requirements.',
@@ -3162,7 +3224,7 @@ const concreteApplicationDetails = {
     modelAnswer: 'The washing machine controller is an embedded system because it is built into a larger device to perform one dedicated purpose (controlling wash cycles). In contrast, a desktop PC and PlayStation 5 are general-purpose devices capable of running multiple unrelated applications chosen by the user.'
   },
   '1.2.2': {
-    question: 'A cyclist needs a camera attached to a bike helmet, a school needs a 10 TB nightly backup system, and a publisher needs to distribute 500 physical textbook DVDs. Recommend the best storage technology (Solid State, Magnetic, Optical) for each scenario and justify each choice using capacity, durability, and portability.',
+    question: 'Choose from solid-state, magnetic and optical storage. Recommend a storage medium for each use and give one reason for each choice.\nA. A helmet camera used on rough ground.\nB. A school\'s 10 TB nightly backup.\nC. 500 physical copies of a digital textbook.',
     scenario: 'Selecting secondary storage media for specific operational constraints.',
     rubric: [
       'Recommends Solid State for helmet camera due to high durability and lack of moving parts.',
@@ -3182,7 +3244,7 @@ const concreteApplicationDetails = {
     modelAnswer: '32,000 bits / 8 = 4,000 bytes. 4,000 bytes / 1,000 = 4 KB. The file size is 4 KB.'
   },
   '1.2.4a': {
-    question: 'Convert hexadecimal 3A to 8-bit binary and denary. Next, add the 8-bit binary values 01011100 (92) and 01100101 (101), state whether an overflow error occurs, and trace a 2-place right shift on 01011100.',
+    question: '(a) Convert hexadecimal 3A to 8-bit binary.\n(b) Convert hexadecimal 3A to denary.\n(c) Add 01011100 and 01100101. State whether overflow occurs.\n(d) Shift 01011100 two places right. State the result.',
     scenario: 'Performing binary conversions, 8-bit addition, overflow detection, and binary shifts.',
     rubric: [
       'Converts 3A to binary 00111010 and denary 58.',
@@ -3192,14 +3254,15 @@ const concreteApplicationDetails = {
     modelAnswer: 'Hexadecimal 3A: 3 = 0011, A = 1010 -> Binary 00111010. Denary: (3 * 16) + 10 = 58. Addition: 01011100 + 01100101 = 11000001 (193 denary). No overflow error occurs because 193 <= 255 (fits in 8 bits). Right shift of 01011100 by 2 bits gives 00010111 (denary 23).'
   },
   '1.2.4b': {
-    question: 'Calculate the total number of unique character codes that can be represented using a 7-bit ASCII character set versus a 16-bit Unicode character set. If the ASCII code for character "A" is 65 (01000001), state the binary representation for character "D".',
+    question: 'An exam uses 8-bit ASCII codes. Calculate how many different bit patterns are available. If the ASCII code for "A" is 65 (01000001), state the 8-bit binary representation for "D" and explain why Unicode is useful for an international website.',
     scenario: 'Comparing character set capacities and calculating ASCII binary codes.',
     rubric: [
-      'Calculates 2^7 = 128 codes for 7-bit ASCII and 2^16 = 65,536 codes for 16-bit Unicode.',
+      'Calculates 2^8 = 256 possible 8-bit patterns.',
       'Identifies character "D" as denary code 68.',
-      'Converts 68 to 8-bit binary 01000100.'
+      'Converts 68 to 8-bit binary 01000100.',
+      'Explains that Unicode represents a much wider range of writing systems and symbols than ASCII.'
     ],
-    modelAnswer: '7-bit ASCII can represent 2^7 = 128 characters. 16-bit Unicode can represent 2^16 = 65,536 characters. If "A" = 65, then "D" = 68. 68 in 8-bit binary is 01000100.'
+    modelAnswer: 'Eight bits provide 2^8 = 256 possible bit patterns. "D" is three code values after "A", so its denary code is 68 and its 8-bit binary representation is 01000100. Unicode is suitable for an international website because it can represent a much wider range of writing systems and symbols than ASCII; it is not defined by one fixed number of bits per character.'
   },
   '1.2.4c': {
     question: 'Calculate the uncompressed file size in bytes for a bitmap image with dimensions of 320 by 200 pixels and an 8-bit colour depth. Explain how increasing the colour depth to 16 bits affects both image quality and file size.',
@@ -3222,17 +3285,17 @@ const concreteApplicationDetails = {
     modelAnswer: '(1) Python source code requires Lossless compression because any data loss would corrupt code syntax. (2) Mobile news photograph should use Lossy compression to significantly cut file size and speed up download times without noticeably impairing viewing quality. (3) Medical X-ray requires Lossless compression because accurate diagnostic details must be preserved with zero data degradation.'
   },
   '1.3.2': {
-    question: 'A user has three network tasks: (1) connecting a wireless keyboard to a laptop 1 metre away, (2) streaming 4K video to a smart TV across a house, and (3) connecting a desktop PC directly to a high-speed router. Match Bluetooth, Wi-Fi, and Ethernet to these tasks. Then state the roles of MAC addresses versus IP addresses.',
+    question: '(a) Choose Bluetooth, Wi-Fi or Ethernet for each connection.\nA. A wireless keyboard one metre from a laptop.\nB. A smart TV streaming video across a house.\nC. A desktop connected directly to a router.\n(b) State one difference between a MAC address and an IP address.',
     scenario: 'Matching network connection media and distinguishing MAC vs IP addresses.',
     rubric: [
       'Matches Task 1 to Bluetooth, Task 2 to Wi-Fi, Task 3 to Ethernet.',
-      'Explains MAC address is a permanent physical identifier burnt into the NIC.',
-      'Explains IP address is a logical network address used for routing across global WAN networks.'
+      'Explains that a MAC address identifies a network interface on a local network and is commonly written in hexadecimal.',
+      'Explains that an IP address identifies a device on an IP network and supports routing between networks.'
     ],
-    modelAnswer: 'Task 1 (keyboard) -> Bluetooth (short-range wireless). Task 2 (smart TV) -> Wi-Fi (longer-range wireless LAN). Task 3 (desktop PC) -> Ethernet (high-speed reliable wired connection). A MAC address is a unique, fixed physical address assigned to the NIC hardware. An IP address is a logical address assigned dynamically or statically to locate devices across interconnected networks (WANs/Internet).'
+    modelAnswer: 'A uses Bluetooth for a short-range peripheral. B uses Wi-Fi across the home wireless network. C uses Ethernet for a reliable wired connection. A MAC address identifies a network interface on the local network and is commonly written in hexadecimal. An IP address identifies a device on an IP network and is used when routing data between networks.'
   },
   '1.4.1': {
-    question: 'Identify the specific network attack in each scenario and explain how to mitigate it: (A) An employee receives an email claiming to be from IT requesting their password on a fake login page. (B) A company web server becomes unresponsive due to a flood of traffic from thousands of infected bots. (C) An attacker enters "\' OR \'1\'=\'1" into a web form to view unauthorized user data.',
+    question: 'For each case, name the attack and explain one suitable protection.\nA. A fake IT email links to a false login page.\nB. Infected computers flood a web server with traffic.\nC. A user enters SQL code into a web form to read data without permission.',
     scenario: 'Identifying attack vectors (Phishing, DDoS, SQL Injection) and prevention methods.',
     rubric: [
       'Identifies Scenario A as Phishing (Social Engineering), B as DDoS, C as SQL Injection.',
@@ -3251,7 +3314,7 @@ const concreteApplicationDetails = {
     modelAnswer: 'Memory management allocates separate RAM areas for the photo editor and audio player to prevent memory overwrites. The OS multitasking scheduler allocates CPU time slices to both applications so audio plays smoothly while photos render. Device drivers communicate with the printer by translating OS print data into hardware-specific control signals.'
   },
   '1.5.2': {
-    question: 'Explain the utility tasks performed by Disk Defragmentation, File Compression, and Disk Encryption. Explain why Disk Defragmentation should be run on a magnetic Hard Disk Drive (HDD) but MUST NOT be run on a Solid State Drive (SSD).',
+    question: 'Explain what disk defragmentation, file compression and disk encryption do. Then explain why defragmentation can improve access time on a magnetic HDD but is unnecessary on an SSD and adds extra write operations.',
     scenario: 'Evaluating utility software and HDD vs SSD defragmentation principles.',
     rubric: [
       'Explains Defragmentation reorganises split file blocks to adjacent sectors on disk.',
@@ -3261,14 +3324,14 @@ const concreteApplicationDetails = {
     modelAnswer: 'Disk Defragmentation reorganises fragmented file blocks into contiguous storage blocks. File Compression reduces file size to conserve space. Disk Encryption scrambles data using a key to protect against unauthorized access. HDDs benefit from defragmentation because moving read/write heads read contiguous sectors much faster. SSDs must not be defragmented because they have near-instant random access (no moving parts) and unnecessary writes degrade SSD flash memory lifespans.'
   },
   '1.6.2': {
-    question: 'A school is choosing software for 500 student laptops. Option A is Proprietary Commercial Software (£15/user/year, closed source). Option B is Open Source Software (Free, open source). Recommend one option, comparing cost, source code access, and support. Then state which UK law prohibits unauthorized modification of software source code.',
+    question: '(a) A school is choosing software for 500 student laptops. Option A costs £15 per user each year and is closed source. Option B is free and open source. Recommend one option. Compare cost, access to source code and support.\n(b) A user then accesses the supplier\'s system without permission and changes its source code. Name the law that applies to the unauthorised access.',
     scenario: 'Recommending software licensing models and identifying relevant legislation.',
     rubric: [
       'Recommends Open Source or Proprietary with valid justification of cost versus official support.',
       'Compares source code visibility and license terms.',
-      'Identifies the Computer Misuse Act 1990 (or Copyright, Designs and Patents Act 1988 for copyright infringement).'
+      'Identifies the Computer Misuse Act 1990 for unauthorised access and modification.'
     ],
-    modelAnswer: 'Open Source Software is recommended for the school because it eliminates £7,500 annual licensing costs and permits customisation of source code. However, Proprietary Software provides official dedicated technical support. Unauthorized modification of software without permission or hacking into source systems violates the Computer Misuse Act 1990, while distributing unauthorized copies violates the Copyright, Designs and Patents Act 1988.'
+    modelAnswer: 'Open-source software avoids £7,500 in annual licence costs and allows permitted changes to its source code. Proprietary software may include dedicated support. Either recommendation is valid when justified. Accessing the supplier\'s system without permission and changing its code is covered by the Computer Misuse Act 1990.'
   },
   '2.1.1': {
     question: 'Decompose a School Library System into three smaller sub-problems. Then explain how abstraction is applied when modeling a "Book" record by stating two essential attributes included and two non-essential details removed.',
@@ -3301,14 +3364,14 @@ const concreteApplicationDetails = {
     modelAnswer: 'Boolean expression: Output = (A AND B) AND NOT C. Evaluation 1: A=1, B=1 -> (1 AND 1)=1. C=0 -> NOT 0 = 1. 1 AND 1 = 1 (Door Opens). Evaluation 2: A=1, B=1 -> 1. C=1 -> NOT 1 = 0. 1 AND 0 = 0 (Door Remains Closed).'
   },
   '2.5.2': {
-    question: 'A Python programmer encounters a ZeroDivisionError on line 14 when running a program in an IDE. Describe how the IDE\'s (1) Syntax Highlighting, (2) Step-by-step Debugger, and (3) Error Console assist the programmer in locating and resolving this fault.',
+    question: 'A program stops with a ZeroDivisionError on line 14. Explain how error diagnostics and a debugger could help the programmer find and correct the fault.',
     scenario: 'Using IDE tools to locate and fix runtime logic errors.',
     rubric: [
       'Describes Error Console pinpointing line number 14 and error type.',
       'Describes Debugger inspecting variable values at line 14 to see divisor equals 0.',
-      'Describes Syntax Highlighting identifying keywords and variables for code correction.'
+      'Explains that the corrected program should be run again with suitable test data.'
     ],
-    modelAnswer: '(1) The Error Console displays the exact line (line 14) and exception type (ZeroDivisionError). (2) The Step-by-step Debugger allows the programmer to pause execution at line 14 and inspect variable values to confirm the divisor evaluated to 0. (3) Syntax Highlighting visually distinguishes variables and mathematical operators, helping the programmer write a conditional check (`if divisor != 0`) to prevent division by zero.'
+    modelAnswer: 'The error diagnostics identify the exception and line 14. A debugger can pause the program and show the values used at that line, revealing that the divisor is zero. The programmer can correct the logic or validate the divisor, then run suitable tests again.'
   }
 };
 curriculumContent.forEach(item => {
@@ -3382,7 +3445,9 @@ const PROGRAMMING_TECHNIQUE_MAP = {
   pc_10: ['2D arrays', 'nested iteration', 'write', 'test'],
   pc_11: ['records', 'arrays', 'function', 'local variables', 'write', 'test'],
   pc_12: ['random numbers', 'function', 'write', 'test'],
-  pc_13: ['authentication', 'arrays', 'function', 'selection', 'write', 'test']
+  pc_13: ['authentication', 'arrays', 'function', 'selection', 'write', 'test'],
+  pc_14: ['binary search', 'function', 'arrays', 'exam transfer', 'write', 'test'],
+  pc_15: ['bubble sort', 'arrays', 'iteration', 'exam transfer', 'write', 'test']
 };
 
 // Human-reviewed conceptual anchors support validation without claiming to automate pedagogical quality.
@@ -3399,7 +3464,7 @@ const RECALL_HINT_REVIEW = {
   q_1_2_d: /storage prefix ladder|larger prefix|above bytes/i,
   q_1_3_b: /two positions|vacated positions|eight bits/i,
   q_1_3_binary_overflow: /largest pattern|fixed number of bits|represented/i,
-  q_1_3_unicode: /writing systems|limited character repertoire|code space/i,
+  q_1_3_unicode: /languages|older standard|code space/i,
   q_1_3_image_size_effect: /dimensions fixed|per-pixel storage|scale factor/i,
   diagnostic_1_2_4c: /image dimensions|binary digits|picture element/i,
   diagnostic_1_2_4d: /measurements are taken|measurements per second|precisely/i,
@@ -3418,6 +3483,9 @@ const RECALL_HINT_REVIEW = {
   q_1_7_c: /extraction sites|polluted water|cannot be replaced/i,
   q_1_7_data_protection_act: /collect, store and use|identifiable people|access and correction rights/i,
   q_2_1_a: /simplifying a model|details that affect|dividing the task/i,
+  priority_213_linear: /beginning of the list|position checked|target/i,
+  priority_213_insertion: /ordered section|compare the new item|gap/i,
+  priority_213_bubble_pass: /full pass|neighbouring pair|another pass/i,
   priority_212_1: /known before|operation performed|produced afterwards/i,
   priority_212_3: /yes-or-no condition|different paths|branching point/i,
   q_2_1_c: /repeated passes|neighbouring items|exchange/i,
@@ -3465,7 +3533,7 @@ const RECALL_HINT_REVIEW = {
   diagnostic_2_2_3: /filters rows|condition|output fields/i,
   diagnostic_2_3_1: /login check|person requesting access|entered data/i,
   diagnostic_2_3_2: /allowed edge values|inside or outside|inclusive range/i,
-  priority_232_1: /cycle|changes a module|before the product is finished/i,
+  priority_232_1: /while the program is being developed|changes one part|testing after/i,
   diagnostic_2_4_1: /gate active|pair of inputs|at least once/i,
   q_2_4_e: /either input|gate rule|same state/i,
   q_2_4_a: /every input condition|satisfied together/i,
@@ -3488,7 +3556,7 @@ const REVIEWED_RECALL_HINTS = {
   q_1_2_d: 'Use the storage prefix ladder: begin with the first named unit above bytes, then move through each larger prefix in order.',
   q_1_3_b: 'Move every bit two positions towards the most-significant end, fill the vacated positions with zeroes, and discard anything beyond eight bits.',
   q_1_3_binary_overflow: 'First identify the largest pattern available in the fixed number of bits, then ask whether the calculated result can be represented within that limit.',
-  q_1_3_unicode: 'Compare the range of writing systems needed worldwide with the limited character repertoire of the older standard; consider how a larger code space helps.',
+  q_1_3_unicode: 'Think about the many languages used worldwide and the limited code space of the older standard. Which choice best removes that limit?',
   diagnostic_1_2_4c: 'Keep the image dimensions unchanged and consider how many binary digits must be recorded for each individual picture element after the change.',
   diagnostic_1_2_4d: 'Separate how often measurements are taken from how precisely each measurement is stored; the question asks about measurements per second.',
   q_1_3_c: 'For mono audio, identify the number of measurements each second, the binary digits in each measurement and the recording time, then combine all three.',
@@ -3504,6 +3572,9 @@ const REVIEWED_RECALL_HINTS = {
   q_1_7_c: 'Trace the materials before manufacture: consider damage at extraction sites, polluted water and the fact that metal ores cannot be replaced once exhausted.',
   q_1_7_data_protection_act: 'Choose the legislation concerned with how organisations collect, store and use information about identifiable people, including their access and correction rights.',
   q_2_1_a: 'Imagine simplifying a model by keeping only details that affect its purpose; distinguish this from dividing the task into smaller parts.',
+  priority_213_linear: 'Trace from the beginning of the list, writing down each position checked. Stop the trace as soon as the target is encountered.',
+  priority_213_insertion: 'Keep the existing ordered section in sequence, then compare the new item backwards until you find the gap where it belongs.',
+  priority_213_bubble_pass: 'Consider what a full pass has proved about every neighbouring pair, and whether another pass could move any item after that result.',
   priority_212_1: 'Name the values known before the calculation, the operation performed on them, and the value produced afterwards; keep those three roles in order.',
   priority_212_3: 'Follow the branch where a yes-or-no condition sends control along different paths; choose the shape reserved for that branching point.',
   q_2_1_c: 'Look for the method that makes repeated passes, checks neighbouring items and may exchange their positions; do not confuse it with divide-and-combine methods.',
@@ -3546,7 +3617,7 @@ function applyContentMappings(data) {
   });
   (data.programmingChallenges || []).forEach(challenge => {
     challenge.specificationPointId = '2.2.PY';
-    challenge.purpose = challenge.id === 'pc_9' ? 'exam-transfer' : 'application';
+    challenge.purpose = ['pc_9', 'pc_14', 'pc_15'].includes(challenge.id) ? 'exam-transfer' : 'application';
     challenge.programmingTechniques = PROGRAMMING_TECHNIQUE_MAP[challenge.id] || [];
     challenge.assessmentRoute = 'deterministic-tests-plus-explanation';
     challenge.marks = challenge.marks || (challenge.purpose === 'exam-transfer' ? 6 : 4);

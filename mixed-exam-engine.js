@@ -11,9 +11,20 @@
 
   const PAPER_1_STRANDS = ['1.1.1', '1.1.2', '1.1.3', '1.2.1', '1.2.2', '1.2.3', '1.2.4a', '1.2.4b', '1.2.4c', '1.2.4d', '1.2.5', '1.3.1', '1.3.2', '1.4.1', '1.4.2', '1.5.1', '1.5.2', '1.6.1', '1.6.2'];
   const PAPER_2_STRANDS = ['2.1.1', '2.1.2', '2.1.3', '2.2.1', '2.2.2', '2.2.3', '2.2.PY', '2.2.ERL', '2.3.1', '2.3.2', '2.4.1', '2.5.1', '2.5.2'];
+  const PROGRAMMING_STRANDS = ['2.1.2', '2.1.3', '2.2.1', '2.2.2', '2.2.3', '2.2.PY', '2.2.ERL', '2.3.1', '2.3.2'];
 
   function hashString(value) {
-    return String(value).split('').reduce((hash, character) => ((hash * 31) + character.charCodeAt(0)) >>> 0, 2166136261);
+    let hash = 2166136261;
+    String(value).split('').forEach(character => {
+      hash ^= character.charCodeAt(0);
+      hash = Math.imul(hash, 16777619);
+    });
+    hash += hash << 13;
+    hash ^= hash >>> 7;
+    hash += hash << 3;
+    hash ^= hash >>> 17;
+    hash += hash << 5;
+    return hash >>> 0;
   }
 
   function seededOrder(items, seed) {
@@ -31,6 +42,7 @@
 
   function responseFamily(task) {
     const command = String(task.commandWord || '').toLowerCase();
+    if (/trace/.test(command) || task.responseForm === 'algorithm-trace') return 'algorithm-or-design';
     if (/calculate|complete/.test(command)) return 'calculation-or-completion';
     if (/write|design|refine/.test(command)) return 'algorithm-or-design';
     if (/discuss|evaluate|recommend|justify/.test(command)) return 'extended-application';
@@ -39,7 +51,7 @@
   }
 
   function isAO3Task(task) {
-    return /write|design|refine|complete/i.test(String(task.commandWord || ''));
+    return task.assessmentObjective === 'AO3';
   }
 
   function officialSpecificationId(objectiveId) {
@@ -54,7 +66,13 @@
     const specifications = new Set(tasks.map(task => task.specificationPointId)).size;
     const extended = tasks.some(task => Number(task.marks) >= 6) ? 1 : 0;
     const ao3 = tasks.some(isAO3Task) ? 1 : 0;
-    return (formats * 100) + (specifications * 10) + (targetMinutes >= 40 ? extended * 25 : 0) + (ao3 * 20) + tasks.length;
+    const formatWeight = targetMinutes <= 10 ? 5 : 20;
+    return (formats * formatWeight) + (specifications * 10) + (targetMinutes >= 40 ? extended * 25 : 0) + (ao3 * 20) + tasks.length;
+  }
+
+  function selectionTieBreak(tasks, seed) {
+    const ids = tasks.map(task => task.id).sort().join('|');
+    return hashString(`${seed}:selection:${ids}`);
   }
 
   function filterBySelection(items, paperType, selectedStrandIds, idAccessor) {
@@ -63,28 +81,37 @@
     }
     if (paperType === 'paper1') return items.filter(item => PAPER_1_STRANDS.includes(idAccessor(item)));
     if (paperType === 'paper2') return items.filter(item => PAPER_2_STRANDS.includes(idAccessor(item)));
+    if (paperType === 'programming') return items.filter(item => PROGRAMMING_STRANDS.includes(idAccessor(item)));
     return items;
   }
 
-  function selectTimedTasks(tasks, targetMinutes, seed, requireAO3 = false, markRange = null, requireBothPapers = false, requiredConstructedQuestions = null) {
+  function selectTimedTasks(tasks, targetMinutes, seed, requireAO3 = false, markRange = null, requireBothPapers = false, requiredConstructedQuestions = null, requireAlgorithmic = false, requiredTaskId = null) {
     const ordered = seededOrder(tasks, seed);
     const maximumMinutes = Math.max(targetMinutes + 3, Math.ceil(targetMinutes * 1.15));
     const combinations = new Map([['0:none', { minutes: 0, selected: [] }]]);
     const combinationKey = (minutes, selected) => {
       const papers = [...new Set(selected.map(task => task.paper || 'unknown'))].sort().join(',');
       const formats = [...new Set(selected.map(responseFamily))].sort().join(',');
-      return `${minutes}:${papers}:${formats}:${selected.some(isAO3Task) ? 'ao3' : 'no-ao3'}`;
+      const specifications = [...new Set(selected.map(task => task.specificationPointId))].sort().join(',');
+      const includesRequiredTask = requiredTaskId && selected.some(task => task.id === requiredTaskId);
+      return `${minutes}:${papers}:${formats}:${specifications}:${selected.some(isAO3Task) ? 'ao3' : 'no-ao3'}:${includesRequiredTask ? 'required' : 'not-required'}`;
     };
 
     ordered.forEach(task => {
       const minutes = Math.max(1, Math.ceil((Number(task.marks) || 1) * 1.125));
       [...combinations.values()].sort((a, b) => b.minutes - a.minutes).forEach(({ minutes: total, selected }) => {
+        if (task.selectionFamilyId && selected.some(item => item.selectionFamilyId === task.selectionFamilyId)) return;
         const nextTotal = total + minutes;
         if (nextTotal > maximumMinutes) return;
         const nextSelection = [...selected, task];
         const key = combinationKey(nextTotal, nextSelection);
         const existing = combinations.get(key);
-        if (!existing || selectionQuality(nextSelection, targetMinutes) > selectionQuality(existing.selected, targetMinutes)) {
+        const nextQuality = selectionQuality(nextSelection, targetMinutes);
+        const existingQuality = existing ? selectionQuality(existing.selected, targetMinutes) : -1;
+        if (!existing || nextQuality > existingQuality || (
+          nextQuality === existingQuality
+          && selectionTieBreak(nextSelection, seed) < selectionTieBreak(existing.selected, seed)
+        )) {
           combinations.set(key, { minutes: nextTotal, selected: nextSelection });
         }
       });
@@ -99,18 +126,21 @@
       return marks >= markRange.minimum && marks <= markRange.maximum;
     })();
     const hasBothPapers = selected => new Set(selected.map(task => task.paper)).size >= 2;
-    const shaped = viable.filter(candidate => meetsExamShape(candidate) && withinMarkRange(candidate[1]) && (!requireAO3 || candidate[1].some(isAO3Task)) && (!requireBothPapers || hasBothPapers(candidate[1])));
-    const candidates = shaped.length ? shaped : viable;
-    candidates.sort((left, right) => {
-      const leftDistance = Math.abs(left[0] - targetMinutes);
-      const rightDistance = Math.abs(right[0] - targetMinutes);
-      if (leftDistance !== rightDistance) return leftDistance - rightDistance;
-      const qualityDifference = selectionQuality(right[1], targetMinutes) - selectionQuality(left[1], targetMinutes);
-      if (qualityDifference) return qualityDifference;
+    const shaped = viable.filter(candidate => meetsExamShape(candidate) && withinMarkRange(candidate[1]) && (!requireAO3 || candidate[1].some(isAO3Task)) && (!requireBothPapers || hasBothPapers(candidate[1])) && (!requireAlgorithmic || candidate[1].some(task => responseFamily(task) === 'algorithm-or-design')) && (!requiredTaskId || candidate[1].some(task => task.id === requiredTaskId)));
+    const hasHardShapeRequirement = requireAO3 || requireBothPapers || requireAlgorithmic || requiredTaskId;
+    const candidates = shaped.length ? shaped : (hasHardShapeRequirement ? [] : viable);
+    if (!candidates.length) return [0, []];
+    const bestDistance = Math.min(...candidates.map(candidate => Math.abs(candidate[0] - targetMinutes)));
+    const nearest = candidates.filter(candidate => Math.abs(candidate[0] - targetMinutes) === bestDistance);
+    const bestQuality = Math.max(...nearest.map(candidate => selectionQuality(candidate[1], targetMinutes)));
+    const balanced = nearest.filter(candidate => selectionQuality(candidate[1], targetMinutes) >= bestQuality - 10);
+    balanced.sort((left, right) => {
+      const tieDifference = selectionTieBreak(left[1], seed) - selectionTieBreak(right[1], seed);
+      if (tieDifference) return tieDifference;
       if (left[0] !== right[0]) return right[0] - left[0];
       return right[1].length - left[1].length;
     });
-    return candidates[0] || [0, []];
+    return balanced[0] || [0, []];
   }
 
   function createDiagnosticFallback(paperType, requestedCount, curriculumContent, selectedStrandIds, seed) {
@@ -154,15 +184,23 @@
         return createDiagnosticFallback(paperType, Math.max(1, Math.round(duration / 2)), curriculumContent, selectedStrandIds, seed);
       }
 
-      const desiredShortParts = duration <= 10 ? 1 : duration <= 20 ? 3 : 4;
-      const ao3Required = paperType === 'paper2' && duration > 10 && taskPool.some(task => isAO3Task(task) && /^2\.(1|2|3)/.test(task.specificationPointId));
+      const desiredShortParts = duration <= 10
+        ? 1
+        : duration <= 20 && ['paper2', 'programming'].includes(paperType)
+          ? 2
+          : duration <= 20 ? 3 : 4;
+      const ao3Required = (paperType === 'programming' || (paperType === 'paper2' && duration > 10)) && taskPool.some(task => isAO3Task(task) && /^2\.(1|2|3)/.test(task.specificationPointId));
       const markRange = {
         minimum: (duration <= 10 ? 7 : duration <= 20 ? 15 : 32) - desiredShortParts,
         maximum: (duration <= 10 ? 9 : duration <= 20 ? 18 : 36) - desiredShortParts
       };
       const mixedPaperRequired = paperType === 'all';
       const requiredConstructedQuestions = paperType === 'paper2' && duration <= 10 ? 2 : null;
-      const [constructedMinutes, selectedTasks] = selectTimedTasks(taskPool, Math.max(5, duration - desiredShortParts), seed, ao3Required, markRange, mixedPaperRequired, requiredConstructedQuestions);
+      const traceCandidates = taskPool.filter(task => task.responseForm === 'algorithm-trace');
+      const requiredTraceTask = duration >= 20 && ['paper2', 'programming'].includes(paperType) && traceCandidates.length
+        ? seededOrder(traceCandidates, `${seed}:required-trace`)[0].id
+        : null;
+      const [constructedMinutes, selectedTasks] = selectTimedTasks(taskPool, Math.max(5, duration - desiredShortParts), seed, ao3Required, markRange, mixedPaperRequired, requiredConstructedQuestions, paperType === 'programming', requiredTraceTask);
       const constructedQuestions = selectedTasks.map(task => ({
         id: task.id,
         specificationPointId: task.specificationPointId,
@@ -173,6 +211,7 @@
         type: 'constructed',
         responseForm: task.responseForm || (/calculate/i.test(task.commandWord) ? 'calculation' : /write|complete|design|refine/i.test(task.commandWord) ? 'algorithm' : 'explanation'),
         commandWord: task.commandWord,
+        assessmentObjective: task.assessmentObjective || null,
         marks: Number(task.marks),
         minutes: Math.max(1, Math.ceil(Number(task.marks) * 1.125)),
         question: task.question,
@@ -184,14 +223,14 @@
       const diagnosticPool = filterBySelection(curriculumContent, paperType, selectedStrandIds, item => item.id)
         .filter(item => item?.diagnostic?.question && Array.isArray(item.diagnostic.options));
       const orderedDiagnostics = seededOrder(diagnosticPool, `${seed}:short`)
-        .sort((left, right) => Number(selectedSpecificationIds.has(right.id)) - Number(selectedSpecificationIds.has(left.id)));
+        .sort((left, right) => Number(selectedSpecificationIds.has(left.id)) - Number(selectedSpecificationIds.has(right.id)));
       const maximumMinutes = duration <= 10 ? 12 : Math.max(duration + 3, Math.ceil(duration * 1.15));
       const shortQuestions = [];
       orderedDiagnostics.some((item, index) => {
         if (shortQuestions.length >= desiredShortParts || constructedMinutes + shortQuestions.length + 1 > maximumMinutes) return true;
         shortQuestions.push({
           id: `mixed_short_${index + 1}_${item.id}`,
-          specificationPointId: item.officialSpecificationPointId || item.id,
+          specificationPointId: item.id,
           officialSpecificationPointId: officialSpecificationId(item.officialSpecificationPointId || item.id),
           strandId: item.id,
           paper: item.id.startsWith('1.') ? 'Paper 1' : 'Paper 2',
