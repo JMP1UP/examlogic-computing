@@ -1539,11 +1539,18 @@ class App {
   async quickLogin(role) {
     try {
       if (role === 'student') {
-        await this.handleMicrosoftLogin('harriet@leicesterhigh.edu', 'password');
-        if (this.currentUser) {
-          this.currentUser.isDemo = true;
-          this.saveSession(this.currentUser);
-        }
+        const student = window.db.getStudents().find(item => item.email?.toLowerCase() === 'harriet@leicesterhigh.edu');
+        if (!student) throw new Error('Student demo fixture is unavailable.');
+        this.currentUser = {
+          id: student.id,
+          name: student.name,
+          email: student.email,
+          role: 'student',
+          yearGroup: student.yearGroup,
+          isDemo: true
+        };
+        this.activeTab = 'stud-dashboard';
+        this.saveSession(this.currentUser);
       } else if (role === 'clean-student') {
         const cleanDemoStudentId = 'student_release_fixture';
         window.db.resetCleanDemoLearnerData(cleanDemoStudentId);
@@ -1563,11 +1570,18 @@ class App {
         this.activeTab = 'stud-dashboard';
         this.saveSession(this.currentUser);
       } else if (role === 'teacher') {
-        await this.handleMicrosoftLogin('smith@leicesterhigh.edu', 'password');
-        if (this.currentUser) {
-          this.currentUser.isDemo = true;
-          this.saveSession(this.currentUser);
-        }
+        const teacher = window.db.getCoordinators().find(item => item.email?.toLowerCase() === 'smith@leicesterhigh.edu');
+        if (!teacher) throw new Error('Teacher demo fixture is unavailable.');
+        this.currentUser = {
+          id: teacher.id,
+          name: teacher.name,
+          email: teacher.email,
+          role: 'teacher',
+          title: teacher.title || 'Teacher',
+          isDemo: true
+        };
+        this.activeTab = 'teach-overview';
+        this.saveSession(this.currentUser);
       }
       this.render();
     } catch (err) {
@@ -1639,6 +1653,7 @@ class App {
       submitBtn.textContent = 'Checking config…';
     }
 
+    let allowLocalSimulation = false;
     try {
       let configResponse;
       try {
@@ -1646,13 +1661,15 @@ class App {
       } catch (e) {
         throw new Error('API offline');
       }
-      
+      if (!configResponse.ok) throw new Error('Authentication service is unavailable.');
       const configData = await configResponse.json();
-      
-      if (!configData.mockMode) {
+      allowLocalSimulation = configData.mockMode === true;
+
+      if (!allowLocalSimulation) {
         const schoolConfigResponse = await fetch(`/api/school-config?email=${encodeURIComponent(email)}`);
         if (!schoolConfigResponse.ok) {
-          throw new Error('School is not configured for Microsoft SSO.');
+          const schoolError = await schoolConfigResponse.json().catch(() => ({}));
+          throw new Error(schoolError.error || 'School is not configured for Microsoft SSO.');
         }
         
         const schoolConfig = await schoolConfigResponse.json();
@@ -1700,7 +1717,9 @@ class App {
         return;
       }
     } catch (err) {
-      console.warn('Redirecting to real Microsoft SSO failed or mock mode active. Falling back to local simulation:', err.message);
+      console.error('Microsoft SSO could not start:', err.message);
+      if (errorMsg) errorMsg.textContent = err.message;
+      return;
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;
@@ -1708,7 +1727,8 @@ class App {
       }
     }
 
-    // Local simulation fallback
+    // Local simulation is available only when the server explicitly enables mock mode.
+    if (!allowLocalSimulation) return;
     const students = window.db.getStudents();
     const coordinators = window.db.getCoordinators();
 
