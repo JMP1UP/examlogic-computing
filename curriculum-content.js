@@ -346,7 +346,6 @@
     '2.3.1': ['design', 'explanation', 'programming'], '2.3.2': ['design', 'complete', 'application'], '2.4.1': ['truth table', 'diagram', 'application'],
     '2.5.1': ['explanation', 'comparison', 'recommendation'], '2.5.2': ['recall', 'practical use']
   };
-  const longerCoreStrands = new Set(['1.2.4a', '1.2.4c', '1.2.4d', '1.3.1', '1.3.2', '1.6.1', '2.1.2', '2.1.3', '2.2.1', '2.2.3', '2.2.PY', '2.2.ERL', '2.3.2', '2.4.1']);
   const prerequisites = {
     '1.1.2': ['1.1.1'],
     '1.2.3': [],
@@ -372,7 +371,7 @@
         heading: 'Central Processing Unit (CPU) Core Components',
         body: 'The CPU is the primary processing unit that executes instructions. The Control Unit (CU) coordinates all CPU activities, decodes instructions, and sends control signals. The Arithmetic Logic Unit (ALU) performs mathematical calculations and logical comparisons. Cache memory is high-speed temporary storage positioned close to the processor to hold frequently accessed data and instructions.',
         html: `
-          <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">The CPU is the "brain" of the computer that processes data and instructions. It consists of three primary components:</p>
+          <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">The CPU processes instructions and coordinates the movement and processing of data. These components have different roles:</p>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid var(--teal); padding: 18px 20px; border-radius: 10px;">
               <strong style="color: var(--teal); font-size: 15.5px; display: block; margin-bottom: 8px;">🕹️ Control Unit (CU)</strong>
@@ -405,7 +404,7 @@
         heading: 'The 4 Special-Purpose Registers',
         body: 'Registers are small, extremely fast storage locations built directly into the CPU. The Program Counter (PC) holds the address of the next instruction. The Memory Address Register (MAR) holds any memory address currently being accessed. The Memory Data Register (MDR) holds the actual data or instruction value fetched from or written to RAM. The Accumulator (ACC) holds intermediate arithmetic results.',
         html: `
-          <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">Registers are superfast, tiny memory locations built directly inside the CPU chip:</p>
+          <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">Registers are small, very fast storage locations inside the CPU. You need to distinguish the value held by each named register:</p>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 20px;">
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #F59E0B; padding: 18px 20px; border-radius: 10px;">
               <strong style="color: #FCD34D; font-size: 15px; display: block; margin-bottom: 6px;">📍 Program Counter (PC)</strong>
@@ -435,9 +434,9 @@
           <div style="background: rgba(59, 130, 246, 0.08); border-left: 4px solid #3B82F6; padding: 16px 20px; border-radius: 0 10px 10px 0; margin-top: 16px; font-size: 14.5px; color: var(--text-main); line-height: 1.6;">
             <strong style="color: #60A5FA; font-size: 15px; display: block; margin-bottom: 6px;">💡 15-Second Desk Analogy for Revision:</strong>
             <strong>Registers</strong> = The pen in your active hand (instant access).<br>
-            <strong>Cache</strong> = The pencil case open on your desk (super fast access).<br>
+            <strong>Cache</strong> = The pencil case open on your desk (very quick access).<br>
             <strong>RAM</strong> = The exercise book in your backpack (fast, but wiped clean when you leave!).<br>
-            <strong>Secondary Storage (SSD/HDD)</strong> = The school library down the corridor (huge &amp; permanent).
+            <strong>Secondary storage (SSD/HDD)</strong> = The school library down the corridor (much more space and keeps its contents without power).
           </div>
         `
       },
@@ -459,15 +458,15 @@
     '1.1.2': [
       {
         heading: '3 Factors Affecting CPU Performance',
-        body: 'CPU performance is determined by three main hardware factors: Clock Speed (the number of F-D-E cycles executed per second in Hertz), Cache Size (fast memory buffer storing frequent instructions), and Number of Cores (independent processing units allowing parallel execution).',
+        body: 'CPU performance is affected by three main hardware factors: clock speed (the number of processor clock cycles per second, measured in hertz), cache size (fast memory storing frequently used data and instructions), and number of cores (processing units that may work on different instructions at the same time). A complete instruction can require more than one clock cycle.',
         html: `
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid var(--teal); padding: 18px 20px; border-radius: 10px;">
               <strong style="color: var(--teal); font-size: 15.5px; display: block; margin-bottom: 8px;">⏱️ Clock Speed (GHz)</strong>
               <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
-                <li>Number of F-D-E cycles executed per second.</li>
+                <li>Number of processor clock cycles per second.</li>
                 <li>1 GHz = 1 billion clock cycles per second.</li>
-                <li>Higher clock speed = more instructions processed per second.</li>
+                <li>A higher clock speed can allow more instructions to be processed in the same time when other factors are similar.</li>
               </ul>
             </div>
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #3B82F6; padding: 18px 20px; border-radius: 10px;">
@@ -481,7 +480,7 @@
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #10B981; padding: 18px 20px; border-radius: 10px;">
               <strong style="color: #10B981; font-size: 15.5px; display: block; margin-bottom: 8px;">⚡ Cache Memory Size</strong>
               <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
-                <li>Superfast memory buffer directly on the CPU chip.</li>
+                <li>Very fast memory located on or close to the CPU.</li>
                 <li>Larger cache stores more frequent data near CPU.</li>
                 <li>Reduces slow data transfers from RAM.</li>
               </ul>
@@ -491,7 +490,7 @@
       },
       {
         heading: 'CPU Speed Trade-offs & Limitations',
-        body: 'Increasing clock speed generates significantly more heat and consumes more power. Doubling the number of cores does not double processing speed because many algorithms are sequential and cannot be split across cores. Furthermore, RAM bottlenecks can stall multi-core CPUs while waiting for data.'
+        body: 'A higher clock speed can allow more processing in a given time, but the result also depends on the processor design, cache, cores, software and task. Extra cores do not guarantee a proportional speed increase because some work must run in sequence.'
       }
     ],
     '1.1.3': [
@@ -501,7 +500,7 @@
     '1.2.1': [
       {
         heading: 'RAM vs ROM Comparison Matrix',
-        body: 'RAM (Random Access Memory) is volatile temporary storage that holds the Operating System, open programs, and data currently in use. ROM (Read Only Memory) is non-volatile permanent storage that holds the BIOS startup instructions required to boot the computer.',
+        body: 'RAM is volatile storage for programs and data currently in use. ROM is non-volatile storage for instructions that must remain available when power is removed, such as firmware used when a computer starts. ROM is not limited to one named firmware product.',
         html: `
           <div style="overflow-x: auto; margin-bottom: 20px;">
             <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
@@ -526,7 +525,7 @@
                 <tr style="border-bottom: 1px solid var(--border-color);">
                   <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Primary Purpose</td>
                   <td style="padding: 12px 14px; color: var(--text-main);">Stores active OS, open software &amp; data in use</td>
-                  <td style="padding: 12px 14px; color: var(--text-main);">Stores BIOS / Bootstrap bootup program</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">Can store firmware used when the system starts</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
                   <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Capacity Size</td>
@@ -540,7 +539,7 @@
       },
       {
         heading: 'Virtual Memory (When RAM fills up)',
-        body: 'Virtual Memory is an area of secondary storage (HDD/SSD) used as temporary RAM when physical RAM is full. Operating systems swap inactive pages of data between RAM and Virtual Memory. The main disadvantage is disk thrashing and much slower performance compared to physical RAM.',
+        body: 'Virtual memory is an area of secondary storage used when RAM is full. The operating system transfers some data from RAM to secondary storage and brings it back when needed. Because secondary storage is slower than RAM, repeated transfers can reduce performance.',
         html: `
           <div style="border-left: 4px solid #F59E0B; background: rgba(245, 158, 11, 0.05); border-radius: 0 10px 10px 0; padding: 18px 20px;">
             <strong style="color: #F59E0B; font-size: 15.5px; display: block; margin-bottom: 8px;">💾 How Virtual Memory Works:</strong>
@@ -548,9 +547,9 @@
               When physical RAM is completely filled by open applications, the Operating System allocates a portion of Secondary Storage (HDD/SSD) to act as <strong>Virtual Memory</strong>.
             </p>
             <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
-              <li><strong>Paging:</strong> Inactive data pages in RAM are moved ("swapped out") to Virtual Memory.</li>
-              <li><strong>Recall:</strong> When needed again, data is swapped back into physical RAM.</li>
-              <li><strong>Drawback:</strong> Secondary storage is significantly slower than RAM; excessive swapping causes <em>disk thrashing</em> and severe system slowdown.</li>
+              <li><strong>Move out:</strong> Some data is moved from RAM into the virtual-memory area.</li>
+              <li><strong>Bring back:</strong> When needed again, that data is moved back into RAM.</li>
+              <li><strong>Drawback:</strong> Secondary storage is slower than RAM, so repeated transfers can make the system respond more slowly.</li>
             </ul>
           </div>
         `
@@ -559,7 +558,7 @@
     '1.2.2': [
       {
         heading: 'The 3 Main Storage Technologies (Magnetic, Optical, Solid State)',
-        body: 'Secondary storage provides non-volatile storage to retain programs and data permanently when power is switched off. Magnetic storage (HDD) uses magnetic platters and moving heads for high capacity at low cost. Optical storage (CD/DVD/Blu-ray) uses laser beams to read pits and lands on discs for cheap distribution. Solid State storage (SSD/Flash) uses flash memory with no moving parts for maximum speed and physical durability.',
+        body: 'Secondary storage provides non-volatile storage so programs and data remain available when power is switched off. Magnetic storage uses magnetised surfaces, optical storage uses discs read by laser, and solid-state storage uses electronic memory with no moving parts. Their capacity, speed, portability, durability, reliability and cost vary between devices, so the best choice depends on the scenario.',
         html: `
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid var(--teal); border-radius: 10px; padding: 18px 20px;">
@@ -574,7 +573,7 @@
               <strong style="color: #3B82F6; font-size: 15.5px; display: block; margin-bottom: 8px;">💿 Optical Storage (CD / DVD / Blu-ray)</strong>
               <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
                 <li><strong>How it works:</strong> Lasers read physical pits &amp; lands on reflective disc.</li>
-                <li><strong>Pros:</strong> Very portable, cheap per disc, immune to water/magnets.</li>
+                <li><strong>Possible benefits:</strong> Portable and inexpensive for distributing some media.</li>
                 <li><strong>Cons:</strong> Low capacity (700MB–50GB), slow read/write, easily scratched.</li>
               </ul>
             </div>
@@ -774,7 +773,7 @@
     '1.3.2': [
       {
         heading: 'MAC Address vs IP Address Comparison Matrix',
-        body: 'A MAC Address is a unique 48-bit hexadecimal physical address burned into the Network Interface Card (NIC) at manufacture that does not change. An IP Address is a logical address assigned by a network router to identify a device on a network, which can be IPv4 or IPv6 and can change when connecting to different networks.',
+        body: 'A MAC address identifies a network interface on a local network and is commonly written as a 48-bit hexadecimal value. It is normally assigned to the interface, but software can present a different value, so it should not be described as guaranteed permanent. An IP address identifies a network destination; IPv4 and IPv6 use different formats and an address may change between networks.',
         html: `
           <div style="overflow-x: auto; margin-bottom: 20px;">
             <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
@@ -788,7 +787,7 @@
               <tbody>
                 <tr style="border-bottom: 1px solid var(--border-color);">
                   <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Address Type</td>
-                  <td style="padding: 12px 14px; color: var(--teal); font-weight: 600;">Physical Hardware Address (Permanent)</td>
+                  <td style="padding: 12px 14px; color: var(--teal); font-weight: 600;">Network-interface address used on a local network</td>
                   <td style="padding: 12px 14px; color: #3B82F6; font-weight: 600;">Logical Network Address (Dynamic/Static)</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
@@ -808,7 +807,7 @@
       },
       {
         heading: 'Network Protocols Cheatsheet (OCR Specification)',
-        body: 'Protocols are sets of rules for data communication. TCP/IP splits data into packets and routes them. HTTP/HTTPS transfers web pages (HTTPS adds SSL/TLS encryption). FTP transfers files. SMTP sends email. POP downloads and deletes email from server; IMAP syncs email across devices.',
+        body: 'Protocols are rules for data communication. TCP/IP supports transmission across networks. HTTP and HTTPS transfer web content, with HTTPS adding encrypted communication. FTP transfers files. SMTP sends email. POP retrieves messages to a client, while IMAP keeps messages on the server and synchronises their state across clients.',
         html: `
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid var(--teal); border-radius: 10px; padding: 18px 20px;">
@@ -832,8 +831,8 @@
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #EC4899; border-radius: 10px; padding: 18px 20px;">
               <strong style="color: #EC4899; font-size: 15px; display: block; margin-bottom: 6px;">📬 POP vs IMAP (Email Retrieval)</strong>
               <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
-                <strong>POP:</strong> Downloads email &amp; deletes from server.<br>
-                <strong>IMAP:</strong> Syncs email live across multiple devices.
+                <strong>POP:</strong> Retrieves messages to a client; the client may remove or leave the server copy.<br>
+                <strong>IMAP:</strong> Keeps messages on the server and synchronises their state across clients.
               </p>
             </div>
           </div>
@@ -922,7 +921,7 @@
             </div>
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #3B82F6; border-radius: 10px; padding: 18px 20px;">
               <strong style="color: #3B82F6; font-size: 15px; display: block; margin-bottom: 6px;">💾 Memory Management</strong>
-              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">Allocates RAM blocks to open applications and manages Virtual Memory paging.</p>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">Allocates memory to programs that are currently running and keeps track of its use.</p>
             </div>
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #F59E0B; border-radius: 10px; padding: 18px 20px;">
               <strong style="color: #F59E0B; font-size: 15px; display: block; margin-bottom: 6px;">⏱️ Multitasking &amp; CPU Scheduling</strong>
@@ -942,8 +941,8 @@
     ],
     '1.5.2': [
       {
-        heading: 'Utility Software (Defragmentation, Encryption, Compression, Backup)',
-        body: 'Utility software performs maintenance tasks to keep system software running efficiently. Defragmentation reorganises scattered file fragments on magnetic HDDs to speed up read times (note: SSDs do not need defragmentation). Compression reduces file sizes. Encryption secures data. Backup creates restore copies.',
+        heading: 'Utility software: encryption, defragmentation and compression',
+        body: 'Utility software performs additional maintenance or housekeeping tasks. For OCR, the named examples are encryption, defragmentation and compression. Defragmentation reorganises file blocks on magnetic disks, compression reduces file size and encryption protects readable data with a key.',
         html: `
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #F59E0B; border-radius: 10px; padding: 18px 20px;">
@@ -973,7 +972,7 @@
     '1.6.2': [
       {
         heading: 'UK Computing Legislation 4-Card Breakdown',
-        body: '3 key UK laws protect digital data and systems: 1) Data Protection Act 2018 (GDPR principles for personal data), 2) Computer Misuse Act 1990 (makes unauthorized access, hacking, and malware creation illegal), 3) Copyright, Designs and Patents Act 1988 (protects intellectual property).',
+        body: 'Three named UK laws cover different digital responsibilities: 1) the Data Protection Act 2018 governs the lawful handling of personal data, 2) the Computer Misuse Act 1990 covers unauthorised access and unauthorised acts involving computer systems, and 3) the Copyright, Designs and Patents Act 1988 protects creative work, including software, from unauthorised copying and distribution.',
         html: `
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid var(--teal); border-radius: 10px; padding: 18px 20px;">
@@ -982,7 +981,7 @@
             </div>
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #EF4444; border-radius: 10px; padding: 18px 20px;">
               <strong style="color: #EF4444; font-size: 15px; display: block; margin-bottom: 6px;">⚖️ Computer Misuse Act 1990 (CMA)</strong>
-              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">Outlaws unauthorized access (hacking), unauthorized intent, and malware modification.</p>
+              <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">Covers access without permission, access intended to support another offence, and unauthorised acts intended to damage or disrupt a computer system.</p>
             </div>
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #3B82F6; border-radius: 10px; padding: 18px 20px;">
               <strong style="color: #3B82F6; font-size: 15px; display: block; margin-bottom: 6px;">©️ Copyright, Designs &amp; Patents Act 1988</strong>
@@ -993,7 +992,7 @@
       },
       {
         heading: 'Software Licences (Open Source vs Proprietary)',
-        body: 'Proprietary software keeps source code secret, charges licence fees, and forbids modification or redistribution. Open-source software provides public access to source code, allowing users to inspect, modify, and redistribute the program under specific licence terms.'
+        body: 'Proprietary software is supplied under licence terms set by its owner and its source code is normally not provided to users. Open-source software makes source code available under a licence that states how it may be inspected, changed and shared. Cost, support, modification and redistribution rights depend on the particular licence, so compare the stated scenario rather than assuming one universal rule.'
       }
     ],
     '2.1.1': [
@@ -1243,9 +1242,9 @@
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-top: 4px solid #F59E0B; border-radius: 10px; padding: 18px 20px;">
               <strong style="color: #F59E0B; font-size: 15.5px; display: block; margin-bottom: 8px;">⚙️ Low-Level Languages (Assembly &amp; Machine Code)</strong>
               <ul style="font-size: 14.5px; color: var(--text-main); padding-left: 18px; margin: 0; line-height: 1.6;">
-                <li><strong>Assembly:</strong> Uses mnemonics (e.g. <code>INP</code>, <code>ADD</code>, <code>STA</code>).</li>
-                <li><strong>Machine Code:</strong> Raw binary <code>1s and 0s</code> executed directly by CPU.</li>
-                <li>Fast execution &amp; precise hardware/memory control.</li>
+                <li><strong>Assembly:</strong> Uses mnemonics to represent machine instructions.</li>
+                <li><strong>Machine code:</strong> Binary instructions executed directly by the processor.</li>
+                <li>Can provide close control of hardware, but is harder for people to read, write and maintain.</li>
               </ul>
             </div>
           </div>
@@ -1253,7 +1252,7 @@
       },
       {
         heading: 'Compiler vs Interpreter Comparison Matrix',
-        body: 'A Compiler translates the entire source code program into a standalone executable file in one go. An Interpreter translates and executes source code line-by-line, stopping immediately when an error is encountered.',
+        body: 'A compiler translates a whole program before that translated form is run; a compiled program can be distributed without the source and does not need to be translated instruction by instruction on each run. An interpreter translates and executes source code one statement at a time. Exact implementation details vary, so compare their usual development, distribution, error-reporting and execution trade-offs in context.',
         html: `
           <div style="overflow-x: auto; margin-bottom: 20px;">
             <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
@@ -1267,23 +1266,23 @@
               <tbody>
                 <tr style="border-bottom: 1px solid var(--border-color);">
                   <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Translation Method</td>
-                  <td style="padding: 12px 14px; color: var(--teal); font-weight: 600;">Translates ENTIRE program at once</td>
-                  <td style="padding: 12px 14px; color: #3B82F6; font-weight: 600;">Translates and executes LINE-BY-LINE</td>
+                  <td style="padding: 12px 14px; color: var(--teal); font-weight: 600;">Translates the program before it is run</td>
+                  <td style="padding: 12px 14px; color: #3B82F6; font-weight: 600;">Translates and runs one instruction or statement at a time</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
                   <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Output File</td>
-                  <td style="padding: 12px 14px; color: var(--text-main);">Produces standalone executable binary file (e.g. <code>.exe</code>)</td>
-                  <td style="padding: 12px 14px; color: var(--text-main);">No output file created; requires interpreter to run</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">Translates the whole program before execution and can produce a distributable translated form</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">Normally needs the interpreter when the source program is run</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
                   <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Execution Speed</td>
                   <td style="padding: 12px 14px; color: #10B981; font-weight: 600;">Fast execution after initial compilation</td>
-                  <td style="padding: 12px 14px; color: #EF4444; font-weight: 600;">Slower execution (re-translates loops)</td>
+                  <td style="padding: 12px 14px; color: #EF4444; font-weight: 600;">Translation happens while the source program runs</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--border-color);">
                   <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">Error Reporting</td>
-                  <td style="padding: 12px 14px; color: var(--text-main);">Reports all errors together after whole program build</td>
-                  <td style="padding: 12px 14px; color: var(--text-main);">Stops immediately at first line containing an error</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">Can report problems found while translating the program before execution</td>
+                  <td style="padding: 12px 14px; color: var(--text-main);">Reports an error when execution reaches a statement it cannot translate or run</td>
                 </tr>
               </tbody>
             </table>
@@ -1294,7 +1293,7 @@
     '2.5.2': [
       {
         heading: '4 Essential Features of an IDE (Integrated Development Environment)',
-        body: 'An IDE is a software application providing comprehensive tools for programmers: 1) Code Editor (with line numbers & syntax highlighting), 2) Error Diagnostics (identifying syntax errors), 3) Run-time Environment (executing code within the IDE), 4) Translator & Debugger (compiling/interpreting code, setting breakpoints, and tracing variable values).',
+        body: 'An IDE brings together the four facilities named by OCR: an editor for creating and changing source code, error diagnostics for locating reported problems, a run-time environment for executing the program, and a translator for converting or executing source code. Some IDEs also provide debugging tools such as breakpoints and variable inspection, but these are useful additional context rather than one of the four named facilities.',
         html: `
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid var(--teal); border-radius: 10px; padding: 18px 20px;">
@@ -1316,34 +1315,694 @@
               </p>
             </div>
             <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-left: 4px solid #F59E0B; border-radius: 10px; padding: 18px 20px;">
-              <strong style="color: #F59E0B; font-size: 15px; display: block; margin-bottom: 6px;">🐛 Translator &amp; Debugger</strong>
+              <strong style="color: #F59E0B; font-size: 15px; display: block; margin-bottom: 6px;">Translator</strong>
               <p style="font-size: 14.5px; color: var(--text-main); margin: 0; line-height: 1.55;">
-                Built-in compiler/interpreter + debugging tools (breakpoints, variable stepping, watch windows).
+                Converts or executes source code so the program can be run.
               </p>
             </div>
           </div>
         `
       },
       {
-        heading: 'Finding & Fixing Faults with IDE Debugging Tools',
-        body: 'Debugging tools allow programmers to pause program execution at breakpoints, step line-by-line through code, and inspect variable values in watch windows to isolate and correct logic errors.'
+        heading: 'Useful extra: debugging tools',
+        body: 'Many IDEs also provide breakpoints, step-by-step execution and variable inspection. These can help find logic errors, but they are additional practical features rather than one of the four IDE facilities named in the OCR specification.'
       }
     ]
   };
-  return content.map(item => ({
-    ...item,
-    requiredKnowledge: item.scope.split(';').map(part => part.trim()).filter(Boolean),
-    prerequisiteSpecificationPointIds: prerequisites[item.id] || [],
-    teachingSections: teachingSections[item.id] || [],
-    requiredSkills: assessmentModes[item.id] || ['recall'],
-    assessmentModes: assessmentModes[item.id] || ['recall'],
-    supportedPractice: supportedPractice[item.id],
-    workload: {
-      coreLearningMinutes: longerCoreStrands.has(item.id) ? 15 : 10,
-      retrievalMinutes: 5,
-      retryMinutes: 5,
-      retrievalIsOptional: true
-    },
-    qualityStatus: 'implemented-against-j277-v3.1-awaiting-qualified-teacher-qa'
-  }));
+  const coverageExpansionSections = {
+    '1.1.2': [
+      {
+        heading: 'Compare the three factors together', minutes: 3,
+        body: 'Judge performance in context. A higher clock speed can increase the rate of processing, a larger cache can reduce waiting for frequently used data and instructions, and extra cores can process more instructions at once when the software can divide its work. The benefit of one change can be limited by the other factors and by the task, so no single number proves that one CPU is always faster.',
+        items: [
+          { label: 'Clock speed', text: 'Clock cycles per second. More cycles can allow more processing in the same time when other factors are comparable.' },
+          { label: 'Cache size', text: 'More frequently used data and instructions may be held close to the CPU, reducing slower memory access.' },
+          { label: 'Number of cores', text: 'More processing units help when work can run in parallel; a mainly sequential task may gain little.' }
+        ]
+      }
+    ],
+    '1.2.1': [
+      {
+        heading: 'Why primary storage is needed', minutes: 3,
+        body: 'The processor needs quick access to the instructions and data used by running programs. RAM supplies the main working area, ROM keeps selected instructions available without power, and cache keeps frequently used data and instructions close to the CPU. They are all primary storage, but they have different purposes and characteristics.',
+        items: [
+          { label: 'RAM', text: 'Volatile working storage for programs and data currently in use.' },
+          { label: 'ROM', text: 'Non-volatile storage for instructions that must remain available, such as startup firmware.' },
+          { label: 'Cache', text: 'Small, fast storage close to the CPU for frequently used data and instructions.' }
+        ]
+      }
+    ],
+    '1.2.2': [
+      {
+        heading: 'Device, medium and technology', minutes: 3,
+        body: 'A storage device reads from or writes to a storage medium. A hard-disk drive uses magnetic platters, an optical drive uses removable discs, and an SSD or memory card uses solid-state memory. Questions may show a device or medium and ask you to recognise the technology before comparing it.',
+        items: [
+          { label: 'Magnetic', text: 'Often offers high capacity for its cost, but moving parts can affect portability and resistance to impact.' },
+          { label: 'Optical', text: 'Removable discs can suit distribution or physical archives, but capacity and access speed may be limited.' },
+          { label: 'Solid state', text: 'No moving parts can support fast access and portability, but cost per unit of capacity varies.' }
+        ]
+      },
+      {
+        heading: 'Make a recommendation from the scenario', minutes: 4,
+        body: 'Compare capacity, speed, portability, durability, reliability and cost using evidence from the scenario. Name what matters, link the technology to that need and acknowledge a relevant drawback. A wildlife camera may value low power use, portability and durability; a large backup archive may give greater weight to capacity and cost.',
+        items: [
+          { label: 'Need', text: 'Identify which comparison factors matter for this user and task.' },
+          { label: 'Evidence', text: 'Explain how a named device or medium meets those particular needs.' },
+          { label: 'Trade-off', text: 'State one relevant limitation rather than claiming a technology is always best.' }
+        ]
+      }
+    ],
+    '1.2.3': [
+      {
+        heading: 'Use the complete unit ladder', minutes: 4,
+        body: 'A bit is one binary digit, a nibble is 4 bits and a byte is 8 bits. OCR normally uses 1 KB = 1,000 bytes, 1 MB = 1,000 KB, 1 GB = 1,000 MB, 1 TB = 1,000 GB and 1 PB = 1,000 TB; a question may also accept or state 1,024. Write units at every step and use the convention given.',
+        items: [
+          { label: 'Bits to bytes', text: 'Divide by 8 because one byte contains eight bits.' },
+          { label: 'Move to a larger unit', text: 'Divide by 1,000 for each step when using OCR decimal units.' },
+          { label: 'Move to a smaller unit', text: 'Multiply by 1,000 for each step when using OCR decimal units.' }
+        ]
+      },
+      {
+        heading: 'Calculate file sizes and capacity', minutes: 6,
+        body: 'Text size in bits = bits per character x number of characters. Image size in bits = width in pixels x height in pixels x colour depth. Sound size in bits = sample rate x duration in seconds x bit depth. For several files, calculate one file, multiply by the quantity, convert units and include the final unit. To find how many files fit, convert capacity and file size to the same unit before dividing.',
+        items: [
+          { label: '1. Formula', text: 'Choose the formula that matches text, image or sound data.' },
+          { label: '2. Substitute', text: 'Insert every value, including duration or number of files.' },
+          { label: '3. Convert', text: 'Show bits-to-bytes and larger-unit conversions separately.' },
+          { label: '4. Answer', text: 'Give the requested quantity with the correct unit.' }
+        ]
+      }
+    ],
+    '1.3.1': [
+      {
+        heading: 'Performance and transmission media', minutes: 4,
+        body: 'Network performance can change as more devices share the connection and as available bandwidth changes. The chosen transmission medium, interference, distance and hardware can also affect a real network. Transmission media carry signals between devices and may be wired or wireless. In an exam scenario, identify the factor, state what changes and explain the effect on communication.',
+        items: [
+          { label: 'More connected devices', text: 'More devices may compete for the same available bandwidth.' },
+          { label: 'Bandwidth', text: 'Greater available bandwidth can carry more data in a given time.' },
+          { label: 'Transmission medium', text: 'The connection choice affects range, mobility, reliability and possible data rate.' }
+        ]
+      },
+      {
+        heading: 'Internet, DNS, hosting and services', minutes: 5,
+        body: 'The Internet is a worldwide network of networks. A user enters a URL; the Domain Name System uses multiple domain name servers to find the matching IP address, allowing the client to contact the correct server. Hosting places a website or service on an available server. A web server provides web pages, a file server provides file storage and retrieval, and clients request or use those services.',
+        items: [
+          { label: '1. URL entered', text: 'The client needs the IP address of the server named in the URL.' },
+          { label: '2. DNS lookup', text: 'Domain name servers cooperate to return the matching IP address.' },
+          { label: '3. Service requested', text: 'The client contacts the server and requests the hosted page or service.' }
+        ]
+      },
+      {
+        heading: 'Cloud services and trade-offs', minutes: 4,
+        body: 'Cloud computing provides storage, software or processing on remote servers reached through a network. It can support access from different locations, shared work, flexible capacity and provider-managed services. It also creates dependence on connectivity and the provider, may involve ongoing cost, and requires suitable security, privacy and backup arrangements. Apply only the points relevant to the scenario.',
+        items: [
+          { label: 'Possible benefit', text: 'Remote access, collaboration or flexible capacity may suit the organisation.' },
+          { label: 'Possible drawback', text: 'Loss of connectivity or a provider problem can prevent access to the service.' },
+          { label: 'Recommendation', text: 'Balance the relevant benefit and drawback for the named user.' }
+        ]
+      }
+    ],
+    '1.3.2': [
+      {
+        heading: 'Choose a wired or wireless connection', minutes: 4,
+        body: 'Ethernet is a wired connection. Wi-Fi and Bluetooth are wireless. Compare mobility, range, reliability, speed, interference, installation and the devices involved. Ethernet may suit a fixed computer needing a stable link; Wi-Fi may suit a mobile device on a LAN; Bluetooth may suit a short-range connection between nearby devices.',
+        items: [
+          { label: 'Ethernet', text: 'Wired; often chosen for a stable fixed connection.' },
+          { label: 'Wi-Fi', text: 'Wireless LAN access; supports mobility but can be affected by range and interference.' },
+          { label: 'Bluetooth', text: 'Short-range wireless connection commonly used between nearby devices.' }
+        ]
+      },
+      {
+        heading: 'Encryption, addresses and standards', minutes: 5,
+        body: 'Encryption changes readable data into an unreadable form using a key so intercepted data is not useful without the correct key. IPv4 is commonly written as four decimal values separated by dots; IPv6 uses a longer hexadecimal format. A MAC address is commonly a 48-bit hexadecimal identifier used for a network interface within a network. Standards are agreed rules that help hardware and software from different producers work together.',
+        items: [
+          { label: 'IP address', text: 'Identifies a network destination; IPv4 and IPv6 have different formats.' },
+          { label: 'MAC address', text: 'Identifies a network interface for communication within a local network.' },
+          { label: 'Standard', text: 'An agreed rule that supports compatibility between products.' }
+        ]
+      },
+      {
+        heading: 'Protocol purposes and layers', minutes: 6,
+        body: 'A protocol is a set of rules for transferring data. TCP/IP supports communication across networks; HTTP transfers web content and HTTPS does so with encrypted communication; FTP transfers files; SMTP sends email; POP retrieves messages to a client; IMAP manages messages kept on a server and synchronises their state. Layers divide communication into parts so one layer can change without redesigning everything, different technologies can work together, and development or fault-finding can focus on one part. You do not need to memorise TCP/IP layer names.',
+        items: [
+          { label: 'Web', text: 'HTTP transfers web content; HTTPS adds encrypted communication.' },
+          { label: 'Files and email', text: 'FTP transfers files; SMTP sends mail; POP and IMAP retrieve or manage received mail.' },
+          { label: 'Layers', text: 'Separation supports compatibility, independent development and easier troubleshooting.' }
+        ]
+      }
+    ],
+    '1.4.1': [
+      {
+        heading: 'Malware, social engineering and brute force', minutes: 5,
+        body: 'Malware is software designed to cause harm, steal data or gain unwanted control. Social engineering manipulates a person into revealing information or taking an unsafe action; phishing is one example. A brute-force attack repeatedly tries possible passwords or keys. For each threat, distinguish how it enters or operates, what the attacker wants and what harm may follow.',
+        items: [
+          { label: 'Malware', text: 'Malicious software may damage data, spy on activity or give an attacker control.' },
+          { label: 'Social engineering', text: 'The attacker exploits trust or pressure rather than only a technical weakness.' },
+          { label: 'Brute force', text: 'Many possible credentials are tried until one succeeds or the attack is stopped.' }
+        ]
+      },
+      {
+        heading: 'Denial of service and interception', minutes: 4,
+        body: 'A denial-of-service attack overwhelms a service or resource so legitimate users cannot use it. Data interception captures data while it travels between devices; theft may expose or remove confidential information. One targets availability, while the other targets the confidentiality or possession of data.',
+        items: [
+          { label: 'Denial of service', text: 'Purpose: make a service unavailable by exhausting a resource or flooding it with traffic.' },
+          { label: 'Interception', text: 'Purpose: capture data in transit, which is especially harmful when it is readable.' },
+          { label: 'Theft', text: 'Purpose: obtain data without permission for misuse, disclosure or financial gain.' }
+        ]
+      },
+      {
+        heading: 'SQL injection', minutes: 4,
+        body: 'SQL injection occurs when unsafe input is combined with a database query and changes the command the database executes. An attacker may read, change or delete data, or bypass a login, depending on the system and permissions. The key idea is not merely entering SQL words: the application fails to treat input safely and the database receives an unintended query.',
+        items: [
+          { label: 'Input', text: 'The attacker enters characters designed to alter a query.' },
+          { label: 'Unsafe query', text: 'The program combines the input with SQL without suitable protection.' },
+          { label: 'Impact', text: 'The database performs an action the developer did not intend.' }
+        ]
+      }
+    ],
+    '1.4.2': [
+      {
+        heading: 'Optional context: policies and incident investigation', minutes: 0,
+        body: 'These are useful school and workplace context, but they are not additional J277 1.4.2 prevention methods to memorise. A network policy states what users and administrators may do. Network forensics analyses records such as logs and captured traffic after an incident. A policy does not itself filter traffic, and investigation does not replace prevention.',
+        items: [
+          { label: 'Network policy', text: 'Sets permitted behaviour and required security practice; people and technical controls must enforce it.' },
+          { label: 'Network forensics', text: 'Uses network records to reconstruct an incident and identify its source, path or impact.' },
+          { label: 'Use together', text: 'The policy defines expected behaviour; forensic evidence helps show where behaviour or controls failed.' }
+        ]
+      },
+      {
+        heading: 'Find and remove vulnerabilities', minutes: 4,
+        body: 'Authorised penetration testing imitates attack techniques to find weaknesses before a real attacker uses them. Anti-malware software detects, blocks or removes known or suspicious malicious software. Neither is a complete defence: testing identifies weaknesses that must then be fixed, while anti-malware depends on detection and updates.',
+        items: [
+          { label: 'Penetration testing', text: 'Authorised search for exploitable weaknesses, followed by reporting and repair.' },
+          { label: 'Anti-malware', text: 'Scans for malicious behaviour or known patterns and can quarantine or remove threats.' }
+        ]
+      },
+      {
+        heading: 'Control access to systems', minutes: 5,
+        body: 'Firewalls filter network traffic using rules. User access levels restrict what an authenticated account can view or change. Passwords support authentication and should be difficult to guess; rate limits or account lockouts can reduce repeated attempts. Physical security limits direct access to devices and rooms. Match the control to the threat and explain the mechanism.',
+        items: [
+          { label: 'Firewall', text: 'Allows or blocks network traffic according to configured rules.' },
+          { label: 'Access level', text: 'Gives each user only the permissions needed for their role.' },
+          { label: 'Physical security', text: 'Locks, controlled entry and secure equipment locations restrict direct access.' }
+        ]
+      },
+      {
+        heading: 'Protect data with encryption', minutes: 3,
+        body: 'Encryption makes data unreadable without the correct key. It helps protect confidentiality if data is intercepted or storage is stolen, but it does not prevent the data being copied, deleted or made unavailable. The authorised recipient needs the appropriate key to recover the readable data.',
+        items: [
+          { label: 'What it limits', text: 'An interceptor should not be able to understand the protected data without the key.' },
+          { label: 'What it does not stop', text: 'Interception, deletion and denial of service can still occur.' }
+        ]
+      }
+    ],
+    '1.5.1': [
+      {
+        heading: 'User interface, memory and multitasking', minutes: 5,
+        body: 'The user interface lets a person interact with the system through features such as windows, icons, menus or a command line. Memory management allocates RAM to applications and transfers data as needed. Multitasking shares processor time and other resources so several programs can make progress while the system remains responsive.',
+        items: [
+          { label: 'User interface', text: 'Provides controls and feedback so the user can issue commands and see results.' },
+          { label: 'Memory management', text: 'Allocates memory to applications and manages transfers involving memory.' },
+          { label: 'Multitasking', text: 'Schedules access to the processor and resources for multiple running programs.' }
+        ]
+      },
+      {
+        heading: 'Peripherals, drivers and data transfer', minutes: 4,
+        body: 'The operating system manages communication between peripherals and the processor. A device driver translates general operating-system requests into instructions suitable for a particular device. When an application prints, the application requests the service, the operating system manages it and the driver communicates with the printer.',
+        items: [
+          { label: 'Application', text: 'Requests an operation such as printing.' },
+          { label: 'Operating system', text: 'Manages the request and transfer of data.' },
+          { label: 'Device driver', text: 'Provides the device-specific communication needed by the hardware.' }
+        ]
+      },
+      {
+        heading: 'Users and files', minutes: 4,
+        body: 'User management creates accounts, applies access rights and supports security. File management lets users name files, organise them into folders, move them and save changes while the operating system tracks their locations. Access rights can prevent one user reading or changing another user’s files.',
+        items: [
+          { label: 'User management', text: 'Accounts identify users; access rights control permitted actions.' },
+          { label: 'File management', text: 'Naming, folders, moving and saving keep stored data organised and available.' }
+        ]
+      }
+    ],
+    '1.5.2': [
+      {
+        heading: 'Three required utility types', minutes: 4,
+        body: 'For OCR, focus on encryption, defragmentation and compression utilities. Encryption protects confidentiality by requiring a key. Defragmentation rearranges file blocks on magnetic disks to reduce read-head movement. Compression reduces the number of bits needed for storage or transmission. State the purpose, when the utility helps and one relevant limitation.',
+        items: [
+          { label: 'Encryption', text: 'Protects readable data with a key; it does not prevent all attacks.' },
+          { label: 'Defragmentation', text: 'Reorganises file blocks on magnetic disks; it does not provide the same benefit on solid-state storage.' },
+          { label: 'Compression', text: 'Reduces file size; the exact effect depends on the method and data.' }
+        ]
+      }
+    ],
+    '1.6.1': [
+      {
+        heading: 'Use five impact lenses', minutes: 5,
+        body: 'Ethical issues ask what ought to be done. Legal issues ask what the law allows or prohibits. Cultural issues concern behaviour, participation and communities. Environmental issues concern energy, materials, manufacture and waste. Privacy issues concern how information about people is collected, used and shared. One consequence may fit more than one lens, but explain the connection rather than only naming a category.',
+        items: [
+          { label: 'Ethical', text: 'Is the action fair, responsible and respectful of those affected?' },
+          { label: 'Legal', text: 'Which law or legal duty is relevant to the action?' },
+          { label: 'Cultural', text: 'How might behaviour, access, relationships or communities change?' },
+          { label: 'Environmental', text: 'What resources, energy, emissions or electronic waste are involved?' },
+          { label: 'Privacy', text: 'What personal information is collected, inferred, shared or retained?' }
+        ]
+      },
+      {
+        heading: 'Develop a contextual impact', minutes: 4,
+        body: 'Name an affected stakeholder, describe the immediate change and then explain a consequence. For example, remote monitoring may let a patient receive support at home, but collection of detailed health data can create privacy and security risks. Generic claims earn little unless they are linked to the technology and people in the scenario.',
+        items: [
+          { label: 'Stakeholder', text: 'Identify the person, group or organisation affected.' },
+          { label: 'Change', text: 'State what the technology enables, prevents or makes more likely.' },
+          { label: 'Consequence', text: 'Explain why that change matters in this scenario.' }
+        ]
+      },
+      {
+        heading: 'Reach a justified conclusion', minutes: 4,
+        body: 'Consider the relevant benefits, harms and alternatives, then decide which matter most in the stated context. A strong conclusion follows from the developed points; it is not a new unsupported opinion. OCR does not require one fixed layout: paragraphs, developed key points or a table can all communicate a reasoned response.',
+        items: [
+          { label: 'Balance', text: 'Consider relevant competing effects rather than forcing an artificial equal list.' },
+          { label: 'Judgement', text: 'State a decision and justify it using the most important contextual evidence.' }
+        ]
+      }
+    ],
+    '1.6.2': [
+      {
+        heading: 'Match the action to the law', minutes: 5,
+        body: 'Apply legislation to the action, not just the topic name. You do not need Act section numbers. State what the person or organisation did, whether permission or a lawful basis existed, and the relevant harm or duty.',
+        items: [
+          { label: 'Computer Misuse Act', text: 'Covers access without permission, unauthorised acts intended to impair a system, and making or supplying tools with relevant criminal intent.' },
+          { label: 'Data Protection Act', text: 'Personal data must be processed lawfully and fairly, for a proper purpose, and protected with appropriate security.' },
+          { label: 'Copyright law', text: 'Copying, adapting or distributing protected software without permission can infringe the owner’s rights.' }
+        ]
+      },
+      {
+        heading: 'Three laws: purpose and actions', minutes: 6,
+        body: 'The Data Protection Act 2018 governs lawful, fair and secure processing of personal data. The Computer Misuse Act 1990 covers access without permission and other unauthorised acts involving computer systems. The Copyright, Designs and Patents Act 1988 protects software and other creative work from unauthorised copying, adaptation or distribution. In a scenario, name the law, identify the action and explain why it is allowed or prohibited.',
+        items: [
+          { label: 'Data Protection Act 2018', text: 'Personal data must be handled for a lawful purpose and protected appropriately.' },
+          { label: 'Computer Misuse Act 1990', text: 'Access or acts involving a computer system require proper authorisation.' },
+          { label: 'Copyright, Designs and Patents Act 1988', text: 'Creators control copying, adaptation and distribution of protected work.' }
+        ]
+      },
+      {
+        heading: 'Why software licences are needed', minutes: 4,
+        body: 'Copyright normally prevents a user doing anything they want with software. A licence grants stated permissions and sets conditions. Open-source software provides source-code access and permission to inspect or modify it under the licence terms. Proprietary software normally withholds source code and grants restricted use. Open source does not mean no copyright, no conditions or necessarily no cost.',
+        items: [
+          { label: 'Open source', text: 'Source is available and modification is permitted under the licence conditions.' },
+          { label: 'Proprietary', text: 'The owner keeps control of source code and grants limited rights to use the software.' }
+        ]
+      },
+      {
+        heading: 'Recommend a licence in context', minutes: 3,
+        body: 'Identify whether the organisation needs to inspect or adapt source code, what support and compatibility it needs, how it will distribute the software and what cost or security concerns apply. Recommend one licence type using those needs, then acknowledge a relevant drawback. Buying a copy of proprietary software does not transfer its copyright.',
+        items: [
+          { label: 'Requirement', text: 'Identify the source access, modification, support, distribution and cost needs.' },
+          { label: 'Recommendation', text: 'Link the chosen licence type directly to those needs.' },
+          { label: 'Trade-off', text: 'State one relevant limitation or responsibility.' }
+        ]
+      }
+    ],
+    '2.1.2': [
+      {
+        heading: 'Worked trace and correction', minutes: 5,
+        body: 'For total = 0 and values [3, 5, 2], trace total after each addition: 3, 8, 10. If faulty code starts its loop at index 1, its trace is 5, 7 and exposes the missing first value. Correct the start index, repeat the original test and then try an empty or boundary case where the question permits it.',
+        items: [
+          { label: 'Expected states', text: 'Start 0 → after 3: 3 → after 5: 8 → after 2: 10.' },
+          { label: 'Faulty states', text: 'Start 0 → after 5: 5 → after 2: 7; the first divergence identifies the skipped item.' },
+          { label: 'Retest', text: 'After correcting the index, the same input must produce 10 before another suitable test is tried.' }
+        ]
+      },
+      {
+        heading: 'Plan with inputs, processes and outputs', minutes: 4,
+        body: 'Start by defining the data entering the solution, the operations and decisions applied to it, and the information produced. A structure diagram then breaks the problem into linked subproblems. For a quiz program, input may be an answer, processes include checking and updating a score, and output includes feedback and the final score.',
+        items: [
+          { label: 'Input', text: 'Data supplied to the algorithm.' },
+          { label: 'Process', text: 'Calculations, comparisons, decisions and updates performed.' },
+          { label: 'Output', text: 'Information produced for a user, file or another part of the system.' }
+        ]
+      },
+      {
+        heading: 'Choose and read an algorithm representation', minutes: 5,
+        body: 'A flowchart uses a terminal for start/end, a parallelogram for input/output, a rectangle for a process, a diamond for a decision and arrows for flow. Label both outcomes from a decision. Pseudocode, OCR Exam Reference Language or a high-level language can express the same sequence precisely. A structure diagram shows subproblems and their links rather than execution order.',
+        items: [
+          { label: 'Flowchart', text: 'Best for seeing control flow, decisions and repetition.' },
+          { label: 'Structure diagram', text: 'Best for showing decomposition into linked parts.' },
+          { label: 'Code-style notation', text: 'Best for precise values, conditions, loops and updates.' }
+        ]
+      },
+      {
+        heading: 'Trace, correct and refine', minutes: 6,
+        body: 'Choose columns for important variables, conditions and output. Add a row after each meaningful change or loop pass. Compare the trace with the intended result and locate the first wrong value. A syntax error breaks the notation rules; a logic error lets the algorithm run but produces an unexpected result. Correct the cause, then repeat the trace with another suitable input. Nested selection or iteration requires the inner structure to be followed each time the outer path reaches it.',
+        items: [
+          { label: 'Trace', text: 'Record the state after meaningful execution steps.' },
+          { label: 'Diagnose', text: 'Find the first point where actual and intended behaviour differ.' },
+          { label: 'Refine and retest', text: 'Change the cause, then confirm the correction with suitable data.' }
+        ]
+      }
+    ],
+    '2.1.3': [
+      {
+        heading: 'Worked search and sort states', minutes: 6,
+        body: 'Write every meaningful state so that a missed comparison or swap is visible.',
+        items: [
+          { label: 'Linear search', text: 'Find 7 in [4, 9, 7]: check 4, then 9, then 7 — found at index 2.' },
+          { label: 'Binary search', text: 'Find 7 in [1, 3, 5, 7, 9]: middle 5 is too small, keep [7, 9], then find 7.' },
+          { label: 'Sorting', text: 'Bubble [3,1,2]: [1,3,2] → [1,2,3]. Insertion inserts 1 before 3, then 2 between them. Merge splits to single items, then merges [1,3] with [2] to [1,2,3].' }
+        ]
+      },
+      {
+        heading: 'Apply linear and binary search', minutes: 5,
+        body: 'Linear search checks each item in order until it finds the target or reaches the end; the list does not need to be sorted. Binary search requires sorted data. It checks the middle item, compares it with the target and keeps only the half that could contain the target. Continue until the item is found or no search area remains.',
+        items: [
+          { label: 'Linear search', text: 'Check items in order; works with unsorted data.' },
+          { label: 'Binary search', text: 'Check the middle of a sorted search area and discard the impossible half.' },
+          { label: 'Recognition clue', text: 'Repeatedly halving a sorted search area identifies binary search.' }
+        ]
+      },
+      {
+        heading: 'Trace bubble and insertion sort', minutes: 5,
+        body: 'Bubble sort compares neighbouring items and swaps them when they are in the wrong order. A complete pass continues across the list; passes repeat until no swaps are needed. Insertion sort builds a sorted section. It takes the next item, moves larger items in the sorted section and inserts the item into its correct position.',
+        items: [
+          { label: 'Bubble sort', text: 'Repeated adjacent comparisons and swaps; large values move towards one end over passes.' },
+          { label: 'Insertion sort', text: 'Remove the next unsorted item and insert it into the correct place in the sorted section.' }
+        ]
+      },
+      {
+        heading: 'Trace merge sort', minutes: 4,
+        body: 'Merge sort repeatedly divides the list into smaller lists until each contains one item. It then merges pairs in order, comparing the front items and taking the smaller next. The sorting happens during the merging: do not join unsorted lists and claim they can be sorted afterwards. You need to apply and recognise the steps, not memorise program code.',
+        items: [
+          { label: 'Divide', text: 'Split until each sub-list contains one item.' },
+          { label: 'Merge in order', text: 'Compare the next available items and build a sorted combined list.' },
+          { label: 'Repeat', text: 'Merge larger sorted lists until one sorted list remains.' }
+        ]
+      }
+    ],
+    '2.2.1': [
+      {
+        heading: 'Worked selection and loop traces', minutes: 6,
+        body: 'Trace the condition before choosing a path, and record values after each loop pass. For nested structures, show when the inner structure runs.',
+        items: [
+          { label: 'Selection', text: 'age = 15; age >= 16 is false, so the else path runs. Test 16 as the boundary where the first path begins.' },
+          { label: 'Count loop', text: 'total = 0; add i for i = 1 to 3: total becomes 1, 3, then 6.' },
+          { label: 'Nested', text: 'For two rows and three columns, the inner action runs three times for each row: six times in total.' }
+        ]
+      },
+      {
+        heading: 'Store, input and output values', minutes: 4,
+        body: 'A variable is a named value that may change; a constant is a named value intended not to change. Assignment stores a value in a variable. Input obtains data and output communicates a result. Keep assignment separate from equality testing: OCR Exam Reference Language uses one equals sign for assignment and two equals signs when comparing values.',
+        items: [
+          { label: 'Assignment', text: 'total = total + score updates the stored value of total.' },
+          { label: 'Input', text: 'Receives a value that may need casting or validation.' },
+          { label: 'Output', text: 'Displays or sends a value after processing.' }
+        ]
+      },
+      {
+        heading: 'Use the required operators', minutes: 5,
+        body: 'Arithmetic operators are +, -, *, /, MOD, DIV and ^. DIV gives the whole-number quotient and MOD gives the remainder. Comparison operators are ==, !=, <, <=, > and >=. Boolean operators AND, OR and NOT combine or reverse conditions. Work out arithmetic values and comparisons before evaluating the final Boolean condition.',
+        items: [
+          { label: 'Arithmetic', text: '17 DIV 5 is 3; 17 MOD 5 is 2; 3 ^ 2 is 9.' },
+          { label: 'Comparison', text: 'Returns a Boolean result such as true or false.' },
+          { label: 'Boolean', text: 'AND needs both conditions true; OR needs at least one; NOT reverses a result.' }
+        ]
+      },
+      {
+        heading: 'Choose a control structure', minutes: 5,
+        body: 'Sequence performs instructions in order. Selection chooses a path according to a condition. Count-controlled iteration suits a known number of repetitions; condition-controlled iteration suits repetition that stops or continues according to a condition. With nested structures, trace the inner structure every time execution reaches it.',
+        items: [
+          { label: 'Known number of repeats', text: 'Use a count-controlled loop.' },
+          { label: 'Repeat until a condition changes', text: 'Use a condition-controlled loop and make sure its controlling value can change.' },
+          { label: 'Choose between paths', text: 'Use selection with complete, logically valid conditions.' }
+        ]
+      }
+    ],
+    '2.2.3': [
+      {
+        heading: 'Worked data examples', minutes: 6,
+        body: 'Follow each operation and identify the resulting value before writing a similar operation yourself.',
+        items: [
+          { label: 'String', text: 'name = "Ada"; message = "Hi " + name gives "Hi Ada". "COMPUTER".substring(0, 3) gives "COM" in OCR ERL.' },
+          { label: '1D array', text: 'scores = [4, 7, 2]; scores[1] = 9 changes the array to [4, 9, 2].' },
+          { label: '2D array', text: 'grid[1][2] selects row 1, column 2. Both indexes must stay inside the declared array.' }
+        ]
+      },
+      {
+        heading: 'Worked file, record and SQL examples', minutes: 6,
+        body: 'A file operation needs a complete open–process–close lifecycle. A record keeps related named fields together. A query returns only the fields and records requested.',
+        items: [
+          { label: 'Text file', text: 'file = open("scores.txt"); while NOT file.endOfFile() ... line = file.readLine() ... endwhile; file.close().' },
+          { label: 'Record diagram', text: 'One pupil record has fields Name → Sam and Score → 12. The representation groups related fields; no particular record-declaration syntax is required here.' },
+          { label: 'SQL result', text: 'SELECT Name FROM Pupil WHERE Score >= 10 returns the Name value for records whose Score is at least 10.' }
+        ]
+      },
+      {
+        heading: 'Worked subprogram and scope example', minutes: 6,
+        body: 'Trace the argument into the parameter and the returned value back to the caller. A local value is separate from a same-named value outside the subprogram.',
+        items: [
+          { label: 'Function', text: 'function double(n) return n * 2 endfunction; result = double(6) stores 12 in result.' },
+          { label: 'Procedure', text: 'procedure showScore(score) print(score) endprocedure performs output but does not supply a value to an assignment.' },
+          { label: 'Array parameter', text: 'function first(items) return items[0] endfunction reads the array passed by the caller; use the returned value explicitly.' }
+          ,{ label: 'Local and global trace', text: 'With global score = 10, a function that creates local score = 3 returns 3 while the separate global score remains 10.' }
+          ,{ label: 'Array return trace', text: 'function addEnd(items, value) appends value and returns items; updated = addEnd([2,4], 6) gives updated = [2,4,6].' }
+        ]
+      },
+      {
+        heading: 'Manipulate strings and arrays', minutes: 6,
+        body: 'Concatenation joins strings; slicing selects part of a string using positions. A fixed one-dimensional array uses one index, while a two-dimensional array uses a row and column and can represent records and fields in a table. Check starting indexes and bounds in the language or notation provided. Changing an element updates the array; outputting an element does not return a whole array from a subprogram.',
+        items: [
+          { label: 'String', text: 'Join values with concatenation and select a range with slicing.' },
+          { label: '1D array', text: 'Use one index to access an item in a fixed list.' },
+          { label: '2D array', text: 'Use row and column indexes to access a table cell.' }
+        ]
+      },
+      {
+        heading: 'Use records, files and SQL', minutes: 6,
+        body: 'A record groups related fields about one item, and fields may have different data types. File handling follows a lifecycle: open the file in a suitable mode, read from or write to it, then close it. SQL SELECT chooses fields, FROM names the table and WHERE filters records. For example, SELECT Name FROM Pupil WHERE House = "Red" returns the Name field only for matching records.',
+        items: [
+          { label: 'Record', text: 'One structured item containing named fields, such as name, age and score.' },
+          { label: 'File', text: 'Open, read or write, then close; use the supplied end-of-file form when reading repeatedly.' },
+          { label: 'SQL', text: 'SELECT fields FROM table WHERE condition.' }
+        ]
+      },
+      {
+        heading: 'Design functions and procedures', minutes: 6,
+        body: 'A function returns a value to the instruction that called it. A procedure performs a named task and does not have to return a value. Parameters pass values or arrays into a subprogram. Local variables and constants exist inside their subprogram; global values have wider scope. Arrays can be passed into and returned from subprograms where the notation permits. Use parameters and return values rather than asking for unrelated input inside a reusable calculation.',
+        items: [
+          { label: 'Parameter', text: 'A named input supplied by the caller.' },
+          { label: 'Return value', text: 'The value a function sends back to the caller.' },
+          { label: 'Scope', text: 'Local names belong to one subprogram; global names are available more widely.' }
+        ]
+      },
+      {
+        heading: 'Generate and test random values', minutes: 4,
+        body: 'A random-number facility creates a value in a stated range for uses such as a game, simulation or sample selection. Confirm whether each endpoint can occur in the chosen language. Store or use the returned value like any other value. Tests should check that results remain within the permitted range rather than expecting one particular random result.',
+        items: [
+          { label: 'Bounds', text: 'Identify the lowest and highest possible value.' },
+          { label: 'Worked Python example', text: 'roll = random.randint(1, 6) stores an integer from 1 to 6 inclusive after importing random.' },
+          { label: 'Worked OCR ERL example', text: 'roll = random(1, 6) uses the reference-language random form with the stated inclusive range.' },
+          { label: 'Test', text: 'Check valid range and behaviour, not one predicted result.' }
+        ]
+      }
+    ],
+    '2.2.PY': [
+      {
+        heading: 'Cumulative Python pathway', minutes: 5,
+        body: 'Python skill develops across several practical sessions rather than one reading page. Begin by predicting output and tracing values, then complete missing code, find syntax and logic errors, write one construct with support, combine constructs into a solution, design tests and refine the program. Support should reduce as the same ideas are revisited. A successful run is not enough unless the program meets the stated requirement and passes suitable tests.',
+        items: [
+          { label: 'Understand', text: 'Read and trace code before changing it.' },
+          { label: 'Build', text: 'Complete, debug and then construct increasingly independent solutions.' },
+          { label: 'Prove', text: 'Compare expected and actual results, fix faults and retest.' }
+        ]
+      }
+    ],
+    '2.2.ERL': [
+      {
+        heading: 'Worked ERL control-flow trace', minutes: 6,
+        body: 'For score = 7, the comparison score >= 5 is true, so the first branch prints "pass" and the else branch is skipped. In a loop, record changed values after every pass.',
+        items: [
+          { label: 'Selection', text: 'if score >= 5 then print("pass") else print("retry") endif' },
+          { label: 'Count loop', text: 'total = 0; for i = 1 to 3; total = total + i; next i gives totals 1, 3, 6.' },
+          { label: 'While loop', text: 'x = 1; while x < 4; x = x + 1; endwhile gives x values 2, 3, 4.' }
+        ]
+      },
+      {
+        heading: 'Worked ERL data and subprogram forms', minutes: 6,
+        body: 'Use one consistent notation and trace the value produced by each operation. Questions may supply relevant reference-language forms, so read them carefully.',
+        items: [
+          { label: 'Array and string', text: 'values[2] accesses one element; word.substring(1, 3) selects three characters starting at index 1.' },
+          { label: 'File loop', text: 'file = open("data.txt"); while NOT file.endOfFile(); print(file.readLine()); endwhile; file.close().' },
+          { label: 'Function call', text: 'function add(a, b) return a + b endfunction; answer = add(2, 5) stores 7.' }
+        ]
+      },
+      {
+        heading: 'Assignment, input, output and selection', minutes: 5,
+        body: 'OCR Exam Reference Language uses input("Prompt") to obtain a value and print(value) for output. Assignment uses one equals sign, while equality comparison uses two. A selection begins with if condition then, may include elseif or else, and ends with endif. Keep the supplied notation consistent rather than mixing in Python colons or relying on indentation alone.',
+        items: [
+          { label: 'Assignment', text: 'score = 0 stores a value; score == 0 compares values.' },
+          { label: 'Input/output', text: 'Use the OCR forms shown in the reference language.' },
+          { label: 'Selection', text: 'if ... then, optional elseif/else, endif.' }
+        ]
+      },
+      {
+        heading: 'Count-controlled and condition-controlled loops', minutes: 5,
+        body: 'A count-controlled loop uses for variable = start to end and closes with next variable; the stated end value is included. A condition-controlled loop uses while condition and closes with endwhile. Initialise values before the loop, update any value that controls a while loop, and check array bounds carefully.',
+        items: [
+          { label: 'for loop', text: 'Use when the number or range of repetitions is known.' },
+          { label: 'while loop', text: 'Use while a condition remains true; ensure the condition can eventually become false.' },
+          { label: 'Trace', text: 'Record the loop variable and changed values after each iteration.' }
+        ]
+      },
+      {
+        heading: 'Strings, arrays and files', minutes: 6,
+        body: 'Use the string and array operations supplied in OCR Exam Reference Language, including length, substring access and indexed elements. Arrays use fixed positions and may have one or two dimensions. A file is opened, checked or read using the supplied file operations, processed inside the loop and closed afterwards. Follow the exact forms provided in the reference sheet or question.',
+        items: [
+          { label: 'String', text: 'Use the supplied length and substring forms; indexes start at zero in the reference language.' },
+          { label: 'Array', text: 'Use indexes within the declared range; a 2D array needs row and column.' },
+          { label: 'File', text: 'Open, check for more data, read or write, and close.' }
+        ]
+      },
+      {
+        heading: 'Functions and procedures', minutes: 5,
+        body: 'A function declaration names its parameters, processes them, returns a value and ends with endfunction. A procedure performs a named task and ends with endprocedure. Pass required data through parameters and use the returned value in the calling instruction. Do not add new input inside a function when the question says the value is supplied as a parameter.',
+        items: [
+          { label: 'Function', text: 'Receives parameters and returns a value.' },
+          { label: 'Procedure', text: 'Receives any parameters and performs a task without requiring a return value.' },
+          { label: 'Caller', text: 'Supplies arguments and stores or uses a returned result.' }
+        ]
+      }
+    ],
+    '2.3.1': [
+      {
+        heading: 'Design validation and authentication', minutes: 5,
+        body: 'Validation checks whether input follows rules such as type, range, length, presence or format, and should reject or re-request unsuitable data. It does not prove that a plausible value is true. Authentication checks identity, for example by comparing supplied credentials with securely stored verification data. Anticipate accidental and deliberate misuse rather than assuming every user follows instructions.',
+        items: [
+          { label: 'Validate', text: 'Check the stated rules and give the user a safe retry route.' },
+          { label: 'Authenticate', text: 'Confirm that the user is allowed to act as the claimed identity.' },
+          { label: 'Anticipate misuse', text: 'Handle unexpected order, repeated actions and invalid values safely.' }
+        ]
+      },
+      {
+        heading: 'Make code maintainable', minutes: 4,
+        body: 'Use meaningful names, consistent indentation, comments that explain purpose or non-obvious decisions, and subprograms with one clear responsibility. A comment that merely repeats an instruction adds little. Replacing repeated code with a well-named subprogram makes one future correction apply everywhere that subprogram is called.',
+        items: [
+          { label: 'Names', text: 'Describe the role of a value or subprogram.' },
+          { label: 'Layout and comments', text: 'Make structure visible and explain decisions that code alone does not make clear.' },
+          { label: 'Subprograms', text: 'Separate reusable tasks and reduce duplication.' }
+        ]
+      }
+    ],
+    '2.3.2': [
+      {
+        heading: 'Worked test rows and retest', minutes: 6,
+        body: 'For an integer age accepted from 11 to 16: normal 14 should be accepted; boundary 11 and 16 should be accepted; invalid 10 and 17 should be rejected; erroneous "fourteen" should be rejected without a crash. If 16 is rejected, correct the comparison from age < 16 to age <= 16, rerun 16, then rerun nearby passing tests.',
+        items: [
+          { label: 'Before running', text: 'Record the input, data category and precise expected result.' },
+          { label: 'After running', text: 'Record the actual result and compare it with the expected result.' },
+          { label: 'After a fix', text: 'Repeat the failed boundary and relevant earlier tests to check the change did not break them.' }
+        ]
+      },
+      {
+        heading: 'Build a complete test plan', minutes: 5,
+        body: 'A test plan records the feature being tested, test data, test type, expected result and later the actual result and pass/fail outcome. Normal data is typical and valid. Boundary data is valid and at an accepted limit. Invalid data has the correct type but breaks a rule. Erroneous data has the wrong type. Include both lower and upper boundaries when a range has two limits.',
+        items: [
+          { label: 'Expected result', text: 'Write this before running the program so the test has an objective check.' },
+          { label: 'Actual result', text: 'Record what the program really did.' },
+          { label: 'Outcome', text: 'Compare expected and actual results and mark pass or fail.' }
+        ]
+      },
+      {
+        heading: 'Test, refine and retest', minutes: 4,
+        body: 'Iterative testing happens while modules and changes are developed; terminal or final testing checks the completed program. A syntax error breaks language rules and prevents suitable translation or execution. A logic error lets the program run but gives an unexpected result. When a test fails, locate the cause, refine the algorithm or code, repeat the failed test and run relevant earlier tests to check that the change caused no regression.',
+        items: [
+          { label: 'Fail', text: 'Identify the first difference between expected and actual behaviour.' },
+          { label: 'Fix', text: 'Correct the underlying algorithm or code, not only the displayed answer.' },
+          { label: 'Retest', text: 'Repeat the failed test and relevant previous tests.' }
+        ]
+      }
+    ],
+    '2.4.1': [
+      {
+        heading: 'Worked combined-gate row', minutes: 4,
+        body: 'For Q = (A AND B) OR NOT C with A = 1, B = 0 and C = 0: first A AND B = 0; then NOT C = 1; finally 0 OR 1 = 1. Keep separate columns for the two intermediate results before Q.',
+        items: [
+          { label: 'Inputs', text: 'A = 1, B = 0, C = 0.' },
+          { label: 'Intermediate columns', text: 'A AND B = 0; NOT C = 1.' },
+          { label: 'Final output', text: '0 OR 1 gives Q = 1.' }
+        ]
+      },
+      {
+        heading: 'Create a circuit from a scenario', minutes: 5,
+        body: 'Turn each scenario statement into a Boolean condition, then connect the gates in the same logical order. Use AND when all conditions must be true, OR when at least one may be true and NOT when a value must be reversed. Label inputs, intermediate outputs and the final output. The small circle on a NOT gate shows inversion and must not be omitted.',
+        items: [
+          { label: 'Translate', text: 'Write the Boolean expression represented by the scenario.' },
+          { label: 'Draw or edit', text: 'Choose standard gate symbols and connect them in expression order.' },
+          { label: 'Check', text: 'Test relevant input combinations and compare the circuit with the rule.' }
+        ]
+      },
+      {
+        heading: 'Complete every truth-table row', minutes: 4,
+        body: 'A circuit with n inputs needs 2^n input combinations. List them systematically so none are missed. For a combined circuit, add a column for each intermediate gate, evaluate those columns first and then calculate the final output. Colour may highlight a column, but labels and column headings must carry the meaning.',
+        items: [
+          { label: 'Two inputs', text: 'Four rows: 00, 01, 10 and 11.' },
+          { label: 'Three inputs', text: 'Eight rows, counting systematically from 000 to 111.' },
+          { label: 'Combined circuit', text: 'Calculate one named intermediate output at a time.' }
+        ]
+      }
+    ],
+    '2.5.1': [
+      {
+        heading: 'Why translation is required', minutes: 4,
+        body: 'A processor executes machine-code instructions. High-level source code is designed for people to read and is more portable across systems; low-level code is closer to a particular processor and can provide close hardware control. A translator converts source code into a form the processor can execute. OCR does not require knowledge of assemblers for this strand.',
+        items: [
+          { label: 'High level', text: 'Easier for people to read, write, debug and maintain; generally portable.' },
+          { label: 'Low level', text: 'Closer to processor instructions and hardware; harder for people to work with.' },
+          { label: 'Translator', text: 'Bridges the source language and executable machine instructions.' }
+        ]
+      },
+      {
+        heading: 'Recommend a compiler or interpreter', minutes: 5,
+        body: 'A compiler translates the program before execution, so a translated form can be run or distributed without translating each instruction as it executes. An interpreter translates and runs source statements during execution, which can support immediate development feedback but normally requires the interpreter. Use typical characteristics as contextual trade-offs rather than universal rules about every implementation.',
+        items: [
+          { label: 'Development', text: 'Interpretation can give feedback as execution reaches source statements.' },
+          { label: 'Distribution', text: 'Compilation can allow a translated form to be supplied without the source.' },
+          { label: 'Execution', text: 'Compiled code has been translated before it runs; interpreted source is translated during execution.' }
+        ]
+      }
+    ],
+    '2.5.2': [
+      {
+        heading: 'Use the four required IDE facilities', minutes: 5,
+        body: 'The four facilities named by OCR are the editor, error diagnostics, run-time environment and translator. The editor is where source code is created and changed. Error diagnostics report detected problems and their locations. The run-time environment lets the program execute so behaviour and output can be observed. The translator converts or executes the source code. Debugging tools are useful additional context, not a fifth required facility.',
+        items: [
+          { label: '1. Editor', text: 'Create and change source code.' },
+          { label: '2. Error diagnostics', text: 'Identify reported errors and where they were detected.' },
+          { label: '3. Run-time environment', text: 'Execute the program and observe its behaviour.' },
+          { label: '4. Translator', text: 'Compile or interpret the source code as required.' }
+        ]
+      }
+    ]
+  };
+
+  return content.map(item => {
+    const reviewedExpansion = coverageExpansionSections[item.id] || [];
+    let sections = reviewedExpansion.length ? reviewedExpansion : (teachingSections[item.id] || []);
+    if (item.id === '2.2.3') sections = [reviewedExpansion[0], reviewedExpansion[1], reviewedExpansion[2], reviewedExpansion[reviewedExpansion.length - 1]];
+    if (item.id === '2.2.ERL') sections = reviewedExpansion.slice(0, 2);
+    const honestReviewMinutes = sections.reduce((total, section) => total + (Number(section.minutes) || 3), 0);
+    return {
+      ...item,
+      requiredKnowledge: item.scope.split(';').map(part => part.trim()).filter(Boolean),
+      prerequisiteSpecificationPointIds: prerequisites[item.id] || [],
+      teachingSections: sections,
+      requiredSkills: assessmentModes[item.id] || ['recall'],
+      assessmentModes: assessmentModes[item.id] || ['recall'],
+      supportedPractice: supportedPractice[item.id],
+      workload: {
+        coreLearningMinutes: honestReviewMinutes,
+        retrievalMinutes: 5,
+        retryMinutes: 5,
+        retrievalIsOptional: true
+      },
+      qualityStatus: 'implemented-against-j277-v3.1-awaiting-qualified-teacher-qa'
+    };
+  });
 });
