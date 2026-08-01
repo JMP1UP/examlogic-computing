@@ -120,6 +120,16 @@ describe('Senior Developer Pedagogical & Examiner Enhancements', () => {
       expect(session.questions[0]).toMatchObject({ id: 'exam_111', type: 'constructed' });
     });
 
+    test('accepts a genuine five-minute Paper 2 question without applying the ten-minute two-question rule', () => {
+      const task = { id: 'exam_211', specificationPointId: '2.1.1', paper: 'Paper 2', commandWord: 'Explain', marks: 4, question: 'Explain how decomposition helps solve a problem.', requiredElements: ['smaller parts', 'manageable', 'combined solution', 'scenario link'] };
+      const curriculum = [{ id: '2.1.1', officialSpecificationPointId: '2.1.1', diagnostic: { question: 'Short check', options: ['Correct', 'Wrong'], answer: 'Correct', explanation: 'Why' } }];
+
+      const session = mixedExamEngine.createMixedExamSession('paper2', 5, curriculum, [task], null, ['2.1.1'], 'five-minute-paper-two');
+
+      expect(session).toMatchObject({ sufficientForRequestedTime: true, timeLimitMinutes: 5, totalMarks: 4 });
+      expect(session.questions).toHaveLength(1);
+    });
+
     test('does not place the correct multiple-choice option in one fixed position', () => {
       const curriculumContent = [
         { id: '1.1.1', officialSpecificationPointId: '1.1.1', diagnostic: { question: 'Q1', options: ['Correct', 'B', 'C', 'D'], answer: 'Correct', explanation: 'E1' } }

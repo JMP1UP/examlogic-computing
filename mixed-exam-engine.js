@@ -269,7 +269,7 @@
       const ao3Available = ao3Required;
       const ao3Included = selectedTasks.some(isAO3Task);
       const includesBothPapers = new Set(selectedTasks.map(task => task.paper)).size >= 2;
-      const validShortPaper2Shape = paperType !== 'paper2' || duration > 10 || selectedTasks.length >= 2;
+      const validShortPaper2Shape = paperType !== 'paper2' || duration <= 5 || duration > 10 || selectedTasks.length >= 2;
 
       return {
         sessionId: `exam_session_${seed}`,
