@@ -5,6 +5,10 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Added attempt-before-reveal revision tasks for algorithm design, programming
+  fundamentals, arrays, strings, files, SQL, subprograms and random values.
+- Added applied self-checks for security threats and controls, technology
+  impacts, legislation and compiler/interpreter recommendations.
 - Strengthened independent-revision teaching for networks, operating systems,
   utility software, practical-programming routines and defensive design using
   applied pupil scenarios and concise visual explanations.

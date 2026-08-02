@@ -1469,7 +1469,8 @@
         items: [
           { label: 'Malware', text: 'Malicious software may damage data, spy on activity or give an attacker control.' },
           { label: 'Social engineering', text: 'The attacker exploits trust or pressure rather than only a technical weakness.' },
-          { label: 'Brute force', text: 'Many possible credentials are tried until one succeeds or the attack is stopped.' }
+          { label: 'Brute force', text: 'Many possible credentials are tried until one succeeds or the attack is stopped.' },
+          { label: 'Try it now — use paper', text: 'A fake IT email pressures a teacher to open an attachment, which installs software that records passwords. Identify both threats, how each works and one impact. Reveal the check below.' }
         ]
       },
       {
@@ -1515,7 +1516,8 @@
         items: [
           { label: 'Firewall', text: 'Allows or blocks network traffic according to configured rules.' },
           { label: 'Access level', text: 'Gives each user only the permissions needed for their role.' },
-          { label: 'Physical security', text: 'Locks, controlled entry and secure equipment locations restrict direct access.' }
+          { label: 'Physical security', text: 'Locks, controlled entry and secure equipment locations restrict direct access.' },
+          { label: 'Try it now — use paper', text: 'A school wants to limit rapid password guesses and stop pupils entering the server room. Choose one suitable control for each risk and explain how it helps. Reveal the check below.' }
         ]
       },
       {
@@ -1604,7 +1606,8 @@
         items: [
           { label: 'Stakeholder', text: 'Identify the person, group or organisation affected.' },
           { label: 'Change', text: 'State what the technology enables, prevents or makes more likely.' },
-          { label: 'Consequence', text: 'Explain why that change matters in this scenario.' }
+          { label: 'Consequence', text: 'Explain why that change matters in this scenario.' },
+          { label: 'Try it now — use paper', text: 'A school considers facial-recognition attendance. Develop one benefit and one privacy or ethical concern for named stakeholders. Reveal a marking guide below.' }
         ]
       },
       {
@@ -1623,7 +1626,8 @@
         items: [
           { label: 'Computer Misuse Act', text: 'Covers access without permission, unauthorised acts intended to impair a system, and making or supplying tools with relevant criminal intent.' },
           { label: 'Data Protection Act', text: 'Personal data must be processed lawfully and fairly, for a proper purpose, and protected with appropriate security.' },
-          { label: 'Copyright law', text: 'Copying, adapting or distributing protected software without permission can infringe the owner’s rights.' }
+          { label: 'Copyright law', text: 'Copying, adapting or distributing protected software without permission can infringe the owner’s rights.' },
+          { label: 'Try it now — use paper', text: 'Match a law to each action: entering another pupil’s account without permission; publishing identifiable health data without a lawful basis; copying commercial software for friends. Reveal the check below.' }
         ]
       },
       {
@@ -1660,7 +1664,8 @@
         items: [
           { label: 'Expected states', text: 'Start 0 → after 3: 3 → after 5: 8 → after 2: 10.' },
           { label: 'Faulty states', text: 'Start 0 → after 5: 5 → after 2: 7; the first divergence identifies the skipped item.' },
-          { label: 'Retest', text: 'After correcting the index, the same input must produce 10 before another suitable test is tried.' }
+          { label: 'Retest', text: 'After correcting the index, the same input must produce 10 before another suitable test is tried.' },
+          { label: 'Try it now — use paper', text: 'Trace total for [4, 1, 6]. Then trace the faulty version that starts at index 1. Reveal the check below.' }
         ]
       },
       {
@@ -1669,7 +1674,8 @@
         items: [
           { label: 'Input', text: 'Data supplied to the algorithm.' },
           { label: 'Process', text: 'Calculations, comparisons, decisions and updates performed.' },
-          { label: 'Output', text: 'Information produced for a user, file or another part of the system.' }
+          { label: 'Output', text: 'Information produced for a user, file or another part of the system.' },
+          { label: 'Try it now — use paper', text: 'For a temperature-warning program, identify one input, two processes and one output. Reveal one suitable plan below.' }
         ]
       },
       {
@@ -1678,7 +1684,8 @@
         items: [
           { label: 'Flowchart', text: 'Best for seeing control flow, decisions and repetition.' },
           { label: 'Structure diagram', text: 'Best for showing decomposition into linked parts.' },
-          { label: 'Code-style notation', text: 'Best for precise values, conditions, loops and updates.' }
+          { label: 'Code-style notation', text: 'Best for precise values, conditions, loops and updates.' },
+          { label: 'Try it now — use paper', text: 'Choose a flowchart symbol for input, a calculation and a yes/no decision. Reveal the symbols below.' }
         ]
       },
       {
@@ -1687,7 +1694,8 @@
         items: [
           { label: 'Trace', text: 'Record the state after meaningful execution steps.' },
           { label: 'Diagnose', text: 'Find the first point where actual and intended behaviour differ.' },
-          { label: 'Refine and retest', text: 'Change the cause, then confirm the correction with suitable data.' }
+          { label: 'Refine and retest', text: 'Change the cause, then confirm the correction with suitable data.' },
+          { label: 'Try it now — use paper', text: 'A loop meant to process indexes 0 to 4 stops at 3. Name the error, correct the end value and state the first retest. Reveal the check below.' }
         ]
       }
     ],
@@ -1753,7 +1761,8 @@
         items: [
           { label: 'Selection', text: 'age = 15; age >= 16 is false, so the else path runs. Test 16 as the boundary where the first path begins.' },
           { label: 'Count loop', text: 'total = 0; add i for i = 1 to 3: total becomes 1, 3, then 6.' },
-          { label: 'Nested', text: 'For two rows and three columns, the inner action runs three times for each row: six times in total.' }
+          { label: 'Nested', text: 'For two rows and three columns, the inner action runs three times for each row: six times in total.' },
+          { label: 'Try it now — use paper', text: 'Trace total when a loop adds 2, 4 and 6. Then state how many times an inner loop of four runs inside an outer loop of three. Reveal the check below.' }
         ]
       },
       {
@@ -1762,7 +1771,8 @@
         items: [
           { label: 'Assignment', text: 'total = total + score updates the stored value of total.' },
           { label: 'Input', text: 'Receives a value that may need casting or validation.' },
-          { label: 'Output', text: 'Displays or sends a value after processing.' }
+          { label: 'Output', text: 'Displays or sends a value after processing.' },
+          { label: 'Try it now — use paper', text: 'Write three OCR ERL lines to input a score, add 2 and print the result. Reveal one answer below.' }
         ]
       },
       {
@@ -1771,7 +1781,8 @@
         items: [
           { label: 'Arithmetic', text: '17 DIV 5 is 3; 17 MOD 5 is 2; 3 ^ 2 is 9.' },
           { label: 'Comparison', text: 'Returns a Boolean result such as true or false.' },
-          { label: 'Boolean', text: 'AND needs both conditions true; OR needs at least one; NOT reverses a result.' }
+          { label: 'Boolean', text: 'AND needs both conditions true; OR needs at least one; NOT reverses a result.' },
+          { label: 'Try it now — use paper', text: 'Evaluate 23 DIV 5, 23 MOD 5 and (age >= 13 AND age <= 16) when age is 17. Reveal the check below.' }
         ]
       },
       {
@@ -1780,7 +1791,8 @@
         items: [
           { label: 'Known number of repeats', text: 'Use a count-controlled loop.' },
           { label: 'Repeat until a condition changes', text: 'Use a condition-controlled loop and make sure its controlling value can change.' },
-          { label: 'Choose between paths', text: 'Use selection with complete, logically valid conditions.' }
+          { label: 'Choose between paths', text: 'Use selection with complete, logically valid conditions.' },
+          { label: 'Try it now — use paper', text: 'Choose a structure for three attempts, repeating until a valid password length, and printing pass or retry. Reveal the check below.' }
         ]
       }
     ],
@@ -1791,7 +1803,8 @@
         items: [
           { label: 'String', text: 'name = "Ada"; message = "Hi " + name gives "Hi Ada". "COMPUTER".substring(0, 3) gives "COM" in OCR ERL.' },
           { label: '1D array', text: 'scores = [4, 7, 2]; scores[1] = 9 changes the array to [4, 9, 2].' },
-          { label: '2D array', text: 'grid[1][2] selects row 1, column 2. Both indexes must stay inside the declared array.' }
+          { label: '2D array', text: 'grid[1][2] selects row 1, column 2. Both indexes must stay inside the declared array.' },
+          { label: 'Try it now — use paper', text: 'For word = "NETWORK", give substring(1, 3). Then change values[2] in [5, 8, 4, 1] to 9. Reveal the check below.' }
         ]
       },
       {
@@ -1800,7 +1813,8 @@
         items: [
           { label: 'Text file', text: 'file = open("scores.txt"); while NOT file.endOfFile() ... line = file.readLine() ... endwhile; file.close().' },
           { label: 'Record diagram', text: 'One pupil record has fields Name → Sam and Score → 12. The representation groups related fields; no particular record-declaration syntax is required here.' },
-          { label: 'SQL result', text: 'SELECT Name FROM Pupil WHERE Score >= 10 returns the Name value for records whose Score is at least 10.' }
+          { label: 'SQL result', text: 'SELECT Name FROM Pupil WHERE Score >= 10 returns the Name value for records whose Score is at least 10.' },
+          { label: 'Try it now — use paper', text: 'Write SQL to return Name from Pupil where House is "Blue". Then state the final file operation after reading. Reveal the check below.' }
         ]
       },
       {
@@ -1812,6 +1826,7 @@
           { label: 'Array parameter', text: 'function first(items) return items[0] endfunction reads the array passed by the caller; use the returned value explicitly.' }
           ,{ label: 'Local and global trace', text: 'With global score = 10, a function that creates local score = 3 returns 3 while the separate global score remains 10.' }
           ,{ label: 'Array return trace', text: 'function addEnd(items, value) appends value and returns items; updated = addEnd([2,4], 6) gives updated = [2,4,6].' }
+          ,{ label: 'Try it now — use paper', text: 'A function triple(n) returns n * 3. State the parameter, argument and result of answer = triple(4). Reveal the check below.' }
         ]
       },
       {
@@ -1848,7 +1863,8 @@
           { label: 'Bounds', text: 'Identify the lowest and highest possible value.' },
           { label: 'Worked Python example', text: 'roll = random.randint(1, 6) stores an integer from 1 to 6 inclusive after importing random.' },
           { label: 'Worked OCR ERL example', text: 'roll = random(1, 6) uses the reference-language random form with the stated inclusive range.' },
-          { label: 'Test', text: 'Check valid range and behaviour, not one predicted result.' }
+          { label: 'Test', text: 'Check valid range and behaviour, not one predicted result.' },
+          { label: 'Try it now — use paper', text: 'Design two checks for a random integer from 1 to 10. Explain why expecting 7 is not a suitable test. Reveal the check below.' }
         ]
       }
     ],
@@ -2060,7 +2076,8 @@
         items: [
           { label: 'Development', text: 'Interpretation can give feedback as execution reaches source statements.' },
           { label: 'Distribution', text: 'Compilation can allow a translated form to be supplied without the source.' },
-          { label: 'Execution', text: 'Compiled code has been translated before it runs; interpreted source is translated during execution.' }
+          { label: 'Execution', text: 'Compiled code has been translated before it runs; interpreted source is translated during execution.' },
+          { label: 'Try it now — use paper', text: 'A company wants to distribute a finished game without supplying its source code. Recommend a translator and justify the choice. Then give one reason an interpreter may suit early development. Reveal the check below.' }
         ]
       }
     ],
@@ -2172,12 +2189,20 @@
         </div>
         <p class="concept-visual-note">TCP/IP supports communication across networks. Layers separate jobs so systems can remain compatible and faults are easier to isolate.</p>
       </figure>`,
+    '1.4.1:0': `<aside class="concept-visual"><details><summary>Check the fake-email scenario</summary><p>The pressure and deception are social engineering. Opening the attachment installs malware. The malware records passwords, which may let an attacker enter accounts, steal data or impersonate users.</p></details></aside>`,
+    '1.4.2:2': `<aside class="concept-visual"><details><summary>Check the two security controls</summary><p>A rate limit or temporary account lockout can slow rapid password guesses. Locked doors or controlled entry provide physical security for the server room. Each answer should explain the mechanism, not only name the control.</p></details></aside>`,
+    '1.6.1:1': `<aside class="concept-visual"><details><summary>Check the facial-recognition marking guide</summary><p>A developed benefit names a stakeholder and consequence: staff may record attendance faster, leaving more lesson time. A developed concern could explain that pupils' biometric data is sensitive; an inaccurate match could record an absence or unfairly affect a pupil. A strong answer applies both points to the school and reaches a reasoned judgement.</p></details></aside>`,
+    '1.6.2:0': `<aside class="concept-visual"><details><summary>Check the three laws</summary><p>Entering another account without permission: Computer Misuse Act 1990. Publishing identifiable health data without a lawful basis: Data Protection Act 2018. Copying commercial software for friends without permission: Copyright, Designs and Patents Act 1988.</p></details></aside>`,
     '2.1.2:0': `
       <figure class="concept-visual" aria-labelledby="trace-table-title">
         <figcaption id="trace-table-title"><strong>Find the first point where the trace goes wrong</strong></figcaption>
         <div class="table-scroll" tabindex="0"><table class="concept-table"><thead><tr><th>Value used</th><th>Expected total</th><th>Faulty total</th></tr></thead><tbody><tr><td>Start</td><td>0</td><td>0</td></tr><tr class="concept-table-alert"><td>3</td><td>3</td><td>skipped</td></tr><tr><td>5</td><td>8</td><td>5</td></tr><tr><td>2</td><td>10</td><td>7</td></tr></tbody></table></div>
         <p class="concept-visual-note">The first difference is the skipped value 3. Correct the starting index, then repeat the test.</p>
+        <details><summary>Check your trace for [4, 1, 6]</summary><p>Correct totals: 4, 5, 11. Starting at index 1 skips 4, so the faulty totals are 1, 7.</p></details>
       </figure>`,
+    '2.1.2:1': `<aside class="concept-visual"><details><summary>Check the temperature-warning plan</summary><p>Input: temperature. Processes: compare it with the warning threshold, then decide whether a warning is needed. Output: the warning message or a safe-status message.</p></details></aside>`,
+    '2.1.2:2': `<aside class="concept-visual"><details><summary>Check the flowchart symbols</summary><p>Input uses a parallelogram. A calculation uses a process rectangle. A yes/no decision uses a diamond with both routes labelled.</p></details></aside>`,
+    '2.1.2:3': `<aside class="concept-visual"><details><summary>Check the loop correction</summary><p>This is a logic error, often called an off-by-one error. Change the final index to 4. First rerun the case that must process indexes 0 to 4 and confirm the item at index 4 is included.</p></details></aside>`,
     '2.1.3:0': `
       <figure class="concept-visual" aria-labelledby="search-steps-title">
         <figcaption id="search-steps-title"><strong>Linear search follows one clear route</strong></figcaption>
@@ -2217,7 +2242,11 @@
           <span><small>start</small>total = 0</span><b aria-hidden="true">+ 1 →</b><span><small>pass 1</small>total = 1</span><b aria-hidden="true">+ 2 →</b><span><small>pass 2</small>total = 3</span><b aria-hidden="true">+ 3 →</b><span class="is-result"><small>pass 3</small>total = 6</span>
         </div>
         <p class="concept-visual-note">Record the value after every pass. For a nested loop, repeat the inner loop each time the outer loop advances.</p>
+        <details><summary>Check the loop traces</summary><p>Adding 2, 4 and 6 gives totals 2, 6 and 12. An inner loop of four inside an outer loop of three runs 4 × 3 = 12 times.</p></details>
       </figure>`,
+    '2.2.1:1': `<aside class="concept-visual"><details><summary>Check the input, assignment and output</summary><p><code>score = input("Score")</code><br><code>score = score + 2</code><br><code>print(score)</code></p></details></aside>`,
+    '2.2.1:2': `<aside class="concept-visual"><details><summary>Check the operator results</summary><p>23 DIV 5 is 4. 23 MOD 5 is 3. When age is 17, age &gt;= 13 is true but age &lt;= 16 is false, so the AND expression is false.</p></details></aside>`,
+    '2.2.1:3': `<aside class="concept-visual"><details><summary>Check the control structures</summary><p>Use a count-controlled loop for exactly three attempts. Use a condition-controlled loop to repeat while the password length is unsuitable. Use selection to choose between pass and retry output.</p></details></aside>`,
     '2.2.3:0': `
       <figure class="concept-visual" aria-labelledby="array-change-title">
         <figcaption id="array-change-title"><strong>Indexes identify positions in an array</strong></figcaption>
@@ -2227,7 +2256,11 @@
           <p>scores[1] = 9</p>
           <div><small>after</small><b>4</b><b class="is-result">9</b><b>2</b></div>
         </div>
+        <details><summary>Check the string and array changes</summary><p><code>"NETWORK".substring(1, 3)</code> gives <code>"ETW"</code>. Changing index 2 gives [5, 8, 9, 1].</p></details>
       </figure>`,
+    '2.2.3:1': `<aside class="concept-visual"><details><summary>Check the SQL and file operation</summary><p><code>SELECT Name FROM Pupil WHERE House = "Blue"</code>. After processing the file, close it using the supplied close operation.</p></details></aside>`,
+    '2.2.3:2': `<aside class="concept-visual"><details><summary>Check the function call</summary><p>In <code>triple(n)</code>, <code>n</code> is the parameter. In <code>triple(4)</code>, 4 is the argument. The returned result stored in <code>answer</code> is 12.</p></details></aside>`,
+    '2.2.3:3': `<aside class="concept-visual"><details><summary>Check the random-number tests</summary><p>Run the generator repeatedly and check every result is at least 1 and at most 10. Also check that the program handles the returned integer correctly. Expecting exactly 7 is unsuitable because a valid random result may be any integer in the stated range.</p></details></aside>`,
     '2.3.1:0': `
       <figure class="concept-visual" aria-labelledby="login-design-title">
         <figcaption id="login-design-title"><strong>Keep validation and authentication separate</strong></figcaption>
@@ -2256,6 +2289,7 @@
           <span class="concept-node">Source code<small>readable by people</small></span><span class="concept-arrow" aria-hidden="true">→</span><span class="concept-node concept-node--strong">Translator<small>compiler or interpreter</small></span><span class="concept-arrow" aria-hidden="true">→</span><span class="concept-node">Machine instructions<small>executed by the CPU</small></span>
         </div>
       </figure>`,
+    '2.5.1:1': `<aside class="concept-visual"><details><summary>Check the translator recommendation</summary><p>Recommend a compiler: it translates the finished program before distribution, so the company can supply a translated form without giving users the source. During early development, an interpreter can give immediate feedback as execution reaches statements. These are typical characteristics, not absolute performance guarantees.</p></details></aside>`,
     '2.5.2:0': `
       <figure class="concept-visual" aria-labelledby="ide-map-title">
         <figcaption id="ide-map-title"><strong>The four OCR IDE facilities working together</strong></figcaption>

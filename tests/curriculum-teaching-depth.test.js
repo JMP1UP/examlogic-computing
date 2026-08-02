@@ -11,6 +11,14 @@ beforeAll(() => {
 
 const getTopic = id => data.curriculumContent.find(item => item.id === id);
 const teachingText = id => JSON.stringify(getTopic(id).teachingSections);
+const expectAttemptAndCheck = (id, expectedSections) => {
+  const sections = getTopic(id).teachingSections;
+  expect(sections).toHaveLength(expectedSections);
+  sections.forEach(section => {
+    expect((section.items || []).some(item => item.label === 'Try it now — use paper')).toBe(true);
+    expect(section.html).toMatch(/<details>.*<summary>Check/s);
+  });
+};
 
 describe('independent revision teaching depth', () => {
   test('teaches all five search and sort algorithms as separate worked cycles', () => {
@@ -68,5 +76,39 @@ describe('independent revision teaching depth', () => {
     expect(defensive).toMatch(/clearly named subprograms/i);
     expect(defensive).toMatch(/repeat input until presence and length checks pass/i);
     expect(defensive).toMatch(/rate limit or temporary lockout/i);
+  });
+
+  test('makes algorithm design and programming-fundamentals practice checkable', () => {
+    expectAttemptAndCheck('2.1.2', 4);
+    expectAttemptAndCheck('2.2.1', 4);
+    const design = teachingText('2.1.2');
+    expect(design).toMatch(/Correct totals: 4, 5, 11/i);
+    expect(design).toMatch(/parallelogram/i);
+    expect(design).toMatch(/off-by-one error/i);
+    const fundamentals = teachingText('2.2.1');
+    expect(fundamentals).toMatch(/23 DIV 5 is 4/i);
+    expect(fundamentals).toMatch(/inner loop of four.*12 times/i);
+    expect(fundamentals).toMatch(/count-controlled loop for exactly three attempts/i);
+  });
+
+  test('makes broad programming-technique examples independently checkable', () => {
+    expectAttemptAndCheck('2.2.3', 4);
+    const text = teachingText('2.2.3');
+    expect(text).toMatch(/substring\(1, 3\).*ETW/i);
+    expect(getTopic('2.2.3').teachingSections[1].html).toContain('SELECT Name FROM Pupil WHERE House = "Blue"');
+    expect(text).toMatch(/n.*is the parameter/i);
+    expect(text).toMatch(/at least 1 and at most 10/i);
+  });
+
+  test('adds checkable application to security, impacts, law and translators', () => {
+    [['1.4.1', 0], ['1.4.2', 2], ['1.6.1', 1], ['1.6.2', 0], ['2.5.1', 1]]
+      .forEach(([id, index]) => {
+        const section = getTopic(id).teachingSections[index];
+        expect(section.items.some(item => item.label === 'Try it now — use paper')).toBe(true);
+        expect(section.html).toMatch(/<details>.*<summary>Check/s);
+      });
+    expect(teachingText('1.4.1')).toMatch(/social engineering.*malware/i);
+    expect(teachingText('1.6.2')).toMatch(/Computer Misuse Act 1990/i);
+    expect(teachingText('2.5.1')).toMatch(/supply a translated form without giving users the source/i);
   });
 });
