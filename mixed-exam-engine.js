@@ -88,13 +88,14 @@
   function selectTimedTasks(tasks, targetMinutes, seed, requireAO3 = false, markRange = null, requireBothPapers = false, requiredConstructedQuestions = null, requireAlgorithmic = false, requiredTaskId = null) {
     const ordered = seededOrder(tasks, seed);
     const maximumMinutes = Math.max(targetMinutes + 3, Math.ceil(targetMinutes * 1.15));
-    const combinations = new Map([['0:none', { minutes: 0, selected: [] }]]);
+    let combinations = new Map([['0:none', { minutes: 0, selected: [] }]]);
+    const maximumSearchStates = 250;
     const combinationKey = (minutes, selected) => {
       const papers = [...new Set(selected.map(task => task.paper || 'unknown'))].sort().join(',');
       const formats = [...new Set(selected.map(responseFamily))].sort().join(',');
-      const specifications = [...new Set(selected.map(task => task.specificationPointId))].sort().join(',');
+      const specificationCount = new Set(selected.map(task => task.specificationPointId)).size;
       const includesRequiredTask = requiredTaskId && selected.some(task => task.id === requiredTaskId);
-      return `${minutes}:${papers}:${formats}:${specifications}:${selected.some(isAO3Task) ? 'ao3' : 'no-ao3'}:${includesRequiredTask ? 'required' : 'not-required'}`;
+      return `${minutes}:${papers}:${formats}:${specificationCount}:${selected.length}:${selected.some(isAO3Task) ? 'ao3' : 'no-ao3'}:${includesRequiredTask ? 'required' : 'not-required'}`;
     };
 
     ordered.forEach(task => {
@@ -115,6 +116,22 @@
           combinations.set(key, { minutes: nextTotal, selected: nextSelection });
         }
       });
+      if (combinations.size > maximumSearchStates) {
+        const ranked = [...combinations.entries()].sort((left, right) => {
+          const stateScore = ({ minutes, selected }) => {
+            const paperBonus = requireBothPapers && new Set(selected.map(item => item.paper)).size >= 2 ? 80 : 0;
+            const ao3Bonus = requireAO3 && selected.some(isAO3Task) ? 80 : 0;
+            const algorithmBonus = requireAlgorithmic && selected.some(item => responseFamily(item) === 'algorithm-or-design') ? 80 : 0;
+            const requiredBonus = requiredTaskId && selected.some(item => item.id === requiredTaskId) ? 120 : 0;
+            const timeScore = Math.min(minutes, targetMinutes) * 4 - Math.max(0, minutes - targetMinutes) * 2;
+            return selectionQuality(selected, targetMinutes) + paperBonus + ao3Bonus + algorithmBonus + requiredBonus + timeScore;
+          };
+          const scoreDifference = stateScore(right[1]) - stateScore(left[1]);
+          if (scoreDifference) return scoreDifference;
+          return selectionTieBreak(left[1].selected, seed) - selectionTieBreak(right[1].selected, seed);
+        });
+        combinations = new Map(ranked.slice(0, maximumSearchStates));
+      }
     });
 
     const viable = [...combinations.values()].filter(({ minutes, selected }) => minutes > 0 && selected.length > 0).map(({ minutes, selected }) => [minutes, selected]);
@@ -177,22 +194,26 @@
     createMixedExamSession(paperType = 'all', targetMinutes = 20, curriculumContent = [], examTransferTasks = [], examinerKnowledge = null, selectedStrandIds = null, sessionSeed = Date.now()) {
       const seed = String(sessionSeed);
       const duration = Math.max(5, Number(targetMinutes) || 20);
+      const maximumTaskMarks = duration <= 5 ? 5 : duration <= 10 ? 6 : Infinity;
       const taskPool = filterBySelection(examTransferTasks, paperType, selectedStrandIds, item => item.specificationPointId)
-        .filter(task => task?.question && Number(task.marks) > 0 && (duration > 10 || Number(task.marks) <= 6));
+        .filter(task => task?.question && Number(task.marks) > 0 && Number(task.marks) <= maximumTaskMarks);
 
       if (!taskPool.length) {
         return createDiagnosticFallback(paperType, Math.max(1, Math.round(duration / 2)), curriculumContent, selectedStrandIds, seed);
       }
 
-      const desiredShortParts = duration <= 10
+      const desiredShortParts = duration <= 5
+        ? 0
+        : duration <= 10
         ? 1
         : duration <= 20 && ['paper2', 'programming'].includes(paperType)
           ? 2
           : duration <= 20 ? 3 : 4;
-      const ao3Required = (paperType === 'programming' || (paperType === 'paper2' && duration > 10)) && taskPool.some(task => isAO3Task(task) && /^2\.(1|2|3)/.test(task.specificationPointId));
+      const ao3Required = (paperType === 'programming' || (['paper2', 'all'].includes(paperType) && duration >= 20))
+        && taskPool.some(task => isAO3Task(task) && /^2\.(1|2|3)/.test(task.specificationPointId));
       const markRange = {
-        minimum: (duration <= 10 ? 7 : duration <= 20 ? 15 : 32) - desiredShortParts,
-        maximum: (duration <= 10 ? 9 : duration <= 20 ? 18 : 36) - desiredShortParts
+        minimum: (duration <= 5 ? 4 : duration <= 10 ? 7 : duration <= 20 ? 15 : 32) - desiredShortParts,
+        maximum: (duration <= 5 ? 5 : duration <= 10 ? 9 : duration <= 20 ? 18 : 36) - desiredShortParts
       };
       const mixedPaperRequired = paperType === 'all';
       const requiredConstructedQuestions = paperType === 'paper2' && duration <= 10 ? 2 : null;
@@ -258,15 +279,15 @@
       const actualMinutes = constructedMinutes + shortQuestions.length;
       const totalMarks = questions.reduce((total, question) => total + question.marks, 0);
       const minimumUsefulTime = Math.ceil(duration * 0.8);
-      const minimumQuestions = duration <= 10 ? 2 : duration <= 20 ? 4 : 7;
-      const minimumFormats = duration <= 10 ? 2 : duration <= 20 ? 3 : 4;
+      const minimumQuestions = duration <= 5 ? 1 : duration <= 10 ? 2 : duration <= 20 ? 4 : 7;
+      const minimumFormats = duration <= 5 ? 1 : duration <= 10 ? 2 : duration <= 20 ? 3 : 4;
       const responseFormats = new Set([...selectedTasks.map(responseFamily), ...(shortQuestions.length ? ['short-selection'] : [])]);
-      const minimumMarks = duration <= 10 ? 7 : duration <= 20 ? 15 : 32;
-      const maximumMarks = duration <= 10 ? 9 : duration <= 20 ? 18 : 36;
+      const minimumMarks = duration <= 5 ? 4 : duration <= 10 ? 7 : duration <= 20 ? 15 : 32;
+      const maximumMarks = duration <= 5 ? 5 : duration <= 10 ? 9 : duration <= 20 ? 18 : 36;
       const ao3Available = ao3Required;
       const ao3Included = selectedTasks.some(isAO3Task);
       const includesBothPapers = new Set(selectedTasks.map(task => task.paper)).size >= 2;
-      const validShortPaper2Shape = paperType !== 'paper2' || duration > 10 || selectedTasks.length >= 2;
+      const validShortPaper2Shape = paperType !== 'paper2' || duration <= 5 || duration > 10 || selectedTasks.length >= 2;
 
       return {
         sessionId: `exam_session_${seed}`,

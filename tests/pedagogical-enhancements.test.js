@@ -99,6 +99,37 @@ describe('Senior Developer Pedagogical & Examiner Enhancements', () => {
       expect(session.questions.every(question => question.markScheme.length > 0)).toBe(true);
     });
 
+    test('builds a genuine five-minute single-question practice instead of a disguised short paper', () => {
+      const examTasks = [
+        { id: 'exam_111', specificationPointId: '1.1.1', paper: 'Paper 1', commandWord: 'Explain', marks: 4, question: 'Explain the register roles.', requiredElements: ['PC role', 'MAR role', 'MDR role', 'linked sequence'] },
+        { id: 'exam_112', specificationPointId: '1.1.2', paper: 'Paper 1', commandWord: 'Compare', marks: 6, question: 'Compare two processors.', requiredElements: ['clock speed', 'cache', 'cores'] }
+      ];
+      const curriculum = examTasks.map(task => ({
+        id: task.specificationPointId,
+        officialSpecificationPointId: task.specificationPointId,
+        diagnostic: { question: `Short ${task.id}`, options: ['Correct', 'Wrong'], answer: 'Correct', explanation: 'Why' }
+      }));
+
+      const session = mixedExamEngine.createMixedExamSession('paper1', 5, curriculum, examTasks, null, ['1.1.1', '1.1.2'], 'five-minute');
+
+      expect(session.sufficientForRequestedTime).toBe(true);
+      expect(session.targetMinutes).toBe(5);
+      expect(session.timeLimitMinutes).toBe(5);
+      expect(session.totalMarks).toBe(4);
+      expect(session.questions).toHaveLength(1);
+      expect(session.questions[0]).toMatchObject({ id: 'exam_111', type: 'constructed' });
+    });
+
+    test('accepts a genuine five-minute Paper 2 question without applying the ten-minute two-question rule', () => {
+      const task = { id: 'exam_211', specificationPointId: '2.1.1', paper: 'Paper 2', commandWord: 'Explain', marks: 4, question: 'Explain how decomposition helps solve a problem.', requiredElements: ['smaller parts', 'manageable', 'combined solution', 'scenario link'] };
+      const curriculum = [{ id: '2.1.1', officialSpecificationPointId: '2.1.1', diagnostic: { question: 'Short check', options: ['Correct', 'Wrong'], answer: 'Correct', explanation: 'Why' } }];
+
+      const session = mixedExamEngine.createMixedExamSession('paper2', 5, curriculum, [task], null, ['2.1.1'], 'five-minute-paper-two');
+
+      expect(session).toMatchObject({ sufficientForRequestedTime: true, timeLimitMinutes: 5, totalMarks: 4 });
+      expect(session.questions).toHaveLength(1);
+    });
+
     test('does not place the correct multiple-choice option in one fixed position', () => {
       const curriculumContent = [
         { id: '1.1.1', officialSpecificationPointId: '1.1.1', diagnostic: { question: 'Q1', options: ['Correct', 'B', 'C', 'D'], answer: 'Correct', explanation: 'E1' } }
@@ -155,6 +186,53 @@ describe('Senior Developer Pedagogical & Examiner Enhancements', () => {
       expect(Math.max(...paper2.questions.filter(question => question.type === 'constructed').map(question => question.marks))).toBeLessThanOrEqual(6);
       expect(mixed.sufficientForRequestedTime).toBe(true);
       expect(new Set(mixed.questions.map(question => question.paper))).toEqual(new Set(['Paper 1', 'Paper 2']));
+    });
+
+    test('builds a sufficient 40-minute mixed paper without blocking the browser', () => {
+      const data = require('../database').defaultDatabase;
+      const startedAt = Date.now();
+      const session = mixedExamEngine.createMixedExamSession(
+        'all', 40, data.curriculumContent, data.examTransferTasks,
+        global.window.StudySpiceContent.examinerKnowledge, null, 'bounded-forty-minute-paper'
+      );
+      const elapsed = Date.now() - startedAt;
+
+      expect(elapsed).toBeLessThan(2000);
+      expect(session.sufficientForRequestedTime).toBe(true);
+      expect(session.timeLimitMinutes).toBeGreaterThanOrEqual(32);
+      expect(session.timeLimitMinutes).toBeLessThanOrEqual(46);
+      expect(new Set(session.questions.map(question => question.paper))).toEqual(new Set(['Paper 1', 'Paper 2']));
+      expect(session.responseFormatCount).toBeGreaterThanOrEqual(4);
+    });
+
+    test('builds a genuine five-minute programming paper as one constructed question', () => {
+      const data = require('../database').defaultDatabase;
+      const session = mixedExamEngine.createMixedExamSession(
+        'programming', 5, data.curriculumContent, data.examTransferTasks,
+        global.window.StudySpiceContent.examinerKnowledge, null, 'five-minute-programming-paper'
+      );
+
+      expect(session.sufficientForRequestedTime).toBe(true);
+      expect(session.questions).toHaveLength(1);
+      expect(session.totalMarks).toBeGreaterThanOrEqual(4);
+      expect(session.totalMarks).toBeLessThanOrEqual(5);
+      expect(session.timeLimitMinutes).toBe(5);
+      expect(session.questions[0].type).toBe('constructed');
+      expect(session.questions[0].responseForm).toMatch(/algorithm|trace|design|program/i);
+    });
+
+    test.each([20, 40])('keeps substantial %i-minute mixed papers synoptic with genuine AO3 work', duration => {
+      const data = require('../database').defaultDatabase;
+      for (let seedIndex = 0; seedIndex < 12; seedIndex += 1) {
+        const session = mixedExamEngine.createMixedExamSession(
+          'all', duration, data.curriculumContent, data.examTransferTasks,
+          global.window.StudySpiceContent.examinerKnowledge, null, `mixed-ao3-${duration}-${seedIndex}`
+        );
+
+        expect(session.sufficientForRequestedTime).toBe(true);
+        expect(session.includesAO3).toBe(true);
+        expect(new Set(session.questions.map(question => question.paper))).toEqual(new Set(['Paper 1', 'Paper 2']));
+      }
     });
   });
 

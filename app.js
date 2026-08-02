@@ -65,6 +65,8 @@ class App {
     this.numberSkillsCalculations = {};
     this.currentTestSession = null;
     this.currentTestAnswers = [];
+    this.currentTestReviewPending = false;
+    this.currentTestReviewOpen = false;
 
     // Theory Recall Quiz state
     this.quizQuestions = [];
@@ -1026,6 +1028,61 @@ class App {
     this.examTransferRetryResponse = '';
   }
 
+  getCustomTestDraftKey(studentId = this.currentUser?.id) {
+    return studentId ? `studyspice_custom_test_draft_${studentId}` : null;
+  }
+
+  getCustomTestDraft() {
+    const key = this.getCustomTestDraftKey();
+    if (!key || typeof sessionStorage === 'undefined' || typeof sessionStorage.getItem !== 'function') return null;
+    try {
+      const draft = JSON.parse(sessionStorage.getItem(key));
+      if (draft?.version !== 1 || !draft.session?.sessionId || !Array.isArray(draft.session.questions)) return null;
+      const answers = Array.isArray(draft.answers)
+        ? draft.session.questions.map((question, index) => String(draft.answers[index] || '').slice(0, question.type === 'mcq' ? 1000 : 20000))
+        : draft.session.questions.map(() => '');
+      return { session: draft.session, answers, savedAt: draft.savedAt || null };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  saveCustomTestDraft() {
+    const key = this.getCustomTestDraftKey();
+    if (!key || !this.currentTestSession?.questions?.length || typeof sessionStorage === 'undefined') return;
+    sessionStorage.setItem(key, JSON.stringify({
+      version: 1,
+      session: this.currentTestSession,
+      answers: this.currentTestAnswers,
+      savedAt: new Date().toISOString()
+    }));
+  }
+
+  captureCustomTestDraftFromDOM() {
+    if (this.activeTab !== 'stud-custom-test' || !this.currentTestSession?.questions?.length) return;
+    this.currentTestAnswers = this.currentTestSession.questions.map((question, index) => question.type === 'mcq'
+      ? document.querySelector(`input[name="custom_q_${index}"]:checked`)?.value || this.currentTestAnswers[index] || ''
+      : document.querySelector(`textarea[name="custom_q_${index}"]`)?.value || this.currentTestAnswers[index] || '');
+    this.saveCustomTestDraft();
+  }
+
+  restoreCustomTestDraft() {
+    const draft = this.getCustomTestDraft();
+    if (!draft) return false;
+    this.currentTestSession = draft.session;
+    this.currentTestAnswers = draft.answers;
+    return true;
+  }
+
+  clearCustomTestDraft() {
+    const key = this.getCustomTestDraftKey();
+    if (key && typeof sessionStorage !== 'undefined') sessionStorage.removeItem?.(key);
+    this.currentTestSession = null;
+    this.currentTestAnswers = [];
+    this.currentTestReviewPending = false;
+    this.currentTestReviewOpen = false;
+  }
+
   captureExamTransferDraftFromDOM() {
     if (this.activeTab !== 'stud-exam-transfer') return;
     const decode = document.getElementById('transfer-decode-response');
@@ -1932,6 +1989,11 @@ class App {
         if (!discard) return false;
         this.clearExamTransferDraft();
       }
+    }
+    if (this.activeTab === 'stud-custom-test' && tabId !== 'stud-custom-test' && this.currentTestSession?.questions?.length && !this.currentTestReviewOpen) {
+      this.captureCustomTestDraftFromDOM();
+      const hasAnswers = this.currentTestAnswers.some(answer => String(answer || '').trim());
+      if (hasAnswers && !window.confirm('Leave this practice paper? Your answers are saved in this browser session so you can resume later.')) return false;
     }
     this.activeTab = tabId;
     this.render();
@@ -3278,7 +3340,9 @@ class App {
     }
     const config = this.testBuilderConfig;
     if (!config.durationMinutes) config.durationMinutes = Number(config.questionCount) || 20;
+    if (config.paperType === 'all' && config.durationMinutes < 10) config.durationMinutes = 10;
     if (config.paperType === 'programming' && config.durationMinutes > 20) config.durationMinutes = 20;
+    const savedTestDraft = this.getCustomTestDraft();
     const units = window.db.getUnits();
     const paper1Units = units.filter(u => u.paper.includes('Paper 1'));
     const paper2Units = units.filter(u => u.paper.includes('Paper 2'));
@@ -3302,6 +3366,12 @@ class App {
           <h1 style="font-size: 28px; font-weight: 800; margin: 6px 0;">Build an exam-style test</h1>
           <p style="font-size: 15px; color: var(--text-muted);">Choose OCR topics and a test length. StudySpice will create a practice test using original exam-style questions.</p>
         </header>
+
+        ${savedTestDraft ? `<section class="test-builder-resume" aria-labelledby="resume-test-heading">
+          <div><span class="student-mode-label">Saved in this browser session</span><h2 id="resume-test-heading">Continue your unfinished practice paper</h2>
+          <p>${savedTestDraft.session.questions.length} question${savedTestDraft.session.questions.length === 1 ? '' : 's'} &middot; ${savedTestDraft.session.totalMarks} marks &middot; about ${savedTestDraft.session.timeLimitMinutes} minutes</p></div>
+          <button type="button" class="btn btn-primary" id="resume-built-test-btn">Resume paper</button>
+        </section>` : ''}
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; align-items: start;">
           <div class="card" style="padding: 24px; border-top: 5px solid #0284C7;">
@@ -3339,6 +3409,13 @@ class App {
 
             <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-main);">2. Choose a length</h2>
             <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
+              ${config.paperType === 'all' ? '' : `<label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.durationMinutes === 5 ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
+                <input type="radio" name="builder-length" value="5" ${config.durationMinutes === 5 ? 'checked' : ''}>
+                <div>
+                  <strong style="display: block; font-size: 14px;">One exam question (about 5 minutes)</strong>
+                  <span style="font-size:12px; color:var(--text-muted);">One focused written question worth about 4&ndash;5 marks</span>
+                </div>
+              </label>`}
               <label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.durationMinutes === 10 ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
                 <input type="radio" name="builder-length" value="10" ${config.durationMinutes === 10 ? 'checked' : ''}>
                 <div>
@@ -3362,10 +3439,6 @@ class App {
               </label>`}
             </div>
 
-                <div id="test-builder-error" class="form-error" role="alert" tabindex="-1" hidden style="margin-bottom:12px;"></div>
-                <button type="button" id="start-built-test-btn" class="btn btn-primary" style="width: 100%; min-height: 46px; font-size: 16px; font-weight: 700; background: #0284C7; border-color: #0284C7;">
-              Build practice paper &rarr;
-            </button>
             <button type="button" id="builder-back-hub-btn" class="btn btn-link" style="width: 100%; margin-top: 10px;">Back to Practice menu</button>
           </div>
 
@@ -3408,6 +3481,12 @@ class App {
             </div>
           </div>
         </div>
+        <section class="test-builder-action" aria-label="Practice paper summary">
+          <div><strong>${config.durationMinutes === 5 ? 'One exam question' : config.durationMinutes === 10 ? 'Short practice paper' : config.durationMinutes === 20 ? 'Focused practice paper' : 'Extended practice paper'}</strong>
+          <span>${config.selectedStrandIds.length} section${config.selectedStrandIds.length === 1 ? '' : 's'} selected &middot; target about ${config.durationMinutes} minutes</span></div>
+          <div id="test-builder-error" class="form-error" role="alert" tabindex="-1" hidden></div>
+          <button type="button" id="start-built-test-btn" class="btn btn-primary">Build practice paper &rarr;</button>
+        </section>
       </div>
     `;
 
@@ -3423,6 +3502,9 @@ class App {
         config.durationMinutes = parseInt(radio.value, 10);
         this.renderStudentTestBuilder(panel);
       };
+    });
+    panel.querySelector('#resume-built-test-btn')?.addEventListener('click', () => {
+      if (this.restoreCustomTestDraft()) this.switchTab('stud-custom-test');
     });
     panel.querySelectorAll('.topic-parent-checkbox').forEach(cb => {
       cb.onclick = (e) => { e.stopPropagation(); };
@@ -3469,6 +3551,9 @@ class App {
           }
           return;
         }
+        const existingDraft = this.getCustomTestDraft();
+        const existingDraftHasAnswers = existingDraft?.answers?.some(answer => String(answer || '').trim());
+        if (existingDraftHasAnswers && !window.confirm('Build a new practice paper and replace your saved unfinished paper?')) return;
         if (window.StudySpiceContent?.mixedExamEngine) {
           const session = window.StudySpiceContent.mixedExamEngine.createMixedExamSession(
           config.paperType,
@@ -3498,6 +3583,9 @@ class App {
           }
           this.currentTestSession = session;
           this.currentTestAnswers = [];
+          this.currentTestReviewPending = false;
+          this.currentTestReviewOpen = false;
+          this.saveCustomTestDraft();
           this.switchTab('stud-custom-test');
         } else {
           const error = panel.querySelector('#test-builder-error');
@@ -3512,6 +3600,7 @@ class App {
   }
 
   renderStudentCustomTest(panel) {
+    if (!this.currentTestSession?.questions?.length) this.restoreCustomTestDraft();
     const session = this.currentTestSession;
     if (!session?.questions?.length) {
       panel.innerHTML = `
@@ -3524,69 +3613,117 @@ class App {
       return;
     }
 
+    const savedAnswers = session.questions.map((question, index) => String(this.currentTestAnswers[index] || ''));
+    const cleanQuestionText = question => String(question.question || '').replace(/\s*\[\d+\s*marks?\]\s*$/i, '').trim();
+
     panel.innerHTML = `
       <div class="student-page student-custom-test">
-        <header class="student-route-header">
-          <span class="student-mode-label">OCR-style practice &middot; ${session.totalMarks} marks &middot; about ${session.timeLimitMinutes} minutes</span>
-          <h1>Your selected-topic test</h1>
-          <p>Answer the questions as you would in an exam. This is self-check practice and does not change Progress.</p>
+        <header class="student-route-header custom-test-session-header">
+          <span class="student-mode-label">Original exam-style practice &middot; not an official OCR paper</span>
+          <h1>Your selected-topic practice paper</h1>
+          <div class="custom-test-session-summary" aria-label="Paper summary">
+            <span><strong>${session.questions.length}</strong> question${session.questions.length === 1 ? '' : 's'}</span>
+            <span><strong>${session.totalMarks}</strong> marks</span>
+            <span><strong>About ${session.timeLimitMinutes}</strong> minutes</span>
+            <span id="custom-test-header-progress"><strong>${savedAnswers.filter(answer => answer.trim()).length}</strong> answered</span>
+          </div>
+          <p>Work at exam pace. Your answers are saved in this browser session. Self-checking does not change Progress.</p>
         </header>
         <form id="custom-test-form" class="custom-test-layout" novalidate>
           <nav class="custom-test-navigator" aria-label="Test questions">
-            <strong>Questions</strong>
-            <p>Choose a number to jump to it.</p>
+            <div class="custom-test-navigator-heading"><strong>Questions</strong><span id="custom-test-nav-progress">${savedAnswers.filter(answer => answer.trim()).length}/${session.questions.length} answered</span></div>
+            <p>Choose a question to move to it.</p>
             <ol>
               ${session.questions.map((question, questionIndex) => `
-                <li><button type="button" class="custom-test-nav-item" data-jump-question="${questionIndex}" aria-label="Question ${questionIndex + 1}, ${question.marks} mark${question.marks === 1 ? '' : 's'}, not answered">
+                <li><button type="button" class="custom-test-nav-item${savedAnswers[questionIndex].trim() ? ' is-answered' : ''}" data-jump-question="${questionIndex}" aria-label="Question ${questionIndex + 1}, ${question.marks} mark${question.marks === 1 ? '' : 's'}, ${savedAnswers[questionIndex].trim() ? 'answered' : 'not answered'}">
                   <span>Q${questionIndex + 1}</span><span>${question.marks}m</span><span class="custom-test-nav-status" aria-hidden="true">○</span>
                 </button></li>`).join('')}
             </ol>
+            <div class="custom-test-nav-legend"><span>✓ Answered</span><span>○ Not answered</span></div>
+            <button type="button" class="btn btn-secondary custom-test-review-shortcut" id="custom-test-review-finish-btn">Review and finish</button>
           </nav>
           <div class="custom-test-paper">
           ${session.questions.map((question, questionIndex) => `
-            <fieldset id="custom-test-question-${questionIndex}" class="card custom-test-question" data-custom-question="${questionIndex}">
-              <legend style="font-weight:700; line-height:1.5; width:100%;">
-                <span style="display:flex; justify-content:space-between; gap:16px;">
+            <fieldset id="custom-test-question-${questionIndex}" class="custom-test-question" data-custom-question="${questionIndex}" tabindex="-1">
+              <legend>
+                <span class="custom-test-question-heading">
                   <span>Question ${questionIndex + 1}</span>
-                  <span>[${question.marks} mark${question.marks === 1 ? '' : 's'}]</span>
+                  <span>${question.marks} mark${question.marks === 1 ? '' : 's'} &middot; about ${question.minutes} min</span>
                 </span>
               </legend>
-              <p style="font-weight:650; line-height:1.6;">${this.escapeHTML(question.question)}</p>
+              <p class="custom-test-prompt">${this.escapeHTML(cleanQuestionText(question))}</p>
               ${question.type === 'mcq' ? question.options.map((option, optionIndex) => `
-                <label for="custom-q-${questionIndex}-${optionIndex}" style="display:block; margin:10px 0;">
-                  <input id="custom-q-${questionIndex}-${optionIndex}" type="radio" name="custom_q_${questionIndex}" value="${this.escapeHTML(option)}"> ${this.escapeHTML(option)}
+                <label for="custom-q-${questionIndex}-${optionIndex}" class="custom-test-option">
+                  <input id="custom-q-${questionIndex}-${optionIndex}" type="radio" name="custom_q_${questionIndex}" value="${this.escapeHTML(option)}" ${savedAnswers[questionIndex] === option ? 'checked' : ''}> <span>${this.escapeHTML(option)}</span>
                 </label>`).join('') : `
-                <label for="custom-q-${questionIndex}" style="display:block; font-weight:650; margin-top:14px;">Your answer</label>
-                <textarea id="custom-q-${questionIndex}" name="custom_q_${questionIndex}" class="form-control" rows="${Math.min(12, Math.max(4, question.marks + 2))}" placeholder="Write your answer${question.responseForm === 'calculation' ? ' and show your working' : ''} here..."></textarea>
-                <p style="font-size:12px; color:var(--text-muted); margin-top:6px;">Suggested time: about ${question.minutes} minute${question.minutes === 1 ? '' : 's'}</p>`}
+                <label for="custom-q-${questionIndex}" class="custom-test-answer-label">Your answer</label>
+                <textarea id="custom-q-${questionIndex}" name="custom_q_${questionIndex}" class="form-control" rows="${Math.min(12, Math.max(4, question.marks + 2))}" placeholder="Write your answer${question.responseForm === 'calculation' ? ' and show your working' : ''} here...">${this.escapeHTML(savedAnswers[questionIndex])}</textarea>`}
             </fieldset>`).join('')}
-          <div id="custom-test-error" class="form-error" role="alert" tabindex="-1" hidden style="margin-bottom:12px;"></div>
-          <button type="submit" class="btn btn-primary btn-lg">Finish and open self-check</button>
-          <button type="button" class="btn btn-secondary" id="custom-test-cancel-btn">Back to Practice</button>
+          <section class="custom-test-finish" aria-labelledby="custom-test-finish-heading">
+            <h2 id="custom-test-finish-heading">End of practice paper</h2>
+            <p>Check what you attempted, then open the self-check.</p>
+            <div id="custom-test-error" class="form-error" role="alert" tabindex="-1" hidden></div>
+            <div id="custom-test-incomplete-review" class="custom-test-incomplete-review" tabindex="-1" hidden>
+              <p id="custom-test-incomplete-message"></p>
+              <button type="button" class="btn btn-secondary" id="custom-test-review-unanswered-btn">Review unanswered</button>
+              <button type="button" class="btn btn-primary" id="custom-test-open-self-check-btn">Open self-check anyway</button>
+            </div>
+            <div class="custom-test-finish-actions">
+              <button type="submit" class="btn btn-primary btn-lg">Finish and review answers</button>
+              <button type="button" class="btn btn-secondary" id="custom-test-cancel-btn">Leave test</button>
+            </div>
+          </section>
           </div>
         </form>
       </div>`;
 
+    let currentQuestionIndex = 0;
+    const readAnswers = () => session.questions.map((question, index) => question.type === 'mcq'
+      ? panel.querySelector(`input[name="custom_q_${index}"]:checked`)?.value || ''
+      : panel.querySelector(`textarea[name="custom_q_${index}"]`)?.value || '');
+    const meaningfulAnswer = (question, answer) => question.type === 'mcq'
+      ? Boolean(answer)
+      : this.isMeaningfulLearnerResponse(answer, 8);
     const updateQuestionNavigator = questionIndex => {
       const question = session.questions[questionIndex];
-      const answered = question.type === 'mcq'
-        ? Boolean(panel.querySelector(`input[name="custom_q_${questionIndex}"]:checked`))
-        : Boolean(panel.querySelector(`textarea[name="custom_q_${questionIndex}"]`)?.value.trim());
+      const answered = meaningfulAnswer(question, readAnswers()[questionIndex]);
       const button = panel.querySelector(`[data-jump-question="${questionIndex}"]`);
       if (!button) return;
       button.classList.toggle('is-answered', answered);
+      button.classList.toggle('is-current', questionIndex === currentQuestionIndex);
+      if (questionIndex === currentQuestionIndex) button.setAttribute('aria-current', 'step');
+      else button.removeAttribute('aria-current');
       button.querySelector('.custom-test-nav-status').textContent = answered ? '✓' : '○';
       button.setAttribute('aria-label', `Question ${questionIndex + 1}, ${question.marks} mark${question.marks === 1 ? '' : 's'}, ${answered ? 'answered' : 'not answered'}`);
+    };
+    const updateProgress = () => {
+      const answers = readAnswers();
+      this.currentTestAnswers = answers;
+      this.saveCustomTestDraft();
+      const answeredCount = answers.filter((answer, index) => meaningfulAnswer(session.questions[index], answer)).length;
+      const navProgress = panel.querySelector('#custom-test-nav-progress');
+      const headerProgress = panel.querySelector('#custom-test-header-progress');
+      if (navProgress) navProgress.textContent = `${answeredCount}/${session.questions.length} answered`;
+      if (headerProgress) headerProgress.innerHTML = `<strong>${answeredCount}</strong> answered`;
+      session.questions.forEach((question, index) => updateQuestionNavigator(index));
     };
     panel.querySelectorAll('[data-jump-question]').forEach(button => {
       button.addEventListener('click', () => {
         const questionIndex = Number(button.dataset.jumpQuestion);
-        panel.querySelector(`#custom-test-question-${questionIndex}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        currentQuestionIndex = questionIndex;
+        const question = panel.querySelector(`#custom-test-question-${questionIndex}`);
+        const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+        question?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+        question?.focus({ preventScroll: true });
+        updateProgress();
       });
     });
     session.questions.forEach((question, questionIndex) => {
       const selector = question.type === 'mcq' ? `input[name="custom_q_${questionIndex}"]` : `textarea[name="custom_q_${questionIndex}"]`;
-      panel.querySelectorAll(selector).forEach(control => control.addEventListener(question.type === 'mcq' ? 'change' : 'input', () => updateQuestionNavigator(questionIndex)));
+      panel.querySelectorAll(selector).forEach(control => {
+        control.addEventListener('focus', () => { currentQuestionIndex = questionIndex; updateProgress(); });
+        control.addEventListener(question.type === 'mcq' ? 'change' : 'input', updateProgress);
+      });
     });
     panel.querySelector('#custom-test-cancel-btn')?.addEventListener('click', () => this.switchTab('stud-practice'));
     panel.querySelector('#custom-test-form').onsubmit = event => {
@@ -3594,20 +3731,20 @@ class App {
       const answers = session.questions.map((question, index) => question.type === 'mcq'
         ? panel.querySelector(`input[name="custom_q_${index}"]:checked`)?.value || ''
         : panel.querySelector(`textarea[name="custom_q_${index}"]`)?.value.trim() || '');
-      const firstMissing = answers.findIndex((answer, index) => session.questions[index].type === 'mcq'
-        ? !answer
-        : !this.isMeaningfulLearnerResponse(answer, 8));
-      if (firstMissing >= 0) {
-        const error = panel.querySelector('#custom-test-error');
-        error.textContent = `Write an answer to question ${firstMissing + 1} before opening the self-check.`;
-        error.hidden = false;
-        const fieldset = panel.querySelector(`[data-custom-question="${firstMissing}"]`);
-        fieldset?.setAttribute('aria-describedby', 'custom-test-error');
-        fieldset?.querySelector('textarea, input')?.focus();
+      const missing = answers.map((answer, index) => meaningfulAnswer(session.questions[index], answer) ? null : index).filter(index => index !== null);
+      if (missing.length && !this.currentTestReviewPending) {
+        const review = panel.querySelector('#custom-test-incomplete-review');
+        const message = panel.querySelector('#custom-test-incomplete-message');
+        message.textContent = `${session.questions.length - missing.length} of ${session.questions.length} answered. ${missing.length} question${missing.length === 1 ? ' is' : 's are'} unanswered.`;
+        review.hidden = false;
+        review.focus();
         return;
       }
 
       this.currentTestAnswers = answers;
+      this.currentTestReviewPending = false;
+      this.currentTestReviewOpen = true;
+      this.saveCustomTestDraft();
       panel.innerHTML = `
         <div class="student-route-header">
           <span class="student-mode-label">Self-check &middot; ${session.totalMarks} marks &middot; practice only</span>
@@ -3619,8 +3756,8 @@ class App {
           const correct = isMcq && answers[index] === question.answer;
           return `<article class="card custom-test-self-check" style="margin-bottom:18px; border-left:5px solid var(--teal);">
             <h2 style="font-size:17px; display:flex; justify-content:space-between; gap:12px;"><span>Question ${index + 1}</span><span>[${question.marks}]</span></h2>
-            <p>${this.escapeHTML(question.question)}</p>
-            <div class="custom-test-answer-copy"><strong>Your answer</strong><p>${this.escapeHTML(answers[index])}</p></div>
+            <p>${this.escapeHTML(cleanQuestionText(question))}</p>
+            <div class="custom-test-answer-copy"><strong>Your answer</strong><p>${answers[index] ? this.escapeHTML(answers[index]) : '<em>Not answered</em>'}</p></div>
             ${isMcq ? `<p><strong>${correct ? 'Correct.' : 'Not correct.'}</strong> ${correct ? '' : this.escapeHTML(question.explanation || '')}</p>` : `
               <details>
                 <summary style="font-weight:700; cursor:pointer;">Open answer guidance</summary>
@@ -3631,10 +3768,33 @@ class App {
         }).join('')}
         <button type="button" class="btn btn-primary" id="custom-test-again-btn">Build another test</button>
         <button type="button" class="btn btn-secondary" id="custom-test-finish-btn">Back to Practice</button>`;
-      panel.querySelector('#custom-test-again-btn')?.addEventListener('click', () => this.switchTab('stud-test-builder'));
-      panel.querySelector('#custom-test-finish-btn')?.addEventListener('click', () => this.switchTab('stud-practice'));
+      panel.querySelector('#custom-test-again-btn')?.addEventListener('click', () => {
+        this.clearCustomTestDraft();
+        this.switchTab('stud-test-builder');
+      });
+      panel.querySelector('#custom-test-finish-btn')?.addEventListener('click', () => {
+        this.clearCustomTestDraft();
+        this.switchTab('stud-practice');
+      });
       this.focusMainContent();
     };
+    panel.querySelector('#custom-test-open-self-check-btn')?.addEventListener('click', () => {
+      this.currentTestReviewPending = true;
+      panel.querySelector('#custom-test-form')?.requestSubmit();
+    });
+    panel.querySelector('#custom-test-review-unanswered-btn')?.addEventListener('click', () => {
+      const answers = readAnswers();
+      const firstMissing = answers.findIndex((answer, index) => !meaningfulAnswer(session.questions[index], answer));
+      panel.querySelector(`[data-jump-question="${firstMissing}"]`)?.click();
+    });
+    panel.querySelector('#custom-test-review-finish-btn')?.addEventListener('click', () => {
+      const finishHeading = panel.querySelector('#custom-test-finish-heading');
+      const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+      finishHeading?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+      finishHeading?.setAttribute('tabindex', '-1');
+      finishHeading?.focus({ preventScroll: true });
+    });
+    updateProgress();
     this.focusMainContent();
   }
 
@@ -4465,9 +4625,9 @@ class App {
             <table style="width: 100%; font-size: 12px; border-collapse: collapse; color: #E2E8F0;">
               <thead>
                 <tr style="border-bottom: 1px solid #475569; text-align: left;">
-                  <th style="padding: 6px; color: #94A3B8;">Feature</th>
-                  <th style="padding: 6px; color: #34D399;">🔓 Open Source (e.g. Python, Linux)</th>
-                  <th style="padding: 6px; color: #F472B6;">🔒 Proprietary (e.g. MS Windows, Office)</th>
+                  <th scope="col" style="padding: 6px; color: #94A3B8;">Feature</th>
+                  <th scope="col" style="padding: 6px; color: #34D399;">🔓 Open Source (e.g. Python, Linux)</th>
+                  <th scope="col" style="padding: 6px; color: #F472B6;">🔒 Proprietary (e.g. MS Windows, Office)</th>
                 </tr>
               </thead>
               <tbody>

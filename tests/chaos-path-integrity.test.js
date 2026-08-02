@@ -88,7 +88,29 @@ describe('chaos-path integrity guards', () => {
     expect(app.render).not.toHaveBeenCalled();
   });
 
-  test('custom tests have a dedicated route and contextual incomplete-answer errors', () => {
+  test('restores a saved custom paper with stable questions and answers', () => {
+    const sessionStorage = makeStorage();
+    const first = loadApp({ sessionStorage });
+    first.app.currentUser = { id: 'student_1', role: 'student' };
+    first.app.currentTestSession = {
+      sessionId: 'paper_1', totalMarks: 5, timeLimitMinutes: 6,
+      questions: [
+        { id: 'q1', type: 'constructed', question: 'Explain a process.', marks: 4 },
+        { id: 'q2', type: 'mcq', question: 'Choose one.', marks: 1 }
+      ]
+    };
+    first.app.currentTestAnswers = ['A developed saved answer', 'Option B'];
+    first.app.saveCustomTestDraft();
+
+    const second = loadApp({ sessionStorage });
+    second.app.currentUser = { id: 'student_1', role: 'student' };
+    expect(second.app.restoreCustomTestDraft()).toBe(true);
+    expect(second.app.currentTestSession.sessionId).toBe('paper_1');
+    expect(second.app.currentTestSession.questions.map(question => question.id)).toEqual(['q1', 'q2']);
+    expect(second.app.currentTestAnswers).toEqual(['A developed saved answer', 'Option B']);
+  });
+
+  test('keeps an unfinished custom paper when the learner leaves and allows unanswered review', () => {
     const source = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
 
     expect(source).toContain("case 'stud-custom-test':");
@@ -96,7 +118,12 @@ describe('chaos-path integrity guards', () => {
     expect(source).toContain('custom-test-navigator');
     expect(source).toContain('data-jump-question');
     expect(source).toContain("button.classList.toggle('is-answered', answered)");
-    expect(source).toContain('Write an answer to question ${firstMissing + 1} before opening the self-check.');
+    expect(source).toContain('Open self-check anyway');
+    expect(source).toContain('Review unanswered');
+    expect(source).toContain('Review and finish');
+    expect(source).toContain('Your answers are saved in this browser session');
+    expect(source).toContain('Build a new practice paper and replace your saved unfinished paper?');
+    expect(source).toContain('sessionStorage.removeItem?.(key)');
     expect(source).toContain('<form id="num-skills-form" novalidate>');
     expect(source).toContain('Blank boxes are not counted as answers.');
     expect(source).not.toContain("alert('Please enter a prediction before proceeding.')");
