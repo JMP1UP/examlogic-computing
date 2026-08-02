@@ -1395,6 +1395,17 @@
     ],
     '1.3.1': [
       {
+        heading: 'Build and compare network layouts', minutes: 6,
+        body: 'Network questions involve three different decisions. Scope describes the area: a local area network (LAN) covers a limited site, while a wide area network (WAN) links networks over a larger geographical area and can link several LANs. The resource model can be client-server or peer-to-peer. The connection layout can be a star network or mesh network. These terms answer different questions and can describe the same network together.',
+        items: [
+          { label: 'School star LAN', text: 'Network interface cards connect devices. A switch directs local traffic. A router connects the LAN to other networks. A wireless access point connects wireless devices.' },
+          { label: 'Client-server', text: 'Central accounts, files and backups are easier to manage, but the server costs money and can become a critical point of failure.' },
+          { label: 'Peer-to-peer', text: 'Simple and inexpensive for a few devices, but security, backups and shared resources are harder to manage consistently.' },
+          { label: 'Star or mesh', text: 'Star is simpler and cheaper. Mesh offers alternative routes but needs more connections and is more complex.' },
+          { label: 'Try it now — use paper', text: 'A school wants central accounts, managed backups and simple fault-finding. Choose a resource model and layout, then justify both choices. Reveal the guidance below.' }
+        ]
+      },
+      {
         heading: 'Performance and transmission media', minutes: 4,
         body: 'Network performance can change as more devices share the connection and as available bandwidth changes. The chosen transmission medium, interference, distance and hardware can also affect a real network. Transmission media carry signals between devices and may be wired or wireless. In an exam scenario, identify the factor, state what changes and explain the effect on communication.',
         items: [
@@ -1518,6 +1529,16 @@
     ],
     '1.5.1': [
       {
+        heading: 'Follow one task through the operating system', minutes: 5,
+        body: 'Imagine a pupil edits an image while music plays, then prints the image. The operating system gives both programs processor time, allocates memory, reads their files and sends the print request to the correct device driver. The user interface lets the pupil control each task. User permissions decide whether the files and printer may be used.',
+        items: [
+          { label: 'While both programs run', text: 'Multitasking schedules processor time and memory management allocates RAM.' },
+          { label: 'When a file opens', text: 'File management finds the stored data and checks the user has suitable access.' },
+          { label: 'When the image prints', text: 'Peripheral management uses the printer driver to communicate with that model of printer.' },
+          { label: 'Try it now — use paper', text: 'Match these events to an OS function: switching between programs; opening a folder; blocking another user from a file; sending data to a printer.' }
+        ]
+      },
+      {
         heading: 'User interface, memory and multitasking', minutes: 5,
         body: 'The user interface lets a person interact with the system through features such as windows, icons, menus or a command line. Memory management allocates RAM to applications and transfers data as needed. Multitasking shares processor time and other resources so several programs can make progress while the system remains responsive.',
         items: [
@@ -1552,6 +1573,16 @@
           { label: 'Encryption', text: 'Protects readable data with a key; it does not prevent all attacks.' },
           { label: 'Defragmentation', text: 'Reorganises file blocks on magnetic disks; it does not provide the same benefit on solid-state storage.' },
           { label: 'Compression', text: 'Reduces file size; the exact effect depends on the method and data.' }
+        ]
+      },
+      {
+        heading: 'Choose the utility that fits the problem', minutes: 4,
+        body: 'Start with the problem in the scenario, then name the utility and explain how it helps. Do not claim that one utility solves a different problem.',
+        items: [
+          { label: 'Stolen laptop', text: 'Encryption can stop someone reading protected files without the key. It does not stop the laptop being stolen.' },
+          { label: 'Large attachment', text: 'Compression can reduce transfer time and storage use. Lossy compression may reduce quality.' },
+          { label: 'Slow magnetic hard disk', text: 'Defragmentation can place parts of a file together to reduce head movement. Do not recommend it for an SSD.' },
+          { label: 'Try it now — use paper', text: 'A photographer needs smaller preview images and accepts some loss of quality. Choose a utility, explain how it helps and state the trade-off.' }
         ]
       }
     ],
@@ -1662,38 +1693,56 @@
     ],
     '2.1.3': [
       {
-        heading: 'Worked search and sort states', minutes: 6,
-        body: 'Write every meaningful state so that a missed comparison or swap is visible.',
+        heading: 'Linear search: check one item at a time', minutes: 4,
+        body: 'Linear search starts at the first item and checks each item in order. Stop as soon as the target is found. If every item has been checked, report that the target is not present. The data does not need to be sorted.',
         items: [
-          { label: 'Linear search', text: 'Find 7 in [4, 9, 7]: check 4, then 9, then 7 — found at index 2.' },
-          { label: 'Binary search', text: 'Find 7 in [1, 3, 5, 7, 9]: middle 5 is too small, keep [7, 9], then find 7.' },
-          { label: 'Sorting', text: 'Bubble [3,1,2]: [1,3,2] → [1,2,3]. Insertion inserts 1 before 3, then 2 between them. Merge splits to single items, then merges [1,3] with [2] to [1,2,3].' }
+          { label: 'Worked example', text: 'Find 7 in [4, 9, 7, 2]: check 4, then 9, then 7. Stop at index 2; do not check 2.' },
+          { label: 'Not found', text: 'To show that 6 is absent, check 4, 9, 7 and 2 before reporting not found.' },
+          { label: 'Index reminder', text: 'Array positions are normally numbered from 0, so the first item is index 0 and the third item is index 2.' },
+          { label: 'Try it now — use paper', text: 'Trace a search for 2. Write each checked value and the final index, then reveal the trace below.' }
         ]
       },
       {
-        heading: 'Apply linear and binary search', minutes: 5,
-        body: 'Linear search checks each item in order until it finds the target or reaches the end; the list does not need to be sorted. Binary search requires sorted data. It checks the middle item, compares it with the target and keeps only the half that could contain the target. Continue until the item is found or no search area remains.',
+        heading: 'Binary search: keep the possible half', minutes: 5,
+        body: 'Binary search only works on sorted data. Check the middle item. If two middle items are possible, use the convention stated in the question; if none is stated, choose one consistently. If the checked item is too small, discard it and everything below it. If it is too large, discard it and everything above it. Repeat until the target is found or no items remain.',
         items: [
-          { label: 'Linear search', text: 'Check items in order; works with unsorted data.' },
-          { label: 'Binary search', text: 'Check the middle of a sorted search area and discard the impossible half.' },
-          { label: 'Recognition clue', text: 'Repeatedly halving a sorted search area identifies binary search.' }
+          { label: 'Worked example', text: 'Find 7 in [1, 3, 5, 7, 9]. Check 5: too small, so keep [7, 9]. This example chooses the lower middle, 7: found.' },
+          { label: 'Common mistake', text: 'Do not use binary search on unsorted data. Discarding half could remove the target.' },
+          { label: 'Recognition clue', text: 'Pseudocode that repeatedly changes lower or upper search bounds after checking a middle index is binary search.' },
+          { label: 'Try it now — use paper', text: 'Find 9 in [1, 3, 5, 7, 9]. Use the lower-middle convention and record each remaining search area, then reveal the trace below.' }
         ]
       },
       {
-        heading: 'Trace bubble and insertion sort', minutes: 5,
-        body: 'Bubble sort compares neighbouring items and swaps them when they are in the wrong order. A complete pass continues across the list; passes repeat until no swaps are needed. Insertion sort builds a sorted section. It takes the next item, moves larger items in the sorted section and inserts the item into its correct position.',
+        heading: 'Bubble sort: show every comparison and pass', minutes: 5,
+        body: 'Bubble sort compares neighbouring items. Swap them when they are in the wrong order, then move one place along. A pass reaches the end of the unsorted part of the list. Repeat passes until a complete pass makes no swaps.',
         items: [
-          { label: 'Bubble sort', text: 'Repeated adjacent comparisons and swaps; large values move towards one end over passes.' },
-          { label: 'Insertion sort', text: 'Remove the next unsorted item and insert it into the correct place in the sorted section.' }
+          { label: 'Pass 1 on [3, 1, 2]', text: 'Compare 3 and 1, then swap: [1, 3, 2]. Compare 3 and 2, then swap: [1, 2, 3].' },
+          { label: 'Pass 2', text: 'Compare 1 and 2: no swap. Compare 2 and 3: no swap. The no-swap pass proves the list is sorted.' },
+          { label: 'Common mistake', text: 'One swap is not one pass. Show the state after each comparison that changes the list.' },
+          { label: 'Recognition clue', text: 'Nested passes that compare neighbouring indexes and swap them identify bubble sort.' },
+          { label: 'Try it now — use paper', text: 'Show every comparison in the first pass of bubble sort on [4, 2, 3, 1], then reveal the trace below.' }
         ]
       },
       {
-        heading: 'Trace merge sort', minutes: 4,
-        body: 'Merge sort repeatedly divides the list into smaller lists until each contains one item. It then merges pairs in order, comparing the front items and taking the smaller next. The sorting happens during the merging: do not join unsorted lists and claim they can be sorted afterwards. You need to apply and recognise the steps, not memorise program code.',
+        heading: 'Insertion sort: grow a sorted section', minutes: 5,
+        body: 'Insertion sort treats the first item as a sorted section. Take the next item, move larger items to the right and insert the item into the gap. Repeat with the next unsorted item.',
         items: [
-          { label: 'Divide', text: 'Split until each sub-list contains one item.' },
-          { label: 'Merge in order', text: 'Compare the next available items and build a sorted combined list.' },
-          { label: 'Repeat', text: 'Merge larger sorted lists until one sorted list remains.' }
+          { label: 'Start [3 | 1, 2]', text: 'The bar separates the sorted section from items not processed yet.' },
+          { label: 'Insert 1', text: 'Move 3 right and place 1 before it: [1, 3 | 2].' },
+          { label: 'Insert 2', text: 'Move 3 right and place 2 after 1: [1, 2, 3].' },
+          { label: 'Recognition clue', text: 'A sorted section grows by one item at a time.' },
+          { label: 'Try it now — use paper', text: 'Show the sorted section after each insertion for [5, 2, 4, 1], then reveal the trace below.' }
+        ]
+      },
+      {
+        heading: 'Merge sort: split, then merge in order', minutes: 6,
+        body: 'Merge sort divides the list until every sub-list contains one item. It then merges neighbouring sub-lists in sorted order. Compare the first unused item in each sub-list and take the smaller one. The ordering happens during each merge.',
+        items: [
+          { label: 'Split [6, 2, 5, 1]', text: 'Split into [6, 2] and [5, 1], then into [6] [2] [5] [1].' },
+          { label: 'Merge pairs', text: 'Merge [6] with [2] to get [2, 6]. Merge [5] with [1] to get [1, 5].' },
+          { label: 'Final merge', text: 'Compare front items: take 1, then 2, then 5, then 6. The result is [1, 2, 5, 6].' },
+          { label: 'Common mistake', text: 'Do not join unsorted sub-lists and sort afterwards. Show the ordered result of every merge.' },
+          { label: 'Try it now — use paper', text: 'Show every split and merge for [7, 3, 6, 2], then reveal the trace below.' }
         ]
       }
     ],
@@ -1812,6 +1861,16 @@
           { label: 'Build', text: 'Complete, debug and then construct increasingly independent solutions.' },
           { label: 'Prove', text: 'Compare expected and actual results, fix faults and retest.' }
         ]
+      },
+      {
+        heading: 'Use one dependable problem-solving routine', minutes: 6,
+        body: 'Before coding, write the inputs, required processing and outputs. Build the smallest working step, run it and inspect the values. Add selection, loops, lists or subprograms one at a time. When a test fails, find the first value that differs from the expected value, correct the cause and rerun the failed and earlier tests.',
+        items: [
+          { label: '1. Plan', text: 'Write a small example by hand and decide what each variable represents.' },
+          { label: '2. Build', text: 'Add one meaningful part at a time instead of writing the whole program before running it.' },
+          { label: '3. Test', text: 'Use normal input, a boundary such as the lowest accepted value, and unsuitable input such as text where a number is required.' },
+          { label: '4. Explain', text: 'Be ready to trace the code and explain why each control structure fits the task.' }
+        ]
       }
     ],
     '2.2.ERL': [
@@ -1871,6 +1930,16 @@
       }
     ],
     '2.3.1': [
+      {
+        heading: 'Worked login-input design', minutes: 6,
+        body: 'A login form first checks that required fields are present and within the allowed length. It should reject unsuitable input with a clear retry, rather than crash or continue. Authentication then checks the claimed identity using securely stored verification data. The two checks have different jobs: valid-looking input is not proof of identity.',
+        items: [
+          { label: 'Validate', text: 'Reject a blank username or a value outside the allowed length and explain what the user should change.' },
+          { label: 'Authenticate', text: 'Compare the supplied credentials using the system\'s secure authentication process.' },
+          { label: 'Limit misuse', text: 'Do not reveal which credential was correct. A short delay, rate limit or temporary lockout can reduce rapid repeated attempts.' },
+          { label: 'Maintain', text: 'Put validation and authentication work in clearly named subprograms so each responsibility can be tested and changed.' }
+        ]
+      },
       {
         heading: 'Design validation and authentication', minutes: 5,
         body: 'Validation checks whether input follows rules such as type, range, length, presence or format, and should reject or re-request unsuitable data. It does not prove that a plausible value is true. Authentication checks identity, for example by comparing supplied credentials with securely stored verification data. Anticipate accidental and deliberate misuse rather than assuming every user follows instructions.',
@@ -2069,7 +2138,20 @@
         </div>
         <p class="concept-visual-note">This run-length example is lossless: the original sequence can be rebuilt exactly. Lossy compression permanently removes selected data.</p>
       </figure>`,
-    '1.3.1:1': `
+    '1.3.1:0': `
+      <figure class="concept-visual" aria-labelledby="school-network-title">
+        <figcaption id="school-network-title"><strong>A school star network</strong></figcaption>
+        <div class="concept-map" role="img" aria-label="A central switch has separate direct connections to desktop computers, a server, a wireless access point and a router. The router then connects the local network to the Internet."><div><strong>Central switch</strong><span>direct connection</span><small>Computers with NICs</small></div><div><strong>Central switch</strong><span>direct connection</span><small>Server</small></div><div><strong>Central switch</strong><span>direct connection</span><small>Wireless access point</small></div><div><strong>Central switch</strong><span>direct connection</span><small>Router → Internet</small></div></div>
+        <p class="concept-visual-note">A wireless access point also connects to the switch. If one device cable fails, other devices can still work; if the central switch fails, connected devices lose the LAN connection.</p>
+        <details><summary>Check the school-network recommendation</summary><p>Client-server fits central accounts and managed backups. A star layout through switches makes individual links easier to trace and a single device-link failure does not stop every device. A complete answer should also note server/switch cost or the central-switch risk.</p></details>
+      </figure>`,
+    '1.5.1:0': `
+      <figure class="concept-visual" aria-labelledby="os-task-title">
+        <figcaption id="os-task-title"><strong>One pupil task uses several OS functions</strong></figcaption>
+        <div class="concept-map"><div><strong>Edit and play audio</strong><span>multitasking</span><small>shares processor time</small></div><div><strong>Keep both running</strong><span>memory management</span><small>allocates RAM</small></div><div><strong>Open and save</strong><span>file management</span><small>finds and stores files</small></div><div><strong>Print</strong><span>peripheral management</span><small>uses the printer driver</small></div></div>
+        <details><summary>Check the OS-function matching task</summary><p>Switching programs: multitasking. Opening a folder: file management. Blocking another user: user management and access rights. Printing: peripheral management through a device driver.</p></details>
+      </figure>`,
+    '1.3.1:2': `
       <figure class="concept-visual" aria-labelledby="dns-journey-title">
         <figcaption id="dns-journey-title"><strong>From a web address to a web page</strong></figcaption>
         <ol class="concept-steps">
@@ -2098,12 +2180,35 @@
       </figure>`,
     '2.1.3:0': `
       <figure class="concept-visual" aria-labelledby="search-steps-title">
-        <figcaption id="search-steps-title"><strong>See how each method changes the data</strong></figcaption>
+        <figcaption id="search-steps-title"><strong>Linear search follows one clear route</strong></figcaption>
         <div class="algorithm-strips">
-          <div><strong>Linear search for 7</strong><span><i>4</i><i>9</i><i class="is-found">7</i></span><small>Check in order: 4 → 9 → 7</small></div>
-          <div><strong>Binary search for 7</strong><span><i>1</i><i>3</i><i class="is-checked">5</i><i class="is-found">7</i><i>9</i></span><small>5 is too small, so discard the lower half.</small></div>
-          <div><strong>Bubble sort</strong><span><i>3</i><i>1</i><i>2</i></span><span class="algorithm-next" aria-hidden="true">→</span><span><i>1</i><i>3</i><i>2</i></span><span class="algorithm-next" aria-hidden="true">→</span><span><i>1</i><i>2</i><i>3</i></span></div>
+          <div><strong>Find 7</strong><small>indexes: 0 · 1 · 2 · 3</small><span><i class="is-checked">4</i><i class="is-checked">9</i><i class="is-found">7</i><i>2</i></span><small>Stop when 7 is found at index 2.</small></div>
         </div>
+        <details><summary>Check your trace for finding 2</summary><p>Check 4, 9, 7, then 2. The target is at index 3.</p></details>
+      </figure>`,
+    '2.1.3:1': `
+      <figure class="concept-visual" aria-labelledby="binary-search-title">
+        <figcaption id="binary-search-title"><strong>Binary search reduces the search area</strong></figcaption>
+        <div class="algorithm-strips"><div><strong>Find 7</strong><span><i>1</i><i>3</i><i class="is-checked">5</i><i class="is-found">7</i><i>9</i></span><small>5 is too small: discard 1, 3 and 5. Then check 7.</small></div></div>
+        <details><summary>Check your trace for finding 9</summary><p>Check 5; keep [7, 9]. Using the lower middle, check 7; keep [9]. Check 9: found.</p></details>
+      </figure>`,
+    '2.1.3:2': `
+      <figure class="concept-visual" aria-labelledby="bubble-sort-title">
+        <figcaption id="bubble-sort-title"><strong>Bubble sort: one complete pass</strong></figcaption>
+        <div class="algorithm-strips"><div><strong>Compare neighbours</strong><span><i class="is-checked">3</i><i class="is-checked">1</i><i>2</i></span><span class="algorithm-next" aria-hidden="true">→</span><span><i>1</i><i class="is-checked">3</i><i class="is-checked">2</i></span><span class="algorithm-next" aria-hidden="true">→</span><span><i>1</i><i>2</i><i>3</i></span></div></div>
+        <details><summary>Check your first pass for [4, 2, 3, 1]</summary><p>[2, 4, 3, 1] → [2, 3, 4, 1] → [2, 3, 1, 4]. The 4 has moved to its final position.</p></details>
+      </figure>`,
+    '2.1.3:3': `
+      <figure class="concept-visual" aria-labelledby="insertion-sort-title">
+        <figcaption id="insertion-sort-title"><strong>Insertion sort grows the sorted section</strong></figcaption>
+        <div class="algorithm-strips"><div><strong>Insert one item</strong><span><i class="is-found">3</i><i>1</i><i>2</i></span><span class="algorithm-next" aria-hidden="true">→</span><span><i class="is-found">1</i><i class="is-found">3</i><i>2</i></span><span class="algorithm-next" aria-hidden="true">→</span><span><i class="is-found">1</i><i class="is-found">2</i><i class="is-found">3</i></span></div></div>
+        <details><summary>Check your insertions for [5, 2, 4, 1]</summary><p>[5 | 2, 4, 1] → [2, 5 | 4, 1] → [2, 4, 5 | 1] → [1, 2, 4, 5].</p></details>
+      </figure>`,
+    '2.1.3:4': `
+      <figure class="concept-visual" aria-labelledby="merge-sort-title">
+        <figcaption id="merge-sort-title"><strong>Merge sort: show every split and merge</strong></figcaption>
+        <div class="state-trace" role="img" aria-label="The list 6, 2, 5, 1 splits into two pairs, then single items. The items merge into sorted pairs, then into 1, 2, 5, 6."><span>[6, 2, 5, 1]</span><b aria-hidden="true">split →</b><span>[6, 2] [5, 1]</span><b aria-hidden="true">split →</b><span>[6] [2] [5] [1]</span><b aria-hidden="true">merge →</b><span>[2, 6] [1, 5]</span><b aria-hidden="true">merge →</b><span class="is-result">[1, 2, 5, 6]</span></div>
+        <details><summary>Check your split and merge for [7, 3, 6, 2]</summary><p>Split to [7, 3] [6, 2], then [7] [3] [6] [2]. Merge to [3, 7] [2, 6], then merge to [2, 3, 6, 7].</p></details>
       </figure>`,
     '2.2.1:0': `
       <figure class="concept-visual" aria-labelledby="loop-trace-title">
@@ -2122,6 +2227,17 @@
           <p>scores[1] = 9</p>
           <div><small>after</small><b>4</b><b class="is-result">9</b><b>2</b></div>
         </div>
+      </figure>`,
+    '2.3.1:0': `
+      <figure class="concept-visual" aria-labelledby="login-design-title">
+        <figcaption id="login-design-title"><strong>Keep validation and authentication separate</strong></figcaption>
+        <ol class="concept-steps">
+          <li><span>1</span><strong>Input</strong><small>Receive username and password.</small></li>
+          <li><span>2</span><strong>Validate</strong><small>If a field is blank or too long, explain the rule and ask again.</small></li>
+          <li><span>3</span><strong>Authenticate</strong><small>Only valid-form input reaches the secure identity check.</small></li>
+          <li><span>4</span><strong>Respond safely</strong><small>Allow access or give a neutral retry message without revealing which field matched.</small></li>
+        </ol>
+        <p class="concept-visual-note"><strong>Pseudocode plan:</strong> repeat input until presence and length checks pass; call the authentication process; then allow access or record a failed attempt.</p>
       </figure>`,
     '2.3.2:0': `
       <figure class="concept-visual" aria-labelledby="test-cycle-title">

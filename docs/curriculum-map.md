@@ -11,7 +11,7 @@ The app uses some internal strand IDs to make broad OCR points teachable and tra
 - `2.2.PY` tracks practical programming in the centre's chosen high-level language and maps to the practical programming requirement and the techniques in section 2.2.
 - `2.2.ERL` tracks the distinct OCR Exam Reference Language requirement across sections 2.1-2.3 and 3c.
 
-Supporting revision resources may help identify misconceptions or useful contexts, but they do not define scope. All live teaching and questions must be original.
+Supporting revision resources may help identify misconceptions, successful teaching structures and useful contexts, but they do not define scope. The project owner's `resources/revision packs` are authorised source material. Their explanations may be adapted for an accessible screen journey, while the OCR specification remains authoritative and published questions are not copied.
 
 ## Evidence model
 

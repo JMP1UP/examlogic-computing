@@ -112,23 +112,23 @@ Ratings mean:
 | `1.2.4c` Images | Baseline sufficient | Current representation, metadata, quality and size relationship is concise and suitable. | Pixel-grid zoom, labelled metadata card and staged size calculation. |
 | `1.2.4d` Sound | Baseline sufficient | Standardise on OCR's term `bit depth`; retain analogue sampling, quality and size effects. | Sample points on an analogue wave, with separate rate/depth annotations and a calculation strip. |
 | `1.2.5` Compression | Baseline sufficient | Current need, lossy/lossless effects and scenario choice are suitable. | Side-by-side decision grid showing exact recovery, quality and typical use. |
-| `1.3.1` Networks/topologies | **Significant gap** | Add transmission media, bandwidth/device effects, full server/client roles, DNS URL-to-IP process, hosting, web services, cloud advantages/disadvantages and scenario application. | Layered network map, DNS sequence, star/mesh diagrams and a cloud trade-off grid split into short sections. |
+| `1.3.1` Networks/topologies | **Strengthened; human QA pending** | The review now separates scope, resource model and topology; applies LAN/WAN, client-server/peer-to-peer and star/mesh; connects school-network hardware; and retains performance, DNS, hosting and cloud teaching. | Switch-centred school network, DNS sequence and short trade-off parts. |
 | `1.3.2` Connections/protocols/layers | **Significant gap** | Correct MAC and POP claims. Teach wired/wireless comparison, Ethernet/Wi-Fi/Bluetooth recommendations, encryption principle, IPv4/IPv6 formats, standards, all named protocol purposes and benefits of layers. | Connection decision table, address-format examples, protocol-purpose cards and an unnamed stacked-layer diagram focused on benefits. |
 | `1.4.1` Security threats | **Significant gap** | Each of the six attacks needs mechanism, purpose, impact and a distinct scenario. Current two short sections compress them too far. | Attack pathway cards using the same four labels; SQL-injection input-to-query diagram and DoS traffic diagram. Avoid alarming imagery. |
 | `1.4.2` Preventing vulnerabilities | **Significant gap** | Explain how each of seven controls limits specific threats and where it does not help. Include authorised penetration testing and physical security. | Threat-control mapping matrix, with colour used for relationship not good/bad decoration. |
-| `1.5.1` Operating systems | **Significant gap** | Expand all five functions to required detail: UI features; memory allocation/transfer and multitasking; device/processor transfer and drivers; accounts/rights/security; naming, folders, moving and saving files. | Five-function tab/accordion set, memory allocation diagram and device-driver bridge. Keep one function open at a time. |
-| `1.5.2` Utility software | Targeted expansion | Keep focus on encryption, defragmentation and compression. Remove backup from the required-content heading or label it clearly as additional context. | Three utility cards using purpose, when useful and limitation; HDD before/after block diagram. |
+| `1.5.1` Operating systems | **Strengthened; human QA pending** | A pupil editing, playing audio and printing now links all five functions in one believable task before the functions are studied separately. | Follow-one-task example, followed by short function groups. |
+| `1.5.2` Utility software | **Strengthened; human QA pending** | Encryption, defragmentation and compression now use problem-benefit-limitation scenarios, including the HDD/SSD distinction. | Three scenario checks plus a fresh application prompt. |
 | `1.6.1` Impacts | **Significant gap** | Supply several current but durable contexts and explicitly model ethical, legal, cultural, environmental and privacy analysis, stakeholders, consequences, trade-offs and justified conclusions. | Stakeholder-impact matrix and balanced argument scaffold; colour must not pre-label one side as correct. |
 | `1.6.2` Law/licensing | **Significant gap** | Correct legal phrasing. Teach the purpose and specific allowed/prohibited actions for all three Acts, then open-source/proprietary features, licensing need and contextual recommendation. | Law-purpose-action cards plus a licensing comparison/decision grid. Include a clear “law is not the same as ethics” separator. |
 | `2.1.1` Computational thinking | Baseline sufficient | Current three principles, connection between them and contextual example are suitable. | One problem progressively decomposed, abstracted and expressed as ordered steps. |
 | `2.1.2` Designing/refining algorithms | **Significant gap** | Add standard flowchart symbols, structure diagrams and links, input-process-output, create/interpret/correct/complete/refine across representations, trace-table conventions, syntax/logic errors and nested selection/iteration. | IPO and structure diagrams, symbol key, trace table with highlighted changed cells, and before/after refinement. This strand should be visually led. |
-| `2.1.3` Search/sort algorithms | **Significant gap** | Pupils need to apply and recognise the steps and prerequisites of all five algorithms. One-sentence summaries and one binary-search example are insufficient. | Step sequences over one consistent data set; split/merge tree for merge sort; adjacent-comparison and insertion markers. |
+| `2.1.3` Search/sort algorithms | **Strengthened; human QA pending** | Five separate cycles now teach linear, binary, bubble, insertion and merge, including prerequisites, stopping conditions, complete states, common mistakes and formative paper checks with concealed worked traces. | Indexed search strips, adjacent comparisons, growing sorted section and full split/merge sequence. |
 | `2.2.1` Programming fundamentals | **Significant gap** | Teach practical use of variables/constants, assignment, I/O, sequence, both selection paths, both loop types and every listed arithmetic/comparison/Boolean operator. | Small executable-style code panels paired with traces; operator table grouped by purpose; loop decision diagrams. |
 | `2.2.2` Data types | Baseline sufficient | Current types, contextual choice and casting baseline is suitable. | Data-card sorting activity and one input/cast transformation. |
 | `2.2.3` Additional techniques | **Significant gap** | The broadest strand needs worked syntax and traces for strings, files, records, SQL, 1D/2D arrays, functions/procedures, parameters, local/global values, passing/returning arrays and random numbers. Current prose names most items but does not teach all of them sufficiently. | Progressive examples grouped into data, files/SQL and subprograms; array grids, record table, file lifecycle and scope diagram. Avoid one enormous page. |
-| `2.2.PY` Practical Python | **Targeted expansion** | The 15 challenges now form labelled read/trace, complete, debug, construct and independent-transfer stages with fading support and deterministic tests. More variants are still needed before claiming a two-year non-repeating pathway. | Retain the responsive code/trace/test workspace and add reviewed variants per construct rather than more levels. |
+| `2.2.PY` Practical Python | **Strengthened; variants still needed** | The challenge pathway is now preceded by a novice routine that connects planning, incremental construction, test categories, debugging and explanation. More variants are still needed before claiming a two-year non-repeating pathway. | Retain the responsive code/trace/test workspace and add reviewed variants per construct rather than more levels. |
 | `2.2.ERL` OCR reference language | **Baseline sufficient** | The reference and nine-stage practice now cover assignment, I/O, selection, loops, strings, arrays, files, functions, parameters, return values and scope through read, trace, complete, write and refine tasks. | Add search/filter only if learner testing shows the segmented reference is still difficult to navigate. |
-| `2.3.1` Defensive design | Targeted expansion | Add concrete validation and authentication designs and clearer examples of naming, indentation, comments and subprograms improving maintainability. | Input-validation flow, authentication boundary and before/after maintainability code sample. |
+| `2.3.1` Defensive design | **Strengthened; human QA pending** | A login flow now keeps validation and authentication separate, gives a safe retry route, limits rapid attempts and links responsibilities to named subprograms. | Four-stage input, validation, authentication and response flow. |
 | `2.3.2` Testing | Targeted expansion | Add complete test-plan construction, iterative versus terminal examples, expected/actual results and algorithm refinement after failure. Preserve the precise normal/boundary/invalid/erroneous distinctions. | Test-plan table with colour-independent category labels and a fail-fix-retest loop. |
 | `2.4.1` Boolean logic | Targeted expansion | Existing SVG gates and truth tables are valuable. Add explicit create/edit-from-scenario modelling and ensure combined diagrams are explained gate by gate, not just displayed. | Retain accessible SVGs, highlight one intermediate output at a time and pair every colour with labels/patterns. |
 | `2.5.1` Languages/translators | **Significant gap** | Correct compiler/interpreter absolutes. Fully compare high/low-level purpose and contextual benefits/drawbacks, need for translation, compiler/interpreter characteristics and suitable recommendations. | Two comparison matrices and one source-to-machine-code flow; scenario decision cards. |
@@ -177,7 +177,7 @@ keyboard-safe interaction. Avoid stock illustrations, decorative cyber imagery
 or dense walls of same-shaped cards. A page should normally present one concept
 chunk at a time rather than expose every subtopic simultaneously.
 
-## Implementation status — 1 August 2026
+## Implementation status — 2 August 2026
 
 - **Phase 1 complete:** the seven confirmed accuracy issues and unsafe blanket
   extended-response rules were corrected.
@@ -186,10 +186,10 @@ chunk at a time rather than expose every subtopic simultaneously.
 - **Phase 3 complete in code:** Paper 2 now includes worked traces, code forms,
   test rows, SQL, arrays, files, subprograms, scope, random values and Boolean
   intermediates rather than description alone.
-- **Phase 4 automated/persona verification complete:** the curriculum suite
-  contains an explicit OCR-bullet registry; both learning routes share one
-  progressive renderer; large strands are divided into timed study sessions;
-  only three small exact-strand visuals are currently enabled.
+- **Focused independent-revision strengthening in progress:** network models,
+  operating systems, utilities, search/sort, practical-programming support and
+  defensive design now use applied worked journeys. Objective-specific tests
+  protect the new teaching details rather than merely looking for topic words.
 - **Still required before a stronger external claim:** named qualified-human
   curriculum sign-off and accessibility checks on the deployed build.
 
@@ -224,9 +224,10 @@ chunk at a time rather than expose every subtopic simultaneously.
 
 ## Release judgement
 
-The implementation now provides a complete, specification-mapped concise theory
-baseline and has cleared the staged internal checks in this audit. StudySpice
-must still be described as **awaiting qualified-teacher QA**, because simulated
-expert/persona review and automated tests do not constitute named human sign-off.
+The implementation is specification-mapped and materially stronger, but the
+matrix above still identifies sections needing further depth. It must not yet
+be described as a complete independent-revision course. StudySpice remains
+**awaiting qualified-teacher QA**; simulated expert/persona review and automated
+tests do not constitute named human sign-off.
 The remaining visual debt is deliberately withheld from students; any future
 diagram must be audited before it is enabled.

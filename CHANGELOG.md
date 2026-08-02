@@ -5,6 +5,15 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Strengthened independent-revision teaching for networks, operating systems,
+  utility software, practical-programming routines and defensive design using
+  applied pupil scenarios and concise visual explanations.
+- Rebuilt searching and sorting as five separate worked cycles. Each algorithm
+  now includes its prerequisite or stopping rule, a complete trace, a common
+  mistake or recognition cue, a paper attempt and a concealed formative answer.
+- Added objective-specific curriculum-depth tests so complete intermediate
+  algorithm states, network relationships and applied teaching cannot be
+  replaced by keyword-only coverage.
 - Extended the programming pathway with explicit read/trace, complete, debug,
   construct and independent-transfer stages; technique-group evidence now counts
   only passed or teacher-reviewed work. OCR ERL practice now covers strings,
