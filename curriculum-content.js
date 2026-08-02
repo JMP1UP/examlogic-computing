@@ -1923,6 +1923,33 @@
       {
         heading: 'Worked combined-gate row', minutes: 4,
         body: 'For Q = (A AND B) OR NOT C with A = 1, B = 0 and C = 0: first A AND B = 0; then NOT C = 1; finally 0 OR 1 = 1. Keep separate columns for the two intermediate results before Q.',
+        html: `
+          <figure class="logic-worked-visual" aria-labelledby="logic-worked-title logic-worked-caption">
+            <figcaption id="logic-worked-title"><strong>Follow the signals from left to right</strong></figcaption>
+            <svg class="logic-worked-diagram" viewBox="0 0 900 250" role="img" aria-labelledby="logic-svg-title logic-svg-desc">
+              <title id="logic-svg-title">Combined logic circuit for Q equals A AND B, OR NOT C</title>
+              <desc id="logic-svg-desc">A is one and B is zero, so the AND gate produces zero. C is zero, so the NOT gate produces one. The final OR gate receives zero and one, so Q is one.</desc>
+              <g class="logic-input"><rect x="20" y="25" width="95" height="48" rx="8"/><text x="67" y="55">A = 1</text></g>
+              <g class="logic-input"><rect x="20" y="92" width="95" height="48" rx="8"/><text x="67" y="122">B = 0</text></g>
+              <g class="logic-input"><rect x="20" y="180" width="95" height="48" rx="8"/><text x="67" y="210">C = 0</text></g>
+              <path class="logic-wire" d="M115 49 H185 V83 H235"/><path class="logic-wire" d="M115 116 H185 V83"/>
+              <g class="logic-gate"><rect x="235" y="55" width="130" height="58" rx="20"/><text x="300" y="90">AND</text></g>
+              <path class="logic-wire" d="M365 84 H505 V110 H610"/><text class="logic-signal" x="415" y="73">0</text>
+              <path class="logic-wire" d="M115 204 H235"/>
+              <g class="logic-gate"><path d="M235 175 L320 204 L235 233 Z"/><circle cx="330" cy="204" r="10"/><text x="270" y="209">NOT</text></g>
+              <path class="logic-wire" d="M340 204 H505 V145 H610"/><text class="logic-signal" x="415" y="222">1</text>
+              <g class="logic-gate"><path d="M610 90 Q665 88 710 128 Q665 168 610 166 Q635 128 610 90 Z"/><text x="663" y="134">OR</text></g>
+              <path class="logic-wire" d="M710 128 H790"/>
+              <g class="logic-output"><rect x="790" y="103" width="90" height="50" rx="8"/><text x="835" y="134">Q = 1</text></g>
+            </svg>
+            <div class="logic-worked-steps" aria-label="Calculation steps">
+              <div><span>1</span><strong>AND first</strong><small>1 AND 0 = 0</small></div>
+              <div><span>2</span><strong>Reverse C</strong><small>NOT 0 = 1</small></div>
+              <div><span>3</span><strong>Final OR</strong><small>0 OR 1 = 1</small></div>
+            </div>
+            <p id="logic-worked-caption">Keep a separate truth-table column for each intermediate signal. That makes the final output easier to calculate and check.</p>
+          </figure>
+        `,
         items: [
           { label: 'Inputs', text: 'A = 1, B = 0, C = 0.' },
           { label: 'Intermediate columns', text: 'A AND B = 0; NOT C = 1.' },

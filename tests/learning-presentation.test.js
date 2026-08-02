@@ -4,6 +4,7 @@ const path = require('path');
 const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
 const css = fs.readFileSync(path.join(__dirname, '..', 'style.css'), 'utf8');
 const extendedWriting = fs.readFileSync(path.join(__dirname, '..', 'extended-writing-builder.js'), 'utf8');
+const curriculum = fs.readFileSync(path.join(__dirname, '..', 'curriculum-content.js'), 'utf8');
 
 describe('student learning presentation', () => {
   test('purposeful diagrams are available on CPU and bitmap objectives', () => {
@@ -13,6 +14,17 @@ describe('student learning presentation', () => {
     expect(app).toContain('pixels, resolution and colour depth');
     expect(app).toContain('aria-hidden="true"');
     expect(app).toContain('file size in bits = width &times; height &times; colour depth');
+  });
+
+  test('combined logic teaching uses an accessible signal-flow diagram', () => {
+    expect(curriculum).toContain('logic-worked-diagram');
+    expect(curriculum).toContain('<title id="logic-svg-title">');
+    expect(curriculum).toContain('<desc id="logic-svg-desc">');
+    expect(curriculum).toContain('Follow the signals from left to right');
+    expect(curriculum).toContain('1 AND 0 = 0');
+    expect(curriculum).toContain('NOT 0 = 1');
+    expect(curriculum).toContain('0 OR 1 = 1');
+    expect(css).toContain('.logic-worked-steps');
   });
 
   test('legacy accent colours cannot reduce teaching-text contrast', () => {

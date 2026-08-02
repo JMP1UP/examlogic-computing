@@ -3009,6 +3009,21 @@ body.dark-mode .app-container[data-user-role="student"] {
 .learning-visual-node strong { display: block; color: var(--text-main); }
 .learning-visual-node small { display: block; margin-top: 4px; color: var(--text-main); font-size: 14px; line-height: 1.45; }
 .learning-visual-arrow { align-self: center; color: var(--text-main); font-size: 20px; font-weight: 800; }
+.logic-worked-visual { margin:0; padding:18px; border:1px solid var(--border-color); border-left:5px solid var(--teal); border-radius:10px; background:var(--bg-main); }
+.logic-worked-visual figcaption { margin-bottom:12px; font-size:1rem; }
+.logic-worked-diagram { display:block; width:100%; height:auto; max-height:300px; background:var(--bg-card); border-radius:8px; }
+.logic-worked-diagram text { fill:var(--text-main); font:700 18px Arial,sans-serif; text-anchor:middle; dominant-baseline:middle; }
+.logic-worked-diagram .logic-input rect { fill:var(--bg-main); stroke:var(--navy); stroke-width:3; }
+.logic-worked-diagram .logic-gate :is(rect,path,circle) { fill:var(--bg-card); stroke:var(--teal); stroke-width:4; }
+.logic-worked-diagram .logic-wire { fill:none; stroke:var(--navy); stroke-width:4; }
+.logic-worked-diagram .logic-signal { fill:var(--teal-dark); font-size:22px; }
+.logic-worked-diagram .logic-output rect { fill:var(--lime); stroke:var(--navy); stroke-width:3; }
+.logic-worked-steps { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; }
+.logic-worked-steps div { display:grid; grid-template-columns:auto 1fr; gap:2px 9px; align-items:center; padding:10px; background:var(--bg-card); border:1px solid var(--border-color); }
+.logic-worked-steps span { grid-row:1/3; display:grid; place-items:center; width:28px; height:28px; border-radius:50%; background:var(--navy); color:#fff; font-weight:800; }
+.logic-worked-steps small { color:var(--text-muted); font-size:.84rem; }
+.logic-worked-visual > p { margin:14px 0 0; color:var(--text-muted); }
+@media (max-width:700px) { .logic-worked-steps { grid-template-columns:1fr; } .logic-worked-diagram { min-width:620px; } .logic-worked-visual { overflow-x:auto; } }
 .learning-pixel-demo { display: grid; grid-template-columns: repeat(4, 30px); gap: 3px; width: max-content; margin-bottom: 12px; }
 .learning-pixel-demo span { width: 30px; height: 30px; border: 1px solid var(--navy); background: var(--teal); }
 .learning-pixel-demo span:nth-child(3n) { background: var(--lime); }
