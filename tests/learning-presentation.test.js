@@ -27,6 +27,43 @@ describe('student learning presentation', () => {
     expect(css).toContain('.logic-worked-steps');
   });
 
+  test('priority visual concepts are attached to the live objective teaching', () => {
+    const content = require('../curriculum-content.js');
+    const expectedVisuals = {
+      '1.2.1': 'memory-path-title',
+      '1.2.3': 'unit-ladder-title',
+      '1.2.4a': 'binary-place-title',
+      '1.2.4d': 'sound-sampling-title',
+      '1.2.5': 'compression-title',
+      '1.3.1': 'dns-journey-title',
+      '1.3.2': 'protocol-journey-title',
+      '2.1.2': 'trace-table-title',
+      '2.1.3': 'search-steps-title',
+      '2.2.1': 'loop-trace-title',
+      '2.2.3': 'array-change-title',
+      '2.3.2': 'test-cycle-title',
+      '2.5.1': 'translation-flow-title',
+      '2.5.2': 'ide-map-title'
+    };
+
+    Object.entries(expectedVisuals).forEach(([id, marker]) => {
+      const objective = content.find(item => item.id === id);
+      expect(objective).toBeDefined();
+      expect(objective.teachingSections.some(section => section.html?.includes(marker))).toBe(true);
+    });
+  });
+
+  test('visual teaching retains accessible names, text equivalents and responsive layouts', () => {
+    expect(curriculum).toContain('role="img"');
+    expect(curriculum).toContain('<title id="sampling-wave-title">');
+    expect(curriculum).toContain('<desc id="sampling-wave-desc">');
+    expect(curriculum).toContain('aria-label="The array contains 4, 7 and 2');
+    expect(curriculum).toContain('aria-label="The CPU checks its small fast cache');
+    expect(css).toContain('.concept-visual');
+    expect(css).toContain('@media (max-width:760px)');
+    expect(css).toContain('.table-scroll:focus-visible');
+  });
+
   test('legacy accent colours cannot reduce teaching-text contrast', () => {
     expect(css).toContain('.student-teaching-part-content :is(p, li, dd)');
     expect(css).toContain('.student-teaching-part-content :is(strong, h3, h4, dt)');

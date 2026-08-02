@@ -2009,11 +2009,164 @@
     ]
   };
 
+  const escapeTeachingHTML = value => String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+  const visualTeachingPatterns = {
+    '1.2.1:0': `
+      <figure class="concept-visual" aria-labelledby="memory-path-title">
+        <figcaption id="memory-path-title"><strong>Where the CPU gets instructions and data</strong></figcaption>
+        <div class="concept-flow concept-flow--memory" role="img" aria-label="The CPU checks its small fast cache, then uses working data in RAM. ROM keeps startup instructions without power.">
+          <span class="concept-node concept-node--strong">CPU</span><span class="concept-arrow" aria-hidden="true">↔</span>
+          <span class="concept-node">Cache<small>small and fastest</small></span><span class="concept-arrow" aria-hidden="true">↔</span>
+          <span class="concept-node">RAM<small>programs in use</small></span>
+          <span class="concept-node concept-node--side">ROM<small>startup instructions</small></span>
+        </div>
+        <p class="concept-visual-note">RAM is volatile. ROM is non-volatile. Cache reduces the time the CPU waits for frequently used data and instructions.</p>
+      </figure>`,
+    '1.2.3:0': `
+      <figure class="concept-visual" aria-labelledby="unit-ladder-title">
+        <figcaption id="unit-ladder-title"><strong>Move along the storage-unit ladder</strong></figcaption>
+        <div class="unit-ladder" role="img" aria-label="Bit to byte uses eight bits per byte. Byte to kilobyte, megabyte, gigabyte, terabyte and petabyte uses one thousand of each smaller unit under the OCR convention.">
+          <span>bit</span><b>÷ 8 →</b><span>byte</span><b>÷ 1,000 →</b><span>KB</span><b>÷ 1,000 →</b><span>MB</span><b>÷ 1,000 →</b><span>GB</span><b>÷ 1,000 →</b><span>TB</span><b>÷ 1,000 →</b><span>PB</span>
+        </div>
+        <p class="concept-visual-note"><strong>Going back:</strong> multiply at each step. Always follow the convention stated in the question.</p>
+      </figure>`,
+    '1.2.4a:0': `
+      <figure class="concept-visual" aria-labelledby="binary-place-title">
+        <figcaption id="binary-place-title"><strong>Use place values to read a binary number</strong></figcaption>
+        <div class="binary-place-grid" role="img" aria-label="Binary 101101 has place values 32, 16, 8, 4, 2 and 1. The active place values are 32, 8, 4 and 1, which total 45.">
+          <div><small>place value</small><span>32</span><span>16</span><span>8</span><span>4</span><span>2</span><span>1</span></div>
+          <div><small>binary digit</small><b class="is-on">1</b><b>0</b><b class="is-on">1</b><b class="is-on">1</b><b>0</b><b class="is-on">1</b></div>
+        </div>
+        <p class="concept-visual-note"><strong>101101 = 32 + 8 + 4 + 1 = 45.</strong> For hexadecimal, group a binary number into sets of four bits from the right.</p>
+      </figure>`,
+    '1.2.4d:0': `
+      <figure class="concept-visual" aria-labelledby="sound-sampling-title">
+        <figcaption id="sound-sampling-title"><strong>Sampling measures a sound wave at regular times</strong></figcaption>
+        <svg class="sampling-wave" viewBox="0 0 760 190" role="img" aria-labelledby="sampling-wave-title sampling-wave-desc">
+          <title id="sampling-wave-title">A sound wave measured at regular sample points</title>
+          <desc id="sampling-wave-desc">A curved sound wave crosses eight evenly spaced sample lines. Dots show the measured amplitude at each sample time. More samples per second represent the wave in more detail.</desc>
+          <path class="sampling-axis" d="M35 95 H730 M35 20 V170"/>
+          <path class="sampling-line" d="M35 95 C90 15 145 15 200 95 S310 175 365 95 S475 15 530 95 S640 175 695 95"/>
+          <g class="sampling-points"><circle cx="90" cy="37" r="7"/><circle cx="175" cy="65" r="7"/><circle cx="260" cy="153" r="7"/><circle cx="345" cy="123" r="7"/><circle cx="430" cy="37" r="7"/><circle cx="515" cy="75" r="7"/><circle cx="600" cy="153" r="7"/><circle cx="685" cy="110" r="7"/></g>
+          <g class="sampling-guides"><path d="M90 25 V165 M175 25 V165 M260 25 V165 M345 25 V165 M430 25 V165 M515 25 V165 M600 25 V165 M685 25 V165"/></g>
+        </svg>
+        <div class="visual-equation"><strong>file size in bits</strong><span>=</span><span>sample rate</span><span>×</span><span>duration</span><span>×</span><span>bit depth</span></div>
+        <p class="concept-visual-note">A higher sample rate records the wave more often. A greater bit depth provides more possible amplitude values. Both normally improve representation and increase file size.</p>
+      </figure>`,
+    '1.2.5:0': `
+      <figure class="concept-visual" aria-labelledby="compression-title">
+        <figcaption id="compression-title"><strong>Compression represents the same content with fewer bits</strong></figcaption>
+        <div class="compression-strip" role="img" aria-label="Six repeated letter A values followed by four letter B values can be represented as six A and four B using run-length encoding.">
+          <div><small>before</small><span>A</span><span>A</span><span>A</span><span>A</span><span>A</span><span>A</span><span>B</span><span>B</span><span>B</span><span>B</span></div>
+          <b aria-hidden="true">→</b>
+          <div><small>RLE</small><span>6 × A</span><span>4 × B</span></div>
+        </div>
+        <p class="concept-visual-note">This run-length example is lossless: the original sequence can be rebuilt exactly. Lossy compression permanently removes selected data.</p>
+      </figure>`,
+    '1.3.1:1': `
+      <figure class="concept-visual" aria-labelledby="dns-journey-title">
+        <figcaption id="dns-journey-title"><strong>From a web address to a web page</strong></figcaption>
+        <ol class="concept-steps">
+          <li><span>1</span><strong>Enter URL</strong><small>The client knows the domain name.</small></li>
+          <li><span>2</span><strong>Ask DNS</strong><small>DNS returns the matching IP address.</small></li>
+          <li><span>3</span><strong>Contact server</strong><small>The client requests the hosted page.</small></li>
+          <li><span>4</span><strong>Receive page</strong><small>The server sends the requested content.</small></li>
+        </ol>
+      </figure>`,
+    '1.3.2:2': `
+      <figure class="concept-visual" aria-labelledby="protocol-journey-title">
+        <figcaption id="protocol-journey-title"><strong>Choose the protocol for the job</strong></figcaption>
+        <div class="concept-map concept-map--protocols">
+          <div><strong>Web page</strong><span>HTTP</span><small>HTTPS adds encrypted communication</small></div>
+          <div><strong>Send email</strong><span>SMTP</span><small>Moves outgoing mail</small></div>
+          <div><strong>Receive email</strong><span>POP / IMAP</span><small>Download or synchronise messages</small></div>
+          <div><strong>Transfer files</strong><span>FTP</span><small>Moves files between systems</small></div>
+        </div>
+        <p class="concept-visual-note">TCP/IP supports communication across networks. Layers separate jobs so systems can remain compatible and faults are easier to isolate.</p>
+      </figure>`,
+    '2.1.2:0': `
+      <figure class="concept-visual" aria-labelledby="trace-table-title">
+        <figcaption id="trace-table-title"><strong>Find the first point where the trace goes wrong</strong></figcaption>
+        <div class="table-scroll" tabindex="0"><table class="concept-table"><thead><tr><th>Value used</th><th>Expected total</th><th>Faulty total</th></tr></thead><tbody><tr><td>Start</td><td>0</td><td>0</td></tr><tr class="concept-table-alert"><td>3</td><td>3</td><td>skipped</td></tr><tr><td>5</td><td>8</td><td>5</td></tr><tr><td>2</td><td>10</td><td>7</td></tr></tbody></table></div>
+        <p class="concept-visual-note">The first difference is the skipped value 3. Correct the starting index, then repeat the test.</p>
+      </figure>`,
+    '2.1.3:0': `
+      <figure class="concept-visual" aria-labelledby="search-steps-title">
+        <figcaption id="search-steps-title"><strong>See how each method changes the data</strong></figcaption>
+        <div class="algorithm-strips">
+          <div><strong>Linear search for 7</strong><span><i>4</i><i>9</i><i class="is-found">7</i></span><small>Check in order: 4 → 9 → 7</small></div>
+          <div><strong>Binary search for 7</strong><span><i>1</i><i>3</i><i class="is-checked">5</i><i class="is-found">7</i><i>9</i></span><small>5 is too small, so discard the lower half.</small></div>
+          <div><strong>Bubble sort</strong><span><i>3</i><i>1</i><i>2</i></span><span class="algorithm-next" aria-hidden="true">→</span><span><i>1</i><i>3</i><i>2</i></span><span class="algorithm-next" aria-hidden="true">→</span><span><i>1</i><i>2</i><i>3</i></span></div>
+        </div>
+      </figure>`,
+    '2.2.1:0': `
+      <figure class="concept-visual" aria-labelledby="loop-trace-title">
+        <figcaption id="loop-trace-title"><strong>Watch the variable change after each loop</strong></figcaption>
+        <div class="state-trace" role="img" aria-label="Total starts at zero. After adding one it is one, after adding two it is three, and after adding three it is six.">
+          <span><small>start</small>total = 0</span><b aria-hidden="true">+ 1 →</b><span><small>pass 1</small>total = 1</span><b aria-hidden="true">+ 2 →</b><span><small>pass 2</small>total = 3</span><b aria-hidden="true">+ 3 →</b><span class="is-result"><small>pass 3</small>total = 6</span>
+        </div>
+        <p class="concept-visual-note">Record the value after every pass. For a nested loop, repeat the inner loop each time the outer loop advances.</p>
+      </figure>`,
+    '2.2.3:0': `
+      <figure class="concept-visual" aria-labelledby="array-change-title">
+        <figcaption id="array-change-title"><strong>Indexes identify positions in an array</strong></figcaption>
+        <div class="array-change" role="img" aria-label="The array contains 4, 7 and 2 at indexes zero, one and two. Assigning nine to index one changes only the middle value, giving 4, 9 and 2.">
+          <div><small>index</small><span>0</span><span>1</span><span>2</span></div>
+          <div><small>before</small><b>4</b><b class="is-changing">7</b><b>2</b></div>
+          <p>scores[1] = 9</p>
+          <div><small>after</small><b>4</b><b class="is-result">9</b><b>2</b></div>
+        </div>
+      </figure>`,
+    '2.3.2:0': `
+      <figure class="concept-visual" aria-labelledby="test-cycle-title">
+        <figcaption id="test-cycle-title"><strong>A failed test is the start of a cycle</strong></figcaption>
+        <ol class="concept-steps concept-steps--cycle">
+          <li><span>1</span><strong>Predict</strong><small>Write the expected result.</small></li>
+          <li><span>2</span><strong>Run</strong><small>Record the actual result.</small></li>
+          <li><span>3</span><strong>Fix</strong><small>Correct the underlying cause.</small></li>
+          <li><span>4</span><strong>Retest</strong><small>Repeat this and relevant earlier tests.</small></li>
+        </ol>
+      </figure>`,
+    '2.5.1:0': `
+      <figure class="concept-visual" aria-labelledby="translation-flow-title">
+        <figcaption id="translation-flow-title"><strong>Why source code needs translating</strong></figcaption>
+        <div class="concept-flow" role="img" aria-label="A programmer writes human-readable source code. A compiler or interpreter translates it into instructions that a processor can execute.">
+          <span class="concept-node">Source code<small>readable by people</small></span><span class="concept-arrow" aria-hidden="true">→</span><span class="concept-node concept-node--strong">Translator<small>compiler or interpreter</small></span><span class="concept-arrow" aria-hidden="true">→</span><span class="concept-node">Machine instructions<small>executed by the CPU</small></span>
+        </div>
+      </figure>`,
+    '2.5.2:0': `
+      <figure class="concept-visual" aria-labelledby="ide-map-title">
+        <figcaption id="ide-map-title"><strong>The four OCR IDE facilities working together</strong></figcaption>
+        <div class="ide-map" role="img" aria-label="The editor contains source code, diagnostics identify reported errors, the translator converts or executes the code, and the run-time environment shows the running program and output.">
+          <div class="ide-editor"><strong>Editor</strong><code>score = score + 1</code><code>print(score)</code></div>
+          <div class="ide-diagnostic"><strong>Error diagnostics</strong><small>Reports a problem and its location</small></div>
+          <div class="ide-translator"><strong>Translator</strong><small>Compiles or interprets source code</small></div>
+          <div class="ide-runtime"><strong>Run-time environment</strong><samp>Output: 6</samp></div>
+        </div>
+      </figure>`
+  };
+
+  const renderStructuredTeaching = (section, visual) => `
+    <p>${escapeTeachingHTML(section.body)}</p>
+    ${visual}
+    ${Array.isArray(section.items) && section.items.length ? `<dl class="student-teaching-points">${section.items.map(point => `<div><dt>${escapeTeachingHTML(point.label)}</dt><dd>${escapeTeachingHTML(point.text)}</dd></div>`).join('')}</dl>` : ''}
+  `;
+
   return content.map(item => {
     const reviewedExpansion = coverageExpansionSections[item.id] || [];
     let sections = reviewedExpansion.length ? reviewedExpansion : (teachingSections[item.id] || []);
     if (item.id === '2.2.3') sections = [reviewedExpansion[0], reviewedExpansion[1], reviewedExpansion[2], reviewedExpansion[reviewedExpansion.length - 1]];
     if (item.id === '2.2.ERL') sections = reviewedExpansion.slice(0, 2);
+    sections = sections.map((section, index) => {
+      const visual = visualTeachingPatterns[`${item.id}:${index}`];
+      return visual ? { ...section, html: renderStructuredTeaching(section, visual) } : section;
+    });
     const honestReviewMinutes = sections.reduce((total, section) => total + (Number(section.minutes) || 3), 0);
     return {
       ...item,

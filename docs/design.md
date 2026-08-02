@@ -7,6 +7,10 @@ ExamLogic Computing is an interactive GCSE Computer Science revision, exam prepa
 
 ## 2. Intended Users & Needs
 - **GCSE Computer Science Students**: Need clear, structured topic breakdowns, useful feedback on logic/code exercises, and interactive revision tools.
+
+### Teaching visual language
+
+Student review pages use diagrams only when a visual relationship reduces cognitive load. Processes use labelled flows, changing program state uses traces, calculations use annotated working, and comparisons use aligned tables or cards. Every visual must retain a text equivalent, meaningful labels, keyboard-safe overflow and sufficient contrast; colour and decoration must never carry the teaching meaning alone. Simple factual content should remain concise text rather than receiving a decorative illustration.
 - **Computer Science Teachers**: Need topic progress tracking, revision module assignment, and exam topic analytics.
 - **Accessibility Needs**: High-contrast code/text snippets, screen-reader accessible quiz controls, full keyboard navigation, and customizable text scaling.
 
