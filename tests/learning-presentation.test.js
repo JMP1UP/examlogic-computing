@@ -24,7 +24,12 @@ describe('student learning presentation', () => {
     expect(curriculum).toContain('1 AND 0 = 0');
     expect(curriculum).toContain('NOT 0 = 1');
     expect(curriculum).toContain('0 OR 1 = 1');
+    expect(curriculum).toContain('logic-gate logic-gate--and');
+    expect(curriculum).toContain('M235 55 H300 A29 29 0 0 1 300 113 H235 Z');
+    expect(curriculum).not.toContain('<g class="logic-gate"><rect x="235"');
     expect(css).toContain('.logic-worked-steps');
+    expect(css).toContain('--lime: #D7FA3A');
+    expect(css).toContain('.logic-worked-diagram .logic-output text { fill:var(--navy); }');
   });
 
   test('priority visual concepts are attached to the live objective teaching', () => {
@@ -58,10 +63,23 @@ describe('student learning presentation', () => {
     expect(curriculum).toContain('<title id="sampling-wave-title">');
     expect(curriculum).toContain('<desc id="sampling-wave-desc">');
     expect(curriculum).toContain('aria-label="The array contains 4, 7 and 2');
-    expect(curriculum).toContain('aria-label="The CPU checks its small fast cache');
+    expect(curriculum).toContain('aria-label="The CPU uses three types of primary storage');
     expect(css).toContain('.concept-visual');
     expect(css).toContain('@media (max-width:760px)');
     expect(css).toContain('.table-scroll:focus-visible');
+  });
+
+  test('memory visual groups cache, RAM and ROM as primary storage without inventing a sequence', () => {
+    const content = require('../curriculum-content.js');
+    const memory = content.find(item => item.id === '1.2.1').teachingSections[0].html;
+    expect(memory).toContain('memory-map__stores');
+    expect(memory).toContain('<strong>Primary storage</strong>');
+    expect(memory).toContain('Cache');
+    expect(memory).toContain('RAM');
+    expect(memory).toContain('ROM');
+    expect(memory).toContain('virtual memory');
+    expect(memory).toContain('slower secondary storage');
+    expect(memory).not.toContain('CPU checks its small fast cache, then uses working data in RAM');
   });
 
   test('legacy accent colours cannot reduce teaching-text contrast', () => {

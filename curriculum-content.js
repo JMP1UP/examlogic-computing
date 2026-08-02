@@ -1933,7 +1933,7 @@
               <g class="logic-input"><rect x="20" y="92" width="95" height="48" rx="8"/><text x="67" y="122">B = 0</text></g>
               <g class="logic-input"><rect x="20" y="180" width="95" height="48" rx="8"/><text x="67" y="210">C = 0</text></g>
               <path class="logic-wire" d="M115 49 H185 V83 H235"/><path class="logic-wire" d="M115 116 H185 V83"/>
-              <g class="logic-gate"><rect x="235" y="55" width="130" height="58" rx="20"/><text x="300" y="90">AND</text></g>
+              <g class="logic-gate logic-gate--and"><path d="M235 55 H300 A29 29 0 0 1 300 113 H235 Z"/><text x="292" y="85">AND</text></g>
               <path class="logic-wire" d="M365 84 H505 V110 H610"/><text class="logic-signal" x="415" y="73">0</text>
               <path class="logic-wire" d="M115 204 H235"/>
               <g class="logic-gate"><path d="M235 175 L320 204 L235 233 Z"/><circle cx="330" cy="204" r="10"/><text x="270" y="209">NOT</text></g>
@@ -2020,11 +2020,11 @@
     '1.2.1:0': `
       <figure class="concept-visual" aria-labelledby="memory-path-title">
         <figcaption id="memory-path-title"><strong>Where the CPU gets instructions and data</strong></figcaption>
-        <div class="concept-flow concept-flow--memory" role="img" aria-label="The CPU checks its small fast cache, then uses working data in RAM. ROM keeps startup instructions without power.">
-          <span class="concept-node concept-node--strong">CPU</span><span class="concept-arrow" aria-hidden="true">↔</span>
-          <span class="concept-node">Cache<small>small and fastest</small></span><span class="concept-arrow" aria-hidden="true">↔</span>
-          <span class="concept-node">RAM<small>programs in use</small></span>
-          <span class="concept-node concept-node--side">ROM<small>startup instructions</small></span>
+        <div class="memory-map" role="img" aria-label="The CPU uses three types of primary storage. Cache holds frequently used data and instructions close to the CPU. RAM holds programs and data currently in use. ROM keeps startup instructions without power. When RAM is full, less-used data can move between RAM and virtual memory, which is an area of slower secondary storage.">
+          <span class="concept-node concept-node--strong">CPU<small>executes instructions</small></span>
+          <span class="concept-arrow" aria-hidden="true">↔</span>
+          <div class="memory-map__stores"><strong>Primary storage</strong><span class="concept-node">Cache<small>frequently used data and instructions</small></span><span class="concept-node">RAM<small>programs and data currently in use</small></span><span class="concept-node concept-node--side">ROM<small>startup instructions retained without power</small></span></div>
+          <div class="memory-map__virtual"><strong>When RAM is full:</strong> less-used data ↔ <b>virtual memory</b><small>an area of slower secondary storage</small></div>
         </div>
         <p class="concept-visual-note">RAM is volatile. ROM is non-volatile. Cache reduces the time the CPU waits for frequently used data and instructions.</p>
       </figure>`,
