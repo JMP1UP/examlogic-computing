@@ -382,6 +382,27 @@ describe('objective-level curriculum coverage integrity', () => {
     });
   });
 
+  test('provides a fading programming progression before independent transfer', () => {
+    const actions = new Set(data.programmingChallenges.map(item => item.learningAction));
+    ['read-and-trace', 'complete', 'debug', 'construct', 'independent-transfer']
+      .forEach(action => expect(actions.has(action)).toBe(true));
+    const independent = data.programmingChallenges.filter(item => item.independence === 'independent');
+    expect(independent).toHaveLength(3);
+    expect(independent.every(item => item.purpose === 'exam-transfer')).toBe(true);
+    expect(data.programmingChallenges.find(item => item.id === 'pc_1').awardsCompletion).toBe(false);
+  });
+
+  test('keeps ERL arrays single-typed and uses genuine records practice', () => {
+    const appSource = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+    expect(appSource).toContain('array letters = ["", "", ""]');
+    expect(appSource).not.toContain('letters = [0, 0, 0]');
+    const recordsChallenge = data.programmingChallenges.find(item => item.id === 'pc_11');
+    expect(recordsChallenge.programmingTechniques).toContain('records');
+    expect(recordsChallenge.code).toContain('students');
+    expect(recordsChallenge.instructions).toContain('student record');
+    expect(recordsChallenge.testCases[0].functionArgs[0][0]).toMatchObject({ name: 'Harriet', score: 85 });
+  });
+
   test('protects explicit OCR specification bullets rather than section or word counts', () => {
     const requiredContent = {
       '1.1.1': [/control unit/i, /ALU/i, /program counter/i, /MAR/i, /MDR/i, /accumulator/i, /fetch/i, /decode/i, /execute/i],

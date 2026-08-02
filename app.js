@@ -38,6 +38,7 @@ class App {
     this.activeTopicId = 'topic_1_3'; // default topic
     this.activeChallengeId = 'pc_1'; // default programming challenge
     this.activePseudocodeTask = 0;
+    this.pseudocodeSupportByTask = {};
     this.activeTestPrepId = null;
     this.definitionTestTerms = [];
     this.definitionTestMode = false;
@@ -7056,11 +7057,19 @@ class App {
     this.focusExamTransferStage(panel);
   }
 
+  isIndependentProgrammingSubmission(submission) {
+    if (submission?.status === 'Teacher Reviewed') return true;
+    if (submission?.status !== 'Passed') return false;
+    if (submission.evidenceLevel === 'independent') return true;
+    return !submission.evidenceLevel && submission.supportUsed === 'None';
+  }
+
   renderStudentProgrammingHub(panel) {
     const challenges = window.db.getProgrammingChallenges();
     const submissions = window.db.getProgrammingSubmissions().filter(item => item.studentId === this.currentUser.id);
     const visitedChallengeIds = new Set(submissions.map(item => item.challengeId));
     const completedChallengeIds = new Set(submissions.filter(item => item.status === 'Passed' || item.status === 'Teacher Reviewed').map(item => item.challengeId));
+    const independentChallengeIds = new Set(submissions.filter(item => this.isIndependentProgrammingSubmission(item)).map(item => item.challengeId));
     const pseudocodeAttempts = window.db.getAttempts().filter(item =>
       item.studentId === this.currentUser.id
       && item.type === 'pseudocode_assessed'
@@ -7071,12 +7080,25 @@ class App {
     const nextChallenge = challenges.find(item => !visitedChallengeIds.has(item.id)) || challenges.find(item => item.purpose === 'exam-transfer') || challenges[challenges.length - 1];
     const firstSupportedChallenge = challenges.find(item => item.learningMode === 'guided-reading') || challenges[0];
     const firstExamChallenge = challenges.find(item => item.purpose === 'exam-transfer') || challenges[challenges.length - 1];
-    const pseudocodeSkills = ['Read', 'Trace', 'Complete', 'Write', 'Refine'];
+    const pseudocodeSkills = ['Read basics', 'Trace control flow', 'Complete validation', 'Write a loop', 'Refine syntax', 'Trace strings and arrays', 'Complete file handling', 'Write a function', 'Refine scope'];
     const nextPseudocodeIndex = pseudocodeSkills.findIndex((_, index) => !completedPseudocodeIds.has(`pseudocode_${index + 1}`));
     const recommendedPseudocodeIndex = nextPseudocodeIndex === -1 ? pseudocodeSkills.length - 1 : nextPseudocodeIndex;
     const assessedChallenges = challenges.filter(item => item.awardsCompletion !== false);
     const pythonPercent = assessedChallenges.length ? Math.round((completedChallengeIds.size / assessedChallenges.length) * 100) : 0;
     const pseudocodePercent = Math.round((completedPseudocodeIds.size / pseudocodeSkills.length) * 100);
+    const techniqueGroups = [
+      { id: 'foundations', label: 'Foundations', techniques: ['variables', 'input', 'output', 'strings', 'casting'] },
+      { id: 'control', label: 'Decisions and loops', techniques: ['selection', 'validation', 'count-controlled iteration', 'iteration', 'nested iteration'] },
+      { id: 'data', label: 'Data and subprograms', techniques: ['arrays', '2D arrays', 'records', 'file handling', 'function', 'local variables', 'random numbers'] },
+      { id: 'algorithms', label: 'Algorithms and exam transfer', techniques: ['linear search', 'binary search', 'bubble sort', 'exam transfer'] }
+    ].map(group => {
+      const matching = assessedChallenges.filter(challenge => (challenge.programmingTechniques || [])
+        .some(technique => group.techniques.includes(technique)));
+      const demonstrated = matching.filter(challenge => independentChallengeIds.has(challenge.id));
+      return { ...group, matching, demonstrated };
+    });
+    const learningActionLabels = { 'read-and-trace': 'Read and trace', complete: 'Complete code', debug: 'Find and fix', construct: 'Write code', 'independent-transfer': 'Exam-style task' };
+    const independenceLabels = { supported: 'Step-by-step support', 'fading-support': 'Some support available', independent: 'Work independently' };
 
     panel.innerHTML = `
       <div class="student-route-header">
@@ -7131,10 +7153,24 @@ class App {
         </section>
       </div>
 
+      <section class="card" style="margin-bottom:24px;">
+        <span class="badge badge-primary">Your independent Python evidence</span>
+        <h2 style="margin:10px 0 5px;">Skills you have demonstrated</h2>
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Only work completed independently or accepted by a teacher is counted here. Supported work remains saved separately. Older passes count only when their saved record says no support was used.</p>
+        <div class="programming-technique-grid">
+          ${techniqueGroups.map(group => `
+            <div class="programming-technique-card">
+              <strong>${this.escapeHTML(group.label)}</strong>
+              <span>${group.demonstrated.length} of ${group.matching.length} challenge${group.matching.length === 1 ? '' : 's'} demonstrated</span>
+              <small>${group.demonstrated.length ? `Latest evidence includes: ${this.escapeHTML(group.demonstrated.slice(-2).map(item => item.title).join('; '))}` : 'No independent evidence yet — choose a supported stage to prepare.'}</small>
+            </div>`).join('')}
+        </div>
+      </section>
+
       <details class="card" id="programming-full-pathway" style="margin-bottom:20px;">
         <summary style="cursor:pointer; font-weight:700;">View the full programming pathway</summary>
         <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:18px; margin-top:16px;">
-          <div><h3 style="font-size:16px;">Python</h3><div style="display:grid; gap:8px;">${challenges.map(item => `<button type="button" class="btn btn-secondary programming-route-btn" data-mode="skill" data-challenge-id="${item.id}" style="text-align:left;">${completedChallengeIds.has(item.id) ? '✓ ' : ''}${this.escapeHTML(item.concept)}: ${this.escapeHTML(item.title)}</button>`).join('')}</div></div>
+          <div><h3 style="font-size:16px;">Python</h3><div style="display:grid; gap:8px;">${challenges.map(item => `<button type="button" class="btn btn-secondary programming-route-btn" data-mode="skill" data-challenge-id="${item.id}" style="text-align:left;"><small style="display:block; color:var(--text-muted); text-transform:uppercase;">${this.escapeHTML(learningActionLabels[item.learningAction] || 'Write code')} · ${this.escapeHTML(independenceLabels[item.independence] || 'Support available')}</small>${completedChallengeIds.has(item.id) ? '✓ ' : ''}${this.escapeHTML(item.concept)}: ${this.escapeHTML(item.title)}</button>`).join('')}</div></div>
           <div><h3 style="font-size:16px;">OCR language</h3><ol style="padding-left:20px; line-height:1.8;">${pseudocodeSkills.map((skill, index) => `<li>${completedPseudocodeIds.has(`pseudocode_${index + 1}`) ? '✓ ' : ''}${skill}</li>`).join('')}</ol></div>
         </div>
       </details>
@@ -7170,15 +7206,36 @@ class App {
     });
   }
 
+  getPseudocodeSupport(questionId) {
+    const student = window.db.getStudents().find(item => item.id === this.currentUser?.id) || this.currentUser;
+    return student?.pseudocodeSupportHistory?.[questionId] || 'none';
+  }
+
+  recordPseudocodeSupport(questionId, support) {
+    const student = window.db.getStudents().find(item => item.id === this.currentUser?.id) || this.currentUser;
+    if (!student || !questionId || !['hint', 'model'].includes(support)) return false;
+    const history = { ...(student.pseudocodeSupportHistory || {}) };
+    if (history[questionId] === 'model' || history[questionId] === support) return false;
+    history[questionId] = support;
+    student.pseudocodeSupportHistory = history;
+    window.db.updateStudent(student.id, { pseudocodeSupportHistory: history });
+    return true;
+  }
+
   renderStudentPseudocode(panel) {
     const tasks = [
       { level: 1, skill: 'Read', title: 'Variables and output', code: 'score = 7\nscore = score + 3\nprint(score)', prompt: 'What value is printed? Explain how the variable changes.', answer: '10 is printed. score starts at 7 and is reassigned to 7 + 3.', hint: 'Follow the statements in order. Write the value held by score after each assignment, then look at what print uses.' },
       { level: 2, skill: 'Trace', title: 'Selection and iteration', code: 'total = 0\nfor i=1 to 4\n    if i MOD 2 == 0 then\n        total = total + i\n    endif\nnext i\nprint(total)', prompt: 'Trace i and total. What is printed?', answer: '6 is printed. Only the even values 2 and 4 are added.', hint: 'Make a two-column trace table for i and total. Update total only on iterations where the MOD condition is true.' },
       { level: 3, skill: 'Complete', title: 'Input validation', code: 'age = input("Age")\nwhile __________\n    age = input("Try again")\nendwhile', prompt: 'Complete the condition so only ages from 11 to 16 inclusive are accepted.', answer: 'age < 11 OR age > 16', hint: 'A validation loop repeats while an input is invalid. Consider separately what makes an age too low and what makes it too high.' },
       { level: 4, skill: 'Write', title: 'Count-controlled algorithm', code: '// Write OCR Exam Reference Language here', prompt: 'Input five scores, calculate the total and print the mean.', answer: 'total = 0\nfor i=1 to 5\n    score = int(input("Score"))\n    total = total + score\nnext i\nprint(total / 5)', hint: 'Plan three steps: start an accumulator, repeat the input and addition a fixed number of times, then calculate the mean after the loop.' },
-      { level: 5, skill: 'Refine', title: 'Find and correct errors', code: 'for i=0 to names.length\n    if names[i] = target then\n        print("Found")\n    end if\nnext', prompt: 'Find and correct the errors. Use valid OCR Exam Reference Language and make sure the loop does not go past the last array item.', answer: 'for i=0 to names.length - 1\n    if names[i] == target then\n        print("Found")\n    endif\nnext i', hint: 'Check the final valid array index, the equality operator, and the exact words used to close the selection and loop.' }
+      { level: 5, skill: 'Refine', title: 'Find and correct errors', code: 'for i=0 to names.length\n    if names[i] = target then\n        print("Found")\n    end if\nnext', prompt: 'Find and correct the errors. Use valid OCR Exam Reference Language and make sure the loop does not go past the last array item.', answer: 'for i=0 to names.length - 1\n    if names[i] == target then\n        print("Found")\n    endif\nnext i', hint: 'Check the final valid array index, the equality operator, and the exact words used to close the selection and loop.' },
+      { level: 6, skill: 'Trace', title: 'Strings and arrays', code: 'word = "COMPUTING"\narray letters = ["", "", ""]\nfor i=0 to 2\n    letters[i] = word.substring(i, 1)\nnext i\nprint(letters[2])', prompt: 'Trace i and letters. What is printed, and why?', answer: 'M is printed because the loop stores C, O and M at indexes 0, 1 and 2, then prints index 2.', hint: 'Array indexes begin at zero. Record the one-character substring stored after each loop.' },
+      { level: 7, skill: 'Complete', title: 'Read every file line', code: 'total = 0\nfile = open("scores.txt")\nwhile NOT __________\n    score = int(file.readLine())\n    total = total + score\nendwhile\n__________\nprint(total)', prompt: 'Complete the end-of-file test and the instruction that safely finishes using the file.', answer: 'file.endOfFile()\nfile.close()', hint: 'The loop continues while the file has not reached its end. The file must be closed after the loop, not during it.' },
+      { level: 8, skill: 'Write', title: 'Function with a return value', code: '// Write OCR Exam Reference Language here', prompt: 'Write a function largest(values) that returns the largest value in a non-empty array.', answer: 'function largest(values)\n    biggest = values[0]\n    for i=1 to values.length - 1\n        if values[i] > biggest then\n            biggest = values[i]\n        endif\n    next i\n    return biggest\nendfunction', hint: 'Start with the first array item. Compare each remaining item, update one local variable, then return it after the loop.' },
+      { level: 9, skill: 'Refine', title: 'Procedure, parameters and scope', code: 'total = 0\nprocedure addScore(score)\n    total = total + score\nendprocedure', prompt: 'Refine this so the subprogram does not depend on a global total. Use a function with parameters and a return value.', answer: 'function addScore(total, score)\n    total = total + score\n    return total\nendfunction', hint: 'Pass both values into the subprogram. Change a local value and return it to the calling code.' }
     ];
     const task = tasks[this.activePseudocodeTask] || tasks[0];
+    const questionId = `pseudocode_${this.activePseudocodeTask + 1}`;
     panel.innerHTML = `
       <div class="student-route-header">
         <span class="student-mode-label">Pseudocode &middot; Paper 2 Section B</span>
@@ -7227,6 +7284,8 @@ class App {
       this.render();
     });
     document.getElementById('pseudocode-help-btn').onclick = () => {
+      this.pseudocodeSupportByTask[questionId] = 'hint';
+      this.recordPseudocodeSupport(questionId, 'hint');
       const feedback = document.getElementById('pseudocode-feedback');
       feedback.style.display = 'block';
       feedback.innerHTML = `<strong>Hint:</strong> ${this.escapeHTML(task.hint)}`;
@@ -7236,6 +7295,8 @@ class App {
       const response = document.getElementById('pseudocode-response').value.trim();
       if (!this.isMeaningfulLearnerResponse(response, 3)) return this.alert('Write an answer to the question before checking it.');
       const isCorrect = this.assessPseudocodeResponse(response, task.answer);
+      const supportUsed = this.pseudocodeSupportByTask[questionId] || this.getPseudocodeSupport(questionId);
+      const nextActionLabel = this.activePseudocodeTask < tasks.length - 1 ? 'Try the next stage' : 'Finish and return to Programming';
       feedback.style.display = 'block';
       if (!isCorrect) {
         feedback.innerHTML = '<strong>Submitted for review.</strong><p>Your answer uses different logic from the example, so StudySpice cannot mark it safely. It has been sent for teacher review and does not count towards Progress yet. You can improve and submit it again.</p>';
@@ -7244,7 +7305,7 @@ class App {
           type: 'pseudocode_review',
           topic: '2.2.ERL',
           score: 'awaiting review',
-          questionId: `pseudocode_${this.activePseudocodeTask + 1}`,
+          questionId,
           response,
           evidenceType: 'unassessed_submission',
           completionStatus: 'awaiting_review',
@@ -7252,19 +7313,44 @@ class App {
         });
         return;
       }
-      feedback.innerHTML = '<strong>Completed from your submitted answer.</strong><p>The structure and logic match the required solution.</p>';
+      if (supportUsed !== 'none') {
+        feedback.innerHTML = `<strong>Completed with support — practice only.</strong><p>The structure and logic match the example. Because you opened ${supportUsed === 'model' ? 'the model answer' : 'a hint'}, this attempt does not update Progress. Try the next task without opening support when you are ready.</p><button type="button" class="btn btn-primary" id="pseudocode-next-btn">${nextActionLabel}</button><button type="button" class="btn btn-secondary" id="pseudocode-back-btn">Back to Programming</button>`;
+        window.db.addAttempt({
+          studentId: this.currentUser.id,
+          type: 'pseudocode_supported',
+          topic: '2.2.ERL',
+          score: 'completed with support',
+          questionId,
+          supportStepsUsed: supportUsed === 'model' ? 2 : 1,
+          evidenceType: 'formative',
+          completionStatus: 'formative_complete',
+          contributesToMastery: false
+        });
+      } else {
+        feedback.innerHTML = `<strong>Completed from your submitted answer.</strong><p>The structure and logic match the required solution.</p><button type="button" class="btn btn-primary" id="pseudocode-next-btn">${nextActionLabel}</button><button type="button" class="btn btn-secondary" id="pseudocode-back-btn">Back to Programming</button>`;
+      }
+      if (supportUsed === 'none') {
       window.db.addAttempt({
         studentId: this.currentUser.id,
         type: 'pseudocode_assessed',
         topic: '2.2.ERL',
         score: '1/1',
-        questionId: `pseudocode_${this.activePseudocodeTask + 1}`,
+        questionId,
         supportStepsUsed: 0,
         evidenceType: 'demonstrated',
         contributesToMastery: true
       });
+      }
+      document.getElementById('pseudocode-next-btn')?.addEventListener('click', () => {
+        if (this.activePseudocodeTask >= tasks.length - 1) return this.switchTab('stud-programming');
+        this.activePseudocodeTask += 1;
+        this.render();
+      });
+      document.getElementById('pseudocode-back-btn')?.addEventListener('click', () => this.switchTab('stud-programming'));
     };
     document.getElementById('pseudocode-model-btn').onclick = () => {
+      this.pseudocodeSupportByTask[questionId] = 'model';
+      this.recordPseudocodeSupport(questionId, 'model');
       const feedback = document.getElementById('pseudocode-feedback');
       feedback.style.display = 'block';
       feedback.innerHTML = `<strong>Model answer — no progress credit</strong><pre style="white-space:pre-wrap; margin-top:8px;"><code>${this.escapeHTML(task.answer)}</code></pre><p>Use this to study, then attempt a different task independently.</p>`;
@@ -7484,7 +7570,7 @@ class App {
         ${this.programmingPracticeMode === 'exam' ? `<p style="font-size:13px; color:var(--text-muted); margin-top:8px;">OCR J277 · ${this.escapeHTML(challenge.specificationPointId || '2.2.PY')} · ${challenge.marks || 6} marks · about ${challenge.suggestedMinutes || 12} minutes · Python</p>` : ''}
       </div>
 
-      <div style="display: grid; grid-template-columns: 260px 1.25fr 0.75fr; gap: 24px;">
+      <div class="programming-workspace-layout">
         ${sidebarHtml}
         ${workspaceHtml}
       </div>

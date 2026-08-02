@@ -5,6 +5,10 @@ All notable changes to ExamLogic Computing are recorded here.
 ## [Unreleased] - 2026-07-26
 
 ### Added
+- Extended the programming pathway with explicit read/trace, complete, debug,
+  construct and independent-transfer stages; technique-group evidence now counts
+  only passed or teacher-reviewed work. OCR ERL practice now covers strings,
+  arrays, file handling, functions, parameters, return values and scope.
 - Established the two-year question-bank strategy, including review metadata,
   staged capacity targets and strict limits on AI-generated assessment content.
 - Added a 10/20-minute supplementary programming-practice paper route, new

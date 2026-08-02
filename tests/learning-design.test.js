@@ -130,4 +130,31 @@ describe('GCSE learning design', () => {
     expect(databaseSource).toContain("functionName: 'linear_search'");
     expect(appSource).not.toContain('data-ccode=');
   });
+
+  test('shows technique-level programming evidence without counting page views or hints', () => {
+    expect(appSource).toContain('Your independent Python evidence');
+    expect(appSource).toContain('Skills you have demonstrated');
+    expect(appSource).toContain("item.status === 'Passed' || item.status === 'Teacher Reviewed'");
+    expect(appSource).toContain('Supported work remains saved separately.');
+    expect(appSource).toContain('Older passes count only when their saved record says no support was used.');
+    expect(appSource).toContain('programming-technique-grid');
+  });
+
+  test('extends OCR ERL practice through arrays, files, functions and scope', () => {
+    expect(appSource).toContain("title: 'Strings and arrays'");
+    expect(appSource).toContain("title: 'Read every file line'");
+    expect(appSource).toContain("title: 'Function with a return value'");
+    expect(appSource).toContain("title: 'Procedure, parameters and scope'");
+    expect(appSource).toContain("'Write a function', 'Refine scope'");
+  });
+
+  test('keeps supported ERL and Python work separate from independent evidence', () => {
+    expect(appSource).toContain("submission.evidenceLevel === 'independent'");
+    expect(appSource).toContain("type: 'pseudocode_supported'");
+    expect(appSource).toContain("evidenceType: 'formative'");
+    expect(appSource).toContain('Because you opened');
+    expect(appSource).toContain('Try the next stage');
+    expect(appSource).toContain('pseudocodeSupportHistory');
+    expect(appSource).toContain('Finish and return to Programming');
+  });
 });

@@ -213,6 +213,28 @@ describe('achievement motivation', () => {
     expect(app.programmingStage).toBe('run');
   });
 
+  test('persists ERL model exposure beyond volatile page state', () => {
+    const { app, db } = loadApplication();
+    expect(app.recordPseudocodeSupport('pseudocode_6', 'model')).toBe(true);
+    app.pseudocodeSupportByTask = {};
+
+    expect(app.getPseudocodeSupport('pseudocode_6')).toBe('model');
+    expect(db.getStudents().find(student => student.id === app.currentUser.id).pseudocodeSupportHistory)
+      .toMatchObject({ pseudocode_6: 'model' });
+    expect(app.recordPseudocodeSupport('pseudocode_6', 'hint')).toBe(false);
+    expect(app.getPseudocodeSupport('pseudocode_6')).toBe('model');
+  });
+
+  test('interprets modern, reviewed and legacy programming evidence safely', () => {
+    const { app } = loadApplication();
+    expect(app.isIndependentProgrammingSubmission({ status: 'Passed', evidenceLevel: 'independent', supportUsed: 'None' })).toBe(true);
+    expect(app.isIndependentProgrammingSubmission({ status: 'Passed', evidenceLevel: 'completed-with-support', supportUsed: 'High' })).toBe(false);
+    expect(app.isIndependentProgrammingSubmission({ status: 'Teacher Reviewed', supportUsed: 'Medium' })).toBe(true);
+    expect(app.isIndependentProgrammingSubmission({ status: 'Passed', supportUsed: 'None' })).toBe(true);
+    expect(app.isIndependentProgrammingSubmission({ status: 'Passed', supportUsed: 'High' })).toBe(false);
+    expect(app.isIndependentProgrammingSubmission({ status: 'Passed' })).toBe(false);
+  });
+
   test('does not reveal expected answers from unseen programming checks', async () => {
     const { app } = loadApplication();
     const challenge = {

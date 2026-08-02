@@ -3069,11 +3069,11 @@ def calculate_area(width, height):
       explainQuestion: 'Explain how 2D array indexing differs from 1D array indexing.', explainModelAnswer: '1D arrays require a single index `arr[i]` to access a row element; 2D arrays require two indexes `grid[row][col]` to specify both the row and column coordinates.'
     },
     {
-      id: 'pc_11', level: 11, concept: 'Core: Subprograms and Records', title: 'Core Practice: Process Student Scores', instructions: 'Write `get_high_scorers(names, scores, threshold)` that returns a list of names whose corresponding score meets the threshold.', problem: 'Use corresponding positions in two fixed-length lists to model fields in a collection of records.',
-      code: 'def get_high_scorers(names, scores, threshold):\n    # Return names whose corresponding score meets the threshold\n    pass', expectedOutput: "['Harriet', 'Alex']", supportLadder: ['Use an index to visit the same position in both fixed-length lists.', 'Append names[index] when scores[index] meets the threshold.', 'Return the result list after every record has been considered.'],
+      id: 'pc_11', level: 11, concept: 'Core: Subprograms and Records', title: 'Core Practice: Process Student Scores', instructions: 'Write `get_high_scorers(students, threshold)` that returns the name field from each student record whose score field meets the threshold.', problem: 'Each dictionary represents one record with a name field and a score field. Process every record without changing the input list.',
+      code: 'def get_high_scorers(students, threshold):\n    # Return the name from each record whose score meets the threshold\n    pass', expectedOutput: "['Harriet', 'Alex']", supportLadder: ['Create an empty result list, then visit each student record.', 'Use `student["score"]` in the condition and append `student["name"]` when it passes.', 'Return the result list after every record has been considered.'],
       testCases: [
-        { input: "['Harriet','Dev','Alex'], [85,40,92], 50", inputs: [], functionName: 'get_high_scorers', functionArgs: [['Harriet', 'Dev', 'Alex'], [85, 40, 92], 50], expected: "['Harriet', 'Alex']" },
-        { input: "['Sam','Lee'], [49,50], 50", inputs: [], functionName: 'get_high_scorers', functionArgs: [['Sam', 'Lee'], [49, 50], 50], expected: "['Lee']" }
+        { input: 'student records with scores 85, 40 and 92; threshold 50', inputs: [], functionName: 'get_high_scorers', functionArgs: [[{ name: 'Harriet', score: 85 }, { name: 'Dev', score: 40 }, { name: 'Alex', score: 92 }], 50], expected: "['Harriet', 'Alex']" },
+        { input: 'student records at 49 and 50; threshold 50', inputs: [], functionName: 'get_high_scorers', functionArgs: [[{ name: 'Sam', score: 49 }, { name: 'Lee', score: 50 }], 50], expected: "['Lee']" }
       ],
       explainQuestion: 'Why is returning the result from this function better than changing a global list?', explainModelAnswer: 'Returning the result gives the calling code the value without unexpectedly changing shared data elsewhere in the program.'
     },
@@ -3616,6 +3616,11 @@ function applyContentMappings(data) {
     task.purpose = 'exam-transfer';
   });
   (data.programmingChallenges || []).forEach(challenge => {
+    const learningActions = {
+      pc_1: 'read-and-trace', pc_2: 'complete', pc_3: 'debug', pc_4: 'construct', pc_5: 'construct',
+      pc_6: 'complete', pc_7: 'debug', pc_8: 'construct', pc_9: 'independent-transfer', pc_10: 'construct',
+      pc_11: 'construct', pc_12: 'construct', pc_13: 'construct', pc_14: 'independent-transfer', pc_15: 'independent-transfer'
+    };
     challenge.specificationPointId = '2.2.PY';
     challenge.purpose = ['pc_9', 'pc_14', 'pc_15'].includes(challenge.id) ? 'exam-transfer' : 'application';
     challenge.programmingTechniques = PROGRAMMING_TECHNIQUE_MAP[challenge.id] || [];
@@ -3624,6 +3629,8 @@ function applyContentMappings(data) {
     challenge.suggestedMinutes = challenge.suggestedMinutes || (challenge.purpose === 'exam-transfer' ? 12 : 10);
     challenge.awardsCompletion = challenge.id === 'pc_1' ? false : challenge.awardsCompletion !== false;
     challenge.learningMode = challenge.id === 'pc_1' ? 'guided-reading' : (challenge.learningMode || 'guided-code');
+    challenge.learningAction = learningActions[challenge.id] || 'construct';
+    challenge.independence = challenge.purpose === 'exam-transfer' ? 'independent' : (['pc_1', 'pc_2', 'pc_3', 'pc_6', 'pc_7'].includes(challenge.id) ? 'supported' : 'fading-support');
     challenge.requiresCodeChange = challenge.requiresCodeChange !== false;
     (challenge.testCases || []).forEach((testCase, index) => {
       testCase.visibility = testCase.visibility || (index === 0 ? 'example' : 'hidden');

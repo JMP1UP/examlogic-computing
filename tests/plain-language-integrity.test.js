@@ -90,8 +90,8 @@ describe('pupil-facing plain-language integrity', () => {
       appSource.indexOf('// ==================== PROGRAMMING sandbox')
     );
     const hints = [...pseudocodeSection.matchAll(/hint: '([^']+)'/g)].map(match => match[1]);
-    expect(hints).toHaveLength(5);
-    expect(new Set(hints).size).toBe(5);
+    expect(hints).toHaveLength(9);
+    expect(new Set(hints).size).toBe(9);
     hints.forEach(hint => expect(hint.length).toBeGreaterThanOrEqual(70));
     expect(hints[0]).toContain('value held by score');
     expect(hints[1]).toContain('trace table');

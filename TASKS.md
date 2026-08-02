@@ -7,6 +7,8 @@
 - [ ] Build reviewed question variants towards the documented 400–600-item two-year capacity target; do not bulk-generate live questions.
 - [ ] Add versioned per-learner question and variant-family exposure records before claiming long-term non-repetition.
 - [x] Separate supported programming, construct practice and independent exam-practice entry routes.
+- [x] Label the practical pathway by learning action and show technique-group evidence from passed or teacher-reviewed work only.
+- [x] Extend OCR ERL practice through strings, arrays, files, functions, parameters, return values and scope.
 - [x] Prevent guided starter-code activity from creating demonstrated programming evidence.
 - [x] Redact unseen programming-test answers and reconcile the formative classification for existing schema-13 data.
 - [ ] Build worked-example → small edit → completion → independent transfer sequences for each required programming construct.
