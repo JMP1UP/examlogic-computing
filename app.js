@@ -66,6 +66,7 @@ class App {
     this.currentTestSession = null;
     this.currentTestAnswers = [];
     this.currentTestReviewPending = false;
+    this.currentTestReviewOpen = false;
 
     // Theory Recall Quiz state
     this.quizQuestions = [];
@@ -1079,6 +1080,7 @@ class App {
     this.currentTestSession = null;
     this.currentTestAnswers = [];
     this.currentTestReviewPending = false;
+    this.currentTestReviewOpen = false;
   }
 
   captureExamTransferDraftFromDOM() {
@@ -1988,7 +1990,7 @@ class App {
         this.clearExamTransferDraft();
       }
     }
-    if (this.activeTab === 'stud-custom-test' && tabId !== 'stud-custom-test' && this.currentTestSession?.questions?.length) {
+    if (this.activeTab === 'stud-custom-test' && tabId !== 'stud-custom-test' && this.currentTestSession?.questions?.length && !this.currentTestReviewOpen) {
       this.captureCustomTestDraftFromDOM();
       const hasAnswers = this.currentTestAnswers.some(answer => String(answer || '').trim());
       if (hasAnswers && !window.confirm('Leave this practice paper? Your answers are saved in this browser session so you can resume later.')) return false;
@@ -3338,7 +3340,7 @@ class App {
     }
     const config = this.testBuilderConfig;
     if (!config.durationMinutes) config.durationMinutes = Number(config.questionCount) || 20;
-    if (['all', 'programming'].includes(config.paperType) && config.durationMinutes < 10) config.durationMinutes = 10;
+    if (config.paperType === 'all' && config.durationMinutes < 10) config.durationMinutes = 10;
     if (config.paperType === 'programming' && config.durationMinutes > 20) config.durationMinutes = 20;
     const savedTestDraft = this.getCustomTestDraft();
     const units = window.db.getUnits();
@@ -3407,7 +3409,7 @@ class App {
 
             <h2 style="font-size: 18px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-main);">2. Choose a length</h2>
             <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
-              ${['all', 'programming'].includes(config.paperType) ? '' : `<label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.durationMinutes === 5 ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
+              ${config.paperType === 'all' ? '' : `<label style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: ${config.durationMinutes === 5 ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-card)'};">
                 <input type="radio" name="builder-length" value="5" ${config.durationMinutes === 5 ? 'checked' : ''}>
                 <div>
                   <strong style="display: block; font-size: 14px;">One exam question (about 5 minutes)</strong>
@@ -3549,6 +3551,9 @@ class App {
           }
           return;
         }
+        const existingDraft = this.getCustomTestDraft();
+        const existingDraftHasAnswers = existingDraft?.answers?.some(answer => String(answer || '').trim());
+        if (existingDraftHasAnswers && !window.confirm('Build a new practice paper and replace your saved unfinished paper?')) return;
         if (window.StudySpiceContent?.mixedExamEngine) {
           const session = window.StudySpiceContent.mixedExamEngine.createMixedExamSession(
           config.paperType,
@@ -3579,6 +3584,7 @@ class App {
           this.currentTestSession = session;
           this.currentTestAnswers = [];
           this.currentTestReviewPending = false;
+          this.currentTestReviewOpen = false;
           this.saveCustomTestDraft();
           this.switchTab('stud-custom-test');
         } else {
@@ -3634,6 +3640,7 @@ class App {
                 </button></li>`).join('')}
             </ol>
             <div class="custom-test-nav-legend"><span>✓ Answered</span><span>○ Not answered</span></div>
+            <button type="button" class="btn btn-secondary custom-test-review-shortcut" id="custom-test-review-finish-btn">Review and finish</button>
           </nav>
           <div class="custom-test-paper">
           ${session.questions.map((question, questionIndex) => `
@@ -3736,8 +3743,8 @@ class App {
 
       this.currentTestAnswers = answers;
       this.currentTestReviewPending = false;
-      const draftKey = this.getCustomTestDraftKey();
-      if (draftKey && typeof sessionStorage !== 'undefined') sessionStorage.removeItem?.(draftKey);
+      this.currentTestReviewOpen = true;
+      this.saveCustomTestDraft();
       panel.innerHTML = `
         <div class="student-route-header">
           <span class="student-mode-label">Self-check &middot; ${session.totalMarks} marks &middot; practice only</span>
@@ -3761,9 +3768,14 @@ class App {
         }).join('')}
         <button type="button" class="btn btn-primary" id="custom-test-again-btn">Build another test</button>
         <button type="button" class="btn btn-secondary" id="custom-test-finish-btn">Back to Practice</button>`;
-      panel.querySelector('#custom-test-again-btn')?.addEventListener('click', () => this.switchTab('stud-test-builder'));
-      panel.querySelector('#custom-test-finish-btn')?.addEventListener('click', () => this.switchTab('stud-practice'));
-      this.currentTestSession = null;
+      panel.querySelector('#custom-test-again-btn')?.addEventListener('click', () => {
+        this.clearCustomTestDraft();
+        this.switchTab('stud-test-builder');
+      });
+      panel.querySelector('#custom-test-finish-btn')?.addEventListener('click', () => {
+        this.clearCustomTestDraft();
+        this.switchTab('stud-practice');
+      });
       this.focusMainContent();
     };
     panel.querySelector('#custom-test-open-self-check-btn')?.addEventListener('click', () => {
@@ -3774,6 +3786,13 @@ class App {
       const answers = readAnswers();
       const firstMissing = answers.findIndex((answer, index) => !meaningfulAnswer(session.questions[index], answer));
       panel.querySelector(`[data-jump-question="${firstMissing}"]`)?.click();
+    });
+    panel.querySelector('#custom-test-review-finish-btn')?.addEventListener('click', () => {
+      const finishHeading = panel.querySelector('#custom-test-finish-heading');
+      const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+      finishHeading?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+      finishHeading?.setAttribute('tabindex', '-1');
+      finishHeading?.focus({ preventScroll: true });
     });
     updateProgress();
     this.focusMainContent();

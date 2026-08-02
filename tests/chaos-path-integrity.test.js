@@ -120,8 +120,10 @@ describe('chaos-path integrity guards', () => {
     expect(source).toContain("button.classList.toggle('is-answered', answered)");
     expect(source).toContain('Open self-check anyway');
     expect(source).toContain('Review unanswered');
+    expect(source).toContain('Review and finish');
     expect(source).toContain('Your answers are saved in this browser session');
-    expect(source).toContain('sessionStorage.removeItem?.(draftKey)');
+    expect(source).toContain('Build a new practice paper and replace your saved unfinished paper?');
+    expect(source).toContain('sessionStorage.removeItem?.(key)');
     expect(source).toContain('<form id="num-skills-form" novalidate>');
     expect(source).toContain('Blank boxes are not counted as answers.');
     expect(source).not.toContain("alert('Please enter a prediction before proceeding.')");

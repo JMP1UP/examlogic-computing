@@ -187,6 +187,53 @@ describe('Senior Developer Pedagogical & Examiner Enhancements', () => {
       expect(mixed.sufficientForRequestedTime).toBe(true);
       expect(new Set(mixed.questions.map(question => question.paper))).toEqual(new Set(['Paper 1', 'Paper 2']));
     });
+
+    test('builds a sufficient 40-minute mixed paper without blocking the browser', () => {
+      const data = require('../database').defaultDatabase;
+      const startedAt = Date.now();
+      const session = mixedExamEngine.createMixedExamSession(
+        'all', 40, data.curriculumContent, data.examTransferTasks,
+        global.window.StudySpiceContent.examinerKnowledge, null, 'bounded-forty-minute-paper'
+      );
+      const elapsed = Date.now() - startedAt;
+
+      expect(elapsed).toBeLessThan(2000);
+      expect(session.sufficientForRequestedTime).toBe(true);
+      expect(session.timeLimitMinutes).toBeGreaterThanOrEqual(32);
+      expect(session.timeLimitMinutes).toBeLessThanOrEqual(46);
+      expect(new Set(session.questions.map(question => question.paper))).toEqual(new Set(['Paper 1', 'Paper 2']));
+      expect(session.responseFormatCount).toBeGreaterThanOrEqual(4);
+    });
+
+    test('builds a genuine five-minute programming paper as one constructed question', () => {
+      const data = require('../database').defaultDatabase;
+      const session = mixedExamEngine.createMixedExamSession(
+        'programming', 5, data.curriculumContent, data.examTransferTasks,
+        global.window.StudySpiceContent.examinerKnowledge, null, 'five-minute-programming-paper'
+      );
+
+      expect(session.sufficientForRequestedTime).toBe(true);
+      expect(session.questions).toHaveLength(1);
+      expect(session.totalMarks).toBeGreaterThanOrEqual(4);
+      expect(session.totalMarks).toBeLessThanOrEqual(5);
+      expect(session.timeLimitMinutes).toBe(5);
+      expect(session.questions[0].type).toBe('constructed');
+      expect(session.questions[0].responseForm).toMatch(/algorithm|trace|design|program/i);
+    });
+
+    test.each([20, 40])('keeps substantial %i-minute mixed papers synoptic with genuine AO3 work', duration => {
+      const data = require('../database').defaultDatabase;
+      for (let seedIndex = 0; seedIndex < 12; seedIndex += 1) {
+        const session = mixedExamEngine.createMixedExamSession(
+          'all', duration, data.curriculumContent, data.examTransferTasks,
+          global.window.StudySpiceContent.examinerKnowledge, null, `mixed-ao3-${duration}-${seedIndex}`
+        );
+
+        expect(session.sufficientForRequestedTime).toBe(true);
+        expect(session.includesAO3).toBe(true);
+        expect(new Set(session.questions.map(question => question.paper))).toEqual(new Set(['Paper 1', 'Paper 2']));
+      }
+    });
   });
 
   describe('Scaffolded 8 Mark Extended Response Builder', () => {
